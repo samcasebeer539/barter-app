@@ -82,86 +82,86 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.card, { width: cardWidth, height: cardHeight }]}>
-        {/* Header and Photo Section */}
-        <View style={styles.contentWrapper}>
-          <View style={styles.header}>
-            {/* Type Icon */}
-            <View style={styles.iconContainer}>
-              <MaterialIcons 
-                name={post.type === 'good' ? 'shopping-bag' : 'build'} 
-                size={20} 
-                color="#000" 
-              />
-            </View>
-            
-            {/* Post Name */}
-            <View style={styles.titleContainer}>
-              <Text style={styles.title} numberOfLines={2}>
-                {post.name}
-              </Text>
-            </View>
+        {/* Header */}
+        <View style={styles.header}>
+          {/* Type Icon */}
+          <View style={styles.iconContainer}>
+            <MaterialIcons 
+              name={post.type === 'good' ? 'shopping-bag' : 'build'} 
+              size={20} 
+              color="#000" 
+            />
           </View>
+          
+          {/* Post Name */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title} numberOfLines={2}>
+              {post.name}
+            </Text>
+          </View>
+        </View>
 
-          {/* Photo Section with horizontal scroll */}
-          <View style={styles.photoSectionWrapper} pointerEvents="box-none">
-            <View style={styles.photoSection}>
-              <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onScroll={handleScroll}
-                scrollEventThrottle={16}
-                snapToInterval={photoContainerWidth}
-                decelerationRate="fast"
-              >
-                {post.photos.map((photo, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    activeOpacity={1}
-                    onPress={toggleDescription}
+        {/* Photo Section with horizontal scroll */}
+        <View style={styles.photoSectionWrapper} pointerEvents="box-none">
+          <View style={styles.photoSection}>
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              snapToInterval={photoContainerWidth}
+              decelerationRate="fast"
+            >
+              {post.photos.map((photo, index) => (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={1}
+                  onPress={toggleDescription}
+                  style={[
+                    styles.photoContainer,
+                    { width: photoContainerWidth }
+                  ]}
+                >
+                  <View 
                     style={[
-                      styles.photoContainer,
-                      { width: photoContainerWidth }
+                      styles.photoFrame,
+                      { aspectRatio: photoAspectRatios[index] || 1 }
                     ]}
                   >
-                    <View 
-                      style={[
-                        styles.photoFrame,
-                        { aspectRatio: photoAspectRatios[index] || 1 }
-                      ]}
-                    >
-                      <Image
-                        source={{ uri: photo }}
-                        style={styles.photo}
-                        resizeMode="cover"
-                      />
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-
-              {/* Photo indicator dots */}
-              {post.photos.length > 1 && (
-                <View style={styles.dotsContainer} pointerEvents="none">
-                  {post.photos.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.dot,
-                        { 
-                          backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4',
-                          transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
-                        }
-                      ]}
+                    <Image
+                      source={{ uri: photo }}
+                      style={styles.photo}
+                      resizeMode="cover"
                     />
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
-          {/* Description Section - Hugs bottom of photos */}
+            {/* Photo indicator dots */}
+            {post.photos.length > 1 && (
+              <View style={styles.dotsContainer} pointerEvents="none">
+                {post.photos.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.dot,
+                      { 
+                        backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4',
+                        transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
+                      }
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Description Section - Absolutely positioned at bottom */}
+        <View style={styles.descriptionWrapper}>
           <TouchableOpacity 
             activeOpacity={0.9}
             onPress={toggleDescription}
@@ -212,10 +212,6 @@ const styles = StyleSheet.create({
     elevation: 10,
     position: 'relative',
   },
-  contentWrapper: {
-    flex: 1,
-    flexDirection: 'column',
-  },
   header: {
     padding: 16,
     paddingBottom: 8,
@@ -237,8 +233,11 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   photoSectionWrapper: {
-    flex: 1,
-    paddingTop: 8,
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    bottom: 100,
     paddingHorizontal: 8,
   },
   photoSection: {
@@ -253,21 +252,17 @@ const styles = StyleSheet.create({
   },
   photoFrame: {
     width: '100%',
-    backgroundColor: '#fff',
-    borderWidth: 16,
-    borderColor: '#fff',
-    borderRadius: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 3,
     overflow: 'hidden',
+    borderRadius: 4,
   },
   photo: {
     width: '100%',
     height: '100%',
-    borderRadius: 2,
   },
   dotsContainer: {
     position: 'absolute',
@@ -282,6 +277,13 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
+  },
+  descriptionWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
   descriptionSection: {
     backgroundColor: '#fff',

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface Post {
   type: 'good' | 'service';
@@ -122,15 +121,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                       style={styles.photo}
                       resizeMode="cover"
                     />
-                    {/* Inner shadow overlay */}
-                    <View style={styles.innerShadow} pointerEvents="none">
-                      <LinearGradient
-                        colors={['rgba(0,0,0,0.3)', 'transparent', 'transparent', 'rgba(0,0,0,0.2)']}
-                        style={styles.shadowGradient}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                      />
-                    </View>
                   </View>
                 </View>
               ))}
@@ -263,24 +253,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     overflow: 'hidden',
-    position: 'relative',
   },
   photo: {
     width: '100%',
     height: '100%',
     borderRadius: 2,
-  },
-  innerShadow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 2,
-  },
-  shadowGradient: {
-    width: '100%',
-    height: '100%',
   },
   dotsContainer: {
     position: 'absolute',

@@ -1,25 +1,62 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
+const { width } = Dimensions.get('window');
+const COLUMN_WIDTH = (width - 48) / 2; // 2 columns with padding
+
+// Sample barter items - later you'll fetch from backend
+const BARTER_ITEMS = [
+  { id: '1', title: 'Vintage Camera', image: '📷', category: 'Electronics' },
+  { id: '2', title: 'Yoga Classes', image: '🧘', category: 'Services' },
+  { id: '3', title: 'Homemade Bread', image: '🍞', category: 'Food' },
+  { id: '4', title: 'Guitar Lessons', image: '🎸', category: 'Services' },
+  { id: '5', title: 'Vintage Books', image: '📚', category: 'Books' },
+  { id: '6', title: 'Plant Cuttings', image: '🌱', category: 'Plants' },
+  { id: '7', title: 'Handmade Jewelry', image: '💍', category: 'Crafts' },
+  { id: '8', title: 'Bicycle Repair', image: '🔧', category: 'Services' },
+  { id: '9', title: 'Fresh Vegetables', image: '🥕', category: 'Food' },
+  { id: '10', title: 'Art Prints', image: '🎨', category: 'Art' },
+];
+
 export default function HomeScreen() {
+  // Split items into two columns
+  const leftColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 0);
+  const rightColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 1);
+
+  const renderItem = (item: typeof BARTER_ITEMS[0]) => (
+    <TouchableOpacity key={item.id} style={styles.card}>
+      <View style={styles.imageContainer}>
+        <Text style={styles.emoji}>{item.image}</Text>
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.category}>{item.category}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
       
-      <Text style={styles.title}>🔄 Barter App</Text>
-      <Text style={styles.subtitle}>Trade goods & services without money</Text>
-      
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoTitle}>Welcome to Barter!</Text>
-        <Text style={styles.infoText}>
-          • Browse available trades in the Barter tab{'\n'}
-          • Create your own listings{'\n'}
-          • Connect with other barterers{'\n'}
-          • Trade without using money
-        </Text>
-      </View>
-      
-      <Text style={styles.footer}>Built with React Native + Expo</Text>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.columnsContainer}>
+          <View style={styles.column}>
+            {leftColumn.map(renderItem)}
+          </View>
+          <View style={styles.column}>
+            {rightColumn.map(renderItem)}
+          </View>
+        </View>
+      </ScrollView>
+
+      <TouchableOpacity style={styles.fab}>
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -27,49 +64,70 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: '#000000',
   },
-  title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  scrollView: {
+    flex: 1,
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 40,
-    textAlign: 'center',
+  scrollContent: {
+    padding: 16,
   },
-  infoContainer: {
-    backgroundColor: '#fff',
-    padding: 24,
+  columnsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  column: {
+    flex: 1,
+    gap: 16,
+  },
+  card: {
+    backgroundColor: '#1C1C1E',
     borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 0,
+  },
+  imageContainer: {
     width: '100%',
-    maxWidth: 350,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    aspectRatio: 1,
+    backgroundColor: '#2C2C2E',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  infoTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+  emoji: {
+    fontSize: 64,
   },
-  infoText: {
+  cardContent: {
+    padding: 12,
+  },
+  itemTitle: {
     fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
-  footer: {
+  category: {
+    fontSize: 13,
+    color: '#8E8E93',
+  },
+  fab: {
     position: 'absolute',
-    bottom: 30,
-    color: '#999',
-    fontSize: 12,
+    right: 20,
+    bottom: 100,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#0A84FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  fabText: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: '300',
   },
 });

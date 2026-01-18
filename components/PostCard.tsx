@@ -14,17 +14,18 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
-  const [expandedDescription, setExpandedDescription] = useState(false);
+  // Service type starts in description mode, good type starts in photo mode
+  const [isDescriptionMode, setIsDescriptionMode] = useState(post.type === 'service');
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [descriptionTop, setDescriptionTop] = useState<number>(0);
   const scrollViewRef = useRef<ScrollView>(null);
   
   // Animation values
-  const descriptionHeight = useRef(new Animated.Value(58)).current; // 2 lines minimum
-  const minDescriptionHeight = 58; // 2 lines of text + padding
+  const descriptionHeight = useRef(new Animated.Value(post.type === 'service' ? 250 : 100)).current;
+  const photoMode4Lines = 100; // 4 lines in photo mode
+  const descriptionModeHeight = 250; // Larger in description mode
 
-  // Calculate aspect ratios for all photos on mount and determine description position
+  // Calculate aspect ratios for all photos on mount
   useEffect(() => {
     const ratios: number[] = [];
     let loadedCount = 0;
@@ -36,69 +37,34 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           ratios[index] = width / height;
           loadedCount++;
           
-          // Once all images are loaded, update state
           if (loadedCount === post.photos.length) {
             setPhotoAspectRatios([...ratios]);
-            
-            // Calculate position based on first photo
-            if (ratios[0]) {
-              calculateDescriptionPosition(ratios[0]);
-            }
           }
         },
         () => {
-          // Fallback if image fails to load
           ratios[index] = 1;
           loadedCount++;
           
           if (loadedCount === post.photos.length) {
             setPhotoAspectRatios([...ratios]);
-            if (ratios[0]) {
-              calculateDescriptionPosition(ratios[0]);
-            }
           }
         }
       );
     });
   }, [post.photos]);
 
-  const calculateDescriptionPosition = (firstPhotoRatio: number) => {
-    const screenWidth = Dimensions.get('window').width;
-    const cardWidth = Math.min(screenWidth - 64, 400);
-    const cardHeight = cardWidth * (3.5 / 2.5);
-    const photoContainerWidth = cardWidth - 32;
-    
-    // Calculate first photo's height
-    const photoHeight = photoContainerWidth / firstPhotoRatio;
-    
-    // Photo starts at top: 60 (after header)
-    const photoBottom = 60 + photoHeight;
-    
-    // Space remaining for description
-    const spaceForDescription = cardHeight - photoBottom;
-    
-    // If there's enough space for at least 2 lines, hug the photo
-    // Otherwise, ensure 2 lines are visible
-    if (spaceForDescription >= minDescriptionHeight) {
-      setDescriptionTop(photoBottom);
-    } else {
-      // Position description so exactly 2 lines show
-      setDescriptionTop(cardHeight - minDescriptionHeight);
-    }
-  };
-
-  // Animate expansion/collapse
+  // Animate mode switch
   useEffect(() => {
     Animated.spring(descriptionHeight, {
-      toValue: expandedDescription ? 250 : minDescriptionHeight,
+      toValue: isDescriptionMode ? descriptionModeHeight : photoMode4Lines,
       useNativeDriver: false,
       damping: 20,
       stiffness: 200,
     }).start();
-  }, [expandedDescription]);
+  }, [isDescriptionMode]);
 
-  const toggleDescription = () => {
-    setExpandedDescription(!expandedDescription);
+  const toggleMode = () => {
+    setIsDescriptionMode(!isDescriptionMode);
   };
 
   const screenWidth = Dimensions.get('window').width;
@@ -119,7 +85,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       <View style={[styles.card, { width: cardWidth, height: cardHeight }]}>
         {/* Header */}
         <View style={styles.header}>
-          {/* Type Icon */}
           <View style={styles.iconContainer}>
             <MaterialIcons 
               name={post.type === 'good' ? 'shopping-bag' : 'build'} 
@@ -128,7 +93,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             />
           </View>
           
-          {/* Post Name */}
           <View style={styles.titleContainer}>
             <Text style={styles.title} numberOfLines={2}>
               {post.name}
@@ -136,8 +100,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </View>
         </View>
 
-        {/* Photo Section with horizontal scroll */}
-        <View style={styles.photoSectionWrapper} pointerEvents="box-none">
+        {/* Photo Section */}
+        <View 
+          style={[
+            styles.photoSectionWrapper,
+            { bottom: isDescriptionMode ? descriptionModeHeight : photoMode4Lines }
+          ]} 
+          pointerEvents="box-none"
+        >
           <View style={styles.photoSection}>
             <ScrollView
               ref={scrollViewRef}
@@ -163,13 +133,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 >
                   <TouchableOpacity
                     activeOpacity={1}
-                    onPress={toggleDescription}
+                    onPress={isDescriptionMode ? toggleMode : undefined}
                     style={styles.photoTouchable}
                   >
                     <View 
                       style={[
                         styles.photoFrame,
-                        { aspectRatio: photoAspectRatios[index] || 1 }
+                        { 
+                          aspectRatio: photoAspectRatios[index] || 1,
+                          maxHeight: isDescriptionMode ? '100%' : undefined
+                        }
                       ]}
                     >
                       <Image
@@ -203,35 +176,33 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </View>
         </View>
 
-        {/* Description Section - Positioned based on first photo */}
-        {descriptionTop > 0 && (
-          <TouchableOpacity 
-            activeOpacity={0.9}
-            onPress={toggleDescription}
-            style={[styles.descriptionTouchable, { top: descriptionTop }]}
+        {/* Description Section - Always at bottom */}
+        <TouchableOpacity 
+          activeOpacity={0.9}
+          onPress={toggleMode}
+          style={styles.descriptionTouchable}
+        >
+          <Animated.View 
+            style={[
+              styles.descriptionSection,
+              { height: descriptionHeight }
+            ]}
           >
-            <Animated.View 
-              style={[
-                styles.descriptionSection,
-                { height: descriptionHeight }
-              ]}
+            <ScrollView 
+              style={styles.descriptionScroll}
+              showsVerticalScrollIndicator={isDescriptionMode}
+              scrollEnabled={isDescriptionMode}
+              nestedScrollEnabled={true}
             >
-              <ScrollView 
-                style={styles.descriptionScroll}
-                showsVerticalScrollIndicator={expandedDescription}
-                scrollEnabled={expandedDescription}
-                nestedScrollEnabled={true}
+              <Text 
+                style={styles.descriptionText}
+                numberOfLines={isDescriptionMode ? undefined : 4}
               >
-                <Text 
-                  style={styles.descriptionText}
-                  numberOfLines={expandedDescription ? undefined : 2}
-                >
-                  {post.description}
-                </Text>
-              </ScrollView>
-            </Animated.View>
-          </TouchableOpacity>
-        )}
+                {post.description}
+              </Text>
+            </ScrollView>
+          </Animated.View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -281,7 +252,6 @@ const styles = StyleSheet.create({
     top: 60,
     left: 16,
     right: 16,
-    bottom: 0,
   },
   photoSection: {
     flex: 1,
@@ -298,6 +268,7 @@ const styles = StyleSheet.create({
   },
   photoTouchable: {
     width: '100%',
+    height: '100%',
   },
   photoFrame: {
     width: '100%',
@@ -329,9 +300,9 @@ const styles = StyleSheet.create({
   },
   descriptionTouchable: {
     position: 'absolute',
+    bottom: 0,
     left: 0,
     right: 0,
-    bottom: 0,
     zIndex: 20,
   },
   descriptionSection: {

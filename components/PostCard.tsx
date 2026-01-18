@@ -133,7 +133,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 >
                   <TouchableOpacity
                     activeOpacity={1}
-                    onPress={isDescriptionMode ? toggleMode : undefined}
+                    onPress={toggleMode}
                     style={styles.photoTouchable}
                   >
                     <View 
@@ -141,7 +141,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                         styles.photoFrame,
                         { 
                           aspectRatio: photoAspectRatios[index] || 1,
-                          maxHeight: isDescriptionMode ? '100%' : undefined
+                          maxHeight: '100%',
+                          maxWidth: '100%'
                         }
                       ]}
                     >
@@ -255,23 +256,24 @@ const styles = StyleSheet.create({
   },
   photoSection: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollContent: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   photoContainer: {
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
   },
   photoTouchable: {
     width: '100%',
     height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   photoFrame: {
-    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,

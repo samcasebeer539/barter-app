@@ -20,7 +20,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const scrollViewRef = useRef<ScrollView>(null);
   
   // Animation values
-  const descriptionHeight = useRef(new Animated.Value(100)).current;
+  const descriptionHeight = useRef(new Animated.Value(58)).current; // 2 lines minimum
 
   // Calculate aspect ratios for all photos on mount
   useEffect(() => {
@@ -55,7 +55,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   // Animate expansion/collapse
   useEffect(() => {
     Animated.spring(descriptionHeight, {
-      toValue: expandedDescription ? 200 : 100,
+      toValue: expandedDescription ? 250 : 58, // Expanded goes taller, collapsed is 2 lines
       useNativeDriver: false,
       damping: 20,
       stiffness: 200,
@@ -69,11 +69,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = Math.min(screenWidth - 64, 400);
   const cardHeight = cardWidth * (3.5 / 2.5); // Playing card aspect ratio
-  const photoContainerWidth = cardWidth - 16; // Account for card padding (8px each side)
+  const photoContainerWidth = cardWidth - 32; // Account for card padding (16px each side)
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / photoContainerWidth);
+    const index = Math.round(scrollPosition / (photoContainerWidth + 16));
     if (index >= 0 && index < post.photos.length) {
       setCurrentPhotoIndex(index);
     }
@@ -111,67 +111,44 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               showsHorizontalScrollIndicator={false}
               onScroll={handleScroll}
               scrollEventThrottle={16}
-              snapToInterval={photoContainerWidth + 8}
+              snapToInterval={photoContainerWidth + 16}
               decelerationRate="fast"
               contentContainerStyle={styles.scrollContent}
             >
               {post.photos.map((photo, index) => (
-                <TouchableOpacity
+                <View
                   key={index}
-                  activeOpacity={1}
-                  onPress={toggleDescription}
                   style={[
                     styles.photoContainer,
                     { 
                       width: photoContainerWidth,
-                      marginRight: index < post.photos.length - 1 ? 8 : 0
+                      marginRight: index < post.photos.length - 1 ? 16 : 0
                     }
                   ]}
                 >
-                  <View 
-                    style={[
-                      styles.photoFrame,
-                      { aspectRatio: photoAspectRatios[index] || 1 }
-                    ]}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={toggleDescription}
+                    style={styles.photoTouchable}
                   >
-                    <Image
-                      source={{ uri: photo }}
-                      style={styles.photo}
-                      resizeMode="cover"
-                    />
-                  </View>
-
-                  {/* Description for this specific photo */}
-                  <View style={styles.photoDescriptionWrapper}>
-                    <Animated.View 
+                    <View 
                       style={[
-                        styles.descriptionSection,
-                        { 
-                          height: descriptionHeight,
-                          opacity: index === currentPhotoIndex ? 1 : 0
-                        }
+                        styles.photoFrame,
+                        { aspectRatio: photoAspectRatios[index] || 1 }
                       ]}
                     >
-                      <ScrollView 
-                        style={styles.descriptionScroll}
-                        showsVerticalScrollIndicator={expandedDescription}
-                        scrollEnabled={expandedDescription}
-                        nestedScrollEnabled={true}
-                      >
-                        <Text 
-                          style={styles.descriptionText}
-                          numberOfLines={expandedDescription ? undefined : 3}
-                        >
-                          {post.description}
-                        </Text>
-                      </ScrollView>
-                    </Animated.View>
-                  </View>
-                </TouchableOpacity>
+                      <Image
+                        source={{ uri: photo }}
+                        style={styles.photo}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
               ))}
             </ScrollView>
 
-            {/* Photo indicator dots */}
+            {/* Photo indicator dots - positioned just below top of image */}
             {post.photos.length > 1 && (
               <View style={styles.dotsContainer} pointerEvents="none">
                 {post.photos.map((_, index) => (
@@ -190,6 +167,34 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             )}
           </View>
         </View>
+
+        {/* Description Section - Always at bottom, expands upward */}
+        <TouchableOpacity 
+          activeOpacity={0.9}
+          onPress={toggleDescription}
+          style={styles.descriptionTouchable}
+        >
+          <Animated.View 
+            style={[
+              styles.descriptionSection,
+              { height: descriptionHeight }
+            ]}
+          >
+            <ScrollView 
+              style={styles.descriptionScroll}
+              showsVerticalScrollIndicator={expandedDescription}
+              scrollEnabled={expandedDescription}
+              nestedScrollEnabled={true}
+            >
+              <Text 
+                style={styles.descriptionText}
+                numberOfLines={expandedDescription ? undefined : 2}
+              >
+                {post.description}
+              </Text>
+            </ScrollView>
+          </Animated.View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -237,9 +242,9 @@ const styles = StyleSheet.create({
   photoSectionWrapper: {
     position: 'absolute',
     top: 60,
-    left: 8,
-    right: 8,
-    bottom: 0,
+    left: 16,
+    right: 16,
+    bottom: 74, // Leave room for minimum 2 lines of description
   },
   photoSection: {
     flex: 1,
@@ -253,6 +258,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     height: '100%',
+  },
+  photoTouchable: {
+    width: '100%',
   },
   photoFrame: {
     width: '100%',
@@ -268,13 +276,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  photoDescriptionWrapper: {
-    width: '100%',
-    paddingTop: 8,
-  },
   dotsContainer: {
     position: 'absolute',
-    bottom: 108,
+    top: 16,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -285,6 +289,13 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
+  },
+  descriptionTouchable: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
   descriptionSection: {
     backgroundColor: '#fff',

@@ -10,14 +10,14 @@ export default function ProfileScreen() {
         <Text style={styles.name}>Sam Casebeer</Text>
         
         <View style={styles.tagsContainer}>
-          <View style={[styles.tag, styles.tagBlue]}>
-            <Text style={styles.tagText}>Community Builder</Text>
+          <View style={[styles.tag, styles.tagPink]}>
+            <Text style={styles.tagtextPink}>Community Builder</Text>
           </View>
           <View style={[styles.tag, styles.tagGreen]}>
-            <Text style={styles.tagText}>Eco-Friendly</Text>
+            <Text style={styles.tagtextGreen}>Eco-Friendly</Text>
           </View>
-          <View style={[styles.tag, styles.tagOrange]}>
-            <Text style={styles.tagText}>Master Barterer</Text>
+          <View style={[styles.tag, styles.tagPurple]}>
+            <Text style={styles.tagtextPurple}>Master Barterer</Text>
           </View>
         </View>
       </View>
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   header: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: 24,
   },
   avatar: {
@@ -74,25 +74,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
-  tag: {
+    tag: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 20,
+    borderWidth: 2,
+    backgroundColor: 'transparent',
   },
-  tagBlue: {
-    backgroundColor: '#0A84FF',
+  tagPink: {
+    borderColor: '#FF28A9',
   },
   tagGreen: {
-    backgroundColor: '#34C759',
+    borderColor: '#40D500',
   },
-  tagOrange: {
-    backgroundColor: '#FF9500',
+  tagPurple: {
+    borderColor: '#8453FF',
   },
-  tagText: {
-    color: '#FFFFFF',
-    fontSize: 13,
+  tagtextPink: {
+    color: '#FF28A9',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tagtextGreen: {
+    color: '#40D500',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tagtextPurple: {
+    color: '#8453FF',
+    fontSize: 14,
     fontWeight: '600',
   },
   statsContainer: {

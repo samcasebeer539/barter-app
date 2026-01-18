@@ -7,12 +7,12 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#007AFF',
+          tabBarActiveTintColor: '#0A84FF',
           tabBarInactiveTintColor: '#8E8E93',
           tabBarStyle: {
-            backgroundColor: '#fff',
-            borderTopWidth: 1,
-            borderTopColor: '#E5E5EA',
+            backgroundColor: '#1C1C1E',
+            borderTopWidth: 0.5,
+            borderTopColor: '#38383A',
             height: 90,
             paddingBottom: 20,
             paddingTop: 10,
@@ -22,7 +22,7 @@ export default function RootLayout() {
             fontWeight: '600',
           },
           headerStyle: {
-            backgroundColor: '#007AFF',
+            backgroundColor: '#1C1C1E',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -40,21 +40,18 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="barter"
-          options={{
-            title: 'Barter',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24 }}>🔄</Text>
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color }) => (
               <Text style={{ fontSize: 24 }}>👤</Text>
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="barter"
+          options={{
+            href: null, // Hide this tab from the tab bar
           }}
         />
       </Tabs>

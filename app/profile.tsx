@@ -41,9 +41,10 @@ export default function ProfileScreen() {
   const cardWidth = Math.min(screenWidth - 64, 400);
   const cardSpacing = 32; // Space between cards
   const peekAmount = 40; // How much of the next card is visible
-  const sidePadding = (screenWidth - cardWidth) / 2 - peekAmount;
-  const snapInterval = cardWidth + cardSpacing;
-  const snapOffsets = POSTS.map((_, index) => index * snapInterval + sidePadding);
+  
+  // Calculate padding to center cards while showing peek
+  const centerPadding = (screenWidth - cardWidth) / 2;
+  const sidePadding = centerPadding - peekAmount;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -72,11 +73,15 @@ export default function ProfileScreen() {
           horizontal
           pagingEnabled={false}
           showsHorizontalScrollIndicator={false}
-          snapToOffsets={snapOffsets}
+          snapToInterval={cardWidth + cardSpacing}
+          snapToAlignment="start"
           decelerationRate="fast"
           contentContainerStyle={[
             styles.cardsScrollContent,
-            { paddingHorizontal: sidePadding }
+            { 
+              paddingLeft: sidePadding,
+              paddingRight: sidePadding
+            }
           ]}
         >
           {POSTS.map((post, index) => (

@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useState, useRef } from 'react';
 
 const { width } = Dimensions.get('window');
 
@@ -19,9 +20,36 @@ const BARTER_ITEMS = [
 ];
 
 export default function HomeScreen() {
-  // Split items into two columns
+  const [showHeader, setShowHeader] = useState(true);
+  const scrollY = useRef(0);
+  const headerTranslateY = useRef(new Animated.Value(0)).current;
+
   const leftColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 0);
   const rightColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 1);
+
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
+    const scrollingUp = currentScrollY < scrollY.current;
+
+    if (scrollingDown && showHeader) {
+      setShowHeader(false);
+      Animated.timing(headerTranslateY, {
+        toValue: -100,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else if (scrollingUp && !showHeader) {
+      setShowHeader(true);
+      Animated.timing(headerTranslateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+
+    scrollY.current = currentScrollY;
+  };
 
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     <View key={item.id} style={styles.cardWrapper}>
@@ -45,10 +73,26 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
+      <Animated.View 
+        style={[
+          styles.topIconsContainer,
+          { transform: [{ translateY: headerTranslateY }] }
+        ]}
+      >
+        <TouchableOpacity style={styles.iconButton}>
+          <MaterialIcons name="location-on" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton}>
+          <MaterialIcons name="search" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </Animated.View>
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         <View style={styles.columnsContainer}>
           <View style={styles.column}>
@@ -59,8 +103,6 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-
-    
     </View>
   );
 }
@@ -70,12 +112,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
+  topIconsContainer: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    zIndex: 10,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(28, 28, 30, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 10,
-    paddingTop: 60,
+    padding: 16,
+    paddingTop: 120,
   },
   columnsContainer: {
     flexDirection: 'row',
@@ -118,26 +178,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 8,
     marginLeft: 4,
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 100,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FFA600',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  fabText: {
-    fontSize: 32,
-    color: '#fff',
-    fontWeight: '300',
   },
 });

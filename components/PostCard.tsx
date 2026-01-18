@@ -17,12 +17,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [expandedDescription, setExpandedDescription] = useState(false);
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [descriptionTop, setDescriptionTop] = useState<number>(0);
   const scrollViewRef = useRef<ScrollView>(null);
   
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(58)).current; // 2 lines minimum
+  const minDescriptionHeight = 58; // 2 lines of text + padding
 
-  // Calculate aspect ratios for all photos on mount
+  // Calculate aspect ratios for all photos on mount and determine description position
   useEffect(() => {
     const ratios: number[] = [];
     let loadedCount = 0;
@@ -37,6 +39,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           // Once all images are loaded, update state
           if (loadedCount === post.photos.length) {
             setPhotoAspectRatios([...ratios]);
+            
+            // Calculate position based on first photo
+            if (ratios[0]) {
+              calculateDescriptionPosition(ratios[0]);
+            }
           }
         },
         () => {
@@ -46,16 +53,44 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           
           if (loadedCount === post.photos.length) {
             setPhotoAspectRatios([...ratios]);
+            if (ratios[0]) {
+              calculateDescriptionPosition(ratios[0]);
+            }
           }
         }
       );
     });
   }, [post.photos]);
 
+  const calculateDescriptionPosition = (firstPhotoRatio: number) => {
+    const screenWidth = Dimensions.get('window').width;
+    const cardWidth = Math.min(screenWidth - 64, 400);
+    const cardHeight = cardWidth * (3.5 / 2.5);
+    const photoContainerWidth = cardWidth - 32;
+    
+    // Calculate first photo's height
+    const photoHeight = photoContainerWidth / firstPhotoRatio;
+    
+    // Photo starts at top: 60 (after header)
+    const photoBottom = 60 + photoHeight;
+    
+    // Space remaining for description
+    const spaceForDescription = cardHeight - photoBottom;
+    
+    // If there's enough space for at least 2 lines, hug the photo
+    // Otherwise, ensure 2 lines are visible
+    if (spaceForDescription >= minDescriptionHeight) {
+      setDescriptionTop(photoBottom);
+    } else {
+      // Position description so exactly 2 lines show
+      setDescriptionTop(cardHeight - minDescriptionHeight);
+    }
+  };
+
   // Animate expansion/collapse
   useEffect(() => {
     Animated.spring(descriptionHeight, {
-      toValue: expandedDescription ? 250 : 58, // Expanded goes taller, collapsed is 2 lines
+      toValue: expandedDescription ? 250 : minDescriptionHeight,
       useNativeDriver: false,
       damping: 20,
       stiffness: 200,
@@ -68,8 +103,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = Math.min(screenWidth - 64, 400);
-  const cardHeight = cardWidth * (3.5 / 2.5); // Playing card aspect ratio
-  const photoContainerWidth = cardWidth - 32; // Account for card padding (16px each side)
+  const cardHeight = cardWidth * (3.5 / 2.5);
+  const photoContainerWidth = cardWidth - 32;
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -148,7 +183,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               ))}
             </ScrollView>
 
-            {/* Photo indicator dots - positioned just below top of image */}
+            {/* Photo indicator dots */}
             {post.photos.length > 1 && (
               <View style={styles.dotsContainer} pointerEvents="none">
                 {post.photos.map((_, index) => (
@@ -168,33 +203,35 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </View>
         </View>
 
-        {/* Description Section - Always at bottom, expands upward */}
-        <TouchableOpacity 
-          activeOpacity={0.9}
-          onPress={toggleDescription}
-          style={styles.descriptionTouchable}
-        >
-          <Animated.View 
-            style={[
-              styles.descriptionSection,
-              { height: descriptionHeight }
-            ]}
+        {/* Description Section - Positioned based on first photo */}
+        {descriptionTop > 0 && (
+          <TouchableOpacity 
+            activeOpacity={0.9}
+            onPress={toggleDescription}
+            style={[styles.descriptionTouchable, { top: descriptionTop }]}
           >
-            <ScrollView 
-              style={styles.descriptionScroll}
-              showsVerticalScrollIndicator={expandedDescription}
-              scrollEnabled={expandedDescription}
-              nestedScrollEnabled={true}
+            <Animated.View 
+              style={[
+                styles.descriptionSection,
+                { height: descriptionHeight }
+              ]}
             >
-              <Text 
-                style={styles.descriptionText}
-                numberOfLines={expandedDescription ? undefined : 2}
+              <ScrollView 
+                style={styles.descriptionScroll}
+                showsVerticalScrollIndicator={expandedDescription}
+                scrollEnabled={expandedDescription}
+                nestedScrollEnabled={true}
               >
-                {post.description}
-              </Text>
-            </ScrollView>
-          </Animated.View>
-        </TouchableOpacity>
+                <Text 
+                  style={styles.descriptionText}
+                  numberOfLines={expandedDescription ? undefined : 2}
+                >
+                  {post.description}
+                </Text>
+              </ScrollView>
+            </Animated.View>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -244,7 +281,7 @@ const styles = StyleSheet.create({
     top: 60,
     left: 16,
     right: 16,
-    bottom: 74, // Leave room for minimum 2 lines of description
+    bottom: 0,
   },
   photoSection: {
     flex: 1,
@@ -292,9 +329,9 @@ const styles = StyleSheet.create({
   },
   descriptionTouchable: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
+    bottom: 0,
     zIndex: 20,
   },
   descriptionSection: {

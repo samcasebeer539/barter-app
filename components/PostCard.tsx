@@ -21,7 +21,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(80)).current;
-  const photoSectionPadding = useRef(new Animated.Value(80)).current;
 
   // Calculate photo aspect ratio when image loads
   useEffect(() => {
@@ -43,27 +42,20 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       damping: 20,
       stiffness: 200,
     }).start();
-
-    Animated.spring(photoSectionPadding, {
-      toValue: expandedDescription ? 180 : 80,
-      useNativeDriver: false,
-      damping: 20,
-      stiffness: 200,
-    }).start();
   }, [expandedDescription]);
-
-  const handleScroll = (event: any) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / photoWidth);
-    if (index >= 0 && index < post.photos.length) {
-      setCurrentPhotoIndex(index);
-    }
-  };
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = Math.min(screenWidth - 64, 400);
   const cardHeight = cardWidth * (3.5 / 2.5); // Playing card aspect ratio
-  const photoWidth = cardWidth - 32; // Account for card padding
+  const photoContainerWidth = cardWidth - 32; // Account for card padding (16px each side)
+
+  const handleScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / photoContainerWidth);
+    if (index >= 0 && index < post.photos.length) {
+      setCurrentPhotoIndex(index);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -86,17 +78,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </View>
 
         {/* Photo Section with horizontal scroll */}
-        <Animated.View 
-          style={[
-            styles.photoSectionWrapper,
-            { bottom: photoSectionPadding }
-          ]}
-        >
-          <TouchableOpacity 
-            activeOpacity={1}
-            onPress={() => setExpandedDescription(!expandedDescription)}
-            style={styles.photoSection}
-          >
+        <View style={styles.photoSectionWrapper}>
+          <View style={styles.photoSection}>
             <ScrollView
               ref={scrollViewRef}
               horizontal
@@ -104,15 +87,15 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               showsHorizontalScrollIndicator={false}
               onScroll={handleScroll}
               scrollEventThrottle={16}
-              style={styles.photoScrollView}
-              contentContainerStyle={styles.photoScrollContent}
+              snapToInterval={photoContainerWidth}
+              decelerationRate="fast"
             >
               {post.photos.map((photo, index) => (
                 <View 
                   key={index}
                   style={[
                     styles.photoContainer,
-                    { width: photoWidth }
+                    { width: photoContainerWidth }
                   ]}
                 >
                   <View 
@@ -148,8 +131,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 ))}
               </View>
             )}
-          </TouchableOpacity>
-        </Animated.View>
+          </View>
+        </View>
 
         {/* Description Section */}
         <TouchableOpacity 
@@ -165,6 +148,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             <ScrollView 
               style={styles.descriptionScroll}
               showsVerticalScrollIndicator={expandedDescription}
+              scrollEnabled={expandedDescription}
             >
               <Text 
                 style={styles.descriptionText}
@@ -197,6 +181,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 40,
     elevation: 10,
+    position: 'relative',
   },
   header: {
     position: 'absolute',
@@ -226,17 +211,12 @@ const styles = StyleSheet.create({
     top: 60,
     left: 0,
     right: 0,
+    bottom: 80,
+    paddingHorizontal: 16,
   },
   photoSection: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  photoScrollView: {
-    flex: 1,
-  },
-  photoScrollContent: {
     alignItems: 'center',
   },
   photoContainer: {
@@ -271,7 +251,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 6,
-    paddingHorizontal: 16,
   },
   dot: {
     width: 6,
@@ -289,6 +268,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
+    zIndex: 5,
   },
   descriptionScroll: {
     flex: 1,

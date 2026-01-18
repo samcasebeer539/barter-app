@@ -60,7 +60,7 @@ barter-app/
 ## Features (To Be Implemented)
 
 
-## 🔧 Development Tips
+## Development Tips
 
 ### Hot Reload
 Expo supports hot reload! Changes you make will automatically appear on your phone.

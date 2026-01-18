@@ -6,16 +6,16 @@ const { width } = Dimensions.get('window');
 
 // Sample barter items - later you'll fetch from backend
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: '📷', category: 'Electronics', type: 'good' },
-  { id: '2', title: 'Yoga Classes', image: '🧘', category: 'Services', type: 'service' },
-  { id: '3', title: 'Homemade Bread', image: '🍞', category: 'Food', type: 'good' },
-  { id: '4', title: 'Guitar Lessons', image: '🎸', category: 'Services', type: 'service' },
-  { id: '5', title: 'Vintage Books', image: '📚', category: 'Books', type: 'good' },
-  { id: '6', title: 'Plant Cuttings', image: '🌱', category: 'Plants', type: 'good' },
-  { id: '7', title: 'Handmade Jewelry', image: '💍', category: 'Crafts', type: 'good' },
-  { id: '8', title: 'Bicycle Repair', image: '🔧', category: 'Services', type: 'service' },
-  { id: '9', title: 'Fresh Vegetables', image: '🥕', category: 'Food', type: 'good' },
-  { id: '10', title: 'Art Prints', image: '🎨', category: 'Art', type: 'good' },
+  { id: '1', title: 'Vintage Camera', image: '📷', type: 'good' },
+  { id: '2', title: 'Yoga Classes', image: '🧘', type: 'service' },
+  { id: '3', title: 'Homemade Bread', image: '🍞', type: 'good' },
+  { id: '4', title: 'Guitar Lessons', image: '🎸', type: 'service' },
+  { id: '5', title: 'Vintage Books', image: '📚', type: 'good' },
+  { id: '6', title: 'Plant Cuttings', image: '🌱', type: 'good' },
+  { id: '7', title: 'Handmade Jewelry', image: '💍', type: 'good' },
+  { id: '8', title: 'Bicycle Repair', image: '🔧', type: 'service' },
+  { id: '9', title: 'Fresh Vegetables', image: '🥕', type: 'good' },
+  { id: '10', title: 'Art Prints', image: '🎨', type: 'good' },
 ];
 
 export default function HomeScreen() {
@@ -29,7 +29,7 @@ export default function HomeScreen() {
         <Text style={styles.emoji}>{item.image}</Text>
         <View style={styles.typeIconContainer}>
           <MaterialIcons 
-            name={item.type === 'service' ? 'schedule' : 'deployed-code'} 
+            name={item.type === 'service' ? 'schedule' : 'inventory-2'} 
             size={20} 
             color="#FFFFFF" 
           />
@@ -37,7 +37,6 @@ export default function HomeScreen() {
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.category}>{item.category}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -61,9 +60,6 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -71,7 +67,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#141414',
   },
   scrollView: {
     flex: 1,

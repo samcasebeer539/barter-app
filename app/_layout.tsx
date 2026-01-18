@@ -7,7 +7,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#0A84FF',
+          tabBarActiveTintColor: '#FFA600',
           tabBarInactiveTintColor: '#8E8E93',
           tabBarStyle: {
             backgroundColor: '#1C1C1E',

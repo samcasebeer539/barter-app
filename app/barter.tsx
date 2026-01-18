@@ -1,53 +1,18 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 
-// Sample data - later you'll fetch this from your backend
-const SAMPLE_LISTINGS = [
-  { id: '1', title: 'Lawn Mowing Service', type: 'service', offering: 'Lawn care', seeking: 'Plumbing help' },
-  { id: '2', title: 'Vintage Guitar', type: 'good', offering: 'Guitar', seeking: 'Bike' },
-  { id: '3', title: 'Web Design', type: 'service', offering: 'Website creation', seeking: 'Photography' },
-  { id: '4', title: 'Books Collection', type: 'good', offering: '20+ sci-fi books', seeking: 'Board games' },
-];
 
 export default function BarterScreen() {
   const router = useRouter();
 
-  const renderItem = ({ item }: { item: typeof SAMPLE_LISTINGS[0] }) => (
-    <TouchableOpacity style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.typeIcon}>{item.type === 'service' ? '⚙️' : '📦'}</Text>
-        <Text style={styles.cardTitle}>{item.title}</Text>
-      </View>
-      <View style={styles.cardContent}>
-        <Text style={styles.label}>Offering: <Text style={styles.value}>{item.offering}</Text></Text>
-        <Text style={styles.label}>Seeking: <Text style={styles.value}>{item.seeking}</Text></Text>
-      </View>
-    </TouchableOpacity>
-  );
 
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={SAMPLE_LISTINGS}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <Text style={styles.header}>Available Trades</Text>
-        }
-      />
-      
-      <TouchableOpacity style={styles.fab}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
-    </View>
-  );
+
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#141414',
   },
   listContent: {
     padding: 16,

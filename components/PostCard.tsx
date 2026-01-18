@@ -69,7 +69,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = Math.min(screenWidth - 64, 400);
   const cardHeight = cardWidth * (3.5 / 2.5); // Playing card aspect ratio
-  const photoContainerWidth = cardWidth - 32; // Account for card padding (16px each side)
+  const photoContainerWidth = cardWidth - 16; // Account for card padding (8px each side)
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -82,8 +82,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.card, { width: cardWidth, height: cardHeight }]}>
-        {/* Header Section - Flexible height container */}
-        <View style={styles.headerWrapper}>
+        {/* Header and Photo Section */}
+        <View style={styles.contentWrapper}>
           <View style={styles.header}>
             {/* Type Icon */}
             <View style={styles.iconContainer}>
@@ -102,7 +102,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </View>
           </View>
 
-          {/* Photo Section with horizontal scroll - Now inside header wrapper */}
+          {/* Photo Section with horizontal scroll */}
           <View style={styles.photoSectionWrapper} pointerEvents="box-none">
             <View style={styles.photoSection}>
               <ScrollView
@@ -160,35 +160,34 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               )}
             </View>
           </View>
-        </View>
 
-        {/* Description Section - Always visible at bottom */}
-        <TouchableOpacity 
-          activeOpacity={0.9}
-          onPress={toggleDescription}
-          style={styles.descriptionTouchable}
-        >
-          <Animated.View 
-            style={[
-              styles.descriptionSection,
-              { height: descriptionHeight }
-            ]}
+          {/* Description Section - Hugs bottom of photos */}
+          <TouchableOpacity 
+            activeOpacity={0.9}
+            onPress={toggleDescription}
           >
-            <ScrollView 
-              style={styles.descriptionScroll}
-              showsVerticalScrollIndicator={expandedDescription}
-              scrollEnabled={expandedDescription}
-              nestedScrollEnabled={true}
+            <Animated.View 
+              style={[
+                styles.descriptionSection,
+                { height: descriptionHeight }
+              ]}
             >
-              <Text 
-                style={styles.descriptionText}
-                numberOfLines={expandedDescription ? undefined : 3}
+              <ScrollView 
+                style={styles.descriptionScroll}
+                showsVerticalScrollIndicator={expandedDescription}
+                scrollEnabled={expandedDescription}
+                nestedScrollEnabled={true}
               >
-                {post.description}
-              </Text>
-            </ScrollView>
-          </Animated.View>
-        </TouchableOpacity>
+                <Text 
+                  style={styles.descriptionText}
+                  numberOfLines={expandedDescription ? undefined : 3}
+                >
+                  {post.description}
+                </Text>
+              </ScrollView>
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -213,13 +212,9 @@ const styles = StyleSheet.create({
     elevation: 10,
     position: 'relative',
   },
-  headerWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 100,
-    zIndex: 10,
+  contentWrapper: {
+    flex: 1,
+    flexDirection: 'column',
   },
   header: {
     padding: 16,
@@ -244,7 +239,7 @@ const styles = StyleSheet.create({
   photoSectionWrapper: {
     flex: 1,
     paddingTop: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
   },
   photoSection: {
     flex: 1,
@@ -288,20 +283,11 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  descriptionTouchable: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-  },
   descriptionSection: {
     backgroundColor: '#fff',
-    padding: 16,
-    paddingTop: 16,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
   },

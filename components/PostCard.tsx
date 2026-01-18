@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 4,
   },
   iconContainer: {
     flexShrink: 0,
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   },
   photoSectionWrapper: {
     position: 'absolute',
-    top: 60,
+    top: 36,
     left: 0,
     right: 0,
     bottom: 100,

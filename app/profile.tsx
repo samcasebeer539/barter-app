@@ -28,7 +28,7 @@ export default function ProfileScreen() {
         <PostCard
           post={{
             type: 'service',
-            name: 'Bike Repair',
+            name: 'Bike Repair service will pay for job this is an issue',
             description: 'Professional bike repair and maintenance services. Will trade for houseplants, art, or cooking lessons. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
             photos: [
               'https://picsum.photos/seed/bike1/400/600',

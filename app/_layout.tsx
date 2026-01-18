@@ -18,19 +18,12 @@ export default function RootLayout() {
             paddingTop: 10,
           },
           tabBarShowLabel: false,
-          headerStyle: {
-            backgroundColor: '#1C1C1E',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerShown: false,
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="home" size={28} color={color} />
             ),
@@ -39,7 +32,6 @@ export default function RootLayout() {
         <Tabs.Screen
           name="barter"
           options={{
-            title: 'Barter',
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="compare-arrows" size={28} color={color} />
             ),
@@ -48,7 +40,6 @@ export default function RootLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profile',
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="account-circle" size={28} color={color} />
             ),

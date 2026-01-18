@@ -101,64 +101,64 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               </Text>
             </View>
           </View>
-        </View>
 
-        {/* Photo Section with horizontal scroll */}
-        <View style={styles.photoSectionWrapper} pointerEvents="box-none">
-          <View style={styles.photoSection}>
-            <ScrollView
-              ref={scrollViewRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              snapToInterval={photoContainerWidth}
-              decelerationRate="fast"
-            >
-              {post.photos.map((photo, index) => (
-                <TouchableOpacity
-                  key={index}
-                  activeOpacity={1}
-                  onPress={toggleDescription}
-                  style={[
-                    styles.photoContainer,
-                    { width: photoContainerWidth }
-                  ]}
-                >
-                  <View 
+          {/* Photo Section with horizontal scroll - Now inside header wrapper */}
+          <View style={styles.photoSectionWrapper} pointerEvents="box-none">
+            <View style={styles.photoSection}>
+              <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                snapToInterval={photoContainerWidth}
+                decelerationRate="fast"
+              >
+                {post.photos.map((photo, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    activeOpacity={1}
+                    onPress={toggleDescription}
                     style={[
-                      styles.photoFrame,
-                      { aspectRatio: photoAspectRatios[index] || 1 }
+                      styles.photoContainer,
+                      { width: photoContainerWidth }
                     ]}
                   >
-                    <Image
-                      source={{ uri: photo }}
-                      style={styles.photo}
-                      resizeMode="cover"
-                    />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {/* Photo indicator dots */}
-            {post.photos.length > 1 && (
-              <View style={styles.dotsContainer} pointerEvents="none">
-                {post.photos.map((_, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.dot,
-                      { 
-                        backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4',
-                        transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
-                      }
-                    ]}
-                  />
+                    <View 
+                      style={[
+                        styles.photoFrame,
+                        { aspectRatio: photoAspectRatios[index] || 1 }
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: photo }}
+                        style={styles.photo}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </TouchableOpacity>
                 ))}
-              </View>
-            )}
+              </ScrollView>
+
+              {/* Photo indicator dots */}
+              {post.photos.length > 1 && (
+                <View style={styles.dotsContainer} pointerEvents="none">
+                  {post.photos.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.dot,
+                        { 
+                          backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4',
+                          transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
+                        }
+                      ]}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
         </View>
 
@@ -218,11 +218,12 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+    bottom: 100,
     zIndex: 10,
   },
   header: {
     padding: 16,
-    paddingBottom: 12,
+    paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
@@ -241,26 +242,22 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   photoSectionWrapper: {
-    position: 'absolute',
-    top: 76,
-    left: 0,
-    right: 0,
-    bottom: 100,
+    flex: 1,
+    paddingTop: 8,
     paddingHorizontal: 16,
   },
   photoSection: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   photoContainer: {
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     height: '100%',
   },
   photoFrame: {
     width: '100%',
-    maxHeight: '100%',
     backgroundColor: '#fff',
     borderWidth: 16,
     borderColor: '#fff',

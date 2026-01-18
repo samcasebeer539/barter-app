@@ -60,9 +60,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+    
     </View>
   );
 }
@@ -76,12 +74,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: 10,
     paddingTop: 60,
   },
   columnsContainer: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 10,
   },
   column: {
     flex: 1,

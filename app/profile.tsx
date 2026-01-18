@@ -7,8 +7,7 @@ export default function ProfileScreen() {
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>👤</Text>
         </View>
-        <Text style={styles.name}>Your Name</Text>
-        <Text style={styles.bio}>Active barterer since 2026</Text>
+        <Text style={styles.name}>Sam Casebeer</Text>
       </View>
 
       <View style={styles.statsContainer}>
@@ -26,15 +25,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Text style={styles.emptyState}>No listings yet. Create your first one!</Text>
-
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Edit Profile</Text>
-      </TouchableOpacity>
       
-      <TouchableOpacity style={[styles.button, styles.logoutButton]}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 }

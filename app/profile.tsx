@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import BarterCard from '../components/BarterCard';
+import PostCard from '../components/PostCard';
 
 export default function ProfileScreen() {
   return (
@@ -25,7 +25,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.cardWrapper}>
-        <BarterCard
+        <PostCard
           post={{
             type: 'service',
             name: 'Bike Repair',

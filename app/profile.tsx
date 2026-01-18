@@ -40,6 +40,7 @@ export default function ProfileScreen() {
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = Math.min(screenWidth - 64, 400);
   const cardSpacing = 32; // Space between cards
+  const peekAmount = 40; // How much of the next card is visible
   const snapInterval = cardWidth + cardSpacing;
 
   return (
@@ -73,7 +74,7 @@ export default function ProfileScreen() {
           decelerationRate="fast"
           contentContainerStyle={[
             styles.cardsScrollContent,
-            { paddingHorizontal: (screenWidth - cardWidth) / 2 }
+            { paddingHorizontal: (screenWidth - cardWidth) / 2 - peekAmount }
           ]}
         >
           {POSTS.map((post, index) => (

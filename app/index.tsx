@@ -1,21 +1,21 @@
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
-const COLUMN_WIDTH = (width - 48) / 2; // 2 columns with padding
 
 // Sample barter items - later you'll fetch from backend
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: '📷', category: 'Electronics' },
-  { id: '2', title: 'Yoga Classes', image: '🧘', category: 'Services' },
-  { id: '3', title: 'Homemade Bread', image: '🍞', category: 'Food' },
-  { id: '4', title: 'Guitar Lessons', image: '🎸', category: 'Services' },
-  { id: '5', title: 'Vintage Books', image: '📚', category: 'Books' },
-  { id: '6', title: 'Plant Cuttings', image: '🌱', category: 'Plants' },
-  { id: '7', title: 'Handmade Jewelry', image: '💍', category: 'Crafts' },
-  { id: '8', title: 'Bicycle Repair', image: '🔧', category: 'Services' },
-  { id: '9', title: 'Fresh Vegetables', image: '🥕', category: 'Food' },
-  { id: '10', title: 'Art Prints', image: '🎨', category: 'Art' },
+  { id: '1', title: 'Vintage Camera', image: '📷', category: 'Electronics', type: 'good' },
+  { id: '2', title: 'Yoga Classes', image: '🧘', category: 'Services', type: 'service' },
+  { id: '3', title: 'Homemade Bread', image: '🍞', category: 'Food', type: 'good' },
+  { id: '4', title: 'Guitar Lessons', image: '🎸', category: 'Services', type: 'service' },
+  { id: '5', title: 'Vintage Books', image: '📚', category: 'Books', type: 'good' },
+  { id: '6', title: 'Plant Cuttings', image: '🌱', category: 'Plants', type: 'good' },
+  { id: '7', title: 'Handmade Jewelry', image: '💍', category: 'Crafts', type: 'good' },
+  { id: '8', title: 'Bicycle Repair', image: '🔧', category: 'Services', type: 'service' },
+  { id: '9', title: 'Fresh Vegetables', image: '🥕', category: 'Food', type: 'good' },
+  { id: '10', title: 'Art Prints', image: '🎨', category: 'Art', type: 'good' },
 ];
 
 export default function HomeScreen() {
@@ -27,6 +27,13 @@ export default function HomeScreen() {
     <TouchableOpacity key={item.id} style={styles.card}>
       <View style={styles.imageContainer}>
         <Text style={styles.emoji}>{item.image}</Text>
+        <View style={styles.typeIconContainer}>
+          <MaterialIcons 
+            name={item.type === 'service' ? 'schedule' : 'deployed-code'} 
+            size={20} 
+            color="#FFFFFF" 
+          />
+        </View>
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.itemTitle}>{item.title}</Text>
@@ -92,9 +99,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#2C2C2E',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   emoji: {
     fontSize: 64,
+  },
+  typeIconContainer: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 6,
+    padding: 6,
   },
   cardContent: {
     padding: 12,

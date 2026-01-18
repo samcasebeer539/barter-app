@@ -25,9 +25,14 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   // Calculate photo aspect ratio when image loads
   useEffect(() => {
-    Image.getSize(post.photos[currentPhotoIndex], (width, height) => {
-      setPhotoAspectRatio(width / height);
-    });
+    if (post.photos && post.photos.length > 0) {
+      Image.getSize(post.photos[currentPhotoIndex], (width, height) => {
+        setPhotoAspectRatio(width / height);
+      }, () => {
+        // Fallback if image fails to load
+        setPhotoAspectRatio(1);
+      });
+    }
   }, [currentPhotoIndex, post.photos]);
 
   // Animate expansion/collapse
@@ -49,10 +54,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
-    const screenWidth = Dimensions.get('window').width;
-    const cardWidth = Math.min(screenWidth - 64, 400) - 32; // Account for padding
-    const index = Math.round(scrollPosition / cardWidth);
-    setCurrentPhotoIndex(index);
+    const index = Math.round(scrollPosition / photoWidth);
+    if (index >= 0 && index < post.photos.length) {
+      setCurrentPhotoIndex(index);
+    }
   };
 
   const screenWidth = Dimensions.get('window').width;
@@ -81,16 +86,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </View>
 
         {/* Photo Section with horizontal scroll */}
-        <TouchableOpacity 
-          activeOpacity={1}
-          onPress={() => setExpandedDescription(!expandedDescription)}
-          style={styles.photoSectionWrapper}
+        <Animated.View 
+          style={[
+            styles.photoSectionWrapper,
+            { bottom: photoSectionPadding }
+          ]}
         >
-          <Animated.View 
-            style={[
-              styles.photoSection,
-              { paddingBottom: photoSectionPadding }
-            ]}
+          <TouchableOpacity 
+            activeOpacity={1}
+            onPress={() => setExpandedDescription(!expandedDescription)}
+            style={styles.photoSection}
           >
             <ScrollView
               ref={scrollViewRef}
@@ -143,8 +148,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 ))}
               </View>
             )}
-          </Animated.View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </Animated.View>
 
         {/* Description Section */}
         <TouchableOpacity 
@@ -221,7 +226,6 @@ const styles = StyleSheet.create({
     top: 60,
     left: 0,
     right: 0,
-    bottom: 0,
   },
   photoSection: {
     flex: 1,

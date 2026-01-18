@@ -20,7 +20,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const scrollViewRef = useRef<ScrollView>(null);
   
   // Animation values
-  const descriptionHeight = useRef(new Animated.Value(80)).current;
+  const descriptionHeight = useRef(new Animated.Value(100)).current;
 
   // Calculate photo aspect ratio when image loads
   useEffect(() => {
@@ -37,12 +37,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   // Animate expansion/collapse
   useEffect(() => {
     Animated.spring(descriptionHeight, {
-      toValue: expandedDescription ? 180 : 80,
+      toValue: expandedDescription ? 200 : 100,
       useNativeDriver: false,
       damping: 20,
       stiffness: 200,
     }).start();
   }, [expandedDescription]);
+
+  const toggleDescription = () => {
+    setExpandedDescription(!expandedDescription);
+  };
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = Math.min(screenWidth - 64, 400);
@@ -78,7 +82,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </View>
 
         {/* Photo Section with horizontal scroll */}
-        <View style={styles.photoSectionWrapper}>
+        <View style={styles.photoSectionWrapper} pointerEvents="box-none">
           <View style={styles.photoSection}>
             <ScrollView
               ref={scrollViewRef}
@@ -91,8 +95,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               decelerationRate="fast"
             >
               {post.photos.map((photo, index) => (
-                <View 
+                <TouchableOpacity
                   key={index}
+                  activeOpacity={1}
+                  onPress={toggleDescription}
                   style={[
                     styles.photoContainer,
                     { width: photoContainerWidth }
@@ -110,13 +116,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                       resizeMode="cover"
                     />
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
             {/* Photo indicator dots */}
             {post.photos.length > 1 && (
-              <View style={styles.dotsContainer}>
+              <View style={styles.dotsContainer} pointerEvents="none">
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
@@ -134,10 +140,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </View>
         </View>
 
-        {/* Description Section */}
+        {/* Description Section - Always visible at bottom */}
         <TouchableOpacity 
-          activeOpacity={1}
-          onPress={() => setExpandedDescription(!expandedDescription)}
+          activeOpacity={0.9}
+          onPress={toggleDescription}
+          style={styles.descriptionTouchable}
         >
           <Animated.View 
             style={[
@@ -149,6 +156,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               style={styles.descriptionScroll}
               showsVerticalScrollIndicator={expandedDescription}
               scrollEnabled={expandedDescription}
+              nestedScrollEnabled={true}
             >
               <Text 
                 style={styles.descriptionText}
@@ -211,7 +219,7 @@ const styles = StyleSheet.create({
     top: 60,
     left: 0,
     right: 0,
-    bottom: 80,
+    bottom: 100,
     paddingHorizontal: 16,
   },
   photoSection: {
@@ -257,18 +265,22 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  descriptionSection: {
+  descriptionTouchable: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 20,
+  },
+  descriptionSection: {
     backgroundColor: '#fff',
     padding: 16,
     paddingTop: 16,
     paddingBottom: 20,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    zIndex: 5,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   descriptionScroll: {
     flex: 1,

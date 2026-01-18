@@ -1,8 +1,47 @@
-import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { ScrollView, View, Text, StyleSheet, Dimensions } from 'react-native';
 import PostCard from '../components/PostCard';
 
+const POSTS = [
+  {
+    type: 'service' as const,
+    name: 'Bike Repair service will pay for job this is an issue',
+    description: 'Professional bike repair and maintenance services. Will trade for houseplants, art, or cooking lessons. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+    photos: [
+      'https://picsum.photos/seed/landscape1/800/400',
+      'https://picsum.photos/seed/portrait1/400/600',
+      'https://picsum.photos/seed/square1/500/500'
+    ]
+  },
+  {
+    type: 'good' as const,
+    name: 'Vintage Camera Collection',
+    description: 'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition. Looking to trade for vintage watches or vinyl records.',
+    photos: [
+      'https://picsum.photos/seed/camera1/600/400',
+      'https://picsum.photos/seed/camera2/500/700',
+      'https://picsum.photos/seed/camera3/600/600'
+    ]
+  },
+  {
+    type: 'service' as const,
+    name: 'Guitar Lessons',
+    description: 'Experienced guitar teacher offering beginner to intermediate lessons. Will trade for cooking lessons, fresh produce, or handmade crafts.',
+    photos: [
+      'https://picsum.photos/seed/guitar1/700/500',
+      'https://picsum.photos/seed/guitar2/400/600',
+      'https://picsum.photos/seed/guitar3/500/500'
+    ]
+  }
+];
+
 export default function ProfileScreen() {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const screenWidth = Dimensions.get('window').width;
+  const cardWidth = Math.min(screenWidth - 64, 400);
+  const cardSpacing = 32; // Space between cards
+  const snapInterval = cardWidth + cardSpacing;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
@@ -24,19 +63,34 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.cardWrapper}>
-        <PostCard
-          post={{
-            type: 'service',
-            name: 'Bike Repair service will pay for job this is an issue',
-            description: 'Professional bike repair and maintenance services. Will trade for houseplants, art, or cooking lessons. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
-            photos: [
-              'https://picsum.photos/seed/landscape1/800/400',
-              'https://picsum.photos/seed/portrait1/400/600',
-              'https://picsum.photos/seed/square1/500/500'
-            ]
-          }}
-        />
+      <View style={styles.cardsWrapper}>
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled={false}
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={snapInterval}
+          decelerationRate="fast"
+          contentContainerStyle={[
+            styles.cardsScrollContent,
+            { paddingHorizontal: (screenWidth - cardWidth) / 2 }
+          ]}
+        >
+          {POSTS.map((post, index) => (
+            <View 
+              key={index} 
+              style={[
+                styles.cardContainer,
+                { 
+                  width: cardWidth,
+                  marginRight: index < POSTS.length - 1 ? cardSpacing : 0
+                }
+              ]}
+            >
+              <PostCard post={post} />
+            </View>
+          ))}
+        </ScrollView>
       </View>
     </ScrollView>
   );
@@ -107,8 +161,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-  cardWrapper: {
+  cardsWrapper: {
     marginTop: 20,
-    paddingHorizontal: 20,
+  },
+  cardsScrollContent: {
+    alignItems: 'center',
+  },
+  cardContainer: {
+    // Card size is set dynamically
   },
 });

@@ -13,14 +13,11 @@ export default function RootLayout() {
             backgroundColor: '#1C1C1E',
             borderTopWidth: 0.5,
             borderTopColor: '#38383A',
-            height: 90,
-            paddingBottom: 20,
+            height: 70,
+            paddingBottom: 10,
             paddingTop: 10,
           },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '600',
-          },
+          tabBarShowLabel: false,
           headerStyle: {
             backgroundColor: '#1C1C1E',
           },
@@ -34,7 +31,7 @@ export default function RootLayout() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({ color }) => (
               <MaterialIcons name="home" size={28} color={color} />
             ),
           }}
@@ -43,7 +40,7 @@ export default function RootLayout() {
           name="barter"
           options={{
             title: 'Barter',
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({ color }) => (
               <MaterialIcons name="compare-arrows" size={28} color={color} />
             ),
           }}
@@ -52,7 +49,7 @@ export default function RootLayout() {
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({ color }) => (
               <MaterialIcons name="account-circle" size={28} color={color} />
             ),
           }}

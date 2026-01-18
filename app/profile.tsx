@@ -31,9 +31,9 @@ export default function ProfileScreen() {
             name: 'Bike Repair service will pay for job this is an issue',
             description: 'Professional bike repair and maintenance services. Will trade for houseplants, art, or cooking lessons. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
             photos: [
-              'https://picsum.photos/seed/bike1/400/600',
-              'https://picsum.photos/seed/bike2/400/600',
-              'https://picsum.photos/seed/bike3/400/600'
+              'https://picsum.photos/seed/landscape1/800/400',
+              'https://picsum.photos/seed/portrait1/400/600',
+              'https://picsum.photos/seed/square1/500/500'
             ]
           }}
         />

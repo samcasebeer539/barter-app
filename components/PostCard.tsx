@@ -64,20 +64,24 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.card, { width: cardWidth, height: cardHeight }]}>
-        {/* Header Section */}
-        <View style={styles.header}>
-          {/* Type Icon */}
-          <View style={styles.iconContainer}>
-            <MaterialIcons 
-              name={post.type === 'good' ? 'shopping-bag' : 'build'} 
-              size={20} 
-              color="#000" 
-            />
-          </View>
-          
-          {/* Post Name */}
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{post.name}</Text>
+        {/* Header Section - Fixed height container */}
+        <View style={styles.headerWrapper}>
+          <View style={styles.header}>
+            {/* Type Icon */}
+            <View style={styles.iconContainer}>
+              <MaterialIcons 
+                name={post.type === 'good' ? 'shopping-bag' : 'build'} 
+                size={20} 
+                color="#000" 
+              />
+            </View>
+            
+            {/* Post Name */}
+            <View style={styles.titleContainer}>
+              <Text style={styles.title} numberOfLines={2}>
+                {post.name}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -191,12 +195,15 @@ const styles = StyleSheet.create({
     elevation: 10,
     position: 'relative',
   },
-  header: {
+  headerWrapper: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
+    height: 68,
     zIndex: 10,
+  },
+  header: {
     padding: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -216,7 +223,7 @@ const styles = StyleSheet.create({
   },
   photoSectionWrapper: {
     position: 'absolute',
-    top: 36,
+    top: 68,
     left: 0,
     right: 0,
     bottom: 100,

@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Text } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function RootLayout() {
   return (
@@ -34,8 +34,17 @@ export default function RootLayout() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24 }}>🏠</Text>
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="home" size={28} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="barter"
+          options={{
+            title: 'Barter',
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="compare-arrows" size={28} color={color} />
             ),
           }}
         />
@@ -43,15 +52,9 @@ export default function RootLayout() {
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24 }}>👤</Text>
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="account-circle" size={28} color={color} />
             ),
-          }}
-        />
-        <Tabs.Screen
-          name="barter"
-          options={{
-            href: null, // Hide this tab from the tab bar
           }}
         />
       </Tabs>

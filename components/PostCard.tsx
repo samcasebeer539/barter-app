@@ -15,24 +15,42 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [expandedDescription, setExpandedDescription] = useState(false);
-  const [photoAspectRatio, setPhotoAspectRatio] = useState(1);
+  const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(100)).current;
 
-  // Calculate photo aspect ratio when image loads
+  // Calculate aspect ratios for all photos on mount
   useEffect(() => {
-    if (post.photos && post.photos.length > 0) {
-      Image.getSize(post.photos[currentPhotoIndex], (width, height) => {
-        setPhotoAspectRatio(width / height);
-      }, () => {
-        // Fallback if image fails to load
-        setPhotoAspectRatio(1);
-      });
-    }
-  }, [currentPhotoIndex, post.photos]);
+    const ratios: number[] = [];
+    let loadedCount = 0;
+    
+    post.photos.forEach((photo, index) => {
+      Image.getSize(
+        photo,
+        (width, height) => {
+          ratios[index] = width / height;
+          loadedCount++;
+          
+          // Once all images are loaded, update state
+          if (loadedCount === post.photos.length) {
+            setPhotoAspectRatios([...ratios]);
+          }
+        },
+        () => {
+          // Fallback if image fails to load
+          ratios[index] = 1;
+          loadedCount++;
+          
+          if (loadedCount === post.photos.length) {
+            setPhotoAspectRatios([...ratios]);
+          }
+        }
+      );
+    });
+  }, [post.photos]);
 
   // Animate expansion/collapse
   useEffect(() => {
@@ -64,7 +82,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.card, { width: cardWidth, height: cardHeight }]}>
-        {/* Header Section - Fixed height container */}
+        {/* Header Section - Flexible height container */}
         <View style={styles.headerWrapper}>
           <View style={styles.header}>
             {/* Type Icon */}
@@ -111,7 +129,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                   <View 
                     style={[
                       styles.photoFrame,
-                      { aspectRatio: photoAspectRatio }
+                      { aspectRatio: photoAspectRatios[index] || 1 }
                     ]}
                   >
                     <Image
@@ -200,17 +218,18 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 68,
     zIndex: 10,
   },
   header: {
     padding: 16,
+    paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 4,
+    gap: 8,
   },
   iconContainer: {
     flexShrink: 0,
+    paddingTop: 2,
   },
   titleContainer: {
     flex: 1,
@@ -223,7 +242,7 @@ const styles = StyleSheet.create({
   },
   photoSectionWrapper: {
     position: 'absolute',
-    top: 68,
+    top: 76,
     left: 0,
     right: 0,
     bottom: 100,

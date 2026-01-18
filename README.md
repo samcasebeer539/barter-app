@@ -32,7 +32,8 @@ npm start
 # or
 npx expo start
 # or
-npx expo start --tunnel  (this is the one that works for me)
+npx expo start --tunnel
+# this is the one that works for me
 ```
 
 ### 4. Run on your iPhone

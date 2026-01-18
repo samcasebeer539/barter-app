@@ -24,21 +24,21 @@ export default function HomeScreen() {
   const rightColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 1);
 
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
-    <TouchableOpacity key={item.id} style={styles.card}>
-      <View style={styles.imageContainer}>
-        <Text style={styles.emoji}>{item.image}</Text>
-        <View style={styles.typeIconContainer}>
-          <MaterialIcons 
-            name={item.type === 'service' ? 'schedule' : 'inventory-2'} 
-            size={20} 
-            color="#FFFFFF" 
-          />
+    <View key={item.id} style={styles.cardWrapper}>
+      <TouchableOpacity style={styles.card}>
+        <View style={styles.imageContainer}>
+          <Text style={styles.emoji}>{item.image}</Text>
+          <View style={styles.typeIconContainer}>
+            <MaterialIcons 
+              name={item.type === 'service' ? 'schedule' : 'inventory-2'} 
+              size={20} 
+              color="#FFFFFF" 
+            />
+          </View>
         </View>
-      </View>
-      <View style={styles.cardContent}>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      <Text style={styles.itemTitle}>{item.title}</Text>
+    </View>
   );
 
   return (
@@ -60,6 +60,9 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
+      <TouchableOpacity style={styles.fab}>
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -67,13 +70,14 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: '#000000',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 16,
+    paddingTop: 60,
   },
   columnsContainer: {
     flexDirection: 'row',
@@ -83,11 +87,13 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 16,
   },
+  cardWrapper: {
+    marginBottom: 8,
+  },
   card: {
     backgroundColor: '#1C1C1E',
     borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 0,
   },
   imageContainer: {
     width: '100%',
@@ -108,18 +114,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 6,
   },
-  cardContent: {
-    padding: 12,
-  },
   itemTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  category: {
-    fontSize: 13,
-    color: '#8E8E93',
+    marginTop: 8,
+    marginLeft: 4,
   },
   fab: {
     position: 'absolute',
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#0A84FF',
+    backgroundColor: '#FFA600',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

@@ -48,20 +48,20 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000000',
   },
   header: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    backgroundColor: '#1C1C1E',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#38383A',
   },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0A84FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -72,22 +72,22 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   bio: {
     fontSize: 14,
-    color: '#666',
+    color: '#8E8E93',
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1C1C1E',
     padding: 20,
     marginTop: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   statsContainer: {
@@ -100,28 +100,28 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#0A84FF',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#8E8E93',
   },
   emptyState: {
-    color: '#999',
+    color: '#8E8E93',
     fontStyle: 'italic',
     textAlign: 'center',
     paddingVertical: 20,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0A84FF',
     margin: 16,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   logoutButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#FF453A',
   },
   buttonText: {
     color: '#fff',

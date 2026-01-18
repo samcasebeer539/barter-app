@@ -1,10 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 export default function HomeScreen() {
-  const router = useRouter();
-
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
@@ -12,20 +9,14 @@ export default function HomeScreen() {
       <Text style={styles.title}>🔄 Barter App</Text>
       <Text style={styles.subtitle}>Trade goods & services without money</Text>
       
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => router.push('/listings')}
-        >
-          <Text style={styles.buttonText}>Browse Listings</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.button, styles.secondaryButton]}
-          onPress={() => router.push('/profile')}
-        >
-          <Text style={styles.buttonText}>My Profile</Text>
-        </TouchableOpacity>
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoTitle}>Welcome to Barter!</Text>
+        <Text style={styles.infoText}>
+          • Browse available trades in the Barter tab{'\n'}
+          • Create your own listings{'\n'}
+          • Connect with other barterers{'\n'}
+          • Trade without using money
+        </Text>
       </View>
       
       <Text style={styles.footer}>Built with React Native + Expo</Text>
@@ -52,24 +43,28 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     textAlign: 'center',
   },
-  buttonContainer: {
+  infoContainer: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 16,
     width: '100%',
-    maxWidth: 300,
-    gap: 15,
+    maxWidth: 350,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+  infoTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
   },
-  secondaryButton: {
-    backgroundColor: '#34C759',
-  },
-  buttonText: {
-    color: '#fff',
+  infoText: {
     fontSize: 16,
-    fontWeight: '600',
+    color: '#666',
+    lineHeight: 24,
   },
   footer: {
     position: 'absolute',

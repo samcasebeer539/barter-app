@@ -29,9 +29,11 @@ export default function ProfileScreen() {
           post={{
             type: 'service',
             name: 'Bike Repair',
-            description: 'Will trade for houseplants or art',
+            description: 'Professional bike repair and maintenance services. Will trade for houseplants, art, or cooking lessons. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
             photos: [
-              'https://picsum.photos/400/600'
+              'https://picsum.photos/seed/bike1/400/600',
+              'https://picsum.photos/seed/bike2/400/600',
+              'https://picsum.photos/seed/bike3/400/600'
             ]
           }}
         />

@@ -6,14 +6,14 @@
 - Backend: ?
 - Testing: Expo Go on iPhone
 
-## 📋 Prerequisites
+## Prerequisites
 
 Make sure you have these installed:
 - Node.js
 - npm or yarn
 - Expo Go app on your iPhone ([Download from App Store](https://apps.apple.com/app/expo-go/id982107779))
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 ### 1. Clone the repository
 ```bash
@@ -69,7 +69,7 @@ Expo supports hot reload! Changes you make will automatically appear on your pho
 - Shake your phone to open the Expo dev menu
 - Use React Native Debugger for advanced debugging
 
-## 📱 Building for Production
+## Building for Production
 
 Deploy:
 

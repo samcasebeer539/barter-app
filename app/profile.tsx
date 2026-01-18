@@ -1,4 +1,6 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React from 'react';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import BarterCard from '../components/BarterCard';
 
 export default function ProfileScreen() {
   return (
@@ -22,19 +24,17 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>0</Text>
-          <Text style={styles.statLabel}>Trades</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>0</Text>
-          <Text style={styles.statLabel}>Listings</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statNumber}>100%</Text>
-          <Text style={styles.statLabel}>Rating</Text>
-        </View>
+      <View style={styles.cardWrapper}>
+        <BarterCard
+          post={{
+            type: 'service',
+            name: 'Bike Repair',
+            description: 'Will trade for houseplants or art',
+            photos: [
+              'https://picsum.photos/400/600'
+            ]
+          }}
+        />
       </View>
     </ScrollView>
   );
@@ -43,87 +43,70 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
   },
   scrollContent: {
-    paddingTop: 60,
+    paddingBottom: 40,
   },
   header: {
-    alignItems: 'flex-start',
-    padding: 24,
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#FFA600',
-    justifyContent: 'center',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f0f0f0',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
   },
   avatarText: {
-    fontSize: 48,
+    fontSize: 40,
   },
   name: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: '600',
     marginBottom: 16,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    justifyContent: 'flex-start',
+    paddingHorizontal: 20,
+    justifyContent: 'center',
   },
-    tag: {
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 2,
-    backgroundColor: 'transparent',
+  tag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   tagPink: {
-    borderColor: '#FF28A9',
-  },
-  tagGreen: {
-    borderColor: '#40D500',
-  },
-  tagPurple: {
-    borderColor: '#8453FF',
+    backgroundColor: '#FFE5F0',
   },
   tagtextPink: {
-    color: '#FF28A9',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#FF3B81',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  tagGreen: {
+    backgroundColor: '#E5F5E5',
   },
   tagtextGreen: {
-    color: '#40D500',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#34C759',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  tagPurple: {
+    backgroundColor: '#F0E5FF',
   },
   tagtextPurple: {
-    color: '#8453FF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 24,
-    marginTop: 12,
-  },
-  stat: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFA600',
-    marginBottom: 4,
-  },
-  statLabel: {
+    color: '#9747FF',
     fontSize: 12,
-    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  cardWrapper: {
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
 });

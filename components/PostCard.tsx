@@ -111,8 +111,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               showsHorizontalScrollIndicator={false}
               onScroll={handleScroll}
               scrollEventThrottle={16}
-              snapToInterval={photoContainerWidth}
+              snapToInterval={photoContainerWidth + 8}
               decelerationRate="fast"
+              contentContainerStyle={styles.scrollContent}
             >
               {post.photos.map((photo, index) => (
                 <TouchableOpacity
@@ -121,7 +122,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                   onPress={toggleDescription}
                   style={[
                     styles.photoContainer,
-                    { width: photoContainerWidth }
+                    { 
+                      width: photoContainerWidth,
+                      marginRight: index < post.photos.length - 1 ? 8 : 0
+                    }
                   ]}
                 >
                   <View 
@@ -135,6 +139,33 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                       style={styles.photo}
                       resizeMode="cover"
                     />
+                  </View>
+
+                  {/* Description for this specific photo */}
+                  <View style={styles.photoDescriptionWrapper}>
+                    <Animated.View 
+                      style={[
+                        styles.descriptionSection,
+                        { 
+                          height: descriptionHeight,
+                          opacity: index === currentPhotoIndex ? 1 : 0
+                        }
+                      ]}
+                    >
+                      <ScrollView 
+                        style={styles.descriptionScroll}
+                        showsVerticalScrollIndicator={expandedDescription}
+                        scrollEnabled={expandedDescription}
+                        nestedScrollEnabled={true}
+                      >
+                        <Text 
+                          style={styles.descriptionText}
+                          numberOfLines={expandedDescription ? undefined : 3}
+                        >
+                          {post.description}
+                        </Text>
+                      </ScrollView>
+                    </Animated.View>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -158,35 +189,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               </View>
             )}
           </View>
-        </View>
-
-        {/* Description Section - Absolutely positioned at bottom */}
-        <View style={styles.descriptionWrapper}>
-          <TouchableOpacity 
-            activeOpacity={0.9}
-            onPress={toggleDescription}
-          >
-            <Animated.View 
-              style={[
-                styles.descriptionSection,
-                { height: descriptionHeight }
-              ]}
-            >
-              <ScrollView 
-                style={styles.descriptionScroll}
-                showsVerticalScrollIndicator={expandedDescription}
-                scrollEnabled={expandedDescription}
-                nestedScrollEnabled={true}
-              >
-                <Text 
-                  style={styles.descriptionText}
-                  numberOfLines={expandedDescription ? undefined : 3}
-                >
-                  {post.description}
-                </Text>
-              </ScrollView>
-            </Animated.View>
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -235,15 +237,17 @@ const styles = StyleSheet.create({
   photoSectionWrapper: {
     position: 'absolute',
     top: 60,
-    left: 0,
-    right: 0,
-    bottom: 100,
-    paddingHorizontal: 8,
+    left: 8,
+    right: 8,
+    bottom: 0,
   },
   photoSection: {
     flex: 1,
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  scrollContent: {
+    alignItems: 'flex-start',
   },
   photoContainer: {
     justifyContent: 'flex-start',
@@ -264,9 +268,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  photoDescriptionWrapper: {
+    width: '100%',
+    paddingTop: 8,
+  },
   dotsContainer: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 108,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -278,13 +286,6 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  descriptionWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-  },
   descriptionSection: {
     backgroundColor: '#fff',
     paddingHorizontal: 16,
@@ -292,6 +293,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
   descriptionScroll: {
     flex: 1,

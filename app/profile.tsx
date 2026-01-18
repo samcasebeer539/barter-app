@@ -8,6 +8,18 @@ export default function ProfileScreen() {
           <Text style={styles.avatarText}>👤</Text>
         </View>
         <Text style={styles.name}>Sam Casebeer</Text>
+        
+        <View style={styles.tagsContainer}>
+          <View style={[styles.tag, styles.tagBlue]}>
+            <Text style={styles.tagText}>Community Builder</Text>
+          </View>
+          <View style={[styles.tag, styles.tagGreen]}>
+            <Text style={styles.tagText}>Eco-Friendly</Text>
+          </View>
+          <View style={[styles.tag, styles.tagOrange]}>
+            <Text style={styles.tagText}>Master Barterer</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.statsContainer}>
@@ -24,8 +36,6 @@ export default function ProfileScreen() {
           <Text style={styles.statLabel}>Rating</Text>
         </View>
       </View>
-
-      
     </ScrollView>
   );
 }
@@ -58,16 +68,38 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 4,
+    marginBottom: 16,
   },
-  bio: {
-    fontSize: 14,
-    color: '#8E8E93',
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  tag: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  tagBlue: {
+    backgroundColor: '#0A84FF',
+  },
+  tagGreen: {
+    backgroundColor: '#34C759',
+  },
+  tagOrange: {
+    backgroundColor: '#FF9500',
+  },
+  tagText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 24,
+    marginTop: 12,
   },
   stat: {
     alignItems: 'center',
@@ -81,26 +113,5 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     color: '#8E8E93',
-  },
-  emptyState: {
-    color: '#8E8E93',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    paddingVertical: 20,
-  },
-  button: {
-    backgroundColor: '#FFA600',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  logoutButton: {
-    backgroundColor: '#FF453A',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

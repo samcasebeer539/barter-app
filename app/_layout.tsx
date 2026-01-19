@@ -22,7 +22,7 @@ export default function RootLayout() {
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="feed"
           options={{
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="home" size={28} color={color} />
@@ -43,6 +43,12 @@ export default function RootLayout() {
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="account-circle" size={28} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="index"
+          options={{
+            href: null, // Hide from tab bar
           }}
         />
       </Tabs>

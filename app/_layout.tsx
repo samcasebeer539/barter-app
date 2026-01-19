@@ -1,6 +1,20 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+function TabBarBackground() {
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <LinearGradient
+        colors={['rgba(20, 20, 20, 0)', 'rgba(20, 20, 20, 0.95)', '#141414']}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   return (
@@ -10,13 +24,14 @@ export default function RootLayout() {
           tabBarActiveTintColor: '#FFA600',
           tabBarInactiveTintColor: '#8E8E93',
           tabBarStyle: {
-            backgroundColor: '#1C1C1E',
-            borderTopWidth: 0.5,
-            borderTopColor: '#38383A',
+            backgroundColor: 'transparent',
+            borderTopWidth: 0,
             height: 70,
             paddingBottom: 10,
             paddingTop: 10,
+            position: 'absolute',
           },
+          tabBarBackground: () => <TabBarBackground />,
           tabBarShowLabel: false,
           headerShown: false,
         }}

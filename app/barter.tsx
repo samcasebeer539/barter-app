@@ -27,12 +27,10 @@ export default function BarterScreen() {
     },
   ];
 
-<<<<<<< HEAD
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       
       <View style={{ marginTop: 1000 }}>
-=======
   const deckCards = [
     {
       title: 'Mountain Bike',
@@ -69,7 +67,6 @@ export default function BarterScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Card Wheel</Text>
         <Text style={styles.instructions}>Swipe left or right to spin the wheel</Text>
->>>>>>> 702e8b83f5e2dbdf511a6af0db1c87cca68e067b
         <CardWheel cards={sampleCards} />
       </View>
     </ScrollView>
@@ -81,9 +78,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#141414',
   },
-<<<<<<< HEAD
 
-=======
   scrollContent: {
     paddingTop: 60,
     paddingBottom: 40,
@@ -105,5 +100,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
->>>>>>> 702e8b83f5e2dbdf511a6af0db1c87cca68e067b
 });

@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { View, StyleSheet, PanResponder, Animated } from 'react-native';
-import BarterCard from './BarterCard';
+import PostCard from './PostCard';
 
 interface CardData {
-  title: string;
-  photo: string;
+  type: 'good' | 'service';
+  name: string;
+  description: string;
+  photos: string[];
 }
 
 interface DeckProps {
@@ -88,7 +90,7 @@ const Deck: React.FC<DeckProps> = ({ cards }) => {
       <View style={styles.deck}>
         {visibleCards.map((card, idx) => {
           const isTopCard = idx === 0;
-          const offset = idx * 8; // Offset for stacking effect
+          const offset = idx * 10; // Offset for stacking effect
 
           return (
             <Animated.View
@@ -105,7 +107,14 @@ const Deck: React.FC<DeckProps> = ({ cards }) => {
                 },
               ]}
             >
-              <BarterCard title={card.title} photo={card.photo} />
+              <PostCard 
+                post={{
+                  type: card.type,
+                  name: card.name,
+                  description: card.description,
+                  photos: card.photos,
+                }}
+              />
             </Animated.View>
           );
         })}
@@ -121,8 +130,8 @@ const styles = StyleSheet.create({
   },
   deck: {
     position: 'relative',
-    width: 250,
-    height: 300,
+    width: 400,
+    height: 550,
   },
   cardWrapper: {
     position: 'absolute',

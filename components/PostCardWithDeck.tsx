@@ -104,10 +104,10 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     outputRange: [1, 1.15], // Slightly larger when revealed
   }) || 1;
 
-  // Move deck to screen center when revealed
+  // Move deck upward to screen center when revealed
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, (screenHeight / 2) - (cardHeight * 1.15 / 2) - peekAmount], // Center on screen accounting for scale
+    outputRange: [0, -((cardHeight / 2) - (screenHeight / 2) + peekAmount)], // Negative to move UP
   }) || 0;
 
   return (

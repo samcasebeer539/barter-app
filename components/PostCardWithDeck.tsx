@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
 
@@ -31,6 +31,11 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Calculate deck dimensions based on PostCard size
   const peekAmount = 20; // How much the deck peeks out from the top
   const revealThreshold = 100; // How far down to swipe to trigger reveal
+  
+  const screenWidth = Dimensions.get('window').width;
+  const defaultCardWidth = Math.min(screenWidth - 110, 400);
+  const finalCardWidth = cardWidth ?? defaultCardWidth;
+  const cardHeight = finalCardWidth * (3.5 / 2.5);
 
   const handlePanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translationY } }],
@@ -92,6 +97,23 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
+  // Animate deck position: counter the card's translateY during drag
+  const deckTranslateY = translationY.interpolate({
+    inputRange: [-1000, 0, 1000],
+    outputRange: [1000, 0, -1000], // Opposite direction to keep deck stationary
+  });
+
+  // Animate deck scale and position when revealed
+  const deckScale = revealProgress?.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.2], // Slightly larger when revealed
+  }) || 1;
+
+  const deckExpandY = revealProgress?.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, cardHeight / 2], // Move down to center
+  }) || 0;
+
   return (
     <TapGestureHandler
       onHandlerStateChange={handleTap}
@@ -106,21 +128,37 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
           <Animated.View 
             style={[
               styles.container,
-              {
-                transform: [{ translateY: translationY }],
-              },
             ]}
           >
-            {/* Deck peeking out from behind */}
-            <View style={[styles.deckPeek, { top: -peekAmount }]} pointerEvents="none">
+            {/* Deck peeking out from behind - stays put during drag, expands when revealed */}
+            <Animated.View 
+              style={[
+                styles.deckPeek, 
+                { 
+                  top: -peekAmount,
+                  transform: [
+                    { translateY: Animated.add(deckTranslateY, deckExpandY) },
+                    { scale: deckScale },
+                  ],
+                }
+              ]} 
+              pointerEvents="none"
+            >
               <View style={styles.deckCard} />
               <View style={[styles.deckCard, styles.deckCardSecond]} />
-            </View>
+            </Animated.View>
             
-            {/* Main PostCard */}
-            <View style={styles.cardWrapper}>
+            {/* Main PostCard - moves during drag */}
+            <Animated.View 
+              style={[
+                styles.cardWrapper,
+                {
+                  transform: [{ translateY: translationY }],
+                },
+              ]}
+            >
               <PostCard post={post} scale={scale} cardWidth={cardWidth} />
-            </View>
+            </Animated.View>
           </Animated.View>
         </PanGestureHandler>
       </Animated.View>

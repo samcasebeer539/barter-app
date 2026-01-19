@@ -12,7 +12,7 @@ interface CardWheelProps {
   radius?: number; // radius of the circle
 }
 
-const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 200 }) => {
+const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 350 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationAnim = useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get('window');
@@ -26,12 +26,12 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 200 }) => {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderRelease: (_, gestureState) => {
-        // Swipe up moves to next card (clockwise)
-        if (gestureState.dy < -50) {
+        // Swipe left moves to next card (clockwise)
+        if (gestureState.dx < -50) {
           spinToNext();
         }
-        // Swipe down moves to previous card (counter-clockwise)
-        else if (gestureState.dy > 50) {
+        // Swipe right moves to previous card (counter-clockwise)
+        else if (gestureState.dx > 50) {
           spinToPrevious();
         }
       },
@@ -111,13 +111,14 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 200 }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
+    paddingTop: 150, // Position wheel lower so only top half is visible
   },
   wheel: {
     position: 'relative',
-    width: 500,
-    height: 500,
+    width: 800,
+    height: 800,
     justifyContent: 'center',
     alignItems: 'center',
   },

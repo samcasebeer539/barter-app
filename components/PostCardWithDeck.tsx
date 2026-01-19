@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
 
 interface Post {
@@ -26,23 +26,26 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   revealProgress,
 }) => {
   const translationY = useRef(new Animated.Value(0)).current;
-  const gestureState = useRef(new Animated.Value(State.UNDETERMINED)).current;
+  const isRevealed = useRef(false); // Track if currently revealed
   
   // Calculate deck dimensions based on PostCard size
   const peekAmount = 20; // How much the deck peeks out from the top
   const revealThreshold = 100; // How far down to swipe to trigger reveal
 
-  const handleGestureEvent = Animated.event(
+  const handlePanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translationY } }],
     { useNativeDriver: true }
   );
 
-  const handleStateChange = (event: any) => {
+  const handlePanStateChange = (event: any) => {
     if (event.nativeEvent.state === State.END) {
       const { translationY: finalTranslationY } = event.nativeEvent;
       
       // Determine if we should reveal or collapse based on swipe distance
-      const shouldReveal = finalTranslationY > revealThreshold;
+      const shouldReveal = finalTranslationY > revealThreshold && !isRevealed.current;
+      
+      // Update revealed state
+      isRevealed.current = shouldReveal;
       
       // Animate reveal progress (0 = collapsed, 1 = revealed)
       if (revealProgress) {
@@ -69,31 +72,57 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
+  const handleTap = (event: any) => {
+    if (event.nativeEvent.state === State.END && isRevealed.current) {
+      // Collapse if currently revealed
+      isRevealed.current = false;
+      
+      if (revealProgress) {
+        Animated.spring(revealProgress, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 20,
+          stiffness: 200,
+        }).start();
+      }
+      
+      if (onRevealChange) {
+        onRevealChange(false);
+      }
+    }
+  };
+
   return (
-    <PanGestureHandler
-      onGestureEvent={handleGestureEvent}
-      onHandlerStateChange={handleStateChange}
-      activeOffsetY={10} // Only activate after 10px vertical movement
-      failOffsetX={[-20, 20]} // Fail if horizontal movement exceeds 20px
+    <TapGestureHandler
+      onHandlerStateChange={handleTap}
     >
-      <Animated.View 
-        style={[
-          styles.container,
-          {
-            transform: [{ translateY: translationY }],
-          },
-        ]}
-      >
-        {/* Deck peeking out from behind */}
-        <View style={[styles.deckPeek, { top: -peekAmount }]}>
-          <View style={styles.deckCard} />
-          <View style={[styles.deckCard, styles.deckCardSecond]} />
-        </View>
-        
-        {/* Main PostCard */}
-        <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+      <Animated.View style={{ flex: 1 }}>
+        <PanGestureHandler
+          onGestureEvent={handlePanGestureEvent}
+          onHandlerStateChange={handlePanStateChange}
+          activeOffsetY={10} // Only activate after 10px vertical movement
+          failOffsetX={[-20, 20]} // Fail if horizontal movement exceeds 20px
+        >
+          <Animated.View 
+            style={[
+              styles.container,
+              {
+                transform: [{ translateY: translationY }],
+              },
+            ]}
+          >
+            {/* Deck peeking out from behind */}
+            <View style={[styles.deckPeek, { top: -peekAmount }]}>
+              <View style={styles.deckCard} />
+              <View style={[styles.deckCard, styles.deckCardSecond]} />
+            </View>
+            
+            {/* Main PostCard */}
+            <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+          </Animated.View>
+        </PanGestureHandler>
       </Animated.View>
-    </PanGestureHandler>
+    </TapGestureHandler>
   );
 };
 

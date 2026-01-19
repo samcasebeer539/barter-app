@@ -33,6 +33,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const revealThreshold = 100; // How far down to swipe to trigger reveal
   
   const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
   const defaultCardWidth = Math.min(screenWidth - 110, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
@@ -100,12 +101,13 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Animate deck scale and position when revealed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 1.2], // Slightly larger when revealed
+    outputRange: [1, 1.15], // Slightly larger when revealed
   }) || 1;
 
+  // Move deck to screen center when revealed
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, cardHeight / 2], // Move down to center
+    outputRange: [0, (screenHeight / 2) - (cardHeight * 1.15 / 2) - peekAmount], // Center on screen accounting for scale
   }) || 0;
 
   return (
@@ -138,8 +140,8 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              <View style={styles.deckCard} />
-              <View style={[styles.deckCard, styles.deckCardSecond]} />
+              <View style={[styles.deckCard, { height: cardHeight * 0.85 }]} />
+              <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
             </Animated.View>
             
             {/* Main PostCard - moves during drag */}
@@ -176,13 +178,10 @@ const styles = StyleSheet.create({
   },
   deckCard: {
     width: '85%',
-    height: 40,
     backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: '#d4d4d4',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderBottomWidth: 0,
+    borderRadius: 8,
     position: 'absolute',
     top: 0,
   },

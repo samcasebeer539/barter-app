@@ -104,10 +104,10 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     outputRange: [1, 1.15], // Slightly larger when revealed
   }) || 1;
 
-  // Move deck upward - a large negative value to move it way up
+  // Move deck upward - doubled to -600
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -300], // Simple: move up 300px when revealed
+    outputRange: [0, -600], // Move up 600px when revealed
   }) || 0;
 
   return (

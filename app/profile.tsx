@@ -86,6 +86,7 @@ export default function ProfileScreen() {
             styles.header,
             {
               transform: [{ translateY: headerTranslateY }],
+              zIndex: -1, // Put header behind everything
             },
           ]}
         >
@@ -115,6 +116,7 @@ export default function ProfileScreen() {
             {
               transform: [{ translateY: carouselTranslateY }],
               opacity: carouselOpacity,
+              zIndex: 10, // Put carousel on top
             },
           ]}
         >

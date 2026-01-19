@@ -28,6 +28,30 @@ export default function BarterScreen() {
       title: 'Coffee Maker',
       photo: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800',
     },
+    {
+      title: 'Plant Pot',
+      photo: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800',
+    },
+    {
+      title: 'Sunglasses',
+      photo: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800',
+    },
+    {
+      title: 'Backpack',
+      photo: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800',
+    },
+    {
+      title: 'Skateboard',
+      photo: 'https://images.unsplash.com/photo-1547447134-cd3f5c716030?w=800',
+    },
+    {
+      title: 'Headphones',
+      photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+    },
+    {
+      title: 'Sneakers',
+      photo: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800',
+    },
   ];
 
   return (

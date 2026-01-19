@@ -111,9 +111,9 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 350 }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 150, // Position wheel lower so only top half is visible
+    paddingTop: 100,
   },
   wheel: {
     position: 'relative',

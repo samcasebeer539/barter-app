@@ -10,7 +10,7 @@ export default function BarterScreen() {
     // Reset to 0 first
     spinValue.setValue(0);
     
-    // Animate a full 360 degree spin around X-axis (horizontal flip)
+    // Animate a full 360 degree spin around Z-axis (flat rotation)
     Animated.timing(spinValue, {
       toValue: 1,
       duration: 800,
@@ -18,7 +18,7 @@ export default function BarterScreen() {
     }).start();
   };
 
-  // Interpolate the spin value to rotation around X-axis (0deg to 360deg)
+  // Interpolate the spin value to rotation around Z-axis (0deg to 360deg)
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -40,7 +40,7 @@ export default function BarterScreen() {
       <StatusBar style="light" />
       
       <View style={styles.content}>
-        <Animated.View style={{ transform: [{ rotateX: spin }] }}>
+        <Animated.View style={{ transform: [{ rotate: spin }] }}>
           <PostCard post={samplePost} />
         </Animated.View>
         

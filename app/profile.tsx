@@ -79,14 +79,17 @@ export default function ProfileScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <View style={styles.contentWrapper}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        scrollEnabled={false}
+      >
         {/* HEADER */}
         <Animated.View 
           style={[
             styles.header,
             {
               transform: [{ translateY: headerTranslateY }],
-              zIndex: -1, // Put header behind everything
+              zIndex: -1,
             },
           ]}
         >
@@ -116,7 +119,7 @@ export default function ProfileScreen() {
             {
               transform: [{ translateY: carouselTranslateY }],
               opacity: carouselOpacity,
-              zIndex: 10, // Put carousel on top
+              zIndex: 10,
             },
           ]}
         >
@@ -175,7 +178,7 @@ export default function ProfileScreen() {
             })}
           </Animated.ScrollView>
         </Animated.View>
-      </View>
+      </ScrollView>
     </GestureHandlerRootView>
   );
 }
@@ -185,11 +188,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#141414',
   },
-  contentWrapper: {
-    flex: 1,
-    paddingTop: 30,
+  scrollContent: {
     paddingBottom: 40,
-    overflow: 'visible',
+    paddingTop: 30,
+    backgroundColor: '#141414',
+    flexGrow: 1,
   },
   header: {
     alignItems: 'center',
@@ -212,6 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     marginBottom: 16,
+    color: '#fff',
   },
   tagsContainer: {
     flexDirection: 'row',

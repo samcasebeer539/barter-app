@@ -114,6 +114,7 @@ export default function ProfileScreen() {
             {
               transform: [{ translateY: carouselTranslateY }],
               zIndex: 10,
+              overflow: 'visible',
             },
           ]}
         >
@@ -124,6 +125,7 @@ export default function ProfileScreen() {
             decelerationRate="fast"
             contentContainerStyle={{
               paddingHorizontal: sidePadding,
+              paddingVertical: 40, // Add vertical padding for deck peek and drag space
             }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -151,9 +153,10 @@ export default function ProfileScreen() {
                     width: cardWidth,
                     marginRight: index < POSTS.length - 1 ? cardSpacing : 0,
                     transform: [{ scale: scale ?? 1 }],
+                    overflow: 'visible',
                   }}
                 >
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, overflow: 'visible' }}>
                     {/* Use PostCardWithDeck for the first card */}
                     {index === 0 ? (
                       <PostCardWithDeck 

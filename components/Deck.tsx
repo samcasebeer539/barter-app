@@ -54,7 +54,7 @@ const Deck: React.FC<DeckProps> = ({ post, cardWidth }) => {
       />
       
       {/* Main PostCard (front) - positioned with same offset */}
-      <View style={[styles.frontCard, { bottom: 0, right: 0 }]}>
+      <View style={[styles.frontCard, { bottom: -15, right: -5 }]}>
         <PostCard post={post} scale={0.85} cardWidth={finalCardWidth} />
       </View>
     </View>

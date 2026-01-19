@@ -79,7 +79,7 @@ export default function ProfileScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.contentWrapper}>
         {/* HEADER */}
         <Animated.View 
           style={[
@@ -175,7 +175,7 @@ export default function ProfileScreen() {
             })}
           </Animated.ScrollView>
         </Animated.View>
-      </ScrollView>
+      </View>
     </GestureHandlerRootView>
   );
 }
@@ -185,10 +185,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#141414',
   },
-  scrollContent: {
-    paddingBottom: 40,
+  contentWrapper: {
+    flex: 1,
     paddingTop: 30,
-    backgroundColor: '#141414',
+    paddingBottom: 40,
+    overflow: 'visible',
   },
   header: {
     alignItems: 'center',

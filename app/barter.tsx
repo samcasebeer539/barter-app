@@ -27,6 +27,16 @@ export default function BarterScreen() {
     },
   ];
 
+  const samplePost = {
+    type: 'good' as const,
+    name: 'Vintage Leather Jacket',
+    description: 'Beautiful vintage leather jacket in excellent condition. Worn only a few times. Perfect for motorcycle enthusiasts or anyone looking for a classic style. This jacket has a timeless design with quality craftsmanship that you just don\'t see anymore.',
+    photos: [
+      'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800',
+      'https://images.unsplash.com/photo-1520975954732-35dd22299614?w=800',
+    ],
+  };
+
   
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -37,6 +47,12 @@ export default function BarterScreen() {
         <Text style={styles.sectionTitle}>Card Wheel (also broken)</Text>
         <Text style={styles.instructions}>this would be for action cards during negotion</Text>
         <CardWheel cards={sampleCards} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Deck Placeholder</Text>
+        <Text style={styles.instructions}>showing a stacked deck effect</Text>
+        <Deck post={samplePost} />
       </View>
     </ScrollView>
   );

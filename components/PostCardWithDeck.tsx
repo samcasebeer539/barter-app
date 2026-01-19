@@ -112,13 +112,15 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             ]}
           >
             {/* Deck peeking out from behind */}
-            <View style={[styles.deckPeek, { top: -peekAmount }]}>
+            <View style={[styles.deckPeek, { top: -peekAmount }]} pointerEvents="none">
               <View style={styles.deckCard} />
               <View style={[styles.deckCard, styles.deckCardSecond]} />
             </View>
             
             {/* Main PostCard */}
-            <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+            <View style={styles.cardWrapper}>
+              <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+            </View>
           </Animated.View>
         </PanGestureHandler>
       </Animated.View>
@@ -130,12 +132,15 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
   },
+  cardWrapper: {
+    zIndex: 10,
+  },
   deckPeek: {
     position: 'absolute',
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: -1,
+    zIndex: 1,
   },
   deckCard: {
     width: '85%',

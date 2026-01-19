@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+
 
 interface Post {
   type: 'good' | 'service';
@@ -11,49 +13,47 @@ interface Post {
 
 interface PostCardProps {
   post: Post;
+  scale?: number; // optional scaling factor
+  cardWidth?: number; // optional width override
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
-  // Service type starts in description mode, good type starts in photo mode
+const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
+  
   const [isDescriptionMode, setIsDescriptionMode] = useState(post.type === 'service');
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(post.type === 'service' ? 250 : 100)).current;
-  const photoMode4Lines = 100; // 4 lines in photo mode
-  const descriptionModeHeight = 250; // Larger in description mode
+  const photoMode4Lines = 100;
+  const descriptionModeHeight = 250;
 
-  // Calculate aspect ratios for all photos on mount
+  // New animated value for photo section bottom
+  const photoBottom = useRef(new Animated.Value(post.type === 'service' ? descriptionModeHeight : photoMode4Lines)).current;
+
   useEffect(() => {
     const ratios: number[] = [];
     let loadedCount = 0;
-    
+
     post.photos.forEach((photo, index) => {
       Image.getSize(
         photo,
         (width, height) => {
           ratios[index] = width / height;
           loadedCount++;
-          
-          if (loadedCount === post.photos.length) {
-            setPhotoAspectRatios([...ratios]);
-          }
+          if (loadedCount === post.photos.length) setPhotoAspectRatios([...ratios]);
         },
         () => {
           ratios[index] = 1;
           loadedCount++;
-          
-          if (loadedCount === post.photos.length) {
-            setPhotoAspectRatios([...ratios]);
-          }
+          if (loadedCount === post.photos.length) setPhotoAspectRatios([...ratios]);
         }
       );
     });
   }, [post.photos]);
 
-  // Animate mode switch
+  // Animate both description height and photo bottom
   useEffect(() => {
     Animated.spring(descriptionHeight, {
       toValue: isDescriptionMode ? descriptionModeHeight : photoMode4Lines,
@@ -61,38 +61,43 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       damping: 20,
       stiffness: 200,
     }).start();
+
+    Animated.spring(photoBottom, {
+      toValue: isDescriptionMode ? descriptionModeHeight : photoMode4Lines,
+      useNativeDriver: false,
+      damping: 20,
+      stiffness: 200,
+    }).start();
   }, [isDescriptionMode]);
 
-  const toggleMode = () => {
-    setIsDescriptionMode(!isDescriptionMode);
-  };
+  const toggleMode = () => setIsDescriptionMode(!isDescriptionMode);
 
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = Math.min(screenWidth - 64, 400);
-  const cardHeight = cardWidth * (3.5 / 2.5);
-  const photoContainerWidth = cardWidth - 32;
+  const defaultCardWidth = Math.min(screenWidth - 64, 400);
+  const finalCardWidth = cardWidth ?? defaultCardWidth;
+  const cardHeight = finalCardWidth * (3.5 / 2.5);
+  const photoContainerWidth = finalCardWidth - 32;
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / (photoContainerWidth + 16));
-    if (index >= 0 && index < post.photos.length) {
-      setCurrentPhotoIndex(index);
-    }
+    if (index >= 0 && index < post.photos.length) setCurrentPhotoIndex(index);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.card, { width: cardWidth, height: cardHeight }]}>
+    <Animated.View
+      style={[styles.container, { transform: [{ scale }] }]} // apply scale here safely
+    >
+      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <MaterialIcons 
-              name={post.type === 'good' ? 'shopping-bag' : 'build'} 
-              size={20} 
-              color="#000" 
+            <MaterialIcons
+              name={post.type === 'good' ? 'shopping-bag' : 'build'}
+              size={20}
+              color="#000"
             />
           </View>
-          
           <View style={styles.titleContainer}>
             <Text style={styles.title} numberOfLines={2}>
               {post.name}
@@ -101,11 +106,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </View>
 
         {/* Photo Section */}
-        <View 
-          style={[
-            styles.photoSectionWrapper,
-            { bottom: isDescriptionMode ? descriptionModeHeight : photoMode4Lines }
-          ]} 
+        <Animated.View
+          style={[styles.photoSectionWrapper, { bottom: photoBottom }]} // Animated bottom for smooth transitions
           pointerEvents="box-none"
         >
           <View style={styles.photoSection}>
@@ -123,99 +125,57 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               {post.photos.map((photo, index) => (
                 <View
                   key={index}
-                  style={[
-                    styles.photoContainer,
-                    { 
-                      width: photoContainerWidth,
-                      marginRight: index < post.photos.length - 1 ? 16 : 0
-                    }
-                  ]}
+                  style={[styles.photoContainer, { width: photoContainerWidth, marginRight: index < post.photos.length - 1 ? 16 : 0 }]}
                 >
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={toggleMode}
-                    style={styles.photoTouchable}
-                  >
-                    <View 
-                      style={[
-                        styles.photoFrame,
-                        { 
-                          aspectRatio: photoAspectRatios[index] || 1,
-                          maxHeight: '100%',
-                          maxWidth: '100%'
-                        }
-                      ]}
+                  <TouchableOpacity activeOpacity={1} onPress={toggleMode} style={styles.photoTouchable}>
+                    <View
+                      style={[styles.photoFrame, { aspectRatio: photoAspectRatios[index] || 1, maxHeight: '100%', maxWidth: '100%' }]}
                     >
-                      <Image
-                        source={{ uri: photo }}
-                        style={styles.photo}
-                        resizeMode="cover"
-                      />
+                      <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" />
                     </View>
                   </TouchableOpacity>
                 </View>
               ))}
             </ScrollView>
 
-            {/* Photo indicator dots */}
             {post.photos.length > 1 && (
               <View style={styles.dotsContainer} pointerEvents="none">
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
-                    style={[
-                      styles.dot,
-                      { 
-                        backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4',
-                        transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
-                      }
-                    ]}
+                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
                   />
                 ))}
               </View>
             )}
           </View>
-        </View>
+        </Animated.View>
 
-        {/* Description Section - Always at bottom */}
-        <TouchableOpacity 
-          activeOpacity={0.9}
-          onPress={toggleMode}
-          style={styles.descriptionTouchable}
-        >
-          <Animated.View 
-            style={[
-              styles.descriptionSection,
-              { height: descriptionHeight }
-            ]}
-          >
-            <ScrollView 
+        {/* Description */}
+        <TouchableOpacity activeOpacity={0.9} onPress={toggleMode} style={styles.descriptionTouchable}>
+          <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
+            <ScrollView
               style={styles.descriptionScroll}
               showsVerticalScrollIndicator={isDescriptionMode}
               scrollEnabled={isDescriptionMode}
               nestedScrollEnabled={true}
             >
-              <Text 
-                style={styles.descriptionText}
-                numberOfLines={isDescriptionMode ? undefined : 4}
-              >
+              <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 4}>
                 {post.description}
               </Text>
             </ScrollView>
           </Animated.View>
         </TouchableOpacity>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    backgroundColor: 'transparent',
   },
   card: {
     backgroundColor: '#fff',
@@ -235,96 +195,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  iconContainer: {
-    flexShrink: 0,
-    paddingTop: 2,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 24,
-    color: '#000',
-  },
-  photoSectionWrapper: {
-    position: 'absolute',
-    top: 60,
-    left: 16,
-    right: 16,
-  },
-  photoSection: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    alignItems: 'center',
-  },
-  photoContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-  },
-  photoTouchable: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  photoFrame: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-    overflow: 'hidden',
-    borderRadius: 4,
-  },
-  photo: {
-    width: '100%',
-    height: '100%',
-  },
-  dotsContainer: {
-    position: 'absolute',
-    top: 16,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  descriptionTouchable: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-  },
-  descriptionSection: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-  },
-  descriptionScroll: {
-    flex: 1,
-  },
-  descriptionText: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: '#525252',
-  },
+  iconContainer: { flexShrink: 0, paddingTop: 2 },
+  titleContainer: { flex: 1 },
+  title: { fontSize: 18, fontWeight: '600', lineHeight: 24, color: '#000' },
+  photoSectionWrapper: { position: 'absolute', top: 60, left: 16, right: 16 },
+  photoSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  scrollContent: { alignItems: 'center' },
+  photoContainer: { justifyContent: 'center', alignItems: 'center', height: '100%' },
+  photoTouchable: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
+  photoFrame: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 3, overflow: 'hidden', borderRadius: 4 },
+  photo: { width: '100%', height: '100%' },
+  dotsContainer: { position: 'absolute', top: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },
+  descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  descriptionScroll: { flex: 1 },
+  descriptionText: { fontSize: 14, lineHeight: 21, color: '#525252' },
 });
 
 export default PostCard;

@@ -1,115 +1,141 @@
-import React, { useRef } from 'react';
-import { ScrollView, View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+  ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  Animated,
+} from 'react-native';
 import PostCard from '../components/PostCard';
 
 const POSTS = [
   {
     type: 'service' as const,
-    name: 'Bike Repair service will pay for job this is an issue',
-    description: 'Professional bike repair and maintenance services. Will trade for houseplants, art, or cooking lessons. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+    name: 'Bike Repair service',
+    description:
+      'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
     photos: [
       'https://picsum.photos/seed/landscape1/800/400',
       'https://picsum.photos/seed/portrait1/400/600',
-      'https://picsum.photos/seed/square1/500/500'
-    ]
+      'https://picsum.photos/seed/square1/500/500',
+    ],
   },
   {
     type: 'good' as const,
     name: 'Vintage Camera Collection',
-    description: 'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition. Looking to trade for vintage watches or vinyl records.',
+    description:
+      'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition.',
     photos: [
       'https://picsum.photos/seed/camera1/600/400',
       'https://picsum.photos/seed/camera2/500/700',
-      'https://picsum.photos/seed/camera3/600/600'
-    ]
+      'https://picsum.photos/seed/camera3/600/600',
+    ],
   },
   {
     type: 'service' as const,
     name: 'Guitar Lessons',
-    description: 'Experienced guitar teacher offering beginner to intermediate lessons. Will trade for cooking lessons, fresh produce, or handmade crafts.',
+    description:
+      'Experienced guitar teacher offering beginner to intermediate lessons. ',
     photos: [
       'https://picsum.photos/seed/guitar1/700/500',
       'https://picsum.photos/seed/guitar2/400/600',
-      'https://picsum.photos/seed/guitar3/500/500'
-    ]
-  }
+      'https://picsum.photos/seed/guitar3/500/500',
+    ],
+  },
 ];
 
 export default function ProfileScreen() {
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = Math.min(screenWidth - 64, 400);
-  const cardSpacing = 32; // Space between cards
-  const peekAmount = 40; // How much of the next card is visible
-  
-  // Calculate padding to center cards while showing peek
-  const centerPadding = (screenWidth - cardWidth) / 2;
-  const sidePadding = centerPadding - peekAmount;
+
+  const cardWidth = Math.min(screenWidth - 110, 400);
+  const cardSpacing = 30;
+  const sidePadding = (screenWidth - cardWidth) / 2;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>👤</Text>
-        </View>
-        <Text style={styles.name}>Sam Casebeer</Text>
-        
-        <View style={styles.tagsContainer}>
-          <View style={[styles.tag, styles.tagPink]}>
-            <Text style={styles.tagtextPink}>Community Builder</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>👤</Text>
           </View>
-          <View style={[styles.tag, styles.tagGreen]}>
-            <Text style={styles.tagtextGreen}>Eco-Friendly</Text>
-          </View>
-          <View style={[styles.tag, styles.tagPurple]}>
-            <Text style={styles.tagtextPurple}>Master Barterer</Text>
-          </View>
-        </View>
-      </View>
 
-      <View style={styles.cardsWrapper}>
-        <ScrollView
-          ref={scrollViewRef}
-          horizontal
-          pagingEnabled={false}
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={cardWidth + cardSpacing}
-          snapToAlignment="start"
-          decelerationRate="fast"
-          contentContainerStyle={[
-            styles.cardsScrollContent,
-            { 
-              paddingLeft: sidePadding,
-              paddingRight: sidePadding
-            }
-          ]}
-        >
-          {POSTS.map((post, index) => (
-            <View 
-              key={index} 
-              style={[
-                styles.cardContainer,
-                { 
-                  width: cardWidth,
-                  marginRight: index < POSTS.length - 1 ? cardSpacing : 0
-                }
-              ]}
-            >
-              <PostCard post={post} />
+          <Text style={styles.name}>Sam Casebeer</Text>
+
+          <View style={styles.tagsContainer}>
+            <View style={[styles.tag, styles.tagPink]}>
+              <Text style={styles.tagtextPink}>Community Builder</Text>
             </View>
-          ))}
-        </ScrollView>
-      </View>
-    </ScrollView>
+            <View style={[styles.tag, styles.tagGreen]}>
+              <Text style={styles.tagtextGreen}>Eco-Friendly</Text>
+            </View>
+            <View style={[styles.tag, styles.tagPurple]}>
+              <Text style={styles.tagtextPurple}>Master Barterer</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* CAROUSEL */}
+        <View style={styles.cardsWrapper}>
+          <Animated.ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={cardWidth + cardSpacing}
+            decelerationRate="fast"
+            contentContainerStyle={{
+              paddingHorizontal: sidePadding,
+            }}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
+          >
+            {POSTS.map((post, index) => {
+              // Calculate the scale for each card
+              const inputRange = [
+                (index - 1) * (cardWidth + cardSpacing),
+                index * (cardWidth + cardSpacing),
+                (index + 1) * (cardWidth + cardSpacing),
+              ];
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.85, 0.95, 0.85],
+                extrapolate: 'clamp',
+              });
+
+              return (
+                <Animated.View
+                  key={index}
+                  style={{
+                    width: cardWidth,
+                    marginRight: index < POSTS.length - 1 ? cardSpacing : 0,
+                    transform: [{ scale: scale ?? 1 }],
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <PostCard post={post} scale={1} />
+                  </View>
+                </Animated.View>
+              );
+            })}
+          </Animated.ScrollView>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#141414',
   },
   scrollContent: {
     paddingBottom: 40,
+    backgroundColor: '#141414',
   },
   header: {
     alignItems: 'center',
@@ -144,38 +170,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    borderWidth: 1.5,
+    backgroundColor: 'transparent',
   },
-  tagPink: {
-    backgroundColor: '#FFE5F0',
-  },
-  tagtextPink: {
-    color: '#FF3B81',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  tagGreen: {
-    backgroundColor: '#E5F5E5',
-  },
-  tagtextGreen: {
-    color: '#34C759',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  tagPurple: {
-    backgroundColor: '#F0E5FF',
-  },
-  tagtextPurple: {
-    color: '#9747FF',
-    fontSize: 12,
-    fontWeight: '500',
-  },
+  tagPink: { borderColor: '#FF3B81' },
+  tagGreen: { borderColor: '#34C759' },
+  tagPurple: { borderColor: '#9747FF' },
+  tagtextPink: { color: '#FF3B81', fontSize: 12, fontWeight: '500' },
+  tagtextGreen: { color: '#34C759', fontSize: 12, fontWeight: '500' },
+  tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
   cardsWrapper: {
     marginTop: 20,
-  },
-  cardsScrollContent: {
-    alignItems: 'center',
-  },
-  cardContainer: {
-    // Card size is set dynamically
   },
 });

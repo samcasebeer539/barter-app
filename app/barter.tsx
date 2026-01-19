@@ -27,47 +27,11 @@ export default function BarterScreen() {
     },
   ];
 
-  const deckCards = [
-    {
-      type: 'good' as const,
-      name: 'Mountain Bike',
-      description: 'High-quality mountain bike perfect for trails and adventures.',
-      photos: ['https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=800'],
-    },
-    {
-      type: 'good' as const,
-      name: 'Laptop',
-      description: 'Modern laptop in excellent condition, great for work and entertainment.',
-      photos: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800'],
-    },
-    {
-      type: 'good' as const,
-      name: 'Book Collection',
-      description: 'Curated collection of classic literature and modern bestsellers.',
-      photos: ['https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800'],
-    },
-    {
-      type: 'good' as const,
-      name: 'Desk Lamp',
-      description: 'Stylish and functional desk lamp with adjustable brightness.',
-      photos: ['https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800'],
-    },
-    {
-      type: 'good' as const,
-      name: 'Running Shoes',
-      description: 'Comfortable running shoes with excellent cushioning and support.',
-      photos: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800'],
-    },
-  ];
-
+  
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <StatusBar style="light" />
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Card Deck (broken)</Text>
-        <Deck cards={deckCards} />
-      </View>
+  
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Card Wheel (also broken)</Text>

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, PanResponder, Animated, Dimensions } from 'react-native';
+import { View, StyleSheet, PanResponder, Animated } from 'react-native';
 import BarterCard from './BarterCard';
 
 interface CardData {
@@ -9,15 +9,16 @@ interface CardData {
 
 interface CardWheelProps {
   cards: CardData[];
-  radius?: number; // radius of the circle
 }
 
-const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 350 }) => {
+const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationAnim = useRef(new Animated.Value(0)).current;
-  const { width, height } = Dimensions.get('window');
-
-  // Calculate the angle between each card
+  
+  const RADIUS = 350;
+  const TOTAL_CARDS = 5; // Only show 5 cards at a time
+  
+  // Calculate the angle between each card (as if it's a full wheel)
   const anglePerCard = (2 * Math.PI) / cards.length;
 
   // Pan responder for swipe detection
@@ -61,6 +62,18 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 350 }) => {
     setCurrentIndex(targetIndex);
   };
 
+  // Get the visible cards (5 cards: current and 2 on each side)
+  const getVisibleCards = () => {
+    const visible = [];
+    for (let i = 0; i < TOTAL_CARDS; i++) {
+      const index = (currentIndex + i) % cards.length;
+      visible.push({ ...cards[index], originalIndex: index, displayIndex: i });
+    }
+    return visible;
+  };
+
+  const visibleCards = getVisibleCards();
+
   return (
     <View style={styles.container} {...panResponder.panHandlers}>
       <Animated.View
@@ -76,21 +89,26 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, radius = 350 }) => {
           },
         ]}
       >
-        {cards.map((card, index) => {
-          // Calculate position for each card in a circle
-          const angle = index * anglePerCard;
-          const x = radius * Math.sin(angle);
-          const y = -radius * Math.cos(angle);
+        {visibleCards.map((card, displayIndex) => {
+          // Position cards as if they're part of a full wheel
+          // displayIndex 0 is at top, then 1, 2, 3, 4 are to the right
+          const angle = displayIndex * anglePerCard;
+          const x = RADIUS * Math.sin(angle);
+          const y = -RADIUS * Math.cos(angle);
 
           // Calculate rotation so card top points outward
           const cardRotation = (angle * 180) / Math.PI;
 
+          // Calculate z-index: top card (displayIndex 0) should be highest
+          const zIndex = displayIndex === 0 ? 10 : 5 - displayIndex;
+
           return (
             <Animated.View
-              key={index}
+              key={`${card.originalIndex}-${displayIndex}`}
               style={[
                 styles.cardContainer,
                 {
+                  zIndex,
                   transform: [
                     { translateX: x },
                     { translateY: y },

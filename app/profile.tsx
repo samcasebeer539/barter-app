@@ -54,7 +54,7 @@ export default function ProfileScreen() {
   const screenHeight = Dimensions.get('window').height;
 
   const cardWidth = Math.min(screenWidth - 110, 400);
-  const cardSpacing = 30;
+  const cardSpacing = 10;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   // Interpolate animations based on reveal progress
@@ -65,7 +65,7 @@ export default function ProfileScreen() {
 
   const carouselTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, screenHeight * 0.7], // Move carousel way down (70% of screen height)
+    outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
   });
 
   const carouselOpacity = revealProgress.interpolate({
@@ -141,7 +141,7 @@ export default function ProfileScreen() {
               ];
               const scale = scrollX.interpolate({
                 inputRange,
-                outputRange: [0.85, 0.95, 0.85],
+                outputRange: [0.9, 1, 0.9],
                 extrapolate: 'clamp',
               });
 
@@ -185,12 +185,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+    paddingTop: 30,
     backgroundColor: '#141414',
   },
   header: {
     alignItems: 'center',
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
   avatar: {
     width: 80,

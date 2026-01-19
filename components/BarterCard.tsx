@@ -17,7 +17,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo }) => {
 
 const styles = StyleSheet.create({
   card: {
-    width: 250,
+    width: 220,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,

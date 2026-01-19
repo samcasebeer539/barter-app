@@ -16,24 +16,21 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
   const RADIUS = 350;
-  const TOTAL_CARDS = 5; // Only show 5 cards at a time
-  
-  // Fixed angle between cards (60 degrees = PI/3)
-  const anglePerCard = Math.PI / 3;
+  const TOTAL_CARDS = cards.length; // always show up to 5 cards
+  const anglePerCard = (2 * Math.PI) / 12
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -50) {
-          spinToNext();
-        } else if (gestureState.dx > 50) {
-          spinToPrevious();
-        }
-      },
-    })
-  ).current;
+  const animateToIndex = (targetIndex: number) => {
+    const targetRotation = -targetIndex * anglePerCard;
+
+    Animated.spring(rotationAnim, {
+      toValue: targetRotation,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 100,
+    }).start();
+
+    setCurrentIndex(targetIndex);
+  };
 
   const spinToNext = () => {
     const nextIndex = (currentIndex + 1) % cards.length;
@@ -45,33 +42,8 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
     animateToIndex(prevIndex);
   };
 
-  const animateToIndex = (targetIndex: number) => {
-    const targetRotation = -targetIndex * anglePerCard;
-    
-    Animated.spring(rotationAnim, {
-      toValue: targetRotation,
-      useNativeDriver: true,
-      damping: 15,
-      stiffness: 100,
-    }).start();
-
-    setCurrentIndex(targetIndex);
-  };
-
-  // Get the visible cards - current card and next 4
-  const getVisibleCards = () => {
-    const visible = [];
-    for (let i = 0; i < TOTAL_CARDS; i++) {
-      const index = (currentIndex + i) % cards.length;
-      visible.push({ ...cards[index], originalIndex: index, positionIndex: i });
-    }
-    return visible;
-  };
-
-  const visibleCards = getVisibleCards();
-
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={styles.container}>
       <Animated.View
         style={[
           styles.wheel,
@@ -87,20 +59,32 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
           },
         ]}
       >
-        {visibleCards.map((card) => {
-          // Position based on the card's position in the visible array (0-4)
-          // Not based on currentIndex - that's handled by wheel rotation
-          const angle = card.positionIndex * anglePerCard;
+        {cards.map((card, displayIndex) => {
+          const angle = displayIndex * anglePerCard;
           const x = RADIUS * Math.sin(angle);
           const y = -RADIUS * Math.cos(angle);
           const cardRotation = (angle * 180) / Math.PI;
 
-          // Top card (position 0) has highest z-index
-          const zIndex = card.positionIndex === 0 ? 100 : 100 - card.positionIndex;
+          // zIndex: top card highest
+          const zIndex = displayIndex === 0 ? 100 : 100 - displayIndex;
+
+          // Only top card has PanResponder
+          const panResponder =
+            displayIndex === 0
+              ? PanResponder.create({
+                  onStartShouldSetPanResponder: () => true,
+                  onMoveShouldSetPanResponder: () => true,
+                  onPanResponderRelease: (_, gestureState) => {
+                    if (gestureState.dx < -30) spinToNext();
+                    else if (gestureState.dx > 30) spinToPrevious();
+                  },
+                })
+              : null;
 
           return (
             <Animated.View
-              key={card.originalIndex}
+              key={`${displayIndex}`}
+              {...(panResponder ? panResponder.panHandlers : {})}
               style={[
                 styles.cardContainer,
                 {

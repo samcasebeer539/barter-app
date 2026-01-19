@@ -8,15 +8,7 @@ const { width } = Dimensions.get('window');
 // Sample barter items - later you'll fetch from backend
 const BARTER_ITEMS = [
   { id: '1', title: 'Vintage Camera', image: '📷', type: 'good' },
-  { id: '2', title: 'Yoga Classes', image: '🧘', type: 'service' },
-  { id: '3', title: 'Homemade Bread', image: '🍞', type: 'good' },
-  { id: '4', title: 'Guitar Lessons', image: '🎸', type: 'service' },
-  { id: '5', title: 'Vintage Books', image: '📚', type: 'good' },
-  { id: '6', title: 'Plant Cuttings', image: '🌱', type: 'good' },
-  { id: '7', title: 'Handmade Jewelry', image: '💍', type: 'good' },
-  { id: '8', title: 'Bicycle Repair', image: '🔧', type: 'service' },
-  { id: '9', title: 'Fresh Vegetables', image: '🥕', type: 'good' },
-  { id: '10', title: 'Art Prints', image: '🎨', type: 'good' },
+
 ];
 
 export default function FeedScreen() {

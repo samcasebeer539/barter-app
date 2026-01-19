@@ -107,14 +107,8 @@ const Deck: React.FC<DeckProps> = ({ cards }) => {
                 },
               ]}
             >
-              <PostCard 
-                post={{
-                  type: card.type,
-                  name: card.name,
-                  description: card.description,
-                  photos: card.photos,
-                }}
-              />
+              <PostCard post={card} scale={0.8} />
+    
             </Animated.View>
           );
         })}
@@ -130,8 +124,8 @@ const styles = StyleSheet.create({
   },
   deck: {
     position: 'relative',
-    width: 400,
-    height: 550,
+    width: 300,
+    height: 450,
   },
   cardWrapper: {
     position: 'absolute',

@@ -25,34 +25,6 @@ export default function BarterScreen() {
       title: 'Vintage Watch',
       photo: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800',
     },
-    {
-      title: 'Coffee Maker',
-      photo: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800',
-    },
-    {
-      title: 'Plant Pot',
-      photo: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800',
-    },
-    {
-      title: 'Sunglasses',
-      photo: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800',
-    },
-    {
-      title: 'Backpack',
-      photo: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800',
-    },
-    {
-      title: 'Skateboard',
-      photo: 'https://images.unsplash.com/photo-1547447134-cd3f5c716030?w=800',
-    },
-    {
-      title: 'Headphones',
-      photo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
-    },
-    {
-      title: 'Sneakers',
-      photo: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800',
-    },
   ];
 
   const deckCards = [
@@ -93,14 +65,13 @@ export default function BarterScreen() {
       <StatusBar style="light" />
       
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Card Deck</Text>
-        <Text style={styles.instructions}>Swipe left to send top card to back, right to bring it back</Text>
+        <Text style={styles.sectionTitle}>Card Deck (broken)</Text>
         <Deck cards={deckCards} />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Card Wheel</Text>
-        <Text style={styles.instructions}>Swipe left or right to spin the wheel</Text>
+        <Text style={styles.sectionTitle}>Card Wheel (also broken)</Text>
+        <Text style={styles.instructions}>this would be for action cards during negotion</Text>
         <CardWheel cards={sampleCards} />
       </View>
     </ScrollView>

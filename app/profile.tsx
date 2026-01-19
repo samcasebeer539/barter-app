@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import PostCard from '../components/PostCard';
+import PostCardWithDeck from '../components/PostCardWithDeck';
 
 const POSTS = [
   {
@@ -116,7 +117,12 @@ export default function ProfileScreen() {
                   }}
                 >
                   <View style={{ flex: 1 }}>
-                    <PostCard post={post} scale={1} />
+                    {/* Use PostCardWithDeck for the first card */}
+                    {index === 0 ? (
+                      <PostCardWithDeck post={post} scale={1} cardWidth={cardWidth} />
+                    ) : (
+                      <PostCard post={post} scale={1} cardWidth={cardWidth} />
+                    )}
                   </View>
                 </Animated.View>
               );

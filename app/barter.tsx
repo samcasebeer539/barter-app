@@ -60,7 +60,7 @@ export default function BarterScreen() {
       
       <Text style={styles.instructions}>Swipe left or right to spin the wheel</Text>
       
-      <CardWheel cards={sampleCards} radius={350} />
+      <CardWheel cards={sampleCards} />
     </View>
   );
 }

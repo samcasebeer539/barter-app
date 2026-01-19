@@ -239,6 +239,6 @@ const styles = StyleSheet.create({
   tagtextGreen: { color: '#34C759', fontSize: 12, fontWeight: '500' },
   tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
   cardsWrapper: {
-    marginTop: 20,
+    marginTop: -20, // Move cards up
   },
 });

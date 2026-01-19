@@ -16,21 +16,24 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
   const RADIUS = 350;
-  const TOTAL_CARDS = Math.min(5, cards.length); // always show up to 5 cards
-  const anglePerCard = (2 * Math.PI) / cards.length;
+  const TOTAL_CARDS = 5; // Only show 5 cards at a time
+  
+  // Fixed angle between cards (60 degrees = PI/3)
+  const anglePerCard = Math.PI / 3;
 
-  const animateToIndex = (targetIndex: number) => {
-    const targetRotation = -targetIndex * anglePerCard;
-
-    Animated.spring(rotationAnim, {
-      toValue: targetRotation,
-      useNativeDriver: true,
-      damping: 15,
-      stiffness: 100,
-    }).start();
-
-    setCurrentIndex(targetIndex);
-  };
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -50) {
+          spinToNext();
+        } else if (gestureState.dx > 50) {
+          spinToPrevious();
+        }
+      },
+    })
+  ).current;
 
   const spinToNext = () => {
     const nextIndex = (currentIndex + 1) % cards.length;
@@ -42,12 +45,25 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
     animateToIndex(prevIndex);
   };
 
-  // Get visible cards: always use the same order as the array so contents stay fixed
+  const animateToIndex = (targetIndex: number) => {
+    const targetRotation = -targetIndex * anglePerCard;
+    
+    Animated.spring(rotationAnim, {
+      toValue: targetRotation,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 100,
+    }).start();
+
+    setCurrentIndex(targetIndex);
+  };
+
+  // Get the visible cards - current card and next 4
   const getVisibleCards = () => {
     const visible = [];
     for (let i = 0; i < TOTAL_CARDS; i++) {
       const index = (currentIndex + i) % cards.length;
-      visible.push({ ...cards[index], originalIndex: index, displayIndex: i });
+      visible.push({ ...cards[index], originalIndex: index, positionIndex: i });
     }
     return visible;
   };
@@ -55,7 +71,7 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
   const visibleCards = getVisibleCards();
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panResponder.panHandlers}>
       <Animated.View
         style={[
           styles.wheel,
@@ -71,32 +87,20 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
           },
         ]}
       >
-        {visibleCards.map((card, displayIndex) => {
-          const angle = displayIndex * anglePerCard;
+        {visibleCards.map((card) => {
+          // Position based on the card's position in the visible array (0-4)
+          // Not based on currentIndex - that's handled by wheel rotation
+          const angle = card.positionIndex * anglePerCard;
           const x = RADIUS * Math.sin(angle);
           const y = -RADIUS * Math.cos(angle);
           const cardRotation = (angle * 180) / Math.PI;
 
-          // zIndex: top card highest
-          const zIndex = displayIndex === 0 ? 100 : 100 - displayIndex;
-
-          // Only top card has PanResponder
-          const panResponder =
-            displayIndex === 0
-              ? PanResponder.create({
-                  onStartShouldSetPanResponder: () => true,
-                  onMoveShouldSetPanResponder: () => true,
-                  onPanResponderRelease: (_, gestureState) => {
-                    if (gestureState.dx < -30) spinToNext();
-                    else if (gestureState.dx > 30) spinToPrevious();
-                  },
-                })
-              : null;
+          // Top card (position 0) has highest z-index
+          const zIndex = card.positionIndex === 0 ? 100 : 100 - card.positionIndex;
 
           return (
             <Animated.View
-              key={`${card.originalIndex}-${displayIndex}`}
-              {...(panResponder ? panResponder.panHandlers : {})}
+              key={card.originalIndex}
               style={[
                 styles.cardContainer,
                 {

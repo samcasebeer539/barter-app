@@ -77,6 +77,7 @@ export default function ProfileScreen() {
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         scrollEnabled={false}
+        style={{ overflow: 'visible' }}
       >
         {/* HEADER */}
         <Animated.View 
@@ -123,9 +124,11 @@ export default function ProfileScreen() {
             showsHorizontalScrollIndicator={false}
             snapToInterval={cardWidth + cardSpacing}
             decelerationRate="fast"
+            style={{ overflow: 'visible' }}
             contentContainerStyle={{
               paddingHorizontal: sidePadding,
-              paddingVertical: 40, // Add vertical padding for deck peek and drag space
+              paddingTop: 40,
+              paddingBottom: 120, // Extra bottom padding for drag space
             }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -190,6 +193,7 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     backgroundColor: '#141414',
     flexGrow: 1,
+    overflow: 'visible',
   },
   header: {
     alignItems: 'center',

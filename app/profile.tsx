@@ -51,6 +51,7 @@ export default function ProfileScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
   const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
 
   const cardWidth = Math.min(screenWidth - 110, 400);
   const cardSpacing = 30;
@@ -59,17 +60,17 @@ export default function ProfileScreen() {
   // Interpolate animations based on reveal progress
   const headerTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -200], // Move header up and out of view
+    outputRange: [0, -400], // Move header completely out of view
   });
 
   const carouselTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 150], // Move carousel down
+    outputRange: [0, screenHeight * 0.7], // Move carousel way down (70% of screen height)
   });
 
   const carouselOpacity = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.3], // Fade out carousel slightly
+    outputRange: [1, 0.2], // Fade out carousel more
   });
 
   const handleRevealChange = (revealed: boolean) => {

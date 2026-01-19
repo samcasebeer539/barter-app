@@ -65,12 +65,7 @@ export default function ProfileScreen() {
 
   const carouselTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
-  });
-
-  const carouselOpacity = revealProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0.2], // Fade out carousel more
+    outputRange: [0, screenHeight * 0.4], // Move carousel way down
   });
 
   const handleRevealChange = (revealed: boolean) => {
@@ -118,7 +113,6 @@ export default function ProfileScreen() {
             styles.cardsWrapper,
             {
               transform: [{ translateY: carouselTranslateY }],
-              opacity: carouselOpacity,
               zIndex: 10,
             },
           ]}

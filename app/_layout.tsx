@@ -22,13 +22,13 @@ export default function RootLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: '#FFA600',
-          tabBarInactiveTintColor: '#8E8E93',
+          tabBarInactiveTintColor: '#fff',
           tabBarStyle: {
             backgroundColor: 'transparent',
             borderTopWidth: 0,
-            height: 70,
+            height: 80,
             paddingBottom: 10,
-            paddingTop: 10,
+            paddingTop: 20,
             position: 'absolute',
           },
           tabBarBackground: () => <TabBarBackground />,

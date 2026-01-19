@@ -34,9 +34,9 @@ export default function BarterScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
-      <Text style={styles.instructions}>Swipe up or down on the top card to spin</Text>
+      <Text style={styles.instructions}>Swipe left or right to spin the wheel</Text>
       
-      <CardWheel cards={sampleCards} radius={220} />
+      <CardWheel cards={sampleCards} radius={350} />
     </View>
   );
 }

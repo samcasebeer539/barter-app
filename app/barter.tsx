@@ -5,7 +5,7 @@ import CardWheel from '../components/CardWheel';
 export default function BarterScreen() {
   const sampleCards = [
     {
-      title: 'Vintage Bike',
+      title: 'accept/decline',
       photo: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800',
     },
     {
@@ -55,12 +55,12 @@ export default function BarterScreen() {
   ];
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text style={styles.instructions}>Swipe left or right to spin the wheel</Text>
-      
-      <CardWheel cards={sampleCards} />
+
+      <View style={{ marginTop: 500 }}>
+        <CardWheel cards={sampleCards} />
+      </View>
     </View>
   );
 }

@@ -14,30 +14,23 @@ interface CardWheelProps {
 const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationAnim = useRef(new Animated.Value(0)).current;
-  
+
   const RADIUS = 350;
-  const TOTAL_CARDS = 5; // Only show 5 cards at a time
-  
-  // Calculate the angle between each card (as if it's a full wheel)
+  const TOTAL_CARDS = Math.min(5, cards.length); // always show up to 5 cards
   const anglePerCard = (2 * Math.PI) / cards.length;
 
-  // Pan responder for swipe detection
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderRelease: (_, gestureState) => {
-        // Swipe left moves to next card (clockwise)
-        if (gestureState.dx < -50) {
-          spinToNext();
-        }
-        // Swipe right moves to previous card (counter-clockwise)
-        else if (gestureState.dx > 50) {
-          spinToPrevious();
-        }
-      },
-    })
-  ).current;
+  const animateToIndex = (targetIndex: number) => {
+    const targetRotation = -targetIndex * anglePerCard;
+
+    Animated.spring(rotationAnim, {
+      toValue: targetRotation,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 100,
+    }).start();
+
+    setCurrentIndex(targetIndex);
+  };
 
   const spinToNext = () => {
     const nextIndex = (currentIndex + 1) % cards.length;
@@ -49,20 +42,7 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
     animateToIndex(prevIndex);
   };
 
-  const animateToIndex = (targetIndex: number) => {
-    const targetRotation = -targetIndex * anglePerCard;
-    
-    Animated.spring(rotationAnim, {
-      toValue: targetRotation,
-      useNativeDriver: true,
-      damping: 15,
-      stiffness: 100,
-    }).start();
-
-    setCurrentIndex(targetIndex);
-  };
-
-  // Get the visible cards (5 cards: current and 2 on each side)
+  // Get visible cards: always use the same order as the array so contents stay fixed
   const getVisibleCards = () => {
     const visible = [];
     for (let i = 0; i < TOTAL_CARDS; i++) {
@@ -75,36 +55,48 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
   const visibleCards = getVisibleCards();
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={styles.container}>
       <Animated.View
         style={[
           styles.wheel,
           {
             transform: [
-              { rotate: rotationAnim.interpolate({
-                inputRange: [-2 * Math.PI, 0, 2 * Math.PI],
-                outputRange: ['-360deg', '0deg', '360deg'],
-              })},
+              {
+                rotate: rotationAnim.interpolate({
+                  inputRange: [-2 * Math.PI, 0, 2 * Math.PI],
+                  outputRange: ['-360deg', '0deg', '360deg'],
+                }),
+              },
             ],
           },
         ]}
       >
         {visibleCards.map((card, displayIndex) => {
-          // Position cards as if they're part of a full wheel
-          // displayIndex 0 is at top, then 1, 2, 3, 4 are to the right
           const angle = displayIndex * anglePerCard;
           const x = RADIUS * Math.sin(angle);
           const y = -RADIUS * Math.cos(angle);
-
-          // Calculate rotation so card top points outward
           const cardRotation = (angle * 180) / Math.PI;
 
-          // Calculate z-index: top card (displayIndex 0) should be highest
-          const zIndex = displayIndex === 0 ? 10 : 5 - displayIndex;
+          // zIndex: top card highest
+          const zIndex = displayIndex === 0 ? 100 : 100 - displayIndex;
+
+          // Only top card has PanResponder
+          const panResponder =
+            displayIndex === 0
+              ? PanResponder.create({
+                  onStartShouldSetPanResponder: () => true,
+                  onMoveShouldSetPanResponder: () => true,
+                  onPanResponderRelease: (_, gestureState) => {
+                    if (gestureState.dx < -30) spinToNext();
+                    else if (gestureState.dx > 30) spinToPrevious();
+                  },
+                })
+              : null;
 
           return (
             <Animated.View
               key={`${card.originalIndex}-${displayIndex}`}
+              {...(panResponder ? panResponder.panHandlers : {})}
               style={[
                 styles.cardContainer,
                 {

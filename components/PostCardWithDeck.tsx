@@ -97,12 +97,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
-  // Animate deck position: counter the card's translateY during drag
-  const deckTranslateY = translationY.interpolate({
-    inputRange: [-1000, 0, 1000],
-    outputRange: [1000, 0, -1000], // Opposite direction to keep deck stationary
-  });
-
   // Animate deck scale and position when revealed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
@@ -130,14 +124,14 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               styles.container,
             ]}
           >
-            {/* Deck peeking out from behind - stays put during drag, expands when revealed */}
+            {/* Deck peeking out from behind - position absolute keeps it stationary during drag */}
             <Animated.View 
               style={[
                 styles.deckPeek, 
                 { 
                   top: -peekAmount,
                   transform: [
-                    { translateY: Animated.add(deckTranslateY, deckExpandY) },
+                    { translateY: deckExpandY },
                     { scale: deckScale },
                   ],
                 }

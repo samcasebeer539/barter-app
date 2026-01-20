@@ -108,15 +108,24 @@ export default function ProfileScreen() {
       }
       
       // Validate the target index
-      if (targetIndex >= 0 && targetIndex < POSTS.length) {
+      if (targetIndex >= 0 && targetIndex < POSTS.length && targetIndex !== currentCardIndex) {
         const targetPost = POSTS[targetIndex];
         
         // Only allow scrolling to cards with decks
         if (targetPost.hasDeck) {
           const targetPosition = targetIndex * (cardWidth + cardSpacing);
-          scrollViewRef.current?.scrollTo({
-            x: targetPosition,
-            animated: true,
+          
+          // Use timing animation for smoother scrolling
+          Animated.timing(scrollX, {
+            toValue: targetPosition,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => {
+            // After animation completes, actually scroll the ScrollView to sync state
+            scrollViewRef.current?.scrollTo({
+              x: targetPosition,
+              animated: false,
+            });
           });
         }
       }

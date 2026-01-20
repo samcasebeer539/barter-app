@@ -175,6 +175,7 @@ export default function ProfileScreen() {
             onHandlerStateChange={handlePanStateChange}
             enabled={isDeckRevealed}
             activeOffsetX={[-10, 10]}
+            failOffsetY={[-10, 10]}
           >
             <Animated.View style={{ flex: 1 }}>
               <Animated.ScrollView

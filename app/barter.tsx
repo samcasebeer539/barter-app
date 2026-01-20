@@ -34,7 +34,7 @@ export default function BarterScreen() {
       {/* Header with profile photo and name */}
       <View style={styles.header}>
         <ProfilePicture size={50} avatarText="👤" />
-        <Text style={styles.name}>Sam Casebeer</Text>
+        <Text style={styles.name}>Jay Wilson</Text>
       </View>
 
       {/* Main content area with card wireframes */}
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: -40,
+    marginBottom: 30,
   },
   wireframe: {
     width: '100%',

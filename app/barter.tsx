@@ -29,12 +29,6 @@ export default function BarterScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      
-      {/* Main content area */}
-      <View style={styles.mainContent}>
-        <Text style={styles.placeholderText}>Barter Screen</Text>
-        <Text style={styles.instructions}>Main content will go here</Text>
-      </View>
 
       {/* Card Wheel at bottom */}
       <View style={styles.cardWheelContainer}>
@@ -69,9 +63,9 @@ const styles = StyleSheet.create({
   },
   cardWheelContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: -500,
     left: 0,
     right: 0,
-    paddingBottom: 100, // Space for tab bar
+    paddingBottom: 0, // Space for tab bar
   },
 });

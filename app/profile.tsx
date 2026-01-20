@@ -34,7 +34,7 @@ const POSTS = [
       'https://picsum.photos/seed/camera2/500/700',
       'https://picsum.photos/seed/camera3/600/600',
     ],
-    hasDeck: false,
+    hasDeck: true, // Now this one has a deck too
   },
   {
     type: 'service' as const,

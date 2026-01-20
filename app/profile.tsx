@@ -10,6 +10,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
+import ProfilePicture from '@/components/ProfilePicture';
 
 const POSTS = [
   {
@@ -89,9 +90,7 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>👤</Text>
-          </View>
+          <ProfilePicture size={80} avatarText="👤" />
 
           <Text style={styles.name}>Sam Casebeer</Text>
 
@@ -199,21 +198,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 30,
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  avatarText: {
-    fontSize: 40,
-  },
   name: {
     fontSize: 24,
     fontWeight: '600',
+    marginTop: 16,
     marginBottom: 16,
     color: '#fff',
   },

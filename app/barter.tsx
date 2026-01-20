@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 16,
-    marginBottom: 40,
+    marginBottom: 400,
   },
   leftCard: {
     width: 200,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   cardWheelContainer: {
     position: 'absolute',
-    bottom: -500,
+    bottom: -530,
     left: 0,
     right: 0,
     paddingBottom: 0,

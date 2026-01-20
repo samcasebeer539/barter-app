@@ -26,6 +26,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [titleWidth, setTitleWidth] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const titleScrollX = useRef(new Animated.Value(0)).current;
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(post.type === 'service' ? 250 : 100)).current;
@@ -58,28 +59,44 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
   // Auto-scroll title if it's too long
   useEffect(() => {
+    // Stop any existing animation
+    if (animationRef.current) {
+      animationRef.current.stop();
+    }
+
     if (titleWidth > containerWidth && containerWidth > 0) {
-      const scrollDistance = titleWidth - containerWidth;
-      const duration = scrollDistance * 20; // Adjust speed here
+      const scrollDistance = titleWidth - containerWidth + 20; // Add padding
+      const duration = Math.max(scrollDistance * 30, 2000); // Minimum 2 seconds
       
-      Animated.loop(
+      animationRef.current = Animated.loop(
         Animated.sequence([
-          Animated.delay(1000),
+          Animated.delay(1500),
           Animated.timing(titleScrollX, {
             toValue: -scrollDistance,
             duration: duration,
             useNativeDriver: true,
           }),
-          Animated.delay(1000),
+          Animated.delay(1500),
           Animated.timing(titleScrollX, {
             toValue: 0,
             duration: duration,
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
+      
+      animationRef.current.start();
+    } else {
+      // Reset position if title fits
+      titleScrollX.setValue(0);
     }
-  }, [titleWidth, containerWidth]);
+
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    };
+  }, [titleWidth, containerWidth, titleScrollX]);
 
   // Animate both description height and photo bottom
   useEffect(() => {

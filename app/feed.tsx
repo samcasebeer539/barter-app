@@ -1,14 +1,24 @@
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 
 const { width } = Dimensions.get('window');
 
-// Sample barter items - later you'll fetch from backend
+// Sample barter items with actual images
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: '📷', type: 'good' },
-
+  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/400', type: 'good' },
+  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/500', type: 'service' },
+  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/600', type: 'service' },
+  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/400', type: 'good' },
+  { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/500', type: 'service' },
+  { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/600', type: 'good' },
+  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/400', type: 'service' },
+  { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/500', type: 'good' },
+  { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/600', type: 'service' },
+  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/400', type: 'good' },
+  { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/500', type: 'service' },
+  { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/600', type: 'good' },
 ];
 
 export default function FeedScreen() {
@@ -47,7 +57,11 @@ export default function FeedScreen() {
     <View key={item.id} style={styles.cardWrapper}>
       <TouchableOpacity style={styles.card}>
         <View style={styles.imageContainer}>
-          <Text style={styles.emoji}>{item.image}</Text>
+          <Image 
+            source={{ uri: item.image }} 
+            style={styles.image}
+            resizeMode="cover"
+          />
           <View style={styles.typeIconContainer}>
             <MaterialIcons 
               name={item.type === 'service' ? 'schedule' : 'inventory-2'} 
@@ -149,12 +163,11 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     backgroundColor: '#2C2C2E',
-    justifyContent: 'center',
-    alignItems: 'center',
     position: 'relative',
   },
-  emoji: {
-    fontSize: 64,
+  image: {
+    width: '100%',
+    height: '100%',
   },
   typeIconContainer: {
     position: 'absolute',

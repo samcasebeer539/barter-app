@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 30,
+    paddingBottom: 10,
     paddingHorizontal: 20,
   },
   profileRow: {

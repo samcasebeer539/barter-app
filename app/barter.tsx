@@ -49,11 +49,6 @@ export default function BarterScreen() {
         <CardWheel cards={sampleCards} />
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Deck Placeholder</Text>
-        <Text style={styles.instructions}>showing a stacked deck effect</Text>
-        <Deck post={samplePost} />
-      </View>
     </ScrollView>
   );
 }

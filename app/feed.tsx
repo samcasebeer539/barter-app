@@ -7,8 +7,8 @@ const { width } = Dimensions.get('window');
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 250 }, // 4:5 ratio
-  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 160 }, // 5:4 ratio
+  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 150 }, // 4:5 ratio
+  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 200 }, // 5:4 ratio
   { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 }, // 5:6 ratio
   { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 }, // 20:17 ratio
   { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/520', type: 'service', height: 260 }, // ~3:4 ratio

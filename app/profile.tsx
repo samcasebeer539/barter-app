@@ -87,19 +87,29 @@ export default function ProfileScreen() {
   };
 
   // Determine if scrolling should be enabled
-  // Only allow scrolling if deck is NOT revealed, OR if both current and next cards have decks
+  // Allow scrolling if deck is NOT revealed, OR if adjacent cards (both next AND previous) have decks
   const isScrollEnabled = () => {
     if (!isDeckRevealed) {
       return true; // Always allow scrolling when deck is collapsed
     }
     
-    // When deck is revealed, only allow scrolling if next card also has a deck
-    const nextIndex = currentCardIndex + 1;
-    if (nextIndex >= POSTS.length) {
-      return false; // Can't scroll past the last card
+    // When deck is revealed, check if we can scroll to adjacent cards with decks
+    const currentPost = POSTS[currentCardIndex];
+    
+    // If current card doesn't have a deck, allow normal scrolling
+    if (!currentPost.hasDeck) {
+      return true;
     }
     
-    return POSTS[currentCardIndex].hasDeck && POSTS[nextIndex].hasDeck;
+    // Check if there are adjacent cards with decks
+    const prevIndex = currentCardIndex - 1;
+    const nextIndex = currentCardIndex + 1;
+    
+    const hasPrevDeck = prevIndex >= 0 && POSTS[prevIndex].hasDeck;
+    const hasNextDeck = nextIndex < POSTS.length && POSTS[nextIndex].hasDeck;
+    
+    // Allow scrolling if at least one adjacent card has a deck
+    return hasPrevDeck || hasNextDeck;
   };
 
   return (

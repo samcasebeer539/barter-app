@@ -29,6 +29,21 @@ export default function BarterScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      
+      {/* Main content area with card wireframes */}
+      <View style={styles.mainContent}>
+        <View style={styles.cardsContainer}>
+          {/* Left card - larger and higher */}
+          <View style={styles.leftCard}>
+            <View style={styles.wireframe} />
+          </View>
+          
+          {/* Right card - smaller and lower */}
+          <View style={styles.rightCard}>
+            <View style={styles.wireframe} />
+          </View>
+        </View>
+      </View>
 
       {/* Card Wheel at bottom */}
       <View style={styles.cardWheelContainer}>
@@ -48,24 +63,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 60,
-  },
-  placeholderText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  instructions: {
-    color: '#aaa',
-    fontSize: 14,
-    textAlign: 'center',
     paddingHorizontal: 20,
+  },
+  cardsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 16,
+    marginBottom: 40,
+  },
+  leftCard: {
+    width: 200,
+    height: 280,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rightCard: {
+    width: 140,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: -40,
+  },
+  wireframe: {
+    width: '100%',
+    height: '100%',
+    borderWidth: 2,
+    borderColor: '#333',
+    borderRadius: 16,
+    borderStyle: 'dashed',
   },
   cardWheelContainer: {
     position: 'absolute',
     bottom: -500,
     left: 0,
     right: 0,
-    paddingBottom: 0, // Space for tab bar
+    paddingBottom: 0,
   },
 });

@@ -56,7 +56,6 @@ export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
-  const lastValidScrollPosition = useRef(0);
   
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
@@ -84,38 +83,26 @@ export default function ProfileScreen() {
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / (cardWidth + cardSpacing));
-    
-    // If deck is revealed and user tries to scroll to a card without a deck, prevent it
-    if (isDeckRevealed && index >= 0 && index < POSTS.length) {
-      const targetPost = POSTS[index];
-      
-      // If trying to scroll to a card without a deck while revealed, snap back
-      if (!targetPost.hasDeck) {
-        scrollViewRef.current?.scrollTo({
-          x: lastValidScrollPosition.current,
-          animated: true,
-        });
-        return;
-      }
-      
-      // Update last valid position if this card has a deck
-      lastValidScrollPosition.current = scrollPosition;
-    } else if (!isDeckRevealed) {
-      // Update last valid position when not revealed
-      lastValidScrollPosition.current = scrollPosition;
-    }
-    
     setCurrentCardIndex(index);
   };
 
-  // Determine if scrolling should be enabled
-  const isScrollEnabled = () => {
-    if (!isDeckRevealed) {
-      return true; // Always allow scrolling when deck is collapsed
-    }
+  const handleMomentumScrollEnd = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / (cardWidth + cardSpacing));
     
-    // When deck is revealed, only allow scrolling between cards that have decks
-    return true; // We'll handle the restriction in handleScroll
+    // If deck is revealed and we ended on a card without a deck, snap back to current valid card
+    if (isDeckRevealed && index >= 0 && index < POSTS.length) {
+      const targetPost = POSTS[index];
+      
+      if (!targetPost.hasDeck) {
+        // Snap back to the current card with a deck
+        const validPosition = currentCardIndex * (cardWidth + cardSpacing);
+        scrollViewRef.current?.scrollTo({
+          x: validPosition,
+          animated: true,
+        });
+      }
+    }
   };
 
   return (
@@ -176,7 +163,7 @@ export default function ProfileScreen() {
               paddingHorizontal: sidePadding,
               paddingBottom: 50, // Extra bottom padding for drag space
             }}
-            scrollEnabled={isScrollEnabled()}
+            scrollEnabled={!isDeckRevealed}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { 
@@ -184,6 +171,7 @@ export default function ProfileScreen() {
                 listener: handleScroll,
               }
             )}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
             scrollEventThrottle={16}
           >
             {POSTS.map((post, index) => {

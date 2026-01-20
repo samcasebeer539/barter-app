@@ -1,6 +1,20 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
+function TabBarBackground() {
+  return (
+    <View style={[StyleSheet.absoluteFill, { height: 120 }]}>
+      <LinearGradient
+        colors={['rgba(20, 20, 20, 0)', 'rgba(20, 20, 20, 0.95)', '#141414']}
+        locations={[0, 0.6, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   return (
@@ -8,21 +22,22 @@ export default function RootLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: '#FFA600',
-          tabBarInactiveTintColor: '#8E8E93',
+          tabBarInactiveTintColor: '#fff',
           tabBarStyle: {
-            backgroundColor: '#1C1C1E',
-            borderTopWidth: 0.5,
-            borderTopColor: '#38383A',
-            height: 70,
+            backgroundColor: 'transparent',
+            borderTopWidth: 0,
+            height: 80,
             paddingBottom: 10,
-            paddingTop: 10,
+            paddingTop: 20,
+            position: 'absolute',
           },
+          tabBarBackground: () => <TabBarBackground />,
           tabBarShowLabel: false,
           headerShown: false,
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="feed"
           options={{
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="home" size={28} color={color} />
@@ -43,6 +58,12 @@ export default function RootLayout() {
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="account-circle" size={28} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="index"
+          options={{
+            href: null, // Hide from tab bar
           }}
         />
       </Tabs>

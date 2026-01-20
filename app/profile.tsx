@@ -7,7 +7,9 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PostCard from '../components/PostCard';
+import PostCardWithDeck from '../components/PostCardWithDeck';
 
 const POSTS = [
   {
@@ -47,17 +49,46 @@ const POSTS = [
 
 export default function ProfileScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
+  const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
   const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
 
   const cardWidth = Math.min(screenWidth - 110, 400);
-  const cardSpacing = 30;
+  const cardSpacing = 10;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
+  // Interpolate animations based on reveal progress
+  const headerTranslateY = revealProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -400], // Move header completely out of view
+  });
+
+  const carouselTranslateY = revealProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
+  });
+
+  const handleRevealChange = (revealed: boolean) => {
+    console.log('Deck revealed:', revealed);
+  };
+
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <GestureHandlerRootView style={styles.container}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        scrollEnabled={false}
+        style={{ overflow: 'visible' }}
+      >
         {/* HEADER */}
-        <View style={styles.header}>
+        <Animated.View 
+          style={[
+            styles.header,
+            {
+              transform: [{ translateY: headerTranslateY }],
+              zIndex: -1,
+            },
+          ]}
+        >
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>👤</Text>
           </View>
@@ -75,17 +106,28 @@ export default function ProfileScreen() {
               <Text style={styles.tagtextPurple}>Master Barterer</Text>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* CAROUSEL */}
-        <View style={styles.cardsWrapper}>
+        <Animated.View 
+          style={[
+            styles.cardsWrapper,
+            {
+              transform: [{ translateY: carouselTranslateY }],
+              zIndex: 10,
+              overflow: 'visible',
+            },
+          ]}
+        >
           <Animated.ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             snapToInterval={cardWidth + cardSpacing}
             decelerationRate="fast"
+            style={{ overflow: 'visible' }}
             contentContainerStyle={{
               paddingHorizontal: sidePadding,
+              paddingBottom: 50, // Extra bottom padding for drag space
             }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -102,7 +144,7 @@ export default function ProfileScreen() {
               ];
               const scale = scrollX.interpolate({
                 inputRange,
-                outputRange: [0.85, 0.95, 0.85],
+                outputRange: [0.9, 1, 0.9],
                 extrapolate: 'clamp',
               });
 
@@ -113,18 +155,30 @@ export default function ProfileScreen() {
                     width: cardWidth,
                     marginRight: index < POSTS.length - 1 ? cardSpacing : 0,
                     transform: [{ scale: scale ?? 1 }],
+                    overflow: 'visible',
                   }}
                 >
-                  <View style={{ flex: 1 }}>
-                    <PostCard post={post} scale={1} />
+                  <View style={{ flex: 1, overflow: 'visible' }}>
+                    {/* Use PostCardWithDeck for the first card */}
+                    {index === 0 ? (
+                      <PostCardWithDeck 
+                        post={post} 
+                        scale={1} 
+                        cardWidth={cardWidth}
+                        revealProgress={revealProgress}
+                        onRevealChange={handleRevealChange}
+                      />
+                    ) : (
+                      <PostCard post={post} scale={1} cardWidth={cardWidth} />
+                    )}
                   </View>
                 </Animated.View>
               );
             })}
           </Animated.ScrollView>
-        </View>
+        </Animated.View>
       </ScrollView>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
@@ -135,12 +189,15 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+    paddingTop: 30,
     backgroundColor: '#141414',
+    flexGrow: 1,
+    overflow: 'visible',
   },
   header: {
     alignItems: 'center',
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
   avatar: {
     width: 80,
@@ -158,6 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     marginBottom: 16,
+    color: '#fff',
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -180,6 +238,6 @@ const styles = StyleSheet.create({
   tagtextGreen: { color: '#34C759', fontSize: 12, fontWeight: '500' },
   tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
   cardsWrapper: {
-    marginTop: 20,
+    marginTop: 230, // Increased to push carousel down more in initial position
   },
 });

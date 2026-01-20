@@ -34,6 +34,8 @@ npx expo start
 # or
 npx expo start --tunnel
 # this is the one that works for me
+npx expo start --tunnel --clear
+# this worked when just tunnel didn't
 ```
 
 ### 4. Run on your iPhone

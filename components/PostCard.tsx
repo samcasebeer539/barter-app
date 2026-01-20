@@ -22,6 +22,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const titleScrollViewRef = useRef<ScrollView>(null);
+  const [titleWidth, setTitleWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const titleScrollX = useRef(new Animated.Value(0)).current;
 
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(post.type === 'service' ? 250 : 100)).current;
@@ -51,6 +55,31 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
       );
     });
   }, [post.photos]);
+
+  // Auto-scroll title if it's too long
+  useEffect(() => {
+    if (titleWidth > containerWidth && containerWidth > 0) {
+      const scrollDistance = titleWidth - containerWidth;
+      const duration = scrollDistance * 20; // Adjust speed here
+      
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(1000),
+          Animated.timing(titleScrollX, {
+            toValue: -scrollDistance,
+            duration: duration,
+            useNativeDriver: true,
+          }),
+          Animated.delay(1000),
+          Animated.timing(titleScrollX, {
+            toValue: 0,
+            duration: duration,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [titleWidth, containerWidth]);
 
   // Animate both description height and photo bottom
   useEffect(() => {
@@ -97,10 +126,22 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               color="#000"
             />
           </View>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title} numberOfLines={2}>
-              {post.name}
-            </Text>
+          <View 
+            style={styles.titleContainer}
+            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+          >
+            <View style={styles.titleScrollContainer}>
+              <Animated.Text 
+                style={[
+                  styles.title,
+                  { transform: [{ translateX: titleScrollX }] }
+                ]}
+                numberOfLines={1}
+                onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
+              >
+                {post.name}
+              </Animated.Text>
+            </View>
           </View>
         </View>
 
@@ -195,8 +236,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconContainer: { flexShrink: 0, paddingTop: 2 },
-  titleContainer: { flex: 1 },
-  title: { fontSize: 18, fontWeight: '600', lineHeight: 24, color: '#000' },
+  titleContainer: { 
+    flex: 1,
+    overflow: 'hidden',
+  },
+  titleScrollContainer: {
+    flexDirection: 'row',
+  },
+  title: { 
+    fontSize: 18, 
+    fontWeight: '600', 
+    lineHeight: 24, 
+    color: '#000',
+  },
   photoSectionWrapper: { position: 'absolute', top: 60, left: 16, right: 16 },
   photoSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { alignItems: 'center' },

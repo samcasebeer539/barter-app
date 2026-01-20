@@ -37,6 +37,12 @@ export default function RootLayout() {
         }}
       >
         <Tabs.Screen
+          name="index"
+          options={{
+            href: null, // Hide from tab bar completely
+          }}
+        />
+        <Tabs.Screen
           name="feed"
           options={{
             tabBarIcon: ({ color }) => (

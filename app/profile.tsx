@@ -22,6 +22,7 @@ const POSTS = [
       'https://picsum.photos/seed/portrait1/400/600',
       'https://picsum.photos/seed/square1/500/500',
     ],
+    hasDeck: true, // Mark which posts have decks
   },
   {
     type: 'good' as const,
@@ -33,6 +34,7 @@ const POSTS = [
       'https://picsum.photos/seed/camera2/500/700',
       'https://picsum.photos/seed/camera3/600/600',
     ],
+    hasDeck: false,
   },
   {
     type: 'service' as const,
@@ -44,12 +46,17 @@ const POSTS = [
       'https://picsum.photos/seed/guitar2/400/600',
       'https://picsum.photos/seed/guitar3/500/500',
     ],
+    hasDeck: false,
   },
 ];
 
 export default function ProfileScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
+  const [isDeckRevealed, setIsDeckRevealed] = useState(false);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+  
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
@@ -70,6 +77,29 @@ export default function ProfileScreen() {
 
   const handleRevealChange = (revealed: boolean) => {
     console.log('Deck revealed:', revealed);
+    setIsDeckRevealed(revealed);
+  };
+
+  const handleScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / (cardWidth + cardSpacing));
+    setCurrentCardIndex(index);
+  };
+
+  // Determine if scrolling should be enabled
+  // Only allow scrolling if deck is NOT revealed, OR if both current and next cards have decks
+  const isScrollEnabled = () => {
+    if (!isDeckRevealed) {
+      return true; // Always allow scrolling when deck is collapsed
+    }
+    
+    // When deck is revealed, only allow scrolling if next card also has a deck
+    const nextIndex = currentCardIndex + 1;
+    if (nextIndex >= POSTS.length) {
+      return false; // Can't scroll past the last card
+    }
+    
+    return POSTS[currentCardIndex].hasDeck && POSTS[nextIndex].hasDeck;
   };
 
   return (
@@ -120,6 +150,7 @@ export default function ProfileScreen() {
           ]}
         >
           <Animated.ScrollView
+            ref={scrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             snapToInterval={cardWidth + cardSpacing}
@@ -129,9 +160,13 @@ export default function ProfileScreen() {
               paddingHorizontal: sidePadding,
               paddingBottom: 50, // Extra bottom padding for drag space
             }}
+            scrollEnabled={isScrollEnabled()}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: true }
+              { 
+                useNativeDriver: true,
+                listener: handleScroll,
+              }
             )}
             scrollEventThrottle={16}
           >
@@ -159,8 +194,8 @@ export default function ProfileScreen() {
                   }}
                 >
                   <View style={{ flex: 1, overflow: 'visible' }}>
-                    {/* Use PostCardWithDeck for the first card */}
-                    {index === 0 ? (
+                    {/* Use PostCardWithDeck for posts that have decks */}
+                    {post.hasDeck ? (
                       <PostCardWithDeck 
                         post={post} 
                         scale={1} 

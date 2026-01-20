@@ -56,6 +56,7 @@ export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const lastValidScrollPosition = useRef(0);
   
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
@@ -83,33 +84,38 @@ export default function ProfileScreen() {
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / (cardWidth + cardSpacing));
+    
+    // If deck is revealed and user tries to scroll to a card without a deck, prevent it
+    if (isDeckRevealed && index >= 0 && index < POSTS.length) {
+      const targetPost = POSTS[index];
+      
+      // If trying to scroll to a card without a deck while revealed, snap back
+      if (!targetPost.hasDeck) {
+        scrollViewRef.current?.scrollTo({
+          x: lastValidScrollPosition.current,
+          animated: true,
+        });
+        return;
+      }
+      
+      // Update last valid position if this card has a deck
+      lastValidScrollPosition.current = scrollPosition;
+    } else if (!isDeckRevealed) {
+      // Update last valid position when not revealed
+      lastValidScrollPosition.current = scrollPosition;
+    }
+    
     setCurrentCardIndex(index);
   };
 
   // Determine if scrolling should be enabled
-  // Allow scrolling if deck is NOT revealed, OR if adjacent cards (both next AND previous) have decks
   const isScrollEnabled = () => {
     if (!isDeckRevealed) {
       return true; // Always allow scrolling when deck is collapsed
     }
     
-    // When deck is revealed, check if we can scroll to adjacent cards with decks
-    const currentPost = POSTS[currentCardIndex];
-    
-    // If current card doesn't have a deck, allow normal scrolling
-    if (!currentPost.hasDeck) {
-      return true;
-    }
-    
-    // Check if there are adjacent cards with decks
-    const prevIndex = currentCardIndex - 1;
-    const nextIndex = currentCardIndex + 1;
-    
-    const hasPrevDeck = prevIndex >= 0 && POSTS[prevIndex].hasDeck;
-    const hasNextDeck = nextIndex < POSTS.length && POSTS[nextIndex].hasDeck;
-    
-    // Allow scrolling if at least one adjacent card has a deck
-    return hasPrevDeck || hasNextDeck;
+    // When deck is revealed, only allow scrolling between cards that have decks
+    return true; // We'll handle the restriction in handleScroll
   };
 
   return (

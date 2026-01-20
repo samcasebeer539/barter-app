@@ -19,69 +19,70 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const middleRingSize = innerRingSize + (ringGap * 2) + (ringThickness * 2);
   const outerRingSize = middleRingSize + (ringGap * 2) + (ringThickness * 2);
   
-  // Create arc segments with actual gaps using mask technique
+  // Create a segmented ring with 4 arcs and small gaps
   const createSegmentedRing = (ringSize: number, color: string) => {
-    const segmentWidth = (ringSize * Math.PI) / 4 - 5; // Quarter circle minus gap
-    const radius = ringSize / 2;
+    // Each segment covers 88 degrees (leaving 2 degree gaps between them)
+    const gapSize = 3; // Small gap in pixels
     
     return (
-      <>
-        {/* Top segment */}
-        <View style={{
-          position: 'absolute',
-          width: segmentWidth,
-          height: ringThickness,
-          backgroundColor: color,
-          top: 0,
-          left: (ringSize - segmentWidth) / 2,
-          borderRadius: ringThickness / 2,
-        }} />
-        
-        {/* Right segment */}
-        <View style={{
-          position: 'absolute',
-          width: ringThickness,
-          height: segmentWidth,
-          backgroundColor: color,
-          right: 0,
-          top: (ringSize - segmentWidth) / 2,
-          borderRadius: ringThickness / 2,
-        }} />
-        
-        {/* Bottom segment */}
-        <View style={{
-          position: 'absolute',
-          width: segmentWidth,
-          height: ringThickness,
-          backgroundColor: color,
-          bottom: 0,
-          left: (ringSize - segmentWidth) / 2,
-          borderRadius: ringThickness / 2,
-        }} />
-        
-        {/* Left segment */}
-        <View style={{
-          position: 'absolute',
-          width: ringThickness,
-          height: segmentWidth,
-          backgroundColor: color,
-          left: 0,
-          top: (ringSize - segmentWidth) / 2,
-          borderRadius: ringThickness / 2,
-        }} />
-      </>
+      <View style={{ position: 'relative', width: ringSize, height: ringSize }}>
+        {/* Create 4 arc segments */}
+        {[0, 90, 180, 270].map((rotation, index) => (
+          <View
+            key={index}
+            style={{
+              position: 'absolute',
+              width: ringSize,
+              height: ringSize,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Mask container - rotated to position the arc */}
+            <View style={{
+              position: 'absolute',
+              width: ringSize,
+              height: ringSize,
+              transform: [{ rotate: `${rotation}deg` }],
+            }}>
+              {/* Mask that shows only a quarter (minus gap) */}
+              <View style={{
+                position: 'absolute',
+                width: ringSize / 2,
+                height: ringSize / 2,
+                right: -gapSize / 2,
+                top: -gapSize / 2,
+                overflow: 'hidden',
+              }}>
+                {/* The actual ring (rotated back to be level) */}
+                <View style={{
+                  position: 'absolute',
+                  width: ringSize,
+                  height: ringSize,
+                  borderRadius: ringSize / 2,
+                  borderWidth: ringThickness,
+                  borderColor: color,
+                  backgroundColor: 'transparent',
+                  left: -ringSize / 2 + gapSize / 2,
+                  top: -ringSize / 2 + gapSize / 2,
+                  transform: [{ rotate: `${-rotation}deg` }],
+                }} />
+              </View>
+            </View>
+          </View>
+        ))}
+      </View>
     );
   };
 
   return (
     <View style={[styles.container, { width: outerRingSize, height: outerRingSize }]}>
       {/* Outer Ring (Pink, Segmented) */}
-      <View style={[styles.ringContainer, { width: outerRingSize, height: outerRingSize, borderRadius: outerRingSize / 2 }]}>
+      <View style={[styles.ringContainer, { width: outerRingSize, height: outerRingSize }]}>
         {createSegmentedRing(outerRingSize, '#FF3B81')}
       </View>
 
       {/* Middle Ring (Yellow, Segmented) */}
-      <View style={[styles.ringContainer, { width: middleRingSize, height: middleRingSize, borderRadius: middleRingSize / 2 }]}>
+      <View style={[styles.ringContainer, { width: middleRingSize, height: middleRingSize }]}>
         {createSegmentedRing(middleRingSize, '#FFA600')}
       </View>
 
@@ -119,7 +120,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
   avatar: {
     backgroundColor: '#f0f0f0',

@@ -107,7 +107,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Move deck upward - doubled to -600
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -600], // Move up 600px when revealed
+    outputRange: [0, -550], // Move up 550px when revealed
   }) || 0;
 
   return (
@@ -131,7 +131,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.deckPeek, 
                 { 
-                  top: -peekAmount,
+                  top: -peekAmount - 200,
                   transform: [
                     { translateY: deckExpandY },
                     { scale: deckScale },

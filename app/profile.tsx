@@ -65,7 +65,7 @@ export default function ProfileScreen() {
 
   const carouselTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, screenHeight * 0.7], // Move carousel way down (70% of screen height)
+    outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
   });
 
   const handleRevealChange = (revealed: boolean) => {
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
             style={{ overflow: 'visible' }}
             contentContainerStyle={{
               paddingHorizontal: sidePadding,
-              paddingBottom: 120, // Extra bottom padding for drag space
+              paddingBottom: 50, // Extra bottom padding for drag space
             }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -238,6 +238,6 @@ const styles = StyleSheet.create({
   tagtextGreen: { color: '#34C759', fontSize: 12, fontWeight: '500' },
   tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
   cardsWrapper: {
-    marginTop: 60, // Increased to push carousel down more in initial position
+    marginTop: 230, // Increased to push carousel down more in initial position
   },
 });

@@ -7,7 +7,7 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 
@@ -22,7 +22,6 @@ const POSTS = [
       'https://picsum.photos/seed/portrait1/400/600',
       'https://picsum.photos/seed/square1/500/500',
     ],
-    hasDeck: true,
   },
   {
     type: 'good' as const,
@@ -34,7 +33,6 @@ const POSTS = [
       'https://picsum.photos/seed/camera2/500/700',
       'https://picsum.photos/seed/camera3/600/600',
     ],
-    hasDeck: true,
   },
   {
     type: 'service' as const,
@@ -46,17 +44,12 @@ const POSTS = [
       'https://picsum.photos/seed/guitar2/400/600',
       'https://picsum.photos/seed/guitar3/500/500',
     ],
-    hasDeck: false,
   },
 ];
 
 export default function ProfileScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
-  const revealProgress = useRef(new Animated.Value(0)).current;
-  const [isDeckRevealed, setIsDeckRevealed] = useState(false);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
-  
+  const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
@@ -64,72 +57,19 @@ export default function ProfileScreen() {
   const cardSpacing = 10;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
+  // Interpolate animations based on reveal progress
   const headerTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -400],
+    outputRange: [0, -400], // Move header completely out of view
   });
 
   const carouselTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, screenHeight * 0.4],
+    outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
   });
 
   const handleRevealChange = (revealed: boolean) => {
     console.log('Deck revealed:', revealed);
-    setIsDeckRevealed(revealed);
-  };
-
-  const handleScroll = (event: any) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / (cardWidth + cardSpacing));
-    setCurrentCardIndex(index);
-  };
-
-  // Custom pan gesture handler for when deck is revealed
-  const onPanGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: new Animated.Value(0) } }],
-    { useNativeDriver: false }
-  );
-
-  const handlePanStateChange = (event: any) => {
-    if (event.nativeEvent.state === State.END && isDeckRevealed) {
-      const { translationX, velocityX } = event.nativeEvent;
-      
-      // Determine scroll direction
-      let targetIndex = currentCardIndex;
-      
-      // Swipe left (go to next card)
-      if (translationX < -50 || velocityX < -500) {
-        targetIndex = currentCardIndex + 1;
-      }
-      // Swipe right (go to previous card)
-      else if (translationX > 50 || velocityX > 500) {
-        targetIndex = currentCardIndex - 1;
-      }
-      
-      // Validate the target index
-      if (targetIndex >= 0 && targetIndex < POSTS.length && targetIndex !== currentCardIndex) {
-        const targetPost = POSTS[targetIndex];
-        
-        // Only allow scrolling to cards with decks
-        if (targetPost.hasDeck) {
-          const targetPosition = targetIndex * (cardWidth + cardSpacing);
-          
-          // Use timing animation for smoother scrolling
-          Animated.timing(scrollX, {
-            toValue: targetPosition,
-            duration: 300,
-            useNativeDriver: true,
-          }).start(() => {
-            // After animation completes, actually scroll the ScrollView to sync state
-            scrollViewRef.current?.scrollTo({
-              x: targetPosition,
-              animated: false,
-            });
-          });
-        }
-      }
-    }
   };
 
   return (
@@ -179,76 +119,63 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          <PanGestureHandler
-            onGestureEvent={onPanGestureEvent}
-            onHandlerStateChange={handlePanStateChange}
-            enabled={isDeckRevealed}
-            activeOffsetX={[-10, 10]}
-            failOffsetY={[-10, 10]}
+          <Animated.ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={cardWidth + cardSpacing}
+            decelerationRate="fast"
+            style={{ overflow: 'visible' }}
+            contentContainerStyle={{
+              paddingHorizontal: sidePadding,
+              paddingBottom: 50, // Extra bottom padding for drag space
+            }}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
           >
-            <Animated.View style={{ flex: 1 }}>
-              <Animated.ScrollView
-                ref={scrollViewRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                snapToInterval={cardWidth + cardSpacing}
-                decelerationRate="fast"
-                style={{ overflow: 'visible' }}
-                contentContainerStyle={{
-                  paddingHorizontal: sidePadding,
-                  paddingBottom: 50,
-                }}
-                scrollEnabled={!isDeckRevealed}
-                onScroll={Animated.event(
-                  [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                  { 
-                    useNativeDriver: true,
-                    listener: handleScroll,
-                  }
-                )}
-                scrollEventThrottle={16}
-              >
-                {POSTS.map((post, index) => {
-                  const inputRange = [
-                    (index - 1) * (cardWidth + cardSpacing),
-                    index * (cardWidth + cardSpacing),
-                    (index + 1) * (cardWidth + cardSpacing),
-                  ];
-                  const scale = scrollX.interpolate({
-                    inputRange,
-                    outputRange: [0.9, 1, 0.9],
-                    extrapolate: 'clamp',
-                  });
+            {POSTS.map((post, index) => {
+              // Calculate the scale for each card
+              const inputRange = [
+                (index - 1) * (cardWidth + cardSpacing),
+                index * (cardWidth + cardSpacing),
+                (index + 1) * (cardWidth + cardSpacing),
+              ];
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.9, 1, 0.9],
+                extrapolate: 'clamp',
+              });
 
-                  return (
-                    <Animated.View
-                      key={index}
-                      style={{
-                        width: cardWidth,
-                        marginRight: index < POSTS.length - 1 ? cardSpacing : 0,
-                        transform: [{ scale: scale ?? 1 }],
-                        overflow: 'visible',
-                      }}
-                    >
-                      <View style={{ flex: 1, overflow: 'visible' }}>
-                        {post.hasDeck ? (
-                          <PostCardWithDeck 
-                            post={post} 
-                            scale={1} 
-                            cardWidth={cardWidth}
-                            revealProgress={revealProgress}
-                            onRevealChange={handleRevealChange}
-                          />
-                        ) : (
-                          <PostCard post={post} scale={1} cardWidth={cardWidth} />
-                        )}
-                      </View>
-                    </Animated.View>
-                  );
-                })}
-              </Animated.ScrollView>
-            </Animated.View>
-          </PanGestureHandler>
+              return (
+                <Animated.View
+                  key={index}
+                  style={{
+                    width: cardWidth,
+                    marginRight: index < POSTS.length - 1 ? cardSpacing : 0,
+                    transform: [{ scale: scale ?? 1 }],
+                    overflow: 'visible',
+                  }}
+                >
+                  <View style={{ flex: 1, overflow: 'visible' }}>
+                    {/* Use PostCardWithDeck for the first card */}
+                    {index === 0 ? (
+                      <PostCardWithDeck 
+                        post={post} 
+                        scale={1} 
+                        cardWidth={cardWidth}
+                        revealProgress={revealProgress}
+                        onRevealChange={handleRevealChange}
+                      />
+                    ) : (
+                      <PostCard post={post} scale={1} cardWidth={cardWidth} />
+                    )}
+                  </View>
+                </Animated.View>
+              );
+            })}
+          </Animated.ScrollView>
         </Animated.View>
       </ScrollView>
     </GestureHandlerRootView>
@@ -311,6 +238,6 @@ const styles = StyleSheet.create({
   tagtextGreen: { color: '#34C759', fontSize: 12, fontWeight: '500' },
   tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
   cardsWrapper: {
-    marginTop: 230,
+    marginTop: 230, // Increased to push carousel down more in initial position
   },
 });

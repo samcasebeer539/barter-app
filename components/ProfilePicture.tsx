@@ -12,7 +12,6 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 }) => {
   const ringGap = 4;
   const ringThickness = 3;
-  const segmentGapDegrees = 5; // Gap between segments in degrees
   
   // Calculate sizes for each ring
   const avatarSize = size;
@@ -20,50 +19,70 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const middleRingSize = innerRingSize + (ringGap * 2) + (ringThickness * 2);
   const outerRingSize = middleRingSize + (ringGap * 2) + (ringThickness * 2);
   
-  // Create a single segment - quarter circle arc
-  const createSegment = (ringSize: number, color: string, rotation: number) => {
-    const halfSize = ringSize / 2;
-    // Reduce the size slightly to create gaps
-    const segmentSize = ringSize * 0.98; // 98% of full size to create small gaps
+  // Create arc segments with actual gaps using mask technique
+  const createSegmentedRing = (ringSize: number, color: string) => {
+    const segmentWidth = (ringSize * Math.PI) / 4 - 5; // Quarter circle minus gap
+    const radius = ringSize / 2;
     
     return (
-      <View
-        key={rotation}
-        style={{
+      <>
+        {/* Top segment */}
+        <View style={{
           position: 'absolute',
-          width: ringSize,
-          height: ringSize,
-          transform: [{ rotate: `${rotation + segmentGapDegrees / 2}deg` }],
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <View
-          style={{
-            width: segmentSize,
-            height: segmentSize,
-            borderTopWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderColor: color,
-            borderTopRightRadius: segmentSize / 2,
-            backgroundColor: 'transparent',
-            transform: [{ rotate: '-45deg' }],
-          }}
-        />
-      </View>
+          width: segmentWidth,
+          height: ringThickness,
+          backgroundColor: color,
+          top: 0,
+          left: (ringSize - segmentWidth) / 2,
+          borderRadius: ringThickness / 2,
+        }} />
+        
+        {/* Right segment */}
+        <View style={{
+          position: 'absolute',
+          width: ringThickness,
+          height: segmentWidth,
+          backgroundColor: color,
+          right: 0,
+          top: (ringSize - segmentWidth) / 2,
+          borderRadius: ringThickness / 2,
+        }} />
+        
+        {/* Bottom segment */}
+        <View style={{
+          position: 'absolute',
+          width: segmentWidth,
+          height: ringThickness,
+          backgroundColor: color,
+          bottom: 0,
+          left: (ringSize - segmentWidth) / 2,
+          borderRadius: ringThickness / 2,
+        }} />
+        
+        {/* Left segment */}
+        <View style={{
+          position: 'absolute',
+          width: ringThickness,
+          height: segmentWidth,
+          backgroundColor: color,
+          left: 0,
+          top: (ringSize - segmentWidth) / 2,
+          borderRadius: ringThickness / 2,
+        }} />
+      </>
     );
   };
 
   return (
     <View style={[styles.container, { width: outerRingSize, height: outerRingSize }]}>
       {/* Outer Ring (Pink, Segmented) */}
-      <View style={[styles.ringContainer, { width: outerRingSize, height: outerRingSize }]}>
-        {[0, 90, 180, 270].map(rotation => createSegment(outerRingSize, '#FF3B81', rotation))}
+      <View style={[styles.ringContainer, { width: outerRingSize, height: outerRingSize, borderRadius: outerRingSize / 2 }]}>
+        {createSegmentedRing(outerRingSize, '#FF3B81')}
       </View>
 
       {/* Middle Ring (Yellow, Segmented) */}
-      <View style={[styles.ringContainer, { width: middleRingSize, height: middleRingSize }]}>
-        {[0, 90, 180, 270].map(rotation => createSegment(middleRingSize, '#FFA600', rotation))}
+      <View style={[styles.ringContainer, { width: middleRingSize, height: middleRingSize, borderRadius: middleRingSize / 2 }]}>
+        {createSegmentedRing(middleRingSize, '#FFA600')}
       </View>
 
       {/* Inner Ring (Blue, Solid) */}
@@ -100,6 +119,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   avatar: {
     backgroundColor: '#f0f0f0',

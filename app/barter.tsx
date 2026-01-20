@@ -1,7 +1,6 @@
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CardWheel from '../components/CardWheel';
-import Deck from '../components/Deck';
 
 export default function BarterScreen() {
   const sampleCards = [
@@ -27,29 +26,21 @@ export default function BarterScreen() {
     },
   ];
 
-  const samplePost = {
-    type: 'good' as const,
-    name: 'Vintage Leather Jacket',
-    description: 'Beautiful vintage leather jacket in excellent condition. Worn only a few times. Perfect for motorcycle enthusiasts or anyone looking for a classic style. This jacket has a timeless design with quality craftsmanship that you just don\'t see anymore.',
-    photos: [
-      'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800',
-      'https://images.unsplash.com/photo-1520975954732-35dd22299614?w=800',
-    ],
-  };
-
-  
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <View style={styles.container}>
       <StatusBar style="light" />
-  
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Card Wheel (also broken)</Text>
-        <Text style={styles.instructions}>this would be for action cards during negotion</Text>
-        <CardWheel cards={sampleCards} />
+      
+      {/* Main content area */}
+      <View style={styles.mainContent}>
+        <Text style={styles.placeholderText}>Barter Screen</Text>
+        <Text style={styles.instructions}>Main content will go here</Text>
       </View>
 
-    </ScrollView>
+      {/* Card Wheel at bottom */}
+      <View style={styles.cardWheelContainer}>
+        <CardWheel cards={sampleCards} />
+      </View>
+    </View>
   );
 }
 
@@ -58,18 +49,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#141414',
   },
-  scrollContent: {
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingTop: 60,
-    paddingBottom: 40,
   },
-  section: {
-    marginBottom: 60,
-  },
-  sectionTitle: {
+  placeholderText: {
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
     marginBottom: 8,
   },
   instructions: {
@@ -77,6 +66,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+  },
+  cardWheelContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: 100, // Space for tab bar
   },
 });

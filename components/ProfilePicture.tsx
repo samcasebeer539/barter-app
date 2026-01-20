@@ -12,6 +12,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 }) => {
   const ringGap = 4;
   const ringThickness = 3;
+  const segmentGapDegrees = 8; // Gap between segments in degrees
   
   // Calculate sizes for each ring
   const avatarSize = size;
@@ -19,123 +20,66 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   const middleRingSize = innerRingSize + (ringGap * 2) + (ringThickness * 2);
   const outerRingSize = middleRingSize + (ringGap * 2) + (ringThickness * 2);
   
+  // Create a single segment with rotation
+  const createSegment = (ringSize: number, color: string, rotation: number) => {
+    const segmentAngle = 90 - segmentGapDegrees; // Each segment takes up 90 degrees minus the gap
+    const halfSize = ringSize / 2;
+    
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          width: ringSize,
+          height: ringSize,
+          transform: [{ rotate: `${rotation}deg` }],
+        }}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            width: halfSize,
+            height: halfSize,
+            top: 0,
+            left: halfSize,
+            borderTopWidth: ringThickness,
+            borderRightWidth: ringThickness,
+            borderColor: color,
+            borderTopRightRadius: ringSize / 2,
+            overflow: 'hidden',
+          }}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.container, { width: outerRingSize, height: outerRingSize }]}>
       {/* Outer Ring (Pink, Segmented) */}
       <View style={[styles.ringContainer, { width: outerRingSize, height: outerRingSize }]}>
-        <View style={[styles.segmentedRing, { width: outerRingSize, height: outerRingSize, borderRadius: outerRingSize / 2 }]}>
-          {/* Top segment */}
-          <View style={[styles.segment, styles.segmentTop, { 
-            width: outerRingSize, 
-            height: outerRingSize / 2,
-            borderTopLeftRadius: outerRingSize / 2,
-            borderTopRightRadius: outerRingSize / 2,
-            borderTopWidth: ringThickness,
-            borderLeftWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderColor: '#FF3B81',
-          }]} />
-          
-          {/* Right segment */}
-          <View style={[styles.segment, styles.segmentRight, { 
-            width: outerRingSize / 2, 
-            height: outerRingSize,
-            borderTopRightRadius: outerRingSize / 2,
-            borderBottomRightRadius: outerRingSize / 2,
-            borderTopWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderBottomWidth: ringThickness,
-            borderColor: '#FF3B81',
-          }]} />
-          
-          {/* Bottom segment */}
-          <View style={[styles.segment, styles.segmentBottom, { 
-            width: outerRingSize, 
-            height: outerRingSize / 2,
-            borderBottomLeftRadius: outerRingSize / 2,
-            borderBottomRightRadius: outerRingSize / 2,
-            borderBottomWidth: ringThickness,
-            borderLeftWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderColor: '#FF3B81',
-          }]} />
-          
-          {/* Left segment */}
-          <View style={[styles.segment, styles.segmentLeft, { 
-            width: outerRingSize / 2, 
-            height: outerRingSize,
-            borderTopLeftRadius: outerRingSize / 2,
-            borderBottomLeftRadius: outerRingSize / 2,
-            borderTopWidth: ringThickness,
-            borderLeftWidth: ringThickness,
-            borderBottomWidth: ringThickness,
-            borderColor: '#FF3B81',
-          }]} />
-        </View>
+        {createSegment(outerRingSize, '#FF3B81', 0)}
+        {createSegment(outerRingSize, '#FF3B81', 90)}
+        {createSegment(outerRingSize, '#FF3B81', 180)}
+        {createSegment(outerRingSize, '#FF3B81', 270)}
       </View>
 
       {/* Middle Ring (Yellow, Segmented) */}
       <View style={[styles.ringContainer, { width: middleRingSize, height: middleRingSize }]}>
-        <View style={[styles.segmentedRing, { width: middleRingSize, height: middleRingSize, borderRadius: middleRingSize / 2 }]}>
-          {/* Top segment */}
-          <View style={[styles.segment, styles.segmentTop, { 
-            width: middleRingSize, 
-            height: middleRingSize / 2,
-            borderTopLeftRadius: middleRingSize / 2,
-            borderTopRightRadius: middleRingSize / 2,
-            borderTopWidth: ringThickness,
-            borderLeftWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderColor: '#FFA600',
-          }]} />
-          
-          {/* Right segment */}
-          <View style={[styles.segment, styles.segmentRight, { 
-            width: middleRingSize / 2, 
-            height: middleRingSize,
-            borderTopRightRadius: middleRingSize / 2,
-            borderBottomRightRadius: middleRingSize / 2,
-            borderTopWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderBottomWidth: ringThickness,
-            borderColor: '#FFA600',
-          }]} />
-          
-          {/* Bottom segment */}
-          <View style={[styles.segment, styles.segmentBottom, { 
-            width: middleRingSize, 
-            height: middleRingSize / 2,
-            borderBottomLeftRadius: middleRingSize / 2,
-            borderBottomRightRadius: middleRingSize / 2,
-            borderBottomWidth: ringThickness,
-            borderLeftWidth: ringThickness,
-            borderRightWidth: ringThickness,
-            borderColor: '#FFA600',
-          }]} />
-          
-          {/* Left segment */}
-          <View style={[styles.segment, styles.segmentLeft, { 
-            width: middleRingSize / 2, 
-            height: middleRingSize,
-            borderTopLeftRadius: middleRingSize / 2,
-            borderBottomLeftRadius: middleRingSize / 2,
-            borderTopWidth: ringThickness,
-            borderLeftWidth: ringThickness,
-            borderBottomWidth: ringThickness,
-            borderColor: '#FFA600',
-          }]} />
-        </View>
+        {createSegment(middleRingSize, '#FFA600', 0)}
+        {createSegment(middleRingSize, '#FFA600', 90)}
+        {createSegment(middleRingSize, '#FFA600', 180)}
+        {createSegment(middleRingSize, '#FFA600', 270)}
       </View>
 
       {/* Inner Ring (Blue, Solid) */}
       <View style={[styles.ringContainer, { width: innerRingSize, height: innerRingSize }]}>
-        <View style={[styles.solidRing, { 
+        <View style={{ 
           width: innerRingSize, 
           height: innerRingSize, 
           borderRadius: innerRingSize / 2,
           borderWidth: ringThickness,
           borderColor: '#3B82F6',
-        }]} />
+          backgroundColor: 'transparent',
+        }} />
       </View>
 
       {/* Avatar in center */}
@@ -160,36 +104,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  solidRing: {
-    backgroundColor: 'transparent',
-  },
-  segmentedRing: {
-    position: 'relative',
-  },
-  segment: {
-    position: 'absolute',
-    backgroundColor: 'transparent',
-  },
-  segmentTop: {
-    top: 0,
-    left: 0,
-    transform: [{ rotate: '0deg' }],
-  },
-  segmentRight: {
-    top: 0,
-    right: 0,
-    transform: [{ rotate: '0deg' }],
-  },
-  segmentBottom: {
-    bottom: 0,
-    left: 0,
-    transform: [{ rotate: '0deg' }],
-  },
-  segmentLeft: {
-    top: 0,
-    left: 0,
-    transform: [{ rotate: '0deg' }],
   },
   avatar: {
     backgroundColor: '#f0f0f0',

@@ -9,7 +9,11 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PostCard from '@/components/PostCard';
+<<<<<<< HEAD
 import PostCardWithDeck from '../components/PostCardWithDeck';
+=======
+import PostCardWithDeck from '@/components/PostCardWithDeck';
+>>>>>>> 87e293bbd6f396e70b1de8093990ad6298e8c560
 
 const POSTS = [
   {

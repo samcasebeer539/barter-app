@@ -27,7 +27,6 @@ const Deck: React.FC<DeckProps> = ({ post, cardWidth }) => {
 
   return (
     <View style={styles.deckContainer}>
-
       {/* Second backing card (furthest back) */}
       <View
         style={[

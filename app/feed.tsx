@@ -5,18 +5,18 @@ import { useState, useRef } from 'react';
 
 const { width } = Dimensions.get('window');
 
-// Sample barter items with actual images and varying aspect ratios
+// Sample barter items with actual images and varying aspect ratios (portrait and landscape)
 const BARTER_ITEMS = [
   { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 250 },
-  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/600', type: 'service', height: 300 },
+  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/500/400', type: 'service', height: 180 },
   { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/450', type: 'service', height: 225 },
-  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/550', type: 'good', height: 275 },
+  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/500/350', type: 'good', height: 160 },
   { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/500', type: 'service', height: 250 },
   { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/650', type: 'good', height: 325 },
-  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/480', type: 'service', height: 240 },
+  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/500/380', type: 'service', height: 170 },
   { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/520', type: 'good', height: 260 },
   { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/600', type: 'service', height: 300 },
-  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/450', type: 'good', height: 225 },
+  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/500/370', type: 'good', height: 165 },
   { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/550', type: 'service', height: 275 },
   { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/580', type: 'good', height: 290 },
 ];

@@ -1,6 +1,7 @@
 import { View, StyleSheet, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CardWheel from '../components/CardWheel';
+import ProfilePicture from '@/components/ProfilePicture';
 
 export default function BarterScreen() {
   const sampleCards = [
@@ -30,6 +31,12 @@ export default function BarterScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
+      {/* Header with profile photo and name */}
+      <View style={styles.header}>
+        <ProfilePicture size={50} avatarText="👤" />
+        <Text style={styles.name}>Sam Casebeer</Text>
+      </View>
+
       {/* Main content area with card wireframes */}
       <View style={styles.mainContent}>
         <View style={styles.cardsContainer}>
@@ -58,11 +65,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#141414',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+    marginLeft: 12,
+  },
   mainContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
     paddingHorizontal: 20,
   },
   cardsContainer: {

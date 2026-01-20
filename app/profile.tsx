@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { MaterialIcons } from '@expo/vector-icons';
 import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
@@ -90,10 +91,25 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          <ProfilePicture size={80} avatarText="👤" />
+          {/* Profile Picture and Name Row */}
+          <View style={styles.profileRow}>
+            <ProfilePicture size={80} avatarText="👤" />
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>Sam Casebeer</Text>
+              <View style={styles.locationRow}>
+                <MaterialIcons name="location-on" size={16} color="#999" />
+                <Text style={styles.location}>Santa Cruz, CA</Text>
+              </View>
+            </View>
+          </View>
 
-          <Text style={styles.name}>Sam Casebeer</Text>
+          {/* Bio */}
+          <Text style={styles.bio}>
+            Passionate about sustainable living and building community through sharing. 
+            Always looking for unique trades and meaningful connections.
+          </Text>
 
+          {/* Tags */}
           <View style={styles.tagsContainer}>
             <View style={[styles.tag, styles.tagPink]}>
               <Text style={styles.tagtextPink}>Community Builder</Text>
@@ -194,23 +210,44 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   header: {
-    alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 30,
+    paddingHorizontal: 20,
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  nameContainer: {
+    marginLeft: 16,
+    flex: 1,
   },
   name: {
     fontSize: 24,
     fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 16,
     color: '#fff',
+    marginBottom: 4,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  location: {
+    fontSize: 14,
+    color: '#999',
+    marginLeft: 4,
+  },
+  bio: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#ccc',
+    marginBottom: 16,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
   },
   tag: {
     paddingHorizontal: 12,

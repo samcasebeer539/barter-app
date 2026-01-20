@@ -8,8 +8,8 @@ import {
   Animated,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import PostCard from '../components/PostCard';
-import PostCardWithDeck from '../components/PostCardWithDeck';
+import PostCard from '@/components/PostCard';
+import PostCardWithDeck from '@/components/PostCardWithDeck';
 
 const POSTS = [
   {

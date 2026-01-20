@@ -5,20 +5,20 @@ import { useState, useRef } from 'react';
 
 const { width } = Dimensions.get('window');
 
-// Sample barter items with actual images and varying aspect ratios (portrait and landscape)
+// Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 250 },
-  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/500/400', type: 'service', height: 180 },
-  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/450', type: 'service', height: 225 },
-  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/500/350', type: 'good', height: 160 },
-  { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/500', type: 'service', height: 250 },
-  { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/650', type: 'good', height: 325 },
-  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/500/380', type: 'service', height: 170 },
-  { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/520', type: 'good', height: 260 },
-  { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/600', type: 'service', height: 300 },
-  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/500/370', type: 'good', height: 165 },
-  { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/550', type: 'service', height: 275 },
-  { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/580', type: 'good', height: 290 },
+  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 250 }, // 4:5 ratio
+  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 160 }, // 5:4 ratio
+  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 }, // 5:6 ratio
+  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 }, // 20:17 ratio
+  { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/520', type: 'service', height: 260 }, // ~3:4 ratio
+  { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'good', height: 250 }, // 4:5 ratio
+  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/310', type: 'service', height: 155 }, // ~4:3 ratio
+  { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/460', type: 'good', height: 230 }, // 20:23 ratio
+  { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/530', type: 'service', height: 265 }, // 3:4 ratio
+  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/330', type: 'good', height: 165 }, // 4:3.3 ratio
+  { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/490', type: 'service', height: 245 }, // 40:49 ratio
+  { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/450', type: 'good', height: 225 }, // 8:9 ratio
 ];
 
 export default function FeedScreen() {

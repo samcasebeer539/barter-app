@@ -144,10 +144,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              {/* Second wireframe card (furthest back) */}
-              <View style={[styles.deckCard, styles.deckCardThird, { height: cardHeight * 0.85 }]} />
-              
-              {/* First wireframe card (middle) */}
+              {/* First wireframe card (back) */}
               <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
               
               {/* UserCard in front */}
@@ -203,15 +200,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   deckCardSecond: {
-    top: 6,
-    width: '92%',
+    top: -8,
+    width: '80%',
     zIndex: 2,
   },
-  deckCardThird: {
-    top: 12,
-    width: '95%',
-    zIndex: 1,
-  },
+
 });
 
 export default PostCardWithDeck;

@@ -144,7 +144,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              {/* Wireframe card in front */}
+              {/* Wireframe card behind */}
               <View style={[styles.deckCard, { height: cardHeight * 0.85 }]} />
               
               {/* UserCard behind - no user prop needed, it's hardcoded */}

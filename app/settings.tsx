@@ -228,6 +228,6 @@ const styles = StyleSheet.create({
     color: '#FF3B81',
   },
   bottomSpacer: {
-    height: 40,
+    height: 80,
   },
 });

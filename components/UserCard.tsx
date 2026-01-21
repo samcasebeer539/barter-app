@@ -11,9 +11,9 @@ interface UserCardProps {
 const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
   // Hardcoded user info - will eventually come from backend
   const user = {
-    name: "Alex Martinez",
-    location: "San Francisco, CA",
-    bio: "Tech enthusiast and coffee lover. Always looking to trade skills and share knowledge with the community.",
+    name: "Jay Wilson",
+    location: "Santa Cruz, CA",
+    bio: "pro smasher",
     tags: [
       { text: "Tech Savvy", color: "purple" },
       { text: "Coffee Expert", color: "pink" },

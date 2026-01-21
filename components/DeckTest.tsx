@@ -59,25 +59,7 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
 
   const [cards, setCards] = useState(initialCards);
   const [isAnimating, setIsAnimating] = useState(false);
-  
-  // Animated values for each card position
-  const scaleAnims = useRef([
-    new Animated.Value(1),    // Front card - scale 1
-    new Animated.Value(0.95), // Second card - scale 0.95
-    new Animated.Value(0.9),  // Third card - scale 0.9
-  ]).current;
-
-  const translateYAnims = useRef([
-    new Animated.Value(0),   // Front card - no offset
-    new Animated.Value(15),  // Second card - 15px down
-    new Animated.Value(30),  // Third card - 30px down
-  ]).current;
-
-  const opacityAnims = useRef([
-    new Animated.Value(1),   // Front card - full opacity
-    new Animated.Value(1),   // Second card - full opacity
-    new Animated.Value(1),   // Third card - full opacity
-  ]).current;
+  const [cardOrder, setCardOrder] = useState([0, 1, 2]); // Track which position each card is in
 
   const frontCardTranslateX = useRef(new Animated.Value(0)).current;
 
@@ -89,13 +71,11 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
       onPanResponderRelease: (_, gestureState) => {
         if (isAnimating) return;
 
-        const swipeThreshold = 30; // Reduced threshold for single swipe
+        const swipeThreshold = 30;
         
         if (gestureState.dx < -swipeThreshold) {
-          // Swipe left - send front card to back
           sendToBack();
         } else if (gestureState.dx > swipeThreshold) {
-          // Swipe right - bring back card to front
           bringToFront();
         }
       },
@@ -110,33 +90,7 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
       toValue: -screenWidth,
       duration: 300,
       useNativeDriver: true,
-    }).start();
-
-    // Animate cards growing and moving up
-    Animated.parallel([
-      // Second card becomes first (scale up to 1, move to y: 0)
-      Animated.timing(scaleAnims[1], {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnims[1], {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      // Third card becomes second (scale to 0.95, move to y: 15)
-      Animated.timing(scaleAnims[2], {
-        toValue: 0.95,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnims[2], {
-        toValue: 15,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    }).start(() => {
       // Move first card to end
       setCards((prevCards) => {
         const newCards = [...prevCards];
@@ -145,15 +99,8 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
         return newCards;
       });
 
-      // Reset animations for new order
+      // Reset front card position
       frontCardTranslateX.setValue(0);
-      scaleAnims[0].setValue(1);
-      scaleAnims[1].setValue(0.95);
-      scaleAnims[2].setValue(0.9);
-      translateYAnims[0].setValue(0);
-      translateYAnims[1].setValue(15);
-      translateYAnims[2].setValue(30);
-      
       setIsAnimating(false);
     });
   };
@@ -167,33 +114,7 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
       toValue: screenWidth,
       duration: 300,
       useNativeDriver: true,
-    }).start();
-
-    // Animate cards shrinking and moving down
-    Animated.parallel([
-      // First card becomes second (scale to 0.95, move to y: 15)
-      Animated.timing(scaleAnims[0], {
-        toValue: 0.95,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnims[0], {
-        toValue: 15,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      // Second card becomes third (scale to 0.9, move to y: 30)
-      Animated.timing(scaleAnims[1], {
-        toValue: 0.9,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnims[1], {
-        toValue: 30,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    }).start(() => {
       // Move last card to front
       setCards((prevCards) => {
         const newCards = [...prevCards];
@@ -202,17 +123,20 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
         return newCards;
       });
 
-      // Reset animations for new order
+      // Reset front card position
       frontCardTranslateX.setValue(0);
-      scaleAnims[0].setValue(1);
-      scaleAnims[1].setValue(0.95);
-      scaleAnims[2].setValue(0.9);
-      translateYAnims[0].setValue(0);
-      translateYAnims[1].setValue(15);
-      translateYAnims[2].setValue(30);
-      
       setIsAnimating(false);
     });
+  };
+
+  const getCardStyle = (index: number) => {
+    const scales = [1, 0.92, 0.84]; // More dramatic scale difference
+    const translateYs = [0, 40, 80]; // Greater offset (40px and 80px)
+    
+    return {
+      scale: scales[index] || 0.84,
+      translateY: translateYs[index] || 80,
+    };
   };
 
   return (
@@ -220,20 +144,20 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
       <View style={styles.deckContainer}>
         {cards.slice(0, 3).map((card, index) => {
           const isTopCard = index === 0;
+          const { scale, translateY } = getCardStyle(index);
           
           const animatedStyle = {
             transform: [
               ...(isTopCard ? [{ translateX: frontCardTranslateX }] : []),
-              { scale: scaleAnims[index] },
-              { translateY: translateYAnims[index] },
+              { scale },
+              { translateY },
             ],
             zIndex: 3 - index,
-            opacity: opacityAnims[index],
           };
 
           return (
             <Animated.View
-              key={card.id}
+              key={`${card.id}-${index}`}
               style={[styles.cardWrapper, animatedStyle]}
               {...(isTopCard ? panResponder.panHandlers : {})}
             >

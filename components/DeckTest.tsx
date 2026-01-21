@@ -58,20 +58,38 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
   ];
 
   const [cards, setCards] = useState(initialCards);
-  const pan = useRef(new Animated.ValueXY()).current;
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Animated values for each card position
+  const scaleAnims = useRef([
+    new Animated.Value(1),    // Front card - scale 1
+    new Animated.Value(0.95), // Second card - scale 0.95
+    new Animated.Value(0.9),  // Third card - scale 0.9
+  ]).current;
+
+  const translateYAnims = useRef([
+    new Animated.Value(0),   // Front card - no offset
+    new Animated.Value(15),  // Second card - 15px down
+    new Animated.Value(30),  // Third card - 30px down
+  ]).current;
+
+  const opacityAnims = useRef([
+    new Animated.Value(1),   // Front card - full opacity
+    new Animated.Value(1),   // Second card - full opacity
+    new Animated.Value(1),   // Third card - full opacity
+  ]).current;
+
+  const frontCardTranslateX = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 10;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        // Only allow horizontal movement
-        pan.setValue({ x: gestureState.dx, y: 0 });
+        return !isAnimating && Math.abs(gestureState.dx) > 5;
       },
       onPanResponderRelease: (_, gestureState) => {
-        const swipeThreshold = 100;
+        if (isAnimating) return;
+
+        const swipeThreshold = 30; // Reduced threshold for single swipe
         
         if (gestureState.dx < -swipeThreshold) {
           // Swipe left - send front card to back
@@ -79,23 +97,46 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
         } else if (gestureState.dx > swipeThreshold) {
           // Swipe right - bring back card to front
           bringToFront();
-        } else {
-          // Return to original position
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
-          }).start();
         }
       },
     })
   ).current;
 
   const sendToBack = () => {
-    Animated.timing(pan, {
-      toValue: { x: -screenWidth, y: 0 },
-      duration: 200,
+    setIsAnimating(true);
+
+    // Animate front card out to the left
+    Animated.timing(frontCardTranslateX, {
+      toValue: -screenWidth,
+      duration: 300,
       useNativeDriver: true,
-    }).start(() => {
+    }).start();
+
+    // Animate cards growing and moving up
+    Animated.parallel([
+      // Second card becomes first (scale up to 1, move to y: 0)
+      Animated.timing(scaleAnims[1], {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnims[1], {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      // Third card becomes second (scale to 0.95, move to y: 15)
+      Animated.timing(scaleAnims[2], {
+        toValue: 0.95,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnims[2], {
+        toValue: 15,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       // Move first card to end
       setCards((prevCards) => {
         const newCards = [...prevCards];
@@ -103,24 +144,56 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
         if (firstCard) newCards.push(firstCard);
         return newCards;
       });
-      pan.setValue({ x: 0, y: 0 });
+
+      // Reset animations for new order
+      frontCardTranslateX.setValue(0);
+      scaleAnims[0].setValue(1);
+      scaleAnims[1].setValue(0.95);
+      scaleAnims[2].setValue(0.9);
+      translateYAnims[0].setValue(0);
+      translateYAnims[1].setValue(15);
+      translateYAnims[2].setValue(30);
+      
+      setIsAnimating(false);
     });
   };
 
   const bringToFront = () => {
-    if (cards.length <= 1) {
-      Animated.spring(pan, {
-        toValue: { x: 0, y: 0 },
-        useNativeDriver: true,
-      }).start();
-      return;
-    }
+    if (cards.length <= 1) return;
+    setIsAnimating(true);
 
-    Animated.timing(pan, {
-      toValue: { x: screenWidth, y: 0 },
-      duration: 200,
+    // Animate front card out to the right
+    Animated.timing(frontCardTranslateX, {
+      toValue: screenWidth,
+      duration: 300,
       useNativeDriver: true,
-    }).start(() => {
+    }).start();
+
+    // Animate cards shrinking and moving down
+    Animated.parallel([
+      // First card becomes second (scale to 0.95, move to y: 15)
+      Animated.timing(scaleAnims[0], {
+        toValue: 0.95,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnims[0], {
+        toValue: 15,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      // Second card becomes third (scale to 0.9, move to y: 30)
+      Animated.timing(scaleAnims[1], {
+        toValue: 0.9,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnims[1], {
+        toValue: 30,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       // Move last card to front
       setCards((prevCards) => {
         const newCards = [...prevCards];
@@ -128,34 +201,35 @@ const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
         if (lastCard) newCards.unshift(lastCard);
         return newCards;
       });
-      pan.setValue({ x: 0, y: 0 });
+
+      // Reset animations for new order
+      frontCardTranslateX.setValue(0);
+      scaleAnims[0].setValue(1);
+      scaleAnims[1].setValue(0.95);
+      scaleAnims[2].setValue(0.9);
+      translateYAnims[0].setValue(0);
+      translateYAnims[1].setValue(15);
+      translateYAnims[2].setValue(30);
+      
+      setIsAnimating(false);
     });
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.deckContainer}>
-        {cards.map((card, index) => {
+        {cards.slice(0, 3).map((card, index) => {
           const isTopCard = index === 0;
-          const scale = 1 - index * 0.05; // Each card slightly smaller
-          const translateY = index * 10; // Stack cards with offset
-          const opacity = index < 3 ? 1 : 0; // Only show top 3 cards
-
-          const animatedStyle = isTopCard
-            ? {
-                transform: [
-                  { translateX: pan.x },
-                  { scale },
-                  { translateY },
-                ],
-                zIndex: cards.length - index,
-                opacity,
-              }
-            : {
-                transform: [{ scale }, { translateY }],
-                zIndex: cards.length - index,
-                opacity,
-              };
+          
+          const animatedStyle = {
+            transform: [
+              ...(isTopCard ? [{ translateX: frontCardTranslateX }] : []),
+              { scale: scaleAnims[index] },
+              { translateY: translateYAnims[index] },
+            ],
+            zIndex: 3 - index,
+            opacity: opacityAnims[index],
+          };
 
           return (
             <Animated.View
@@ -186,6 +260,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   cardWrapper: {
     position: 'absolute',

@@ -52,7 +52,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
       { text: "Eco-Friendly", color: "green" },
       { text: "Master Barterer", color: "purple" }
     ],
-    avatarText: "👤"
+    avatarText: "👤",
+    goodsCount: 2,
+    servicesCount: 1,
   };
 
   const handlePanGestureEvent = Animated.event(

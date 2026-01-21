@@ -49,12 +49,12 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
             {/* Goods count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.goodsCount ?? 0}</Text>
-              <MaterialIcons name="shopping-bag" size={16} color="#fff" />
+              <MaterialIcons name="shopping-bag" size={24} color="#fff" />
             </View>
             {/* Services count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.servicesCount ?? 0}</Text>
-              <MaterialIcons name="build" size={16} color="#fff" />
+              <MaterialIcons name="build" size={24} color="#fff" />
             </View>
           </View>
         </View>
@@ -118,21 +118,24 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
   },
   statsContainer: {
-    gap: 8,
+    gap: 4,
+    justifyContent: 'center',
   },
   statRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 10,
   },
   statNumber: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#fff',
+    minWidth: 30,
+    textAlign: 'right',
   },
   infoContainer: {
     alignItems: 'flex-start',

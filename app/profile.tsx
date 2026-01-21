@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -75,11 +76,23 @@ export default function ProfileScreen() {
     console.log('Deck revealed:', revealed);
   };
 
+  const handleSettingsPress = () => {
+    console.log('Settings pressed');
+    // Add navigation to settings screen here
+  };
+
   // Create array with CreateCard at the front
   const carouselItems = [{ type: 'create' }, ...POSTS];
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      {/* Settings Icon - Fixed position at top right */}
+      <View style={styles.settingsIconContainer}>
+        <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
+          <MaterialIcons name="settings" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         scrollEnabled={false}
@@ -208,6 +221,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#141414',
+  },
+  settingsIconContainer: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 100,
+  },
+  settingsButton: {
+    padding: 8,
   },
   scrollContent: {
     paddingBottom: 40,

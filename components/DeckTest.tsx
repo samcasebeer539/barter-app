@@ -3,192 +3,194 @@ import { View, StyleSheet, Dimensions, Animated, PanResponder } from 'react-nati
 import PostCard from './PostCard';
 import UserCard from './UserCard';
 
+interface DeckCardData {
+  id: string;
+  type: 'user' | 'post';
+  post?: {
+    type: 'good' | 'service';
+    name: string;
+    description: string;
+    photos: string[];
+  };
+}
+
 interface DeckTestProps {
   cardWidth?: number;
 }
+
+const STACK = [
+  { scale: 1, translateY: 0 },
+  { scale: 0.92, translateY: 40 },
+  { scale: 0.84, translateY: 80 },
+];
+
+const sampleCards: DeckCardData[] = [
+  { type: 'user', id: 'user-1' },
+  {
+    type: 'post',
+    id: 'post-1',
+    post: {
+      type: 'good',
+      name: 'Vintage Camera',
+      description: 'Beautiful vintage camera from the 1970s in perfect working condition.',
+      photos: ['https://picsum.photos/seed/camera1/600/400', 'https://picsum.photos/seed/camera2/500/700'],
+    },
+  },
+  {
+    type: 'post',
+    id: 'post-2',
+    post: {
+      type: 'service',
+      name: 'Guitar Lessons',
+      description: 'Professional guitar instruction for beginners and intermediate players.',
+      photos: ['https://picsum.photos/seed/guitar1/700/500', 'https://picsum.photos/seed/guitar2/400/600'],
+    },
+  },
+  {
+    type: 'post',
+    id: 'post-3',
+    post: {
+      type: 'good',
+      name: 'Mountain Bike',
+      description: 'High-quality mountain bike, great for trails and outdoor adventures.',
+      photos: ['https://picsum.photos/seed/bike1/800/400', 'https://picsum.photos/seed/bike2/600/600'],
+    },
+  },
+];
 
 const DeckTest: React.FC<DeckTestProps> = ({ cardWidth }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
-  const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  // Sample data for the deck
-  const initialCards = [
-    { type: 'user' as const, id: 'user-1' },
-    {
-      type: 'post' as const,
-      id: 'post-1',
-      data: {
-        type: 'good' as const,
-        name: 'Vintage Camera',
-        description: 'Beautiful vintage camera from the 1970s in perfect working condition.',
-        photos: [
-          'https://picsum.photos/seed/camera1/600/400',
-          'https://picsum.photos/seed/camera2/500/700',
-        ],
-      },
-    },
-    {
-      type: 'post' as const,
-      id: 'post-2',
-      data: {
-        type: 'service' as const,
-        name: 'Guitar Lessons',
-        description: 'Professional guitar instruction for beginners and intermediate players.',
-        photos: [
-          'https://picsum.photos/seed/guitar1/700/500',
-          'https://picsum.photos/seed/guitar2/400/600',
-        ],
-      },
-    },
-    {
-      type: 'post' as const,
-      id: 'post-3',
-      data: {
-        type: 'good' as const,
-        name: 'Mountain Bike',
-        description: 'High-quality mountain bike, great for trails and outdoor adventures.',
-        photos: [
-          'https://picsum.photos/seed/bike1/800/400',
-          'https://picsum.photos/seed/bike2/600/600',
-        ],
-      },
-    },
-  ];
-
-  const [cards, setCards] = useState(initialCards);
+  const [cards, setCards] = useState<DeckCardData[]>(sampleCards);
+  const [exitingCard, setExitingCard] = useState<DeckCardData | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [cardOrder, setCardOrder] = useState([0, 1, 2]); // Track which position each card is in
 
-  const frontCardTranslateX = useRef(new Animated.Value(0)).current;
+  const slots = useRef(
+    STACK.map(s => ({
+      scale: new Animated.Value(s.scale),
+      translateY: new Animated.Value(s.translateY),
+    }))
+  ).current;
+
+  const exitX = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return !isAnimating && Math.abs(gestureState.dx) > 5;
-      },
-      onPanResponderRelease: (_, gestureState) => {
+      onMoveShouldSetPanResponder: (_, g) => !isAnimating && Math.abs(g.dx) > 5,
+      onPanResponderRelease: (_, g) => {
         if (isAnimating) return;
-
-        const swipeThreshold = 30;
-        
-        if (gestureState.dx < -swipeThreshold) {
-          sendToBack();
-        } else if (gestureState.dx > swipeThreshold) {
-          bringToFront();
-        }
+        if (Math.abs(g.dx) > 30) swipe(g.dx < 0 ? -1 : 1);
       },
     })
   ).current;
 
-  const sendToBack = () => {
+  const swipe = (dir: -1 | 1) => {
+    if (cards.length === 0) return;
     setIsAnimating(true);
+    setExitingCard(cards[0]);
 
-    // Animate front card out to the left
-    Animated.timing(frontCardTranslateX, {
-      toValue: -screenWidth,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      // Move first card to end
-      setCards((prevCards) => {
-        const newCards = [...prevCards];
-        const firstCard = newCards.shift();
-        if (firstCard) newCards.push(firstCard);
-        return newCards;
+    Animated.parallel([
+      Animated.timing(exitX, {
+        toValue: dir * screenWidth,
+        duration: 260,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slots[1].scale, {
+        toValue: STACK[0].scale,
+        duration: 260,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slots[1].translateY, {
+        toValue: STACK[0].translateY,
+        duration: 260,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slots[2].scale, {
+        toValue: STACK[1].scale,
+        duration: 260,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slots[2].translateY, {
+        toValue: STACK[1].translateY,
+        duration: 260,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setCards(prev => {
+        const next = [...prev];
+        const first = next.shift();
+        if (first) next.push(first);
+        return next;
       });
 
-      // Reset front card position
-      frontCardTranslateX.setValue(0);
+      slots[0].scale.setValue(STACK[0].scale);
+      slots[0].translateY.setValue(STACK[0].translateY);
+      slots[1].scale.setValue(STACK[1].scale);
+      slots[1].translateY.setValue(STACK[1].translateY);
+      slots[2].scale.setValue(STACK[2].scale);
+      slots[2].translateY.setValue(STACK[2].translateY);
+
+      exitX.setValue(0);
+      setExitingCard(null);
       setIsAnimating(false);
     });
-  };
-
-  const bringToFront = () => {
-    if (cards.length <= 1) return;
-    setIsAnimating(true);
-
-    // Animate front card out to the right
-    Animated.timing(frontCardTranslateX, {
-      toValue: screenWidth,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      // Move last card to front
-      setCards((prevCards) => {
-        const newCards = [...prevCards];
-        const lastCard = newCards.pop();
-        if (lastCard) newCards.unshift(lastCard);
-        return newCards;
-      });
-
-      // Reset front card position
-      frontCardTranslateX.setValue(0);
-      setIsAnimating(false);
-    });
-  };
-
-  const getCardStyle = (index: number) => {
-    const scales = [1, 0.92, 0.84]; // More dramatic scale difference
-    const translateYs = [0, 40, 80]; // Greater offset (40px and 80px)
-    
-    return {
-      scale: scales[index] || 0.84,
-      translateY: translateYs[index] || 80,
-    };
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.deckContainer}>
-        {cards.slice(0, 3).map((card, index) => {
-          const isTopCard = index === 0;
-          const { scale, translateY } = getCardStyle(index);
-          
-          const animatedStyle = {
-            transform: [
-              ...(isTopCard ? [{ translateX: frontCardTranslateX }] : []),
-              { scale },
-              { translateY },
-            ],
-            zIndex: 3 - index,
-          };
+        {cards?.slice(0, 3).map((card, i) => {
+          if (i === 0 && exitingCard) return null;
 
           return (
             <Animated.View
-              key={`${card.id}-${index}`}
-              style={[styles.cardWrapper, animatedStyle]}
-              {...(isTopCard ? panResponder.panHandlers : {})}
+              key={card.id}
+              style={[
+                styles.cardWrapper,
+                {
+                  transform: [
+                    { scale: slots[i].scale },
+                    { translateY: slots[i].translateY },
+                  ],
+                  zIndex: 3 - i,
+                },
+              ]}
+              {...(i === 0 ? { ...panResponder.panHandlers } : {})}
             >
               {card.type === 'user' ? (
                 <UserCard cardWidth={finalCardWidth} />
               ) : (
-                <PostCard post={card.data} cardWidth={finalCardWidth} />
+                <PostCard post={card.post!} cardWidth={finalCardWidth} />
               )}
             </Animated.View>
           );
         })}
+
+        {exitingCard && (
+          <Animated.View
+            style={[
+              styles.cardWrapper,
+              { transform: [{ translateX: exitX }], zIndex: 10 },
+            ]}
+          >
+            {exitingCard.type === 'user' ? (
+              <UserCard cardWidth={finalCardWidth} />
+            ) : (
+              <PostCard post={exitingCard.post!} cardWidth={finalCardWidth} />
+            )}
+          </Animated.View>
+        )}
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deckContainer: {
-    position: 'relative',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardWrapper: {
-    position: 'absolute',
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  deckContainer: { position: 'relative', width: '100%', alignItems: 'center' },
+  cardWrapper: { position: 'absolute' },
 });
 
 export default DeckTest;

@@ -135,7 +135,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.deckPeek, 
                 { 
-                  top: -peekAmount - 195,
+                  top: -peekAmount - 190,
                   transform: [
                     { translateY: deckExpandY },
                     { scale: deckScale },

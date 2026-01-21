@@ -15,8 +15,8 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
     location: "Santa Cruz, CA",
     bio: "pro smasher",
     tags: [
-      { text: "Tech Savvy", color: "purple" },
-      { text: "Coffee Expert", color: "pink" },
+      { text: "Eco-Friendly", color: "purple" },
+      { text: "Pro Smasher", color: "pink" },
     ],
     avatarText: "🧑‍💻",
     goodsCount: 5,

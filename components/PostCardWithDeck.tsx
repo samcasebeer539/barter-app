@@ -101,7 +101,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Animate deck scale and position when revealed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 1.15], // Slightly larger when revealed
+    outputRange: [1, 1.4], // Slightly larger when revealed
   }) || 1;
 
   // Move deck upward - doubled to -600

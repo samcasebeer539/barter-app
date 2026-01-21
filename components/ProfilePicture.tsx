@@ -10,7 +10,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   size = 80,
   avatarText = '👤'
 }) => {
-  const ringGap = 4;
+  const ringGap = 2;
   const ringThickness = 3;
   
   // Calculate sizes for each ring

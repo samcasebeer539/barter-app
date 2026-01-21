@@ -12,6 +12,8 @@ interface UserInfo {
     color: string;
   }>;
   avatarText: string;
+  goodsCount?: number;
+  servicesCount?: number;
 }
 
 interface UserCardProps {
@@ -39,9 +41,22 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
   return (
     <View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-        {/* Profile Picture at Top Center */}
-        <View style={styles.profilePictureContainer}>
-          <ProfilePicture size={80} avatarText={user.avatarText} />
+        {/* Top Row: Profile Picture (left) and Stats (right) */}
+        <View style={styles.topRow}>
+          <ProfilePicture size={60} avatarText={user.avatarText} />
+          
+          <View style={styles.statsContainer}>
+            {/* Goods count */}
+            <View style={styles.statRow}>
+              <Text style={styles.statNumber}>{user.goodsCount ?? 0}</Text>
+              <MaterialIcons name="shopping-bag" size={16} color="#fff" />
+            </View>
+            {/* Services count */}
+            <View style={styles.statRow}>
+              <Text style={styles.statNumber}>{user.servicesCount ?? 0}</Text>
+              <MaterialIcons name="build" size={16} color="#fff" />
+            </View>
+          </View>
         </View>
 
         {/* Name and Location - Left Aligned */}
@@ -100,9 +115,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
-  profilePictureContainer: {
-    alignItems: 'center',
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 12,
+  },
+  statsContainer: {
+    gap: 8,
+  },
+  statRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statNumber: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
   },
   infoContainer: {
     alignItems: 'flex-start',

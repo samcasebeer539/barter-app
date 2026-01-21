@@ -42,21 +42,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  // User info for the UserCard
-  const userInfo = {
-    name: "Sam Casebeer",
-    location: "Santa Cruz, CA",
-    bio: "Passionate about sustainable living and building community through sharing. Always looking for unique trades and meaningful connections.",
-    tags: [
-      { text: "Community Builder", color: "pink" },
-      { text: "Eco-Friendly", color: "green" },
-      { text: "Master Barterer", color: "purple" }
-    ],
-    avatarText: "👤",
-    goodsCount: 2,
-    servicesCount: 1,
-  };
-
   const handlePanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translationY } }],
     { useNativeDriver: true }
@@ -162,9 +147,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               {/* Wireframe card in front */}
               <View style={[styles.deckCard, { height: cardHeight * 0.85 }]} />
               
-              {/* UserCard behind */}
+              {/* UserCard behind - no user prop needed, it's hardcoded */}
               <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
-                <UserCard user={userInfo} scale={1} cardWidth={finalCardWidth * 0.9} />
+                <UserCard scale={1} cardWidth={finalCardWidth * 0.9} />
               </View>
             </Animated.View>
             

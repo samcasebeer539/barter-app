@@ -74,6 +74,17 @@ export default function ProfileScreen() {
     outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
   });
 
+  // Animate settings icon to move up and out of view
+  const settingsTranslateY = revealProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -100], // Move settings icon up and out of view
+  });
+
+  const settingsOpacity = revealProgress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 0.5, 0], // Fade out as it moves
+  });
+
   const handleRevealChange = (revealed: boolean) => {
     console.log('Deck revealed:', revealed);
   };
@@ -87,12 +98,20 @@ export default function ProfileScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      {/* Settings Icon - Fixed position at top right */}
-      <View style={styles.settingsIconContainer}>
+      {/* Settings Icon - Fixed position at top right, animates with reveal */}
+      <Animated.View 
+        style={[
+          styles.settingsIconContainer,
+          {
+            transform: [{ translateY: settingsTranslateY }],
+            opacity: settingsOpacity,
+          },
+        ]}
+      >
         <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
           <MaterialIcons name="settings" size={28} color="#fff" />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent}

@@ -12,6 +12,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
+import CreateCard from '@/components/CreateCard';
 
 const POSTS = [
   {
@@ -73,6 +74,9 @@ export default function ProfileScreen() {
   const handleRevealChange = (revealed: boolean) => {
     console.log('Deck revealed:', revealed);
   };
+
+  // Create array with CreateCard at the front
+  const carouselItems = [{ type: 'create' }, ...POSTS];
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -150,7 +154,7 @@ export default function ProfileScreen() {
             )}
             scrollEventThrottle={16}
           >
-            {POSTS.map((post, index) => {
+            {carouselItems.map((item, index) => {
               // Calculate the scale for each card
               const inputRange = [
                 (index - 1) * (cardWidth + cardSpacing),
@@ -168,23 +172,26 @@ export default function ProfileScreen() {
                   key={index}
                   style={{
                     width: cardWidth,
-                    marginRight: index < POSTS.length - 1 ? cardSpacing : 0,
+                    marginRight: index < carouselItems.length - 1 ? cardSpacing : 0,
                     transform: [{ scale: scale ?? 1 }],
                     overflow: 'visible',
                   }}
                 >
                   <View style={{ flex: 1, overflow: 'visible' }}>
-                    {/* Use PostCardWithDeck for the first card */}
-                    {index === 0 ? (
+                    {/* Render CreateCard for the first item */}
+                    {item.type === 'create' ? (
+                      <CreateCard scale={1} cardWidth={cardWidth} />
+                    ) : index === 1 ? (
+                      // Use PostCardWithDeck for the second card (first actual post)
                       <PostCardWithDeck 
-                        post={post} 
+                        post={item} 
                         scale={1} 
                         cardWidth={cardWidth}
                         revealProgress={revealProgress}
                         onRevealChange={handleRevealChange}
                       />
                     ) : (
-                      <PostCard post={post} scale={1} cardWidth={cardWidth} />
+                      <PostCard post={item} scale={1} cardWidth={cardWidth} />
                     )}
                   </View>
                 </Animated.View>

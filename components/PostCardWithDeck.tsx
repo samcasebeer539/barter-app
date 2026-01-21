@@ -130,7 +130,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               styles.container,
             ]}
           >
-            {/* Deck peeking out from behind - UserCard at front, two wireframes behind */}
+            {/* Deck peeking out from behind - UserCard at front, wireframe behind */}
             <Animated.View 
               style={[
                 styles.deckPeek, 
@@ -144,12 +144,14 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              {/* First wireframe card (back) */}
+              {/* Wireframe card behind */}
               <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
               
-              {/* UserCard in front */}
+              {/* UserCard in front with border */}
               <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
-                <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
+                <View style={styles.userCardBorder}>
+                  <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
+                </View>
               </View>
             </Animated.View>
             
@@ -191,6 +193,12 @@ const styles = StyleSheet.create({
     width: '85%',
     zIndex: 3,
   },
+  userCardBorder: {
+    borderWidth: 2,
+    borderColor: '#d4d4d4',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   deckCard: {
     width: '90%',
     backgroundColor: 'transparent',
@@ -204,7 +212,6 @@ const styles = StyleSheet.create({
     width: '80%',
     zIndex: 2,
   },
-
 });
 
 export default PostCardWithDeck;

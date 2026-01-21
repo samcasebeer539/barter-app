@@ -11,6 +11,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
@@ -87,6 +88,15 @@ export default function ProfileScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      {/* Top Gradient Overlay */}
+      <View style={styles.topGradientContainer}>
+        <LinearGradient
+          colors={['#141414', 'rgba(20, 20, 20, 0.95)', 'rgba(20, 20, 20, 0)']}
+          locations={[0, 0.4, 1]}
+          style={styles.topGradient}
+        />
+      </View>
+
       {/* Settings Icon - Animates with header */}
       <Animated.View 
         style={[
@@ -229,6 +239,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#141414',
+  },
+  topGradientContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    zIndex: 200,
+    pointerEvents: 'none',
+  },
+  topGradient: {
+    flex: 1,
   },
   settingsIconContainer: {
     position: 'absolute',

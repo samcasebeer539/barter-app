@@ -3,26 +3,26 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
 
-interface UserInfo {
-  name: string;
-  location: string;
-  bio: string;
-  tags: Array<{
-    text: string;
-    color: string;
-  }>;
-  avatarText: string;
-  goodsCount?: number;
-  servicesCount?: number;
-}
-
 interface UserCardProps {
-  user: UserInfo;
   scale?: number;
   cardWidth?: number;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
+const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
+  // Hardcoded user info - will eventually come from backend
+  const user = {
+    name: "Alex Martinez",
+    location: "San Francisco, CA",
+    bio: "Tech enthusiast and coffee lover. Always looking to trade skills and share knowledge with the community.",
+    tags: [
+      { text: "Tech Savvy", color: "purple" },
+      { text: "Coffee Expert", color: "pink" },
+    ],
+    avatarText: "🧑‍💻",
+    goodsCount: 5,
+    servicesCount: 3,
+  };
+
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -48,12 +48,12 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
           <View style={styles.statsContainer}>
             {/* Goods count */}
             <View style={styles.statRow}>
-              <Text style={styles.statNumber}>{user.goodsCount ?? 0}</Text>
+              <Text style={styles.statNumber}>{user.goodsCount}</Text>
               <MaterialIcons name="shopping-bag" size={24} color="#fff" />
             </View>
             {/* Services count */}
             <View style={styles.statRow}>
-              <Text style={styles.statNumber}>{user.servicesCount ?? 0}</Text>
+              <Text style={styles.statNumber}>{user.servicesCount}</Text>
               <MaterialIcons name="build" size={24} color="#fff" />
             </View>
           </View>

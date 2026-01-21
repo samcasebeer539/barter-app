@@ -5,6 +5,7 @@ import React, { useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
+import UserCard from './UserCard';
 
 interface Post {
   type: 'good' | 'service';
@@ -40,6 +41,19 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const defaultCardWidth = Math.min(screenWidth - 110, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
+
+  // User info for the UserCard
+  const userInfo = {
+    name: "Sam Casebeer",
+    location: "Santa Cruz, CA",
+    bio: "Passionate about sustainable living and building community through sharing. Always looking for unique trades and meaningful connections.",
+    tags: [
+      { text: "Community Builder", color: "pink" },
+      { text: "Eco-Friendly", color: "green" },
+      { text: "Master Barterer", color: "purple" }
+    ],
+    avatarText: "👤"
+  };
 
   const handlePanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translationY } }],
@@ -129,7 +143,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               styles.container,
             ]}
           >
-            {/* Deck peeking out from behind - position absolute keeps it stationary during drag */}
+            {/* Deck peeking out from behind - UserCard at front, wireframe behind */}
             <Animated.View 
               style={[
                 styles.deckPeek, 
@@ -143,7 +157,12 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              <View style={[styles.deckCard, { height: cardHeight * 0.85 }]} />
+              {/* UserCard in front */}
+              <View style={styles.userCardWrapper}>
+                <UserCard user={userInfo} scale={1} cardWidth={finalCardWidth * 0.85} />
+              </View>
+              
+              {/* Second wireframe card behind */}
               <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
             </Animated.View>
             
@@ -179,6 +198,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
+  userCardWrapper: {
+    position: 'absolute',
+    top: 0,
+    width: '85%',
+    zIndex: 2,
+  },
   deckCard: {
     width: '85%',
     backgroundColor: 'transparent',
@@ -191,6 +216,7 @@ const styles = StyleSheet.create({
   deckCardSecond: {
     top: 6,
     width: '90%',
+    zIndex: 1,
   },
 });
 

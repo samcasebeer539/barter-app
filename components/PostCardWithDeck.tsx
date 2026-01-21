@@ -143,7 +143,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               styles.container,
             ]}
           >
-            {/* Deck peeking out from behind - UserCard at front, wireframe behind */}
+            {/* Deck peeking out from behind - Wireframe at front, UserCard behind */}
             <Animated.View 
               style={[
                 styles.deckPeek, 
@@ -157,13 +157,13 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              {/* UserCard in front */}
-              <View style={styles.userCardWrapper}>
-                <UserCard user={userInfo} scale={1} cardWidth={finalCardWidth * 0.85} />
-              </View>
+              {/* Wireframe card in front */}
+              <View style={[styles.deckCard, { height: cardHeight * 0.85 }]} />
               
-              {/* Second wireframe card behind */}
-              <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
+              {/* UserCard behind */}
+              <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
+                <UserCard user={userInfo} scale={1} cardWidth={finalCardWidth * 0.9} />
+              </View>
             </Animated.View>
             
             {/* Main PostCard - moves during drag */}
@@ -198,12 +198,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
-  userCardWrapper: {
-    position: 'absolute',
-    top: 0,
-    width: '85%',
-    zIndex: 2,
-  },
   deckCard: {
     width: '85%',
     backgroundColor: 'transparent',
@@ -212,8 +206,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     position: 'absolute',
     top: 0,
+    zIndex: 2,
   },
-  deckCardSecond: {
+  userCardWrapper: {
+    position: 'absolute',
     top: 6,
     width: '90%',
     zIndex: 1,

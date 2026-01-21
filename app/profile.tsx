@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
@@ -52,6 +53,7 @@ const POSTS = [
 ];
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const scrollX = useRef(new Animated.Value(0)).current;
   const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
   const screenWidth = Dimensions.get('window').width;
@@ -77,8 +79,7 @@ export default function ProfileScreen() {
   };
 
   const handleSettingsPress = () => {
-    console.log('Settings pressed');
-    // Add navigation to settings screen here
+    router.push('/settings');
   };
 
   // Create array with CreateCard at the front

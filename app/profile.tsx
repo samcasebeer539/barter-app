@@ -66,7 +66,7 @@ export default function ProfileScreen() {
   // Interpolate animations based on reveal progress
   const headerTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -400], // Move header completely out of view
+    outputRange: [0, -700], // Move header completely out of view
   });
 
   const carouselTranslateY = revealProgress.interpolate({

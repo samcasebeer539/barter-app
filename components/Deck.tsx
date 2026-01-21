@@ -2,6 +2,11 @@ import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import PostCard from './PostCard';
 
+//everything in here will be replaced. 
+//usage: in profile, deck should always load in with UserCard on top
+//       in feed, deck should always load with clicked on PostCard first and UserCard second
+
+
 interface Post {
   type: 'good' | 'service';
   name: string;

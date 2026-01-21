@@ -1,3 +1,6 @@
+//note: there should just be one postcard component which can have or not have a deck
+//always use postcard without deck as an item within Deck
+
 import React, { useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';

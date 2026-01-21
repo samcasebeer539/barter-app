@@ -6,15 +6,15 @@ import ProfilePicture from '@/components/ProfilePicture';
 export default function BarterScreen() {
   const sampleCards = [
     {
-      title: 'Vintage Bike',
+      title: 'Accept/Decline',
       photo: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800',
     },
     {
-      title: 'Classic Camera',
+      title: 'Counteroffer',
       photo: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800',
     },
     {
-      title: 'Acoustic Guitar',
+      title: 'Question',
       photo: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800',
     },
     {

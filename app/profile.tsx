@@ -61,7 +61,7 @@ export default function ProfileScreen() {
   const screenHeight = Dimensions.get('window').height;
 
   const cardWidth = Math.min(screenWidth - 110, 400);
-  const cardSpacing = 10;
+  const cardSpacing = 0;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   // Interpolate animations based on reveal progress

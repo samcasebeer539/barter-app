@@ -130,7 +130,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               styles.container,
             ]}
           >
-            {/* Deck peeking out from behind - Wireframe at front, UserCard behind */}
+            {/* Deck peeking out from behind - UserCard at front, two wireframes behind */}
             <Animated.View 
               style={[
                 styles.deckPeek, 
@@ -144,12 +144,15 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               ]} 
               pointerEvents="none"
             >
-              {/* Wireframe card in front */}
-              <View style={[styles.deckCard, { height: cardHeight * 0.85 }]} />
+              {/* Second wireframe card (furthest back) */}
+              <View style={[styles.deckCard, styles.deckCardThird, { height: cardHeight * 0.85 }]} />
               
-              {/* UserCard behind - no user prop needed, it's hardcoded */}
+              {/* First wireframe card (middle) */}
+              <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
+              
+              {/* UserCard in front */}
               <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
-                <UserCard scale={1} cardWidth={finalCardWidth * 0.9} />
+                <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
               </View>
             </Animated.View>
             
@@ -185,20 +188,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
-  deckCard: {
+  userCardWrapper: {
+    position: 'absolute',
+    top: 0,
     width: '85%',
+    zIndex: 3,
+  },
+  deckCard: {
+    width: '90%',
     backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: '#d4d4d4',
     borderRadius: 8,
     position: 'absolute',
-    top: 0,
+  },
+  deckCardSecond: {
+    top: 6,
+    width: '92%',
     zIndex: 2,
   },
-  userCardWrapper: {
-    position: 'absolute',
-    top: 6,
-    width: '90%',
+  deckCardThird: {
+    top: 12,
+    width: '95%',
     zIndex: 1,
   },
 });

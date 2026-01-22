@@ -189,6 +189,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                       style={[styles.photoFrame, { aspectRatio: photoAspectRatios[index] || 1, maxHeight: '100%', maxWidth: '100%' }]}
                     >
                       <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" />
+                      {/* Inner shadow overlay */}
+                      <View style={styles.innerShadow} pointerEvents="none" />
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -271,8 +273,31 @@ const styles = StyleSheet.create({
   scrollContent: { alignItems: 'center' },
   photoContainer: { justifyContent: 'center', alignItems: 'center', height: '100%' },
   photoTouchable: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  photoFrame: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 3, overflow: 'hidden', borderRadius: 4 },
+  photoFrame: { 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.15, 
+    shadowRadius: 8, 
+    elevation: 3, 
+    overflow: 'hidden', 
+    borderRadius: 4,
+    position: 'relative',
+  },
   photo: { width: '100%', height: '100%' },
+  innerShadow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.15)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
   dotsContainer: { position: 'absolute', top: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },

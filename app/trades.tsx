@@ -24,16 +24,16 @@ export default function TradesScreen() {
         {/* Single Active Trade */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            Jay sent <Text style={styles.highlightBlue}>offer</Text> on "Item"
+            — Jay sent <Text style={styles.highlightBlue}>offer</Text> on "Item"
           </Text>
           <Text style={styles.tradeText}>
-            You proposed <Text style={styles.highlightYellow}>trade</Text> for "item"
+            ├─ You proposed <Text style={styles.highlightYellow}>trade</Text> for "item"
           </Text>
           <Text style={styles.tradeText}>
-            Jay proposed <Text style={styles.highlightPink}>counteroffer</Text>
+            ├─ Jay proposed <Text style={styles.highlightPink}>counteroffer</Text>
           </Text>
           <TouchableOpacity onPress={handleYourTurnPress} activeOpacity={0.7}>
-            <Text style={styles.yourTurnText}>Your turn!</Text>
+            <Text style={styles.yourTurnText}>└─ Your turn!</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -45,21 +45,21 @@ export default function TradesScreen() {
         {/* Outgoing Offer 1 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
+            — You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
           </Text>
         </View>
 
         {/* Outgoing Offer 2 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
+            — You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
           </Text>
         </View>
 
         {/* Outgoing Offer 3 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
+            — You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
           </Text>
         </View>
       </View>

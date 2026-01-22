@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image, ImageSourcePropType } from 'react-native';
 
 interface ProfilePictureProps {
   size?: number;
   avatarText?: string;
+  imageSource?: ImageSourcePropType | string;
 }
 
 const ProfilePicture: React.FC<ProfilePictureProps> = ({ 
   size = 80,
-  avatarText = '👤'
+  avatarText = '👤',
+  imageSource
 }) => {
   const ringGap = 2;
   const ringThickness = 3;
@@ -63,7 +65,19 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         height: avatarSize, 
         borderRadius: avatarSize / 2 
       }]}>
-        <Text style={[styles.avatarText, { fontSize: avatarSize / 2 }]}>{avatarText}</Text>
+        {imageSource ? (
+          <Image 
+            source={typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
+            style={[styles.avatarImage, { 
+              width: avatarSize, 
+              height: avatarSize, 
+              borderRadius: avatarSize / 2 
+            }]}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text style={[styles.avatarText, { fontSize: avatarSize / 2 }]}>{avatarText}</Text>
+        )}
       </View>
     </View>
   );
@@ -85,9 +99,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
+    overflow: 'hidden',
   },
   avatarText: {
     // fontSize is set dynamically based on size
+  },
+  avatarImage: {
+    // size and borderRadius are set dynamically
   },
 });
 

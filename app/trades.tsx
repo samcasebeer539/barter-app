@@ -42,13 +42,22 @@ export default function TradesScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Outgoing Offers</Text>
         
+        {/* Outgoing Offer 1 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
             You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
           </Text>
+        </View>
+
+        {/* Outgoing Offer 2 */}
+        <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
             You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
           </Text>
+        </View>
+
+        {/* Outgoing Offer 3 */}
+        <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
             You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
           </Text>
@@ -78,6 +87,7 @@ const styles = StyleSheet.create({
   },
   tradeSection: {
     gap: 4,
+    marginBottom: 20,
   },
   tradeText: {
     fontSize: 16,

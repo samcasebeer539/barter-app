@@ -16,9 +16,9 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
-  const RADIUS = 350;
+  const RADIUS = 700;
   const TOTAL_CARDS = cards.length; // always show up to 5 cards
-  const anglePerCard = (2 * Math.PI) / 12
+  const anglePerCard = (2 * Math.PI) / 22
 
   // Reset wheel when resetKey changes
   useEffect(() => {
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 100,
+    paddingTop: 450,
     overflow: 'visible',
   },
   staticWireframe: {

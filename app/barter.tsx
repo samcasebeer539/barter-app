@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   cardWheelContainer: {
     position: 'absolute',
-    bottom: -530,
+    bottom: -870,
     left: 0,
     right: 0,
     paddingBottom: 0,

@@ -1,28 +1,42 @@
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
+import PostCard from '@/components/PostCard';
 
 const { width } = Dimensions.get('window');
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 150 }, // 4:5 ratio
-  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 200 }, // 5:4 ratio
-  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 }, // 5:6 ratio
-  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 }, // 20:17 ratio
-  { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/520', type: 'service', height: 260 }, // ~3:4 ratio
-  { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'good', height: 250 }, // 4:5 ratio
-  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/310', type: 'service', height: 155 }, // ~4:3 ratio
-  { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/460', type: 'good', height: 230 }, // 20:23 ratio
-  { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/530', type: 'service', height: 265 }, // 3:4 ratio
-  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/330', type: 'good', height: 165 }, // 4:3.3 ratio
-  { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/490', type: 'service', height: 245 }, // 40:49 ratio
-  { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/450', type: 'good', height: 225 }, // 8:9 ratio
+  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 150 },
+  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 200 },
+  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 },
+  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 },
+  { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/520', type: 'service', height: 260 },
+  { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'good', height: 250 },
+  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/310', type: 'service', height: 155 },
+  { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/460', type: 'good', height: 230 },
+  { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/530', type: 'service', height: 265 },
+  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/330', type: 'good', height: 165 },
+  { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/490', type: 'service', height: 245 },
+  { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/450', type: 'good', height: 225 },
 ];
+
+// Sample post data for the modal
+const SAMPLE_POST = {
+  type: 'service' as const,
+  name: 'Bike Repair service',
+  description: 'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+  photos: [
+    'https://picsum.photos/seed/landscape1/800/400',
+    'https://picsum.photos/seed/portrait1/400/600',
+    'https://picsum.photos/seed/square1/500/500',
+  ],
+};
 
 export default function FeedScreen() {
   const [showHeader, setShowHeader] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<typeof SAMPLE_POST | null>(null);
   const scrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -53,9 +67,17 @@ export default function FeedScreen() {
     scrollY.current = currentScrollY;
   };
 
+  const handleCardPress = () => {
+    setSelectedPost(SAMPLE_POST);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedPost(null);
+  };
+
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     <View key={item.id} style={styles.cardWrapper}>
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={handleCardPress}>
         <View style={[styles.imageContainer, { height: item.height }]}>
           <Image 
             source={{ uri: item.image }} 
@@ -109,6 +131,37 @@ export default function FeedScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Modal for PostCard */}
+      <Modal
+        visible={selectedPost !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={styles.modalBackground} 
+            activeOpacity={1} 
+            onPress={handleCloseModal}
+          />
+          <View style={styles.modalContent}>
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={handleCloseModal}
+            >
+              <MaterialIcons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+            {selectedPost && (
+              <PostCard 
+                post={selectedPost}
+                scale={1}
+                cardWidth={Math.min(width - 40, 400)}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -182,5 +235,36 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 8,
     marginLeft: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    position: 'relative',
+    paddingHorizontal: 20,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: -50,
+    right: 20,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

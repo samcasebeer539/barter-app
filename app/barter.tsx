@@ -15,19 +15,19 @@ export default function BarterScreen() {
   const sampleCards = [
     {
       title: 'Accept',
-      photo: require('../assets/barter-cards/Accept.PNG'),
+      photo: require('@/assets/barter-cards/Accept.PNG'),
     },
     {
       title: 'Decline',
-      photo: require('../assets/barter-cards/Decline.PNG'),
+      photo: require('@/assets/barter-cards/Decline.PNG'),
     },
     {
       title: 'Counter',
-      photo: require('../assets/barter-cards/Counter.PNG'),
+      photo: require('@/assets/barter-cards/Counter.PNG'),
     },
     {
       title: 'Query',
-      photo: require('../assets/barter-cards/Query.PNG'),
+      photo: require('@/assets/barter-cards/Query.PNG'),
     },
   ];
 

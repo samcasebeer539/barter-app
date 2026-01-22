@@ -49,8 +49,18 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
     animateToIndex(prevIndex);
   };
 
+  // Create PanResponder for the entire container
+  const containerPanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx < -30) spinToNext();
+      else if (gestureState.dx > 30) spinToPrevious();
+    },
+  });
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...containerPanResponder.panHandlers}>
       {/* Static Wireframe around top card position */}
       <View style={styles.staticWireframe} pointerEvents="none" />
       
@@ -78,23 +88,9 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
           // zIndex: top card highest
           const zIndex = displayIndex === 0 ? 100 : 100 - displayIndex;
 
-          // Only top card has PanResponder
-          const panResponder =
-            displayIndex === 0
-              ? PanResponder.create({
-                  onStartShouldSetPanResponder: () => true,
-                  onMoveShouldSetPanResponder: () => true,
-                  onPanResponderRelease: (_, gestureState) => {
-                    if (gestureState.dx < -30) spinToNext();
-                    else if (gestureState.dx > 30) spinToPrevious();
-                  },
-                })
-              : null;
-
           return (
             <Animated.View
               key={`${displayIndex}`}
-              {...(panResponder ? panResponder.panHandlers : {})}
               style={[
                 styles.cardContainer,
                 {

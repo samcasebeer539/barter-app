@@ -3,8 +3,7 @@
 This folder contains images for barter cards displayed in the CardWheel component.
 
 ## Image Specifications
-- **Resolution**: 800 x 800 pixels recommended
-- **Aspect Ratio**: 1:1 (square)
+- **Resolution**: 600 x 850 pixels recommended
 - **Format**: PNG or JPEG
 - **Max File Size**: 500KB per image (recommended)
 

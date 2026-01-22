@@ -1,16 +1,15 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, ImageSourcePropType } from 'react-native';
 
 interface BarterCardProps {
   title: string;
-  photo: string;
+  photo: ImageSourcePropType;
 }
 
 const BarterCard: React.FC<BarterCardProps> = ({ title, photo }) => {
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{title}</Text>
-      <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" />
+      <Image source={photo} style={styles.photo} resizeMode="cover" />
     </View>
   );
 };
@@ -18,9 +17,9 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo }) => {
 const styles = StyleSheet.create({
   card: {
     width: 200,
+    height: 280,
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -28,18 +27,11 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 12,
-    textAlign: 'center',
+    overflow: 'hidden',
   },
   photo: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
+    height: '100%',
   },
 });
 

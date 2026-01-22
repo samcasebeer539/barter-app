@@ -44,6 +44,9 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
 
   return (
     <View style={styles.container}>
+      {/* Static Wireframe around top card position */}
+      <View style={styles.staticWireframe} />
+      
       <Animated.View
         style={[
           styles.wheel,
@@ -112,6 +115,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
+  },
+  staticWireframe: {
+    position: 'absolute',
+    width: 216,
+    height: 296,
+    borderWidth: 3,
+    borderColor: '#FFA600',
+    borderRadius: 14,
+    borderStyle: 'solid',
+    top: '50%',
+    left: '50%',
+    marginLeft: -108, // Half of width
+    marginTop: -148 - 250, // Half of height + offset to match top card position
+    zIndex: 50,
+    shadowColor: '#FFA600',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 10,
   },
   wheel: {
     position: 'relative',

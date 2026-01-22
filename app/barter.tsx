@@ -2,11 +2,21 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import CardWheel from '../components/CardWheel';
 import ProfilePicture from '@/components/ProfilePicture';
 
 export default function BarterScreen() {
   const router = useRouter();
+  const [resetKey, setResetKey] = useState(0);
+
+  // Reset CardWheel whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      setResetKey(prev => prev + 1);
+    }, [])
+  );
 
   const handleBackPress = () => {
     router.push('/trades');
@@ -67,7 +77,7 @@ export default function BarterScreen() {
 
       {/* Card Wheel at bottom */}
       <View style={styles.cardWheelContainer}>
-        <CardWheel cards={sampleCards} />
+        <CardWheel cards={sampleCards} resetKey={resetKey} />
       </View>
     </View>
   );

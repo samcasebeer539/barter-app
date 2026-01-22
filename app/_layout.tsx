@@ -51,7 +51,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="barter"
+          name="trades"
           options={{
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="compare-arrows" size={28} color={color} />
@@ -67,7 +67,19 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
+          name="barter"
+          options={{
+            href: null, // Hide from tab bar - accessed from trades page
+          }}
+        />
+        <Tabs.Screen
           name="settings"
+          options={{
+            href: null, // Hide from tab bar completely
+          }}
+        />
+        <Tabs.Screen
+          name="decktest"
           options={{
             href: null, // Hide from tab bar completely
           }}

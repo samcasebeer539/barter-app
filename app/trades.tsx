@@ -133,7 +133,7 @@ export default function TradesScreen() {
             {/* Declined Offer 1 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>─</Text> Jay declined your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                <Text style={styles.heavyChar}>─</Text> Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
               </Text>
             </View>
 
@@ -193,8 +193,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   arrow: {
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: 40,
+    lineHeight: 10,
   },
   highlightBlue: {
     color: '#3B82F6',
@@ -210,6 +210,10 @@ const styles = StyleSheet.create({
   },
   highlightPurple: {
     color: '#a73bff',
+    fontWeight: '600',
+  },
+  highlightRed: {
+    color: '#ff3b3b',
     fontWeight: '600',
   },
 });

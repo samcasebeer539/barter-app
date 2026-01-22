@@ -194,19 +194,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                       <View style={styles.innerShadowContainer} pointerEvents="none">
                         {/* Top gradient */}
                         <LinearGradient
-                          colors={['rgba(0,0,0,0.3)', 'transparent']}
+                          colors={['rgba(0,0,0,0.1)', 'transparent']}
                           style={styles.gradientTop}
                           pointerEvents="none"
                         />
                         {/* Bottom gradient */}
                         <LinearGradient
-                          colors={['transparent', 'rgba(0,0,0,0.3)']}
+                          colors={['transparent', 'rgba(0,0,0,0.1)']}
                           style={styles.gradientBottom}
                           pointerEvents="none"
                         />
                         {/* Left gradient */}
                         <LinearGradient
-                          colors={['rgba(0,0,0,0.3)', 'transparent']}
+                          colors={['rgba(0,0,0,0.1)', 'transparent']}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 0 }}
                           style={styles.gradientLeft}
@@ -214,7 +214,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                         />
                         {/* Right gradient */}
                         <LinearGradient
-                          colors={['transparent', 'rgba(0,0,0,0.3)']}
+                          colors={['transparent', 'rgba(0,0,0,0.1)']}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 0 }}
                           style={styles.gradientRight}
@@ -327,28 +327,28 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 20,
+    height: 10,
   },
   gradientBottom: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 20,
+    height: 5,
   },
   gradientLeft: {
     position: 'absolute',
     top: 0,
     left: 0,
     bottom: 0,
-    width: 20,
+    width: 10,
   },
   gradientRight: {
     position: 'absolute',
     top: 0,
     right: 0,
     bottom: 0,
-    width: 20,
+    width: 5,
   },
   dotsContainer: { position: 'absolute', top: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },

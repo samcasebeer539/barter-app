@@ -19,50 +19,61 @@ export default function TradesScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Active Trades Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Active Trades</Text>
-        
+
         {/* Single Active Trade */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            — Jay sent <Text style={styles.highlightBlue}>offer</Text> on "Item"
+            ┌─ Jay sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
           </Text>
           <Text style={styles.tradeText}>
-            ├─ You proposed <Text style={styles.highlightYellow}>trade</Text> for "item"
+            ├─ You proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"
           </Text>
           <Text style={styles.tradeText}>
-            ├─ Jay proposed <Text style={styles.highlightPink}>counteroffer</Text>
+            ├─ Jay proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>
           </Text>
           <TouchableOpacity onPress={handleYourTurnPress} activeOpacity={0.7}>
-            <Text style={styles.yourTurnText}>└─ Your turn!</Text>
+            <Text style={styles.yourTurnText}>└─ Your turn! <Text style={styles.arrow}>⟶ </Text></Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Outgoing Offers Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Outgoing Offers</Text>
-        
+        {/* Single Active Trade */}
+        <View style={styles.tradeSection}>
+          <Text style={styles.tradeText}>
+            ┌─ You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Item"
+          </Text>
+          <Text style={styles.tradeText}>
+            ├─ Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "item"
+          </Text>
+          <Text style={styles.tradeText}>
+            ├─ You asked <Text style={styles.highlightPurple}>QUESTION</Text>
+          </Text>
+          
+        </View>
+
         {/* Outgoing Offer 1 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            — You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
+            ┌─ You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
           </Text>
         </View>
 
         {/* Outgoing Offer 2 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            — You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
+            ┌─ You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
           </Text>
         </View>
 
         {/* Outgoing Offer 3 */}
         <View style={styles.tradeSection}>
           <Text style={styles.tradeText}>
-            — You sent <Text style={styles.highlightBlue}>offer</Text> on "item"
+            ┌─ You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
           </Text>
         </View>
+
+
       </View>
+
     </ScrollView>
   );
 }
@@ -94,6 +105,10 @@ const styles = StyleSheet.create({
     color: '#E0E0E0',
     lineHeight: 24,
   },
+  arrow: {
+    fontSize: 30,
+    fontWeight: '100',
+  },
   yourTurnText: {
     fontSize: 16,
     color: '#34C759',
@@ -110,6 +125,10 @@ const styles = StyleSheet.create({
   },
   highlightPink: {
     color: '#FF3B81',
+    fontWeight: '600',
+  },
+  highlightPurple: {
+    color: '#a73bff',
     fontWeight: '600',
   },
 });

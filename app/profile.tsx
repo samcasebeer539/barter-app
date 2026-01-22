@@ -64,7 +64,7 @@ export default function ProfileScreen() {
   const cardSpacing = 0;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
-  // TODO: Replace this with actual user data from API
+  // replace this with actual user data from API
   const profileImageUrl = 'https://picsum.photos/seed/profile/400/400';
 
   // Interpolate animations based on reveal progress
@@ -137,7 +137,8 @@ export default function ProfileScreen() {
               avatarText="SC" 
             />
             <View style={styles.nameContainer}>
-              <Text style={styles.name}>Sam Casebeer</Text>
+               {/* replace with api data */}
+              <Text style={styles.name}>Sam Casebeer</Text>   
               <View style={styles.locationRow}>
                 <MaterialIcons name="location-on" size={16} color="#999" />
                 <Text style={styles.location}>Santa Cruz, CA</Text>
@@ -145,7 +146,7 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Bio */}
+          {/* Bio - api */}
           <Text style={styles.bio}>
             Passionate about sustainable living and building community through sharing. 
             Always looking for unique trades and meaningful connections.

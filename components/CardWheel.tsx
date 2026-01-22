@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, Animated } from 'react-native';
 import BarterCard from './BarterCard';
 
@@ -9,15 +9,22 @@ interface CardData {
 
 interface CardWheelProps {
   cards: CardData[];
+  resetKey?: number; // Optional prop to force reset
 }
 
-const CardWheel: React.FC<CardWheelProps> = ({ cards }) => {
+const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
   const RADIUS = 350;
   const TOTAL_CARDS = cards.length; // always show up to 5 cards
   const anglePerCard = (2 * Math.PI) / 12
+
+  // Reset wheel when resetKey changes
+  useEffect(() => {
+    setCurrentIndex(0);
+    rotationAnim.setValue(0);
+  }, [resetKey]);
 
   const animateToIndex = (targetIndex: number) => {
     const targetRotation = -targetIndex * anglePerCard;

@@ -1,9 +1,17 @@
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import CardWheel from '../components/CardWheel';
 import ProfilePicture from '@/components/ProfilePicture';
 
 export default function BarterScreen() {
+  const router = useRouter();
+
+  const handleBackPress = () => {
+    router.back();
+  };
+
   const sampleCards = [
     {
       title: 'Accept/Decline',
@@ -31,6 +39,15 @@ export default function BarterScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
+      {/* Back Button */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={handleBackPress}
+        activeOpacity={0.7}
+      >
+        <MaterialIcons name="arrow-back" size={28} color="#fff" />
+      </TouchableOpacity>
+
       {/* Header with profile photo and name */}
       <View style={styles.header}>
         <ProfilePicture size={50} avatarText="👤" />
@@ -64,6 +81,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#141414',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
   },
   header: {
     flexDirection: 'row',

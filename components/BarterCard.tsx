@@ -8,8 +8,10 @@ interface BarterCardProps {
 
 const BarterCard: React.FC<BarterCardProps> = ({ title, photo }) => {
   return (
-    <View style={styles.card}>
-      <Image source={photo} style={styles.photo} resizeMode="cover" />
+    <View style={styles.cardShadow}>
+      <View style={styles.card}>
+        <Image source={photo} style={styles.photo} resizeMode="cover" />
+      </View>
     </View>
   );
 };
@@ -20,11 +22,18 @@ const styles = StyleSheet.create({
     height: 280,
     backgroundColor: '#fff',
     borderRadius: 6,
+  cardShadow: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 12,
+  },
+  card: {
+    width: 200,
+    height: 280,
+    backgroundColor: '#fff',
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     overflow: 'hidden',

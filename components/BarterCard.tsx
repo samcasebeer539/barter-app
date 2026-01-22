@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 280,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     overflow: 'hidden',

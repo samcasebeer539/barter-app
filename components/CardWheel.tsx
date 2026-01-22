@@ -52,7 +52,7 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
   return (
     <View style={styles.container}>
       {/* Static Wireframe around top card position */}
-      <View style={styles.staticWireframe} />
+      <View style={styles.staticWireframe} pointerEvents="none" />
       
       <Animated.View
         style={[
@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
+    overflow: 'visible',
   },
   staticWireframe: {
     position: 'absolute',
@@ -148,9 +149,11 @@ const styles = StyleSheet.create({
     height: 800,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'visible',
   },
   cardContainer: {
     position: 'absolute',
+    overflow: 'visible',
   },
 });
 

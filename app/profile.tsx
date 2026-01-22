@@ -64,6 +64,9 @@ export default function ProfileScreen() {
   const cardSpacing = 0;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
+  // TODO: Replace this with actual user data from API
+  const profileImageUrl = 'https://picsum.photos/seed/profile/400/400';
+
   // Interpolate animations based on reveal progress
   const headerTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
@@ -128,7 +131,11 @@ export default function ProfileScreen() {
         >
           {/* Profile Picture and Name Row */}
           <View style={styles.profileRow}>
-            <ProfilePicture size={80} avatarText="👤" />
+            <ProfilePicture 
+              size={80} 
+              imageSource={profileImageUrl}
+              avatarText="SC" 
+            />
             <View style={styles.nameContainer}>
               <Text style={styles.name}>Sam Casebeer</Text>
               <View style={styles.locationRow}>

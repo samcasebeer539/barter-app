@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 interface Post {
@@ -189,8 +190,37 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                       style={[styles.photoFrame, { aspectRatio: photoAspectRatios[index] || 1, maxHeight: '100%', maxWidth: '100%' }]}
                     >
                       <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" />
-                      {/* Inner shadow overlay */}
-                      <View style={styles.innerShadow} pointerEvents="none" />
+                      {/* Inner shadow using LinearGradient overlays */}
+                      <View style={styles.innerShadowContainer} pointerEvents="none">
+                        {/* Top gradient */}
+                        <LinearGradient
+                          colors={['rgba(0,0,0,0.3)', 'transparent']}
+                          style={styles.gradientTop}
+                          pointerEvents="none"
+                        />
+                        {/* Bottom gradient */}
+                        <LinearGradient
+                          colors={['transparent', 'rgba(0,0,0,0.3)']}
+                          style={styles.gradientBottom}
+                          pointerEvents="none"
+                        />
+                        {/* Left gradient */}
+                        <LinearGradient
+                          colors={['rgba(0,0,0,0.3)', 'transparent']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 0 }}
+                          style={styles.gradientLeft}
+                          pointerEvents="none"
+                        />
+                        {/* Right gradient */}
+                        <LinearGradient
+                          colors={['transparent', 'rgba(0,0,0,0.3)']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 0 }}
+                          style={styles.gradientRight}
+                          pointerEvents="none"
+                        />
+                      </View>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -284,19 +314,41 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   photo: { width: '100%', height: '100%' },
-  innerShadow: {
+  innerShadowContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.15)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+  },
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 20,
+  },
+  gradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 20,
+  },
+  gradientLeft: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: 20,
+  },
+  gradientRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: 20,
   },
   dotsContainer: { position: 'absolute', top: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },

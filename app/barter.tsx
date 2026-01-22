@@ -9,7 +9,7 @@ export default function BarterScreen() {
   const router = useRouter();
 
   const handleBackPress = () => {
-    router.back();
+    router.push('/trades');
   };
 
   const sampleCards = [

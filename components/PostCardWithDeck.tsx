@@ -33,9 +33,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
 }) => {
   const translationY = useRef(new Animated.Value(0)).current;
   const isRevealed = useRef(false); // Track if currently revealed
-  const tradeButtonTapRef = useRef<TapGestureHandler>(null);
-  const plusButtonTapRef = useRef<TapGestureHandler>(null);
-  const minusButtonTapRef = useRef<TapGestureHandler>(null);
+  const userCardTapRef = useRef<TapGestureHandler>(null);
   
   // Calculate deck dimensions based on PostCard size
   const peekAmount = 20; // How much the deck peeks out from the top
@@ -87,7 +85,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
-  const handleTap = (event: any) => {
+  const handleUserCardTap = (event: any) => {
     if (event.nativeEvent.state === State.END && isRevealed.current) {
       // Collapse if currently revealed
       isRevealed.current = false;
@@ -140,131 +138,119 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   }) || 0;
 
   return (
-    <TapGestureHandler
-      onHandlerStateChange={handleTap}
-      waitFor={[tradeButtonTapRef, plusButtonTapRef, minusButtonTapRef]}
-    >
-      <Animated.View style={{ flex: 1 }}>
-        <PanGestureHandler
-          onGestureEvent={handlePanGestureEvent}
-          onHandlerStateChange={handlePanStateChange}
-          activeOffsetY={10} // Only activate after 10px vertical movement
-          failOffsetX={[-20, 20]} // Fail if horizontal movement exceeds 20px
+    <Animated.View style={{ flex: 1 }}>
+      <PanGestureHandler
+        onGestureEvent={handlePanGestureEvent}
+        onHandlerStateChange={handlePanStateChange}
+        activeOffsetY={10} // Only activate after 10px vertical movement
+        failOffsetX={[-20, 20]} // Fail if horizontal movement exceeds 20px
+      >
+        <Animated.View 
+          style={[
+            styles.container,
+          ]}
         >
+          {/* Deck peeking out from behind - UserCard at front, wireframe behind */}
           <Animated.View 
             style={[
-              styles.container,
-            ]}
+              styles.deckPeek, 
+              { 
+                top: -peekAmount - 190,
+                transform: [
+                  { translateY: deckExpandY },
+                  { scale: deckScale },
+                ],
+              }
+            ]} 
+            pointerEvents="box-none"
           >
-            {/* Deck peeking out from behind - UserCard at front, wireframe behind */}
-            <Animated.View 
-              style={[
-                styles.deckPeek, 
-                { 
-                  top: -peekAmount - 190,
-                  transform: [
-                    { translateY: deckExpandY },
-                    { scale: deckScale },
-                  ],
-                }
-              ]} 
-              pointerEvents="box-none"
+            {/* Wireframe card behind */}
+            <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
+            
+            {/* UserCard in front with border - tappable to collapse */}
+            <TapGestureHandler
+              ref={userCardTapRef}
+              onHandlerStateChange={handleUserCardTap}
             >
-              {/* Wireframe card behind */}
-              <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
-              
-              {/* UserCard in front with border */}
-              <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
+              <Animated.View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
                 <View style={styles.userCardBorder}>
                   <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
                 </View>
-              </View>
-
-              {/* TRADE Button - positioned below the deck */}
-              <Animated.View 
-                style={[
-                  styles.tradeButtonWrapper,
-                  { 
-                    top: (cardHeight * 0.87) + 20,
-                    opacity: tradeButtonOpacity,
-                  }
-                ]}
-              >
-                <TapGestureHandler ref={tradeButtonTapRef}>
-                  <Animated.View>
-                    <TouchableOpacity 
-                      style={styles.tradeButton}
-                      onPress={handleTradePress}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.tradeButtonText}>TRADE</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                </TapGestureHandler>
               </Animated.View>
+            </TapGestureHandler>
 
-              {/* plus Button - positioned below the deck */}
-              <Animated.View 
-                style={[
-                  styles.plusButtonWrapper,
-                  { 
-                    top: (cardHeight * 0.87) + 20,
-                    opacity: tradeButtonOpacity,
-                  }
-                ]}
-              >
-                <TapGestureHandler ref={plusButtonTapRef}>
-                  <Animated.View>
-                    <TouchableOpacity 
-                      style={styles.plusButton}
-                      onPress={handlePlusPress}
-                      activeOpacity={0.7}
-                    >
-                      <FontAwesome6 name="plus" size={14} color='#FFFFFF' />
-                    </TouchableOpacity>
-                  </Animated.View>
-                </TapGestureHandler>
-              </Animated.View>
-
-              {/* minus Button - positioned below the deck */}
-              <Animated.View 
-                style={[
-                  styles.minusButtonWrapper,
-                  { 
-                    top: (cardHeight * 0.87) + 20,
-                    opacity: tradeButtonOpacity,
-                  }
-                ]}
-              >
-                <TapGestureHandler ref={minusButtonTapRef}>
-                  <Animated.View>
-                    <TouchableOpacity 
-                      style={styles.minusButton}
-                      onPress={handleMinusPress}
-                      activeOpacity={0.7}
-                    >
-                      <FontAwesome6 name="minus" size={14} color='#FFFFFF' />
-                    </TouchableOpacity>
-                  </Animated.View>
-                </TapGestureHandler>
-              </Animated.View>
-            </Animated.View>
-            
-            {/* Main PostCard - moves during drag */}
+            {/* TRADE Button - positioned below the deck */}
             <Animated.View 
               style={[
-                styles.cardWrapper,
-                {
-                  transform: [{ translateY: translationY }],
-                },
+                styles.tradeButtonWrapper,
+                { 
+                  top: (cardHeight * 0.87) + 20,
+                  opacity: tradeButtonOpacity,
+                }
               ]}
             >
-              <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+              <TouchableOpacity 
+                style={styles.tradeButton}
+                onPress={handleTradePress}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.tradeButtonText}>TRADE</Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* plus Button - positioned below the deck */}
+            <Animated.View 
+              style={[
+                styles.plusButtonWrapper,
+                { 
+                  top: (cardHeight * 0.87) + 20,
+                  opacity: tradeButtonOpacity,
+                }
+              ]}
+            >
+              <TouchableOpacity 
+                style={styles.plusButton}
+                onPress={handlePlusPress}
+                activeOpacity={0.7}
+              >
+                <FontAwesome6 name="plus" size={14} color='#FFFFFF' />
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* minus Button - positioned below the deck */}
+            <Animated.View 
+              style={[
+                styles.minusButtonWrapper,
+                { 
+                  top: (cardHeight * 0.87) + 20,
+                  opacity: tradeButtonOpacity,
+                }
+              ]}
+            >
+              <TouchableOpacity 
+                style={styles.minusButton}
+                onPress={handleMinusPress}
+                activeOpacity={0.7}
+              >
+                <FontAwesome6 name="minus" size={14} color='#FFFFFF' />
+              </TouchableOpacity>
             </Animated.View>
           </Animated.View>
-        </PanGestureHandler>
-      </Animated.View>
-    </TapGestureHandler>
+          
+          {/* Main PostCard - moves during drag */}
+          <Animated.View 
+            style={[
+              styles.cardWrapper,
+              {
+                transform: [{ translateY: translationY }],
+              },
+            ]}
+          >
+            <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+          </Animated.View>
+        </Animated.View>
+      </PanGestureHandler>
+    </Animated.View>
   );
 };
 

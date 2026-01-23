@@ -86,7 +86,7 @@ export default function FeedScreen() {
 
   const [showSaved, setShowSaved] = useState(false);  //use state: is this in user's saved posts?
   const handleSave = () => {
-    console.log('Save button pressed');
+    console.log('Save button', showSaved);
     // Add your offer logic here
     setShowSaved(prev => !prev);
   };
@@ -186,7 +186,7 @@ export default function FeedScreen() {
                 style={styles.saveButton}
                 onPress={handleSave}
               >
-                <FontAwesome6 name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={24} color='#FFFFFF' />
+                <Icon name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={30} color='#FFFFFF' />
 
               </TouchableOpacity>
             </View>

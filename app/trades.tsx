@@ -31,7 +31,7 @@ export default function TradesScreen() {
   const handleAnswer = () => {
     console.log('Answer button pressed');
     // Add your offer logic here
-    setShowInput(true);
+    setShowInput(prev => !prev);
     setTimeout(() => {
     inputRef.current?.focus();
   }, 0);
@@ -172,21 +172,21 @@ export default function TradesScreen() {
             {/* Outgoing Offer 1 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
               </Text>
             </View>
 
             {/* Outgoing Offer 2 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
               </Text>
             </View>
 
             {/* Outgoing Offer 3 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
               </Text>
             </View>
           </>

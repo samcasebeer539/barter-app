@@ -9,6 +9,8 @@ import UserCard from './UserCard';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 
 
+//will need to pass in the actual deck component
+
 interface Post {
   type: 'good' | 'service';
   name: string;
@@ -17,6 +19,7 @@ interface Post {
 }
 
 interface PostCardWithDeckProps {
+  //need to pa
   post: Post;
   cardWidth?: number;
   scale?: number;

@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
-  card: {
+    card: {
     backgroundColor: '#1f1f1f', // Slightly lighter grey than #141414 background
     borderRadius: 8,
     overflow: 'hidden',
@@ -114,6 +114,10 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 16,
     paddingBottom: 16,
+
+    // Add white border without increasing size
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   topRow: {
     flexDirection: 'row',

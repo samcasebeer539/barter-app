@@ -231,7 +231,7 @@ export default function ProfileScreen() {
                       />
                     ) : (
                       <PostCard post={item} scale={1} cardWidth={cardWidth} />
-                    )}
+                    ) }
                   </View>
                 </Animated.View>
               );

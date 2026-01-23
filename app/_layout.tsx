@@ -82,7 +82,9 @@ export default function RootLayout() {
         <Tabs.Screen
           name="decktest"
           options={{
-            href: null, // Hide from tab bar completely
+            tabBarIcon: ({ color }) => (
+              <FontAwesome6 name="layer-group" size={24} color={color} />
+            ), // Hide from tab bar completely
           }}
         />
       </Tabs>

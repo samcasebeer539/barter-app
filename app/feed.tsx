@@ -162,6 +162,7 @@ export default function FeedScreen() {
             >
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
+
             <View pointerEvents="auto" style={styles.cardContainer}>
               <PostCard 
                 post={selectedPost}
@@ -299,8 +300,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    width: '100%',
     marginTop: 16,
+    zIndex: 5,
   },
   offerButton: {
     backgroundColor: '#007AFF',

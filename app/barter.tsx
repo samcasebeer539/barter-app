@@ -1,6 +1,6 @@
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
@@ -73,10 +73,10 @@ export default function BarterScreen() {
         onPress={handleBackPress}
         activeOpacity={0.7}
       >
-        <MaterialIcons name="arrow-back" size={28} color="#fff" />
+        <FontAwesome6 name="angle-left" size={28} color="#fff" />
       </TouchableOpacity>
 
-      {/* Header with profile photo and name */}
+      {/* Header with profile photo and name - centered */}
       <View style={styles.header}>
         <ProfilePicture size={50} avatarText="👤" />
         <Text style={styles.name}>Jay Wilson</Text>
@@ -126,8 +126,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#fff',
-    marginLeft: 12,
+    marginTop: 12,
   },
   mainContent: {
     flex: 1,

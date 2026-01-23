@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 5,
+    zIndex: 15,
   },
   modalBackground: {
     position: 'absolute',
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   offerButton: {
     backgroundColor: '#007AFF',
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   },
   offerButtonText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.5,
   },

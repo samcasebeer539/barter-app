@@ -31,6 +31,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
 }) => {
   const translationY = useRef(new Animated.Value(0)).current;
   const isRevealed = useRef(false); // Track if currently revealed
+  const buttonTapRef = useRef<TapGestureHandler>(null);
   
   // Calculate deck dimensions based on PostCard size
   const peekAmount = 20; // How much the deck peeks out from the top
@@ -128,6 +129,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   return (
     <TapGestureHandler
       onHandlerStateChange={handleTap}
+      waitFor={buttonTapRef}
     >
       <Animated.View style={{ flex: 1 }}>
         <PanGestureHandler
@@ -175,13 +177,17 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   }
                 ]}
               >
-                <TouchableOpacity 
-                  style={styles.tradeButton}
-                  onPress={handleTradePress}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.tradeButtonText}>TRADE</Text>
-                </TouchableOpacity>
+                <TapGestureHandler ref={buttonTapRef}>
+                  <Animated.View>
+                    <TouchableOpacity 
+                      style={styles.tradeButton}
+                      onPress={handleTradePress}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.tradeButtonText}>TRADE</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                </TapGestureHandler>
               </Animated.View>
             </Animated.View>
             

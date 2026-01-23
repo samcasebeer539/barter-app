@@ -33,7 +33,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
 }) => {
   const translationY = useRef(new Animated.Value(0)).current;
   const isRevealed = useRef(false); // Track if currently revealed
-  const buttonTapRef = useRef<TapGestureHandler>(null);
+  const tradeButtonTapRef = useRef<TapGestureHandler>(null);
+  const plusButtonTapRef = useRef<TapGestureHandler>(null);
+  const minusButtonTapRef = useRef<TapGestureHandler>(null);
   
   // Calculate deck dimensions based on PostCard size
   const peekAmount = 20; // How much the deck peeks out from the top
@@ -140,7 +142,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   return (
     <TapGestureHandler
       onHandlerStateChange={handleTap}
-      waitFor={buttonTapRef}
+      waitFor={[tradeButtonTapRef, plusButtonTapRef, minusButtonTapRef]}
     >
       <Animated.View style={{ flex: 1 }}>
         <PanGestureHandler
@@ -188,7 +190,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   }
                 ]}
               >
-                <TapGestureHandler ref={buttonTapRef}>
+                <TapGestureHandler ref={tradeButtonTapRef}>
                   <Animated.View>
                     <TouchableOpacity 
                       style={styles.tradeButton}
@@ -211,7 +213,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   }
                 ]}
               >
-                <TapGestureHandler ref={buttonTapRef}>
+                <TapGestureHandler ref={plusButtonTapRef}>
                   <Animated.View>
                     <TouchableOpacity 
                       style={styles.plusButton}
@@ -234,7 +236,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   }
                 ]}
               >
-                <TapGestureHandler ref={buttonTapRef}>
+                <TapGestureHandler ref={minusButtonTapRef}>
                   <Animated.View>
                     <TouchableOpacity 
                       style={styles.minusButton}

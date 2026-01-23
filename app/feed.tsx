@@ -158,12 +158,14 @@ export default function FeedScreen() {
                 scale={1}
                 cardWidth={Math.min(width - 40, 400)}
               />
-              <TouchableOpacity 
-                style={styles.offerButton}
-                onPress={handleOffer}
-              >
-                <Text style={styles.offerButtonText}>OFFER</Text>
-              </TouchableOpacity>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity 
+                  style={styles.offerButton}
+                  onPress={handleOffer}
+                >
+                  <Text style={styles.offerButtonText}>OFFER</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -279,6 +281,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  buttonContainer: {
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 16,
+  },
   offerButton: {
     backgroundColor: '#007AFF',
     paddingVertical: 8,
@@ -286,7 +293,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

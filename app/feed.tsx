@@ -75,11 +75,6 @@ export default function FeedScreen() {
     setSelectedPost(null);
   };
 
-  const handleOffer = () => {
-    console.log('Offer button pressed');
-    // Add your offer logic here
-  };
-
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     <View key={item.id} style={styles.cardWrapper}>
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
@@ -143,15 +138,14 @@ export default function FeedScreen() {
         transparent={true}
         animationType="fade"
         onRequestClose={handleCloseModal}
-        statusBarTranslucent={true}
       >
-        <View style={styles.modalOverlay} pointerEvents="box-none">
+        <View style={styles.modalOverlay}>
           <TouchableOpacity 
             style={styles.modalBackground} 
             activeOpacity={1} 
             onPress={handleCloseModal}
           />
-          <View style={styles.modalContent} pointerEvents="box-none">
+          <View style={styles.modalContent}>
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={handleCloseModal}
@@ -159,19 +153,11 @@ export default function FeedScreen() {
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
             {selectedPost && (
-              <View pointerEvents="auto">
-                <PostCard 
-                  post={selectedPost}
-                  scale={1}
-                  cardWidth={Math.min(width - 40, 400)}
-                />
-                <TouchableOpacity 
-                  style={styles.offerButton}
-                  onPress={handleOffer}
-                >
-                  <Text style={styles.offerButtonText}>OFFER</Text>
-                </TouchableOpacity>
-              </View>
+              <PostCard 
+                post={selectedPost}
+                scale={1}
+                cardWidth={Math.min(width - 40, 400)}
+              />
             )}
           </View>
         </View>
@@ -280,20 +266,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  offerButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-  },
-  offerButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
 });

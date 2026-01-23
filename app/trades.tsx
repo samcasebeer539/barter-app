@@ -115,7 +115,8 @@ export default function TradesScreen() {
                 <TextInput
                   ref={inputRef}
                   style={styles.textAnswerInput}
-                  placeholder="Type your offer..."
+                  placeholder="Answer question to begin your turn!"
+                  placeholderTextColor="#fff"
                 />
               )}
             </View>
@@ -360,6 +361,7 @@ const styles = StyleSheet.create({
   },
 
   textAnswerInput: {
+    color: '#fff',
     height: 44,
     borderWidth: 1,
     borderColor: '#ccc',

@@ -6,6 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import CardWheel from '../components/CardWheel';
 import ProfilePicture from '@/components/ProfilePicture';
+import PostCard from '@/components/PostCard';
 
 export default function BarterScreen() {
   const router = useRouter();
@@ -41,6 +42,27 @@ export default function BarterScreen() {
     },
   ];
 
+  // Sample posts for the two cards
+  const leftPost = {
+    type: 'service' as const,
+    name: 'Guitar Lessons',
+    description: 'Professional guitar instruction for all skill levels. Learn music theory, techniques, and your favorite songs.',
+    photos: [
+      'https://picsum.photos/seed/guitar1/800/400',
+      'https://picsum.photos/seed/guitar2/400/600',
+    ],
+  };
+
+  const rightPost = {
+    type: 'good' as const,
+    name: 'Vintage Camera',
+    description: 'Classic film camera in excellent condition. Perfect for photography enthusiasts.',
+    photos: [
+      'https://picsum.photos/seed/camera1/800/400',
+      'https://picsum.photos/seed/camera2/400/600',
+    ],
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -60,17 +82,25 @@ export default function BarterScreen() {
         <Text style={styles.name}>Jay Wilson</Text>
       </View>
 
-      {/* Main content area with card wireframes */}
+      {/* Main content area with PostCards */}
       <View style={styles.mainContent}>
         <View style={styles.cardsContainer}>
           {/* Left card - larger and higher */}
           <View style={styles.leftCard}>
-            <View style={styles.wireframe} />
+            <PostCard 
+              post={leftPost}
+              cardWidth={200}
+              scale={1}
+            />
           </View>
           
           {/* Right card - smaller and lower */}
           <View style={styles.rightCard}>
-            <View style={styles.wireframe} />
+            <PostCard 
+              post={rightPost}
+              cardWidth={140}
+              scale={1}
+            />
           </View>
         </View>
       </View>
@@ -132,14 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
-  },
-  wireframe: {
-    width: '100%',
-    height: '100%',
-    borderWidth: 2,
-    borderColor: '#333',
-    borderRadius: 16,
-    borderStyle: 'dashed',
   },
   cardWheelContainer: {
     position: 'absolute',

@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   offerButton: {
     backgroundColor: '#007AFF',
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   },
   offerButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: 0.5,
   },

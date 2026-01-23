@@ -89,13 +89,12 @@ export default function FeedScreen() {
             style={styles.image}
             resizeMode="cover"
           />
-          <View style={styles.typeIconContainer}>
-            <FontAwesome6 
-              name={item.type === 'service' ? 'cube' : 'stopwatch'} 
-              size={20} 
-              color={item.type === 'service' ? '#FFA600' : '#FF3B81'}
-            />
-          </View>
+          <FontAwesome6 
+            name={item.type === 'service' ? 'cube' : 'stopwatch'} 
+            size={20} 
+            color={item.type === 'service' ? '#FFA600' : '#FF3B81'}
+            style={styles.typeIcon}
+          />
         </View>
       </TouchableOpacity>
       <Text style={styles.itemTitle}>{item.title}</Text>
@@ -112,10 +111,10 @@ export default function FeedScreen() {
           { transform: [{ translateY: headerTranslateY }] }
         ]}
       >
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity>
           <FontAwesome6 name="location-arrow" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity>
           <FontAwesome6 name="magnifying-glass" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </Animated.View>
@@ -189,14 +188,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     zIndex: 10,
   },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(28, 28, 30, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   scrollView: {
     flex: 1,
   },
@@ -229,13 +220,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  typeIconContainer: {
+  typeIcon: {
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 6,
-    padding: 6,
   },
   itemTitle: {
     fontSize: 14,

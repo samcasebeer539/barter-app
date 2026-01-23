@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
 interface Post {
@@ -138,11 +139,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <MaterialIcons
-              name={post.type === 'good' ? 'shopping-bag' : 'build'}
+            <FontAwesome6
+              name={post.type === 'good' ? 'cube' : 'stopwatch'}
               size={20}
               color="#000"
             />
+        
+
           </View>
           <View 
             style={styles.titleContainer}

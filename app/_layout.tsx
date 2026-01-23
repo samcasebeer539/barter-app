@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 function TabBarBackground() {
   return (
@@ -46,7 +47,7 @@ export default function RootLayout() {
           name="feed"
           options={{
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="home" size={28} color={color} />
+              <FontAwesome6 name="square" size={24} color={color} />
             ),
           }}
         />
@@ -54,7 +55,7 @@ export default function RootLayout() {
           name="trades"
           options={{
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="compare-arrows" size={28} color={color} />
+              <FontAwesome6 name="arrow-right-arrow-left" size={28} color={color} />
             ),
           }}
         />
@@ -62,7 +63,7 @@ export default function RootLayout() {
           name="profile"
           options={{
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="account-circle" size={28} color={color} />
+              <FontAwesome6 name="user-circle" size={24} color={color} />
             ),
           }}
         />

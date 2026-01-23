@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import PostCard from '@/components/PostCard';
 
@@ -90,10 +90,10 @@ export default function FeedScreen() {
             resizeMode="cover"
           />
           <View style={styles.typeIconContainer}>
-            <MaterialIcons 
-              name={item.type === 'service' ? 'schedule' : 'inventory-2'} 
+            <FontAwesome6 
+              name={item.type === 'service' ? 'cube' : 'stopwatch'} 
               size={20} 
-              color="#FFFFFF" 
+              color={item.type === 'service' ? '#FFA600' : '#FF3B81'}
             />
           </View>
         </View>
@@ -113,10 +113,10 @@ export default function FeedScreen() {
         ]}
       >
         <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="location-on" size={24} color="#FFFFFF" />
+          <FontAwesome6 name="location-arrow" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="search" size={24} color="#FFFFFF" />
+          <FontAwesome6 name="magnifying-glass" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </Animated.View>
 

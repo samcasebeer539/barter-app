@@ -116,7 +116,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Move deck upward - doubled to -600
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -550], // Move up 550px when revealed
+    outputRange: [0, -580], // Move up 550px when revealed
   }) || 0;
 
   // Animate TRADE button opacity
@@ -170,7 +170,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                 style={[
                   styles.tradeButtonWrapper,
                   { 
-                    top: (cardHeight * 0.85) + 20,
+                    top: (cardHeight * 0.87) + 20,
                     opacity: tradeButtonOpacity,
                   }
                 ]}
@@ -250,9 +250,9 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   tradeButton: {
-    backgroundColor: '#FFD60A',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    backgroundColor: '#FFA600',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tradeButtonText: {
-    color: '#000000',
+    color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.5,

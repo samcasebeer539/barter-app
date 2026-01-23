@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
@@ -137,44 +137,37 @@ export default function FeedScreen() {
         </View>
       </ScrollView>
 
-      {/* Modal for PostCard */}
-      <Modal
-        visible={selectedPost !== null}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalOverlay}>
+      {/* Overlay for PostCard - renders below tab bar */}
+      {selectedPost && (
+        <View style={styles.modalOverlay} pointerEvents="box-none">
           <TouchableOpacity 
             style={styles.modalBackground} 
             activeOpacity={1} 
             onPress={handleCloseModal}
           />
-          <View style={styles.modalContent}>
+          <View style={styles.modalContent} pointerEvents="box-none">
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={handleCloseModal}
             >
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
-            {selectedPost && (
-              <>
-                <PostCard 
-                  post={selectedPost}
-                  scale={1}
-                  cardWidth={Math.min(width - 40, 400)}
-                />
-                <TouchableOpacity 
-                  style={styles.offerButton}
-                  onPress={handleOffer}
-                >
-                  <Text style={styles.offerButtonText}>OFFER</Text>
-                </TouchableOpacity>
-              </>
-            )}
+            <View pointerEvents="auto">
+              <PostCard 
+                post={selectedPost}
+                scale={1}
+                cardWidth={Math.min(width - 40, 400)}
+              />
+              <TouchableOpacity 
+                style={styles.offerButton}
+                onPress={handleOffer}
+              >
+                <Text style={styles.offerButtonText}>OFFER</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
@@ -250,9 +243,14 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   modalOverlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 5,
   },
   modalBackground: {
     position: 'absolute',

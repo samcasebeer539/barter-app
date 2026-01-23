@@ -158,14 +158,14 @@ export default function FeedScreen() {
                 scale={1}
                 cardWidth={Math.min(width - 40, 400)}
               />
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity 
-                  style={styles.offerButton}
-                  onPress={handleOffer}
-                >
-                  <Text style={styles.offerButtonText}>OFFER</Text>
-                </TouchableOpacity>
-              </View>
+            </View>
+            <View style={styles.buttonContainer} pointerEvents="auto">
+              <TouchableOpacity 
+                style={styles.offerButton}
+                onPress={handleOffer}
+              >
+                <Text style={styles.offerButtonText}>OFFER</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

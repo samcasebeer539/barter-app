@@ -143,14 +143,15 @@ export default function FeedScreen() {
         transparent={true}
         animationType="fade"
         onRequestClose={handleCloseModal}
+        statusBarTranslucent={true}
       >
-        <View style={styles.modalOverlay}>
+        <View style={styles.modalOverlay} pointerEvents="box-none">
           <TouchableOpacity 
             style={styles.modalBackground} 
             activeOpacity={1} 
             onPress={handleCloseModal}
           />
-          <View style={styles.modalContent}>
+          <View style={styles.modalContent} pointerEvents="box-none">
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={handleCloseModal}
@@ -158,7 +159,7 @@ export default function FeedScreen() {
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
             {selectedPost && (
-              <>
+              <View pointerEvents="auto">
                 <PostCard 
                   post={selectedPost}
                   scale={1}
@@ -170,7 +171,7 @@ export default function FeedScreen() {
                 >
                   <Text style={styles.offerButtonText}>OFFER</Text>
                 </TouchableOpacity>
-              </>
+              </View>
             )}
           </View>
         </View>

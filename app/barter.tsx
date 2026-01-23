@@ -126,18 +126,19 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   header: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
+    marginLeft: 52,
   },
   name: {
     fontSize: 20,
     fontWeight: '600',
     color: '#fff',
-    marginTop: 12,
+    marginLeft: 12,
+    marginTop: 26,
   },
   mainContent: {
     flex: 1,

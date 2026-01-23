@@ -116,7 +116,7 @@ export default function TradesScreen() {
                   ref={inputRef}
                   style={styles.textAnswerInput}
                   placeholder="Answer question to begin your turn!"
-                  placeholderTextColor="#fff"
+                  placeholderTextColor="#ffffff"
                 />
               )}
             </View>

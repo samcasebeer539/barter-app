@@ -153,7 +153,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   ],
                 }
               ]} 
-              pointerEvents="none"
+              pointerEvents="box-none"
             >
               {/* Wireframe card behind */}
               <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
@@ -174,12 +174,11 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                     opacity: tradeButtonOpacity,
                   }
                 ]}
-                pointerEvents="box-none"
               >
                 <TouchableOpacity 
                   style={styles.tradeButton}
                   onPress={handleTradePress}
-                  pointerEvents="auto"
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.tradeButtonText}>TRADE</Text>
                 </TouchableOpacity>

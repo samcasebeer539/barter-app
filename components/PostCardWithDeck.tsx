@@ -33,7 +33,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
 }) => {
   const translationY = useRef(new Animated.Value(0)).current;
   const isRevealed = useRef(false); // Track if currently revealed
-  const userCardTapRef = useRef<TapGestureHandler>(null);
   const postCardTapRef = useRef<TapGestureHandler>(null);
   
   // Calculate deck dimensions based on PostCard size
@@ -86,7 +85,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
-  const handleCollapseTap = (event: any) => {
+  const handlePostCardTap = (event: any) => {
     if (event.nativeEvent.state === State.END && isRevealed.current) {
       // Collapse if currently revealed
       isRevealed.current = false;
@@ -168,17 +167,12 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             {/* Wireframe card behind */}
             <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
             
-            {/* UserCard in front with border - tappable to collapse */}
-            <TapGestureHandler
-              ref={userCardTapRef}
-              onHandlerStateChange={handleCollapseTap}
-            >
-              <Animated.View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
-                <View style={styles.userCardBorder}>
-                  <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
-                </View>
-              </Animated.View>
-            </TapGestureHandler>
+            {/* UserCard in front with border - no tap handler, just visual */}
+            <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
+              <View style={styles.userCardBorder}>
+                <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
+              </View>
+            </View>
 
             {/* TRADE Button - positioned below the deck */}
             <Animated.View 
@@ -244,7 +238,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
           {/* Main PostCard - moves during drag and tappable to collapse */}
           <TapGestureHandler
             ref={postCardTapRef}
-            onHandlerStateChange={handleCollapseTap}
+            onHandlerStateChange={handlePostCardTap}
           >
             <Animated.View 
               style={[

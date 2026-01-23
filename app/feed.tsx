@@ -152,7 +152,7 @@ export default function FeedScreen() {
             >
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
-            <View pointerEvents="auto">
+            <View pointerEvents="auto" style={styles.cardContainer}>
               <PostCard 
                 post={selectedPost}
                 scale={1}
@@ -267,6 +267,9 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     position: 'relative',
     paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  cardContainer: {
     alignItems: 'center',
   },
   closeButton: {

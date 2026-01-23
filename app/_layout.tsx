@@ -85,6 +85,14 @@ export default function RootLayout() {
             href: null, // Hide from tab bar completely
           }}
         />
+        <Tabs.Screen
+          name="user_auth/signin"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <FontAwesome6 name="arrow-right-arrow-left" size={28} color={color} />
+            ),
+          }}
+        />
       </Tabs>
     </SafeAreaProvider>
   );

@@ -152,7 +152,7 @@ export default function FeedScreen() {
             >
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
-            <View pointerEvents="auto">
+            <View pointerEvents="auto" >
               <PostCard 
                 post={selectedPost}
                 scale={1}

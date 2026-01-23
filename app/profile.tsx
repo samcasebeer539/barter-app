@@ -57,7 +57,6 @@ export default function ProfileScreen() {
   const router = useRouter();
   const scrollX = useRef(new Animated.Value(0)).current;
   const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
-  const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
@@ -79,28 +78,12 @@ export default function ProfileScreen() {
     outputRange: [0, screenHeight * 0.4], // Move carousel way down (70% of screen height)
   });
 
-  const tradeButtonOpacity = revealProgress.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1], // Fade in only when fully revealed
-  });
-
-  const tradeButtonTranslateY = revealProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [20, 0], // Slide up slightly as it appears
-  });
-
   const handleRevealChange = (revealed: boolean) => {
     console.log('Deck revealed:', revealed);
-    setIsDeckRevealed(revealed);
   };
 
   const handleSettingsPress = () => {
     router.push('/settings');
-  };
-
-  const handleTradePress = () => {
-    console.log('Trade button pressed');
-    // Add your trade logic here
   };
 
   // Create array with CreateCard at the front
@@ -254,26 +237,6 @@ export default function ProfileScreen() {
               );
             })}
           </Animated.ScrollView>
-
-          {/* TRADE Button - Only visible when deck is revealed */}
-          {isDeckRevealed && (
-            <Animated.View
-              style={[
-                styles.tradeButtonContainer,
-                {
-                  opacity: tradeButtonOpacity,
-                  transform: [{ translateY: tradeButtonTranslateY }],
-                },
-              ]}
-            >
-              <TouchableOpacity 
-                style={styles.tradeButton}
-                onPress={handleTradePress}
-              >
-                <Text style={styles.tradeButtonText}>TRADE</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
         </Animated.View>
       </ScrollView>
     </GestureHandlerRootView>
@@ -368,25 +331,5 @@ const styles = StyleSheet.create({
   tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
   cardsWrapper: {
     marginTop: 230, // Increased to push carousel down more in initial position
-  },
-  tradeButtonContainer: {
-    alignItems: 'center',
-    marginTop: 20,
-    paddingHorizontal: 20,
-  },
-  tradeButton: {
-    backgroundColor: '#FFD60A',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 200,
-  },
-  tradeButtonText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
 });

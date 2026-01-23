@@ -34,6 +34,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const translationY = useRef(new Animated.Value(0)).current;
   const isRevealed = useRef(false); // Track if currently revealed
   const userCardTapRef = useRef<TapGestureHandler>(null);
+  const postCardTapRef = useRef<TapGestureHandler>(null);
   
   // Calculate deck dimensions based on PostCard size
   const peekAmount = 20; // How much the deck peeks out from the top
@@ -85,7 +86,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
-  const handleUserCardTap = (event: any) => {
+  const handleCollapseTap = (event: any) => {
     if (event.nativeEvent.state === State.END && isRevealed.current) {
       // Collapse if currently revealed
       isRevealed.current = false;
@@ -170,7 +171,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             {/* UserCard in front with border - tappable to collapse */}
             <TapGestureHandler
               ref={userCardTapRef}
-              onHandlerStateChange={handleUserCardTap}
+              onHandlerStateChange={handleCollapseTap}
             >
               <Animated.View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
                 <View style={styles.userCardBorder}>
@@ -188,6 +189,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   opacity: tradeButtonOpacity,
                 }
               ]}
+              pointerEvents="box-none"
             >
               <TouchableOpacity 
                 style={styles.tradeButton}
@@ -207,6 +209,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   opacity: tradeButtonOpacity,
                 }
               ]}
+              pointerEvents="box-none"
             >
               <TouchableOpacity 
                 style={styles.plusButton}
@@ -226,6 +229,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   opacity: tradeButtonOpacity,
                 }
               ]}
+              pointerEvents="box-none"
             >
               <TouchableOpacity 
                 style={styles.minusButton}
@@ -237,17 +241,22 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             </Animated.View>
           </Animated.View>
           
-          {/* Main PostCard - moves during drag */}
-          <Animated.View 
-            style={[
-              styles.cardWrapper,
-              {
-                transform: [{ translateY: translationY }],
-              },
-            ]}
+          {/* Main PostCard - moves during drag and tappable to collapse */}
+          <TapGestureHandler
+            ref={postCardTapRef}
+            onHandlerStateChange={handleCollapseTap}
           >
-            <PostCard post={post} scale={scale} cardWidth={cardWidth} />
-          </Animated.View>
+            <Animated.View 
+              style={[
+                styles.cardWrapper,
+                {
+                  transform: [{ translateY: translationY }],
+                },
+              ]}
+            >
+              <PostCard post={post} scale={scale} cardWidth={cardWidth} />
+            </Animated.View>
+          </TapGestureHandler>
         </Animated.View>
       </PanGestureHandler>
     </Animated.View>

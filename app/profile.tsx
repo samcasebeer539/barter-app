@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import PostCard from '@/components/PostCard';
@@ -110,7 +110,7 @@ export default function ProfileScreen() {
         ]}
       >
         <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
-          <MaterialIcons name="settings" size={28} color="#fff" />
+          <FontAwesome6 name="gear" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </Animated.View>
 
@@ -140,7 +140,7 @@ export default function ProfileScreen() {
                {/* replace with api data */}
               <Text style={styles.name}>Sam Casebeer</Text>   
               <View style={styles.locationRow}>
-                <MaterialIcons name="location-on" size={16} color="#999" />
+                <FontAwesome6 name="location-dot" size={14} color="#FFFFFF" />
                 <Text style={styles.location}>Santa Cruz, CA</Text>
               </View>
             </View>

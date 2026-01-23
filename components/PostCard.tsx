@@ -142,7 +142,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
             <FontAwesome6
               name={post.type === 'good' ? 'cube' : 'stopwatch'}
               size={20}
-              color="#000"
+              color={post.type === 'service' ? '#FFA600' : '#FF3B81'}
             />
         
 

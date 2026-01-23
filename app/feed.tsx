@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import PostCard from '@/components/PostCard';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const { width } = Dimensions.get('window');
 
@@ -75,9 +76,19 @@ export default function FeedScreen() {
     setSelectedPost(null);
   };
 
+  
+
   const handleOffer = () => {
     console.log('Offer button pressed');
     // Add your offer logic here
+    
+  };
+
+  const [showSaved, setShowSaved] = useState(false);  //use state: is this in user's saved posts?
+  const handleSave = () => {
+    console.log('Save button pressed');
+    // Add your offer logic here
+    setShowSaved(prev => !prev);
   };
 
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
@@ -158,6 +169,8 @@ export default function FeedScreen() {
                 cardWidth={Math.min(width - 40, 400)}
               />
             </View>
+
+            {/* Offer button */}
             <View style={styles.buttonContainer} pointerEvents="auto">
               <TouchableOpacity 
                 style={styles.offerButton}
@@ -166,6 +179,18 @@ export default function FeedScreen() {
                 <Text style={styles.offerButtonText}>OFFER</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Save button 1 */}
+            <View style={styles.saveButtonContainer} pointerEvents="auto">
+              <TouchableOpacity 
+                style={styles.saveButton}
+                onPress={handleSave}
+              >
+                <FontAwesome6 name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={24} color='#FFFFFF' />
+
+              </TouchableOpacity>
+            </View>
+            
           </View>
         </View>
       )}
@@ -298,5 +323,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  saveButtonContainer: {
+    alignItems: 'flex-end',
+    width: '100%',
+    marginTop: -54,
+    marginLeft: -82,
+    zIndex: 4,
+  },
+  saveButton: {
+    
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

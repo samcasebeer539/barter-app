@@ -6,6 +6,8 @@ import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from '
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
 import UserCard from './UserCard';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+
 
 interface Post {
   type: 'good' | 'service';
@@ -107,6 +109,15 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     console.log('Trade button pressed');
     // Add your trade logic here
   };
+  const handlePlusPress = () => {
+    console.log('Plus button pressed');
+    // Add your trade logic here
+  };
+  const handleMinusPress = () => {
+    console.log('Minus button pressed');
+    // Add your trade logic here
+  };
+
 
   // Animate deck scale and position when revealed
   const deckScale = revealProgress?.interpolate({
@@ -185,6 +196,52 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                       activeOpacity={0.7}
                     >
                       <Text style={styles.tradeButtonText}>TRADE</Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                </TapGestureHandler>
+              </Animated.View>
+
+              {/* plus Button - positioned below the deck */}
+              <Animated.View 
+                style={[
+                  styles.plusButtonWrapper,
+                  { 
+                    top: (cardHeight * 0.87) + 20,
+                    opacity: tradeButtonOpacity,
+                  }
+                ]}
+              >
+                <TapGestureHandler ref={buttonTapRef}>
+                  <Animated.View>
+                    <TouchableOpacity 
+                      style={styles.plusButton}
+                      onPress={handlePlusPress}
+                      activeOpacity={0.7}
+                    >
+                      <FontAwesome6 name="plus" size={14} color='#FFFFFF' />
+                    </TouchableOpacity>
+                  </Animated.View>
+                </TapGestureHandler>
+              </Animated.View>
+
+              {/* minus Button - positioned below the deck */}
+              <Animated.View 
+                style={[
+                  styles.minusButtonWrapper,
+                  { 
+                    top: (cardHeight * 0.87) + 20,
+                    opacity: tradeButtonOpacity,
+                  }
+                ]}
+              >
+                <TapGestureHandler ref={buttonTapRef}>
+                  <Animated.View>
+                    <TouchableOpacity 
+                      style={styles.minusButton}
+                      onPress={handleMinusPress}
+                      activeOpacity={0.7}
+                    >
+                      <FontAwesome6 name="minus" size={14} color='#FFFFFF' />
                     </TouchableOpacity>
                   </Animated.View>
                 </TapGestureHandler>
@@ -271,6 +328,58 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tradeButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  plusButtonWrapper: {
+    position: 'absolute',
+    width: '85%',
+    alignItems: 'flex-start',
+    marginLeft: 56,
+    zIndex: 4,
+  },
+  plusButton: {
+    backgroundColor: '#292929',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  minusButtonWrapper: {
+    position: 'absolute',
+    width: '85%',
+    alignItems: 'flex-end',
+    marginRight: 56,
+    zIndex: 4,
+  },
+  minusButton: {
+    backgroundColor: '#292929',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  plusMinusButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '700',

@@ -5,9 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useRef } from 'react';
+
 
 export default function TradesScreen() {
   const router = useRouter();
@@ -15,9 +18,27 @@ export default function TradesScreen() {
   const [outgoingOffersExpanded, setOutgoingOffersExpanded] = useState(true);
   const [declinedExpiredExpanded, setDeclinedExpiredExpanded] = useState(false);
 
-  const handleYourTurnPress = () => {
+  const inputRef = useRef<TextInput>(null);
+    
+  const [showInput, setShowInput] = useState(false);
+  
+  const handlePlay = () => {
     router.push('/barter');
+    console.log('Play button pressed');
+    // Add your offer logic here
   };
+
+  const handleAnswer = () => {
+    console.log('Answer button pressed');
+    // Add your offer logic here
+    setShowInput(true);
+    setTimeout(() => {
+    inputRef.current?.focus();
+  }, 0);
+
+  };
+
+  
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -38,7 +59,7 @@ export default function TradesScreen() {
         
         {activeTradesExpanded && (
           <>
-            {/* Single Active Trade */}
+            {/* 1st Active Trade */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
                 <Text style={styles.heavyChar}>┬─</Text> Jay sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
@@ -49,25 +70,84 @@ export default function TradesScreen() {
               <Text style={styles.tradeText}>
                 <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>
               </Text>
-              <TouchableOpacity onPress={handleYourTurnPress} activeOpacity={0.7}>
-                <Text style={styles.yourTurnText}>
-                  <Text style={styles.heavyChar}>└─</Text> Your turn! <Text style={styles.arrow}>⟶</Text>
-                </Text>
-              </TouchableOpacity>
+              <Text style={styles.yourTurnText}>
+                  <Text style={styles.heavyChar}>└─</Text>
+              </Text>
+              <View style={styles.playButtonContainer} pointerEvents="auto">
+                <TouchableOpacity 
+                  style={styles.playButton}
+                  onPress={handlePlay}
+                >
+                  <Text style={styles.buttonText}>YOUR TURN</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
-            {/* Single Active Trade */}
+            {/* 2nd Active Trade */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Item"
+                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
               </Text>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "item"
+                <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"
               </Text>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>└─</Text> You asked <Text style={styles.highlightPurple}>QUESTION</Text>
+                <Text style={styles.heavyChar}>├─</Text> You proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>
               </Text>
+              <Text style={styles.tradeText}>
+                <Text style={styles.heavyChar}>├─</Text> Jay asked <Text style={styles.highlightPurple}>QUESTION</Text>
+              </Text>
+              <Text style={styles.tradeText}>
+                <Text style={styles.heavyChar}>    ├─</Text> <Text style={styles.questionText}>Is the Charizard in good condition?</Text>
+              </Text>
+              <Text style={styles.answerText}>
+                  <Text style={styles.heavyChar}>    └─</Text>
+              </Text>
+              <View style={styles.questionButtonContainer} pointerEvents="auto">
+                <TouchableOpacity 
+                  style={styles.answerButton}
+                  onPress={handleAnswer}
+                >
+                  <Text style={styles.buttonText}>ANSWER</Text>
+                </TouchableOpacity>
+              </View>
+              {showInput && (
+                <TextInput
+                  ref={inputRef}
+                  style={styles.textAnswerInput}
+                  placeholder="Type your offer..."
+                />
+              )}
             </View>
+
+            {/* 3st Active Trade */}
+            <View style={styles.tradeSection}>
+              <Text style={styles.tradeText}>
+                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
+              </Text>
+              <Text style={styles.tradeText}>
+                <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"
+              </Text>
+              <Text style={styles.tradeText}>
+                <Text style={styles.heavyChar}>├─</Text> You <Text style={styles.highlightGreen}>ACCEPTED</Text>
+              </Text>
+              <Text style={styles.tradeText}>
+                <Text style={styles.heavyChar}>├─</Text> Jay <Text style={styles.highlightGreen}>ACCEPTED</Text>
+              </Text>
+              <Text style={styles.yourTurnText}>
+                  <Text style={styles.heavyChar}>└─</Text>
+              </Text>
+              <View style={styles.playButtonContainer} pointerEvents="auto">
+                <TouchableOpacity 
+                  style={styles.playButton}
+                  onPress={handlePlay}
+                >
+                  <Text style={styles.buttonText}>YOUR TURN</Text>
+                </TouchableOpacity>
+              </View>
+              
+            </View>
+
           </>
         )}
       </View>
@@ -184,7 +264,7 @@ const styles = StyleSheet.create({
   },
   yourTurnText: {
     fontSize: 16,
-    color: '#34C759',
+    color: '#e99700',
     fontWeight: '600',
     lineHeight: 24,
   },
@@ -195,6 +275,56 @@ const styles = StyleSheet.create({
   arrow: {
     fontSize: 40,
     lineHeight: 10,
+  },
+  playButtonContainer: {
+    alignItems: 'flex-start',
+    width: '100%',
+    marginTop: -20,
+    marginLeft: 36,
+  },
+  questionButtonContainer: {
+    alignItems: 'flex-start',
+    width: '100%',
+    marginTop: -20,
+    marginLeft: 48,
+  },
+  playButton: {
+    backgroundColor: '#e99700',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  answerButton: {
+    backgroundColor: '#a73bff',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   highlightBlue: {
     color: '#3B82F6',
@@ -216,4 +346,24 @@ const styles = StyleSheet.create({
     color: '#ff3b3b',
     fontWeight: '600',
   },
+  highlightGreen: {
+    color: '#00eb00',
+    fontWeight: '600',
+  },
+  questionText: {
+    color: '#ffffff',
+    
+  },
+  answerText: {
+    color: '#a73bff',
+    
+  },
+
+  textAnswerInput: {
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  }
 });

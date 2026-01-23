@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
     marginTop: 16,
-    zIndex: 6,
+    zIndex: 5,
   },
   offerButton: {
     backgroundColor: '#007AFF',

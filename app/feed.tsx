@@ -152,20 +152,20 @@ export default function FeedScreen() {
             >
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
-            <View pointerEvents="auto" >
+            <View pointerEvents="auto" style={styles.cardContainer}>
               <PostCard 
                 post={selectedPost}
                 scale={1}
                 cardWidth={Math.min(width - 40, 400)}
               />
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity 
-                  style={styles.offerButton}
-                  onPress={handleOffer}
-                >
-                  <Text style={styles.offerButtonText}>OFFER</Text>
-                </TouchableOpacity>
-              </View>
+            </View>
+            <View style={styles.buttonContainer} pointerEvents="auto">
+              <TouchableOpacity 
+                style={styles.offerButton}
+                onPress={handleOffer}
+              >
+                <Text style={styles.offerButtonText}>OFFER</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -267,6 +267,9 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     position: 'relative',
     paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  cardContainer: {
     alignItems: 'center',
   },
   closeButton: {

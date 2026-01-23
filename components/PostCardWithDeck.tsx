@@ -251,12 +251,11 @@ const styles = StyleSheet.create({
   },
   tradeButton: {
     backgroundColor: '#FFD60A',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 200,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
   },
   tradeButtonText: {
     color: '#000000',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.5,
   },

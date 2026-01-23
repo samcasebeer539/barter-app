@@ -2,7 +2,7 @@
 //always use postcard without deck as an item within Deck
 
 import React, { useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
 import UserCard from './UserCard';
@@ -102,6 +102,11 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
+  const handleTradePress = () => {
+    console.log('Trade button pressed');
+    // Add your trade logic here
+  };
+
   // Animate deck scale and position when revealed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
@@ -112,6 +117,12 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
     outputRange: [0, -550], // Move up 550px when revealed
+  }) || 0;
+
+  // Animate TRADE button opacity
+  const tradeButtonOpacity = revealProgress?.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1], // Fade in when revealed
   }) || 0;
 
   return (
@@ -153,6 +164,26 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                   <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
                 </View>
               </View>
+
+              {/* TRADE Button - positioned below the deck */}
+              <Animated.View 
+                style={[
+                  styles.tradeButtonWrapper,
+                  { 
+                    top: (cardHeight * 0.85) + 20,
+                    opacity: tradeButtonOpacity,
+                  }
+                ]}
+                pointerEvents="box-none"
+              >
+                <TouchableOpacity 
+                  style={styles.tradeButton}
+                  onPress={handleTradePress}
+                  pointerEvents="auto"
+                >
+                  <Text style={styles.tradeButtonText}>TRADE</Text>
+                </TouchableOpacity>
+              </Animated.View>
             </Animated.View>
             
             {/* Main PostCard - moves during drag */}
@@ -211,6 +242,35 @@ const styles = StyleSheet.create({
     top: -8,
     width: '80%',
     zIndex: 2,
+  },
+  tradeButtonWrapper: {
+    position: 'absolute',
+    width: '85%',
+    alignItems: 'center',
+    zIndex: 4,
+  },
+  tradeButton: {
+    backgroundColor: '#FFD60A',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  tradeButtonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });
 

@@ -75,6 +75,11 @@ export default function FeedScreen() {
     setSelectedPost(null);
   };
 
+  const handleOffer = () => {
+    console.log('Offer button pressed');
+    // Add your offer logic here
+  };
+
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     <View key={item.id} style={styles.cardWrapper}>
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
@@ -153,11 +158,19 @@ export default function FeedScreen() {
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
             {selectedPost && (
-              <PostCard 
-                post={selectedPost}
-                scale={1}
-                cardWidth={Math.min(width - 40, 400)}
-              />
+              <>
+                <PostCard 
+                  post={selectedPost}
+                  scale={1}
+                  cardWidth={Math.min(width - 40, 400)}
+                />
+                <TouchableOpacity 
+                  style={styles.offerButton}
+                  onPress={handleOffer}
+                >
+                  <Text style={styles.offerButtonText}>OFFER</Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         </View>
@@ -266,5 +279,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  offerButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  offerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });

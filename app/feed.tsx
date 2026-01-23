@@ -75,6 +75,11 @@ export default function FeedScreen() {
     setSelectedPost(null);
   };
 
+  const handleOffer = () => {
+    console.log('Offer button pressed');
+    // Add your offer logic here
+  };
+
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     <View key={item.id} style={styles.cardWrapper}>
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
@@ -153,11 +158,19 @@ export default function FeedScreen() {
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
             {selectedPost && (
-              <PostCard 
-                post={selectedPost}
-                scale={1}
-                cardWidth={Math.min(width - 40, 400)}
-              />
+              <>
+                <PostCard 
+                  post={selectedPost}
+                  scale={1}
+                  cardWidth={Math.min(width - 40, 400)}
+                />
+                <TouchableOpacity 
+                  style={styles.offerButton}
+                  onPress={handleOffer}
+                >
+                  <Text style={styles.offerButtonText}>OFFER</Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         </View>
@@ -254,6 +267,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     position: 'relative',
     paddingHorizontal: 20,
+    alignItems: 'center',
   },
   closeButton: {
     position: 'absolute',
@@ -266,5 +280,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  offerButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  offerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });

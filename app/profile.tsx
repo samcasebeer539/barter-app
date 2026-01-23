@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
     paddingTop: 30,
-    backgroundColor: '#141414',
+    backgroundColor: '#121212',
     flexGrow: 1,
     overflow: 'visible',
   },

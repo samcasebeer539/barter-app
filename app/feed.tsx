@@ -177,7 +177,7 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: '#121212',
   },
   topIconsContainer: {
     position: 'absolute',
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(20, 20, 20, 0.85)',
   },
   modalContent: {
     width: '100%',
@@ -291,8 +291,8 @@ const styles = StyleSheet.create({
   },
   offerButton: {
     backgroundColor: '#007AFF',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   offerButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: 0.5,
   },

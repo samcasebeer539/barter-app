@@ -86,7 +86,7 @@ export default function BarterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: '#121212',
   },
   backButton: {
     position: 'absolute',

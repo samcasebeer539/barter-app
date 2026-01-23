@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
 
 interface UserCardProps {
@@ -49,12 +49,12 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
             {/* Goods count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.goodsCount}</Text>
-              <MaterialIcons name="shopping-bag" size={24} color="#fff" />
+              <FontAwesome6 name="cube" size={24} color="#FFA600"/>
             </View>
             {/* Services count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.servicesCount}</Text>
-              <MaterialIcons name="build" size={24} color="#fff" />
+              <FontAwesome6 name="stopwatch" size={24} color="#FF3B81" />
             </View>
           </View>
         </View>

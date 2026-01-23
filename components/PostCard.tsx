@@ -141,8 +141,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
           <View style={styles.iconContainer}>
             <FontAwesome6
               name={post.type === 'good' ? 'cube' : 'stopwatch'}
-              size={20}
-              color={post.type === 'service' ? '#FFA600' : '#FF3B81'}
+              size={24}
+              color={post.type === 'good' ? '#FFA600' : '#FF3B81'}
             />
         
 
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  iconContainer: { flexShrink: 0, paddingTop: 2 },
+  iconContainer: { flexShrink: 0, paddingBottom: 10 },
   titleContainer: { 
     flex: 1,
     overflow: 'hidden',

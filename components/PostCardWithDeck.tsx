@@ -119,16 +119,16 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     // Add your trade logic here
   };
 
-  // Animate deck scale and position when revealed
+  // Animate deck scale - START at 1.4 (final size), scale DOWN when collapsed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 1.4], // Slightly larger when revealed
+    outputRange: [1 / 1.4, 1], // Scale down when collapsed, full size when revealed
   }) || 1;
 
-  // Move deck upward - doubled to -600
+  // Move deck upward
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -580], // Move up 550px when revealed
+    outputRange: [0, -580], // Move up 580px when revealed
   }) || 0;
 
   // Animate TRADE button opacity
@@ -136,6 +136,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     inputRange: [0, 0.5, 1],
     outputRange: [0, 0, 1], // Fade in when revealed
   }) || 0;
+
+  // Calculate the deck's final cardWidth (at revealed state)
+  const deckCardWidth = finalCardWidth * 1.4;
 
   return (
     <Animated.View style={{ flex: 1 }}>
@@ -164,14 +167,15 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             ]} 
             pointerEvents="box-none"
           >
-            <Deck posts={deckPosts} cardWidth={finalCardWidth} />
+            {/* Render deck at its final large size */}
+            <Deck posts={deckPosts} cardWidth={deckCardWidth} />
 
             {/* TRADE Button - positioned below the deck */}
             <Animated.View 
               style={[
                 styles.tradeButtonWrapper,
                 { 
-                  top: (cardHeight * 0.87) + 20,
+                  top: (cardHeight * 1.4 * 0.87) + 20,
                   opacity: tradeButtonOpacity,
                 }
               ]}
@@ -191,7 +195,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.plusButtonWrapper,
                 { 
-                  top: (cardHeight * 0.87) + 20,
+                  top: (cardHeight * 1.4 * 0.87) + 20,
                   opacity: tradeButtonOpacity,
                 }
               ]}
@@ -211,7 +215,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.minusButtonWrapper,
                 { 
-                  top: (cardHeight * 0.87) + 20,
+                  top: (cardHeight * 1.4 * 0.87) + 20,
                   opacity: tradeButtonOpacity,
                 }
               ]}

@@ -150,10 +150,6 @@ export default function FeedScreen() {
     </View>
   );
 
-  // Calculate card dimensions
-  const cardWidth = Math.min(width - 40, 400);
-  const cardHeight = cardWidth * (3.5 / 2.5);
-
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -198,40 +194,38 @@ export default function FeedScreen() {
             onPress={handleCloseModal}
           />
           <View style={styles.modalContent} pointerEvents="box-none">
-            {/* Close button - positioned above deck */}
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={handleCloseModal}
-              pointerEvents="auto"
             >
-              <MaterialIcons name="close" size={28} color="#fff" />
+              <FontAwesome6 name="angle-left" size={28} color="#fff" />
             </TouchableOpacity>
 
-            {/* Deck */}
             <View pointerEvents="auto" style={styles.deckContainer}>
               <Deck 
                 posts={DECK_POSTS}
-                cardWidth={cardWidth}
+                cardWidth={Math.min(width - 40, 400)}
                 enabled={true}
               />
             </View>
 
-            {/* Buttons below deck */}
-            <View style={[styles.buttonsWrapper, { marginTop: cardHeight * 0.87 + 20 }]} pointerEvents="auto">
-              {/* Offer button */}
+            {/* Offer button */}
+            <View style={styles.buttonContainer} pointerEvents="auto">
               <TouchableOpacity 
                 style={styles.offerButton}
                 onPress={handleOffer}
               >
                 <Text style={styles.offerButtonText}>OFFER</Text>
               </TouchableOpacity>
+            </View>
 
-              {/* Save button */}
+            {/* Save button */}
+            <View style={styles.saveButtonContainer} pointerEvents="auto">
               <TouchableOpacity 
                 style={styles.saveButton}
                 onPress={handleSave}
               >
-                <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={30} color='#FFFFFF' />
+                <Icon name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={30} color='#FFFFFF' />
               </TouchableOpacity>
             </View>
             
@@ -328,27 +322,27 @@ const styles = StyleSheet.create({
   },
   deckContainer: {
     alignItems: 'center',
+    top: -10,
+    right: 10,
   },
   closeButton: {
     position: 'absolute',
-    top: -cardHeight - 80,
-    right: 20,
-    zIndex: 20,
+    top: -280,
+    left: 20,
+    zIndex: 10,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonsWrapper: {
-    flexDirection: 'row',
+  buttonContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    width: '100%',
+    marginTop: 16,
+    zIndex: 5,
   },
   offerButton: {
+    top: 260,
     backgroundColor: '#007AFF',
     paddingVertical: 12,
     paddingHorizontal: 18,
@@ -370,8 +364,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  saveButtonContainer: {
+    alignItems: 'flex-end',
+    width: '100%',
+    marginTop: -54,
+    marginLeft: -82,
+    zIndex: 4,
+  },
   saveButton: {
-    paddingVertical: 12,
+    top: 260,
+    paddingVertical: 14,
     paddingHorizontal: 14,
     borderRadius: 8,
     alignItems: 'center',

@@ -43,18 +43,18 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         {/* Top Row: Profile Picture (left) and Stats (right) */}
         <View style={styles.topRow}>
-          <ProfilePicture size={60} avatarText={user.avatarText} />
+          <ProfilePicture size={80} avatarText={user.avatarText} />
           
           <View style={styles.statsContainer}>
             {/* Goods count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.goodsCount}</Text>
-              <FontAwesome6 name="cube" size={24} color="#FFA600"/>
+              <FontAwesome6 name="cube" size={32} color="#FFA600"/>
             </View>
             {/* Services count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.servicesCount}</Text>
-              <FontAwesome6 name="stopwatch" size={24} color="#FF3B81" />
+              <FontAwesome6 name="stopwatch" size={32} color="#FF3B81" />
             </View>
           </View>
         </View>
@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 40,
     elevation: 10,
-    paddingTop: 20,
-    paddingHorizontal: 16,
+    paddingTop: 30,
+    paddingHorizontal: 30,
     paddingBottom: 16,
 
     // Add white border without increasing size
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   statNumber: {
-    fontSize: 22,
+    fontSize: 40,
     fontWeight: '700',
     color: '#fff',
     minWidth: 30,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   name: {
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 4,
@@ -157,14 +157,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   location: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#999',
   },
   bioContainer: {
     marginBottom: 12,
   },
   bio: {
-    fontSize: 11,
+    fontSize: 16,
     lineHeight: 16,
     color: '#ccc',
   },
@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
   tag: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1.5,
     backgroundColor: 'transparent',
   },
   tagText: {
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '500',
   },
 });

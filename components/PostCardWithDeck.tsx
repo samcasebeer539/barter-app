@@ -141,11 +141,14 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     outputRange: [0, 0, 1], // Fade in when revealed
   }) || 0;
 
-  // Animate button position based on deck size
-  const buttonTopPosition = revealProgress?.interpolate({
+  // Animate button vertical position based on deck size change
+  const buttonTranslateY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [(cardHeight * 0.87) + 20, (cardHeight * 1.4 * 0.87) + 20],
-  }) || (cardHeight * 0.87) + 20;
+    outputRange: [0, (cardHeight * 1.4 * 0.87) - (cardHeight * 0.87)],
+  }) || 0;
+
+  // Static button top position
+  const buttonTopBase = (cardHeight * 0.87) + 20;
 
   return (
     <Animated.View style={{ flex: 1 }}>
@@ -186,8 +189,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.tradeButtonWrapper,
                 { 
-                  top: buttonTopPosition,
+                  top: buttonTopBase,
                   opacity: tradeButtonOpacity,
+                  transform: [{ translateY: buttonTranslateY }],
                 }
               ]}
               pointerEvents="box-none"
@@ -206,8 +210,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.plusButtonWrapper,
                 { 
-                  top: buttonTopPosition,
+                  top: buttonTopBase,
                   opacity: tradeButtonOpacity,
+                  transform: [{ translateY: buttonTranslateY }],
                 }
               ]}
               pointerEvents="box-none"
@@ -226,8 +231,9 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
               style={[
                 styles.minusButtonWrapper,
                 { 
-                  top: buttonTopPosition,
+                  top: buttonTopBase,
                   opacity: tradeButtonOpacity,
+                  transform: [{ translateY: buttonTranslateY }],
                 }
               ]}
               pointerEvents="box-none"

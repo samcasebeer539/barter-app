@@ -57,6 +57,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const scrollX = useRef(new Animated.Value(0)).current;
   const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
+  const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
@@ -80,6 +81,7 @@ export default function ProfileScreen() {
 
   const handleRevealChange = (revealed: boolean) => {
     console.log('Deck revealed:', revealed);
+    setIsDeckRevealed(revealed);
   };
 
   const handleSettingsPress = () => {
@@ -182,6 +184,7 @@ export default function ProfileScreen() {
             showsHorizontalScrollIndicator={false}
             snapToInterval={cardWidth + cardSpacing}
             decelerationRate="fast"
+            scrollEnabled={!isDeckRevealed} // Disable carousel scrolling when deck is revealed
             style={{ overflow: 'visible' }}
             contentContainerStyle={{
               paddingHorizontal: sidePadding,

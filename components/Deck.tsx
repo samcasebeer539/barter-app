@@ -36,6 +36,9 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   const offset = 6;
 
   const positionX = useRef(new Animated.Value(0)).current; // x only
+  const secondCardAnim = useRef(new Animated.ValueXY({ x: -14, y: -24 })).current;
+  const thirdCardAnim = useRef(new Animated.ValueXY({ x: -22, y: -32 })).current;
+  
   const SWIPE_THRESHOLD = screenWidth * 0.25;
 
   const [cards, setCards] = useState<DeckItem[]>([
@@ -65,17 +68,37 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   ).current;
 
   const swipeOut = (direction: number) => {
-    Animated.timing(positionX, {
-      toValue: direction * screenWidth,
-      duration: 250,
-      useNativeDriver: true, // smooth
-    }).start(() => {
-      
+    // Animate all three cards simultaneously
+    Animated.parallel([
+      // Swipe out the front card
+      Animated.timing(positionX, {
+        toValue: direction * screenWidth,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      // Move second card to front position
+      Animated.timing(secondCardAnim, {
+        toValue: { x: -5, y: -15 },
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      // Move third card to second position
+      Animated.timing(thirdCardAnim, {
+        toValue: { x: -14, y: -24 },
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // After animation completes, update the cards array
       setCards((prev) => {
         const [first, ...rest] = prev;
         return [...rest, first];
       });
+      
+      // Reset animations for next swipe
       positionX.setValue(0);
+      secondCardAnim.setValue({ x: -14, y: -24 });
+      thirdCardAnim.setValue({ x: -22, y: -32 });
     });
   };
 
@@ -109,14 +132,16 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         ]}
       /> */}
 
-      {/* back card */}
-      <View
+      {/* back card (third in stack) */}
+      <Animated.View
         style={[
           styles.frontCard,
           {
-            bottom: -32,
-            right: -22,
-            transform: [{ scale: 1.0}], // if you still want to scale
+            transform: [
+              { translateX: thirdCardAnim.x },
+              { translateY: thirdCardAnim.y },
+              { scale: 1.0 }
+            ],
           },
         ]}
       >
@@ -129,16 +154,18 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
             cardWidth={finalCardWidth}
           />
         )}
-      </View>
+      </Animated.View>
 
-      {/* middle card */}
-      <View
+      {/* middle card (second in stack) */}
+      <Animated.View
         style={[
           styles.frontCard,
           {
-            bottom: -24,
-            right: -14,
-            transform: [{ scale: 1.0}], // if you still want to scale
+            transform: [
+              { translateX: secondCardAnim.x },
+              { translateY: secondCardAnim.y },
+              { scale: 1.0 }
+            ],
           },
         ]}
       >
@@ -151,7 +178,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
             cardWidth={finalCardWidth}
           />
         )}
-      </View>
+      </Animated.View>
 
 
       {/* Front card */}
@@ -159,8 +186,11 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         style={[
           styles.frontCard,
           {
-            transform: [{ translateX: positionX }, { rotate }],
-            bottom: -15,
+            transform: [
+              { translateX: positionX },
+              { translateY: -15 },
+              { rotate }
+            ],
             right: -5,
           },
         ]}

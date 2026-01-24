@@ -178,20 +178,21 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
       outputRange: ['-10deg', '0deg', '10deg'],
     });
 
+    // For the first card, we need to add swipeX to position.x
+    const translateX = isFirst 
+      ? Animated.add(cardAnim.position.x, cardAnim.swipeX)
+      : cardAnim.position.x;
+
     return (
       <Animated.View
         key={index}
         style={[
           styles.frontCard,
           {
-            transform: isFirst ? [
-              { translateX: cardAnim.swipeX },
+            transform: [
+              { translateX },
               { translateY: cardAnim.position.y },
-              { rotate }
-            ] : [
-              { translateX: cardAnim.position.x },
-              { translateY: cardAnim.position.y },
-              { scale: 1.0 }
+              ...(isFirst ? [{ rotate }] : [{ scale: 1.0 }])
             ],
           },
         ]}

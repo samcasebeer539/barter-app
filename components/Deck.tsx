@@ -59,6 +59,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         { x: -22, y: -32 } // Cards beyond third start at third position
       ),
       swipeX: new Animated.Value(0),
+      rotate: new Animated.Value(0), // Add rotation tracking per card
     }))
   ).current;
 
@@ -79,7 +80,8 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderMove: (_, gesture) => {
-        cardAnimations[visibleIndicesRef.current.first].swipeX.setValue(gesture.dx);
+        const firstCardIndex = visibleIndicesRef.current.first;
+        cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
       },
 
       onPanResponderRelease: (_, gesture) => {
@@ -150,17 +152,17 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
     }).start();
   };
 
-  // rotation while dragging - use ref for current first card
-  const rotate = cardAnimations[visibleIndicesRef.current.first].swipeX.interpolate({
-    inputRange: [-screenWidth, 0, screenWidth],
-    outputRange: ['-10deg', '0deg', '10deg'],
-  });
-
   const renderCard = (index: number, isFirst: boolean = false) => {
     const card = cards[index];
     if (!card) return null;
 
     const cardAnim = cardAnimations[index];
+
+    // Create rotation interpolation for this specific card
+    const rotate = cardAnim.swipeX.interpolate({
+      inputRange: [-screenWidth, 0, screenWidth],
+      outputRange: ['-10deg', '0deg', '10deg'],
+    });
 
     return (
       <Animated.View

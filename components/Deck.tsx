@@ -81,6 +81,13 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
       onStartShouldSetPanResponder: () => !isAnimatingRef.current,
       onMoveShouldSetPanResponder: (_, g) => !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
 
+      onPanResponderGrant: () => {
+        // Ensure the front card's swipeX is at 0 when we start touching
+        const firstCardIndex = visibleIndicesRef.current.first;
+        cardAnimations[firstCardIndex].swipeX.setOffset(0);
+        cardAnimations[firstCardIndex].swipeX.setValue(0);
+      },
+
       onPanResponderMove: (_, gesture) => {
         const firstCardIndex = visibleIndicesRef.current.first;
         cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
@@ -135,6 +142,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
       }),
     ]).start(() => {
       // Reset the swipeX for the new front card (which is secondIndex)
+      cardAnimations[secondIndex].swipeX.flattenOffset();
       cardAnimations[secondIndex].swipeX.setValue(0);
       
       // Update visible indices after reset

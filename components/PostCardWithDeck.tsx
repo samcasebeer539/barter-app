@@ -8,6 +8,9 @@ import PostCard from './PostCard';
 import Deck from './Deck';
 import { FontAwesome6 } from '@expo/vector-icons';
 
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
+
 interface Post {
   type: 'good' | 'service';
   name: string;
@@ -20,7 +23,7 @@ interface PostCardWithDeckProps {
   deckPosts: Post[]; // Posts to show in the deck
   cardWidth?: number;
   scale?: number;
-  onRevealChange?: (revealed: boolean) => void;
+  onRevealChange?: (revealed: boolean) => void; 
   revealProgress?: Animated.Value; // Shared animated value from parent
   deckRevealed?: boolean; // Whether the deck is currently revealed
 }
@@ -38,18 +41,17 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const isRevealed = useRef(false); // Track if currently revealed
   const postCardTapRef = useRef<TapGestureHandler>(null);
   
-  // Calculate deck dimensions based on PostCard size
-  const peekAmount = 20; // How much the deck peeks out from the top
+  const peekAmount = 64; // How much the deck peeks out from the top
   const revealThreshold = 100; // How far down to swipe to trigger reveal
   
-  const screenWidth = Dimensions.get('window').width;
-  const screenHeight = Dimensions.get('window').height;
-  const defaultCardWidth = Math.min(screenWidth - 110, 400);
+ 
+ 
+  const defaultCardWidth = Math.min(screenWidth - 8, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
   // Render deck at its final large size
-  const deckCardWidthLarge = finalCardWidth * 1.4;
+  const deckCardWidthLarge = defaultCardWidth;
 
   const handlePanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translationY } }],
@@ -133,7 +135,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Move deck upward
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -580],
+    outputRange: [0, -540],
   }) || 0;
 
   // Animate TRADE button opacity
@@ -169,7 +171,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             style={[
               styles.deckPeek, 
               { 
-                top: -peekAmount - 190,
+                top: -peekAmount,
                 transform: [
                   { translateY: deckExpandY },
                   { scale: deckScale },
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
   deckPeek: {
     position: 'absolute',
     left: 0,
-    right: 0,
+    right: 22,
     alignItems: 'center',
     zIndex: 1,
   },

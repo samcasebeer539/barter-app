@@ -76,14 +76,18 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
 
   // Track if we're currently animating a swipe
   const isAnimatingRef = useRef(false);
+  
+  // Track enabled state in a ref so PanResponder can access current value
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => enabled && !isAnimatingRef.current,
-      onMoveShouldSetPanResponder: (_, g) => enabled && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
+      onStartShouldSetPanResponder: () => enabledRef.current && !isAnimatingRef.current,
+      onMoveShouldSetPanResponder: (_, g) => enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderGrant: () => {
-        if (!enabled) return;
+        if (!enabledRef.current) return;
         // Ensure the front card's swipeX is at 0 when we start touching
         const firstCardIndex = visibleIndicesRef.current.first;
         cardAnimations[firstCardIndex].swipeX.setOffset(0);
@@ -91,13 +95,13 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
       },
 
       onPanResponderMove: (_, gesture) => {
-        if (!enabled) return;
+        if (!enabledRef.current) return;
         const firstCardIndex = visibleIndicesRef.current.first;
         cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
       },
 
       onPanResponderRelease: (_, gesture) => {
-        if (!enabled) return;
+        if (!enabledRef.current) return;
         if (gesture.dx > SWIPE_THRESHOLD) {
           swipeOut(1);
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
@@ -215,7 +219,10 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   };
 
   return (
-    <View style={styles.deckContainer} {...panResponder.panHandlers}>
+    <View 
+      style={styles.deckContainer} 
+      {...(enabled ? panResponder.panHandlers : {})}
+    >
       {/* Render all cards, but only visible ones will be seen */}
       {renderCard(visibleIndices.third)}
       {renderCard(visibleIndices.second)}

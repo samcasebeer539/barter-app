@@ -83,6 +83,10 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
 
   const panResponder = useRef(
     PanResponder.create({
+      // Allow child ScrollViews to handle gestures first
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponderCapture: () => false,
+      
       onStartShouldSetPanResponder: () => enabledRef.current && !isAnimatingRef.current,
       onMoveShouldSetPanResponder: (_, g) => enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
 
@@ -206,12 +210,12 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard scale={1} cardWidth={defaultCardWidth} />
+          <UserCard scale={1} cardWidth={finalCardWidth} />
         ) : (
           <PostCard
             post={card.post}
             scale={1}
-            cardWidth={defaultCardWidth}
+            cardWidth={finalCardWidth}
           />
         )}
       </Animated.View>

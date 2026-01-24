@@ -1,5 +1,6 @@
-//note: there should just be one postcard component which can have or not have a deck
-//always use postcard without deck as an item within Deck
+//note: is there a way to scale cards width
+//  through deck instead of scaling down whole deck?
+
 
 import React, { useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from 'react-native';
@@ -181,7 +182,10 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             pointerEvents="box-none"
           >
             {/* Render deck at large size - will be scaled down when collapsed */}
-            <Deck posts={deckPosts} cardWidth={deckCardWidthLarge} enabled={deckRevealed} />
+            <View style={styles.deckWrapper}>
+              <Deck posts={deckPosts} cardWidth={deckCardWidthLarge} enabled={deckRevealed} />
+            </View>
+
 
             {/* TRADE Button - positioned below the deck */}
             <Animated.View 
@@ -279,9 +283,12 @@ const styles = StyleSheet.create({
   deckPeek: {
     position: 'absolute',
     left: 0,
-    right: 22,
+    right: 0,
     alignItems: 'center',
     zIndex: 1,
+  },
+  deckWrapper: {
+    right: 13
   },
   tradeButtonWrapper: {
     position: 'absolute',
@@ -290,8 +297,9 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   tradeButton: {
+    top: -200,
     backgroundColor: '#FFA600',
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 8,
     alignItems: 'center',
@@ -307,7 +315,7 @@ const styles = StyleSheet.create({
   },
   tradeButtonText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
@@ -319,6 +327,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   plusButton: {
+    top: -200,
     backgroundColor: '#292929',
     paddingVertical: 6,
     paddingHorizontal: 8,
@@ -342,6 +351,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   minusButton: {
+    top: -200,
     backgroundColor: '#292929',
     paddingVertical: 6,
     paddingHorizontal: 8,

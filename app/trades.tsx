@@ -59,49 +59,18 @@ export default function TradesScreen() {
         
         {activeTradesExpanded && (
           <>
-            {/* 1st Active Trade */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> Jay sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> You proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>
-              </Text>
-              <Text style={styles.yourTurnText}>
-                  <Text style={styles.heavyChar}>└─</Text>
-              </Text>
-              <View style={styles.playButtonContainer} pointerEvents="auto">
-                <TouchableOpacity 
-                  style={styles.playButton}
-                  onPress={handlePlay}
-                >
-                  <Text style={styles.buttonText}>YOUR TURN</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+  
 
             {/* 2nd Active Trade */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> You proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> Jay asked <Text style={styles.highlightPurple}>QUESTION</Text>
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>    ├─</Text> <Text style={styles.questionText}>Is the Charizard in good condition?</Text>
-              </Text>
-              <Text style={styles.answerText}>
-                  <Text style={styles.heavyChar}>    └─</Text>
+                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"{'\n'}
+                Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"{'\n'}
+                You proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>{'\n'}
+                Jay asked <Text style={styles.highlightPurple}>QUESTION</Text>{'\n'}
+                <Text style={styles.questionText}>       Is the Charizard in good condition?</Text>{'\n'}
+
+             
               </Text>
               <View style={styles.questionButtonContainer} pointerEvents="auto">
                 <TouchableOpacity 
@@ -124,19 +93,13 @@ export default function TradesScreen() {
             {/* 3st Active Trade */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> You <Text style={styles.highlightGreen}>ACCEPTED</Text>
-              </Text>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>├─</Text> Jay <Text style={styles.highlightGreen}>ACCEPTED</Text>
-              </Text>
-              <Text style={styles.yourTurnText}>
-                  <Text style={styles.heavyChar}>└─</Text>
+                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books" {'\n'}
+              
+                Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards" {'\n'}
+       
+                You <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
+           
+                Jay <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
               </Text>
               <View style={styles.playButtonContainer} pointerEvents="auto">
                 <TouchableOpacity 
@@ -173,21 +136,7 @@ export default function TradesScreen() {
             {/* Outgoing Offer 1 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
-              </Text>
-            </View>
-
-            {/* Outgoing Offer 2 */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
-              </Text>
-            </View>
-
-            {/* Outgoing Offer 3 */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>┬─</Text> You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
               </Text>
             </View>
           </>
@@ -214,14 +163,14 @@ export default function TradesScreen() {
             {/* Declined Offer 1 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>─</Text> Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
               </Text>
             </View>
 
             {/* Expired Offer 1 */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
-                <Text style={styles.heavyChar}>─</Text> Your <Text style={styles.highlightBlue}>OFFER</Text> on "item" expired
+                Your <Text style={styles.highlightBlue}>OFFER</Text> on "item" expired
               </Text>
             </View>
           </>

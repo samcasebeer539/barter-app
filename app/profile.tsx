@@ -1,3 +1,7 @@
+//todo: add profile background photo
+//    this will be added to user card as well
+
+
 import React, { useRef, useState } from 'react';
 import {
   ScrollView,

@@ -15,10 +15,9 @@ interface PostCardProps {
   post: Post;
   scale?: number; // optional scaling factor
   cardWidth?: number; // optional width override
-  swipeHandlers?: any; // Pan handlers from Deck for swipeable areas
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth, swipeHandlers }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   
   const [isDescriptionMode, setIsDescriptionMode] = useState(post.type === 'service');
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
@@ -136,14 +135,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth, swipeHa
       style={[styles.container, { transform: [{ scale }] }]} // apply scale here safely
     >
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-        {/* Header - Apply swipe handlers here */}
-        <View style={styles.header} {...(swipeHandlers || {})}>
+        {/* Header */}
+        <View style={styles.header}>
           <View style={styles.iconContainer}>
             <FontAwesome6
               name={post.type === 'good' ? 'cube' : 'stopwatch'}
               size={24}
               color={post.type === 'good' ? '#FFA600' : '#FF3B81'}
             />
+        
+
           </View>
           <View 
             style={styles.titleContainer}
@@ -164,9 +165,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth, swipeHa
           </View>
         </View>
 
-        {/* Photo Section - NO swipe handlers here */}
+        {/* Photo Section */}
         <Animated.View
-          style={[styles.photoSectionWrapper, { bottom: photoBottom }]}
+          style={[styles.photoSectionWrapper, { bottom: photoBottom }]} // Animated bottom for smooth transitions
           pointerEvents="box-none"
         >
           <View style={styles.photoSection}>
@@ -241,13 +242,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth, swipeHa
           </View>
         </Animated.View>
 
-        {/* Description - Apply swipe handlers here */}
-        <TouchableOpacity 
-          activeOpacity={0.9} 
-          onPress={toggleMode} 
-          style={styles.descriptionTouchable}
-          {...(swipeHandlers || {})}
-        >
+        {/* Description */}
+        <TouchableOpacity activeOpacity={0.9} onPress={toggleMode} style={styles.descriptionTouchable}>
           <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
             <ScrollView
               style={styles.descriptionScroll}

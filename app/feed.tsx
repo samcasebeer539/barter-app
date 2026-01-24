@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   deckContainer: {
     alignItems: 'center',
     top: -10,
-    right: 10,
+    right: 13,
   },
   closeButton: {
     position: 'absolute',

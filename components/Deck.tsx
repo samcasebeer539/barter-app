@@ -1,3 +1,9 @@
+//todo: prevent deck animation from interfering with scrolling on pictures
+//todo: modify order of deck based on where its called
+//     profile (implemented): usercard on top
+//     feed (todo): clicked on post on top, usercard 2nd
+//todo: handle multiple user's cards and usercards in profile
+
 import React, { useRef, useState } from 'react';
 import {
   View,
@@ -26,6 +32,7 @@ type DeckItem =
   | { type: 'user' }
   | { type: 'post'; post: Post };
 
+
 const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 60, 400);
@@ -45,10 +52,18 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
 
   const SWIPE_THRESHOLD = screenWidth * 0.1;
 
-  const [cards, setCards] = useState<DeckItem[]>([
+  //if user only has single item, duplicate usercard and postcard in array
+  const shouldRepeat = posts.length < 2;
+  const baseItems: DeckItem[] = [
     { type: 'user' },
     ...posts.map((post): DeckItem => ({ type: 'post', post })),
-  ]);
+  ];
+  const [cards, setCards] = useState<DeckItem[]>(
+    shouldRepeat
+      ? [...baseItems, ...baseItems] // add both elements again
+      : baseItems
+  );
+
 
   // Create animated values for each card in the deck
   const cardAnimations = useRef(
@@ -212,8 +227,6 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
             post={card.post}
             scale={1}
             cardWidth={defaultCardWidth}
-            // Pass pan handlers to PostCard so it can apply them to swipeable zones
-            swipeHandlers={isFirst && enabled ? panResponder.panHandlers : undefined}
           />
         )}
       </Animated.View>
@@ -221,7 +234,10 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   };
 
   return (
-    <View style={styles.deckContainer}>
+    <View 
+      style={styles.deckContainer} 
+      {...(enabled ? panResponder.panHandlers : {})}
+    >
       {/* Render all cards, but only visible ones will be seen */}
       {renderCard(visibleIndices.third)}
       {renderCard(visibleIndices.second)}

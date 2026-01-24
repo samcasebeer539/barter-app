@@ -25,17 +25,17 @@ const POSTS = [
       'https://picsum.photos/seed/camera3/600/600',
     ],
   },
-  {
-    type: 'service' as const,
-    name: 'Guitar Lessons',
-    description:
-      'Experienced guitar teacher offering beginner to intermediate lessons. ',
-    photos: [
-      'https://picsum.photos/seed/guitar1/700/500',
-      'https://picsum.photos/seed/guitar2/400/600',
-      'https://picsum.photos/seed/guitar3/500/500',
-    ],
-  },
+  // {
+  //   type: 'service' as const,
+  //   name: 'Guitar Lessons',
+  //   description:
+  //     'Experienced guitar teacher offering beginner to intermediate lessons. ',
+  //   photos: [
+  //     'https://picsum.photos/seed/guitar1/700/500',
+  //     'https://picsum.photos/seed/guitar2/400/600',
+  //     'https://picsum.photos/seed/guitar3/500/500',
+  //   ],
+  // },
 ];
 export default function DeckTestScreen() {
   return (

@@ -59,7 +59,6 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         { x: -22, y: -32 } // Cards beyond third start at third position
       ),
       swipeX: new Animated.Value(0),
-      rotate: new Animated.Value(0), // Add rotation tracking per card
     }))
   ).current;
 
@@ -74,10 +73,13 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   const visibleIndicesRef = useRef(visibleIndices);
   visibleIndicesRef.current = visibleIndices;
 
+  // Track if we're currently animating a swipe
+  const isAnimatingRef = useRef(false);
+
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy),
+      onStartShouldSetPanResponder: () => !isAnimatingRef.current,
+      onMoveShouldSetPanResponder: (_, g) => !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderMove: (_, gesture) => {
         const firstCardIndex = visibleIndicesRef.current.first;
@@ -97,21 +99,14 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   ).current;
 
   const swipeOut = (direction: number) => {
+    isAnimatingRef.current = true;
+    
     const firstIndex = visibleIndicesRef.current.first;
     const secondIndex = visibleIndicesRef.current.second;
     const thirdIndex = visibleIndicesRef.current.third;
     
     // Calculate next card index (wrap around)
     const nextIndex = (thirdIndex + 1) % cards.length;
-
-    // Update visible indices immediately
-    const newIndices = {
-      first: secondIndex,
-      second: thirdIndex,
-      third: nextIndex,
-    };
-    setVisibleIndices(newIndices);
-    visibleIndicesRef.current = newIndices;
 
     Animated.parallel([
       // Swipe out the old first card
@@ -139,8 +134,19 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Reset the swipeX for the new front card (which is now secondIndex)
+      // Reset the swipeX for the new front card (which is secondIndex)
       cardAnimations[secondIndex].swipeX.setValue(0);
+      
+      // Update visible indices after reset
+      const newIndices = {
+        first: secondIndex,
+        second: thirdIndex,
+        third: nextIndex,
+      };
+      setVisibleIndices(newIndices);
+      visibleIndicesRef.current = newIndices;
+      
+      isAnimatingRef.current = false;
     });
   };
 

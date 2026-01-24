@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 350,
-    marginLeft: 350,
+    marginTop: 150,
+    marginLeft: 20,
   },
 });

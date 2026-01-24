@@ -37,12 +37,12 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
 
   // Card position definitions
   const POSITIONS = {
-    first: { x: -5, y: -15 },
-    second: { x: -14, y: -24 },
-    third: { x: -22, y: -32 },
+    first: { x: 5, y: 15 },
+    second: { x: 14, y: 24 },
+    third: { x: 22, y: 32 },
   };
 
-  const SWIPE_THRESHOLD = screenWidth * 0.25;
+  const SWIPE_THRESHOLD = screenWidth * 0.1;
 
   const [cards, setCards] = useState<DeckItem[]>([
     { type: 'user' },

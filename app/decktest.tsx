@@ -14,17 +14,17 @@ const POSTS = [
       'https://picsum.photos/seed/square1/500/500',
     ],
   },
-  {
-    type: 'good' as const,
-    name: 'Vintage Camera Collection',
-    description:
-      'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition.',
-    photos: [
-      'https://picsum.photos/seed/camera1/600/400',
-      'https://picsum.photos/seed/camera2/500/700',
-      'https://picsum.photos/seed/camera3/600/600',
-    ],
-  },
+  // {
+  //   type: 'good' as const,
+  //   name: 'Vintage Camera Collection',
+  //   description:
+  //     'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition.',
+  //   photos: [
+  //     'https://picsum.photos/seed/camera1/600/400',
+  //     'https://picsum.photos/seed/camera2/500/700',
+  //     'https://picsum.photos/seed/camera3/600/600',
+  //   ],
+  // },
   // {
   //   type: 'service' as const,
   //   name: 'Guitar Lessons',

@@ -1,3 +1,5 @@
+//limit amount of text as much as possible
+
 import React, { useState } from 'react';
 import {
   View,

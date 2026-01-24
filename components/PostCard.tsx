@@ -170,7 +170,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
           style={[styles.photoSectionWrapper, { bottom: photoBottom }]} // Animated bottom for smooth transitions
           pointerEvents="box-none"
         >
-          <View style={styles.photoSection}>
+          <View 
+            style={styles.photoSection}
+            onStartShouldSetResponder={() => true}
+            onMoveShouldSetResponder={() => true}
+          >
             <ScrollView
               ref={scrollViewRef}
               horizontal

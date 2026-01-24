@@ -22,6 +22,7 @@ interface PostCardWithDeckProps {
   scale?: number;
   onRevealChange?: (revealed: boolean) => void;
   revealProgress?: Animated.Value; // Shared animated value from parent
+  deckRevealed?: boolean; // Whether the deck is currently revealed
 }
 
 const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({ 
@@ -31,6 +32,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   scale = 1,
   onRevealChange,
   revealProgress,
+  deckRevealed = false,
 }) => {
   const translationY = useRef(new Animated.Value(0)).current;
   const isRevealed = useRef(false); // Track if currently revealed
@@ -149,13 +151,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Static button top position (based on small size)
   const buttonTopBase = (cardHeight * 0.87) + 20;
 
-  // Determine if deck is enabled based on reveal progress
-  // We'll enable when reveal is > 0.5 (halfway revealed)
-  const deckEnabled = revealProgress?.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
-  }) || 0;
-
   return (
     <Animated.View style={{ flex: 1 }}>
       <PanGestureHandler
@@ -184,11 +179,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             pointerEvents="box-none"
           >
             {/* Render deck at large size - will be scaled down when collapsed */}
-            <DeckWithEnabledState 
-              posts={deckPosts} 
-              cardWidth={deckCardWidthLarge}
-              enabledValue={deckEnabled}
-            />
+            <Deck posts={deckPosts} cardWidth={deckCardWidthLarge} enabled={deckRevealed} />
 
             {/* TRADE Button - positioned below the deck */}
             <Animated.View 
@@ -274,27 +265,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
       </PanGestureHandler>
     </Animated.View>
   );
-};
-
-// Wrapper to convert animated value to boolean enabled state
-const DeckWithEnabledState: React.FC<{ 
-  posts: Post[], 
-  cardWidth: number,
-  enabledValue: Animated.AnimatedInterpolation<number>
-}> = ({ posts, cardWidth, enabledValue }) => {
-  const [enabled, setEnabled] = React.useState(false);
-  
-  React.useEffect(() => {
-    const listener = enabledValue.addListener(({ value }) => {
-      setEnabled(value > 0.5);
-    });
-    
-    return () => {
-      enabledValue.removeListener(listener);
-    };
-  }, [enabledValue]);
-  
-  return <Deck posts={posts} cardWidth={cardWidth} enabled={enabled} />;
 };
 
 const styles = StyleSheet.create({

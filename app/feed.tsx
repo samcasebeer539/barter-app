@@ -150,6 +150,10 @@ export default function FeedScreen() {
     </View>
   );
 
+  // Calculate card dimensions
+  const cardWidth = Math.min(width - 40, 400);
+  const cardHeight = cardWidth * (3.5 / 2.5);
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -194,38 +198,40 @@ export default function FeedScreen() {
             onPress={handleCloseModal}
           />
           <View style={styles.modalContent} pointerEvents="box-none">
+            {/* Close button - positioned above deck */}
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={handleCloseModal}
+              pointerEvents="auto"
             >
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
 
+            {/* Deck */}
             <View pointerEvents="auto" style={styles.deckContainer}>
               <Deck 
                 posts={DECK_POSTS}
-                cardWidth={Math.min(width - 40, 400)}
+                cardWidth={cardWidth}
                 enabled={true}
               />
             </View>
 
-            {/* Offer button */}
-            <View style={styles.buttonContainer} pointerEvents="auto">
+            {/* Buttons below deck */}
+            <View style={[styles.buttonsWrapper, { marginTop: cardHeight * 0.87 + 20 }]} pointerEvents="auto">
+              {/* Offer button */}
               <TouchableOpacity 
                 style={styles.offerButton}
                 onPress={handleOffer}
               >
                 <Text style={styles.offerButtonText}>OFFER</Text>
               </TouchableOpacity>
-            </View>
 
-            {/* Save button */}
-            <View style={styles.saveButtonContainer} pointerEvents="auto">
+              {/* Save button */}
               <TouchableOpacity 
                 style={styles.saveButton}
                 onPress={handleSave}
               >
-                <Icon name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={30} color='#FFFFFF' />
+                <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={30} color='#FFFFFF' />
               </TouchableOpacity>
             </View>
             
@@ -325,9 +331,9 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: -50,
+    top: -cardHeight - 80,
     right: 20,
-    zIndex: 10,
+    zIndex: 20,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -335,10 +341,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonContainer: {
+  buttonsWrapper: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 16,
-    zIndex: 5,
+    justifyContent: 'center',
+    gap: 16,
+    width: '100%',
   },
   offerButton: {
     backgroundColor: '#007AFF',
@@ -362,15 +370,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  saveButtonContainer: {
-    alignItems: 'flex-end',
-    width: '100%',
-    marginTop: -54,
-    marginLeft: -82,
-    zIndex: 4,
-  },
   saveButton: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 8,
     alignItems: 'center',

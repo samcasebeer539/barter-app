@@ -1,7 +1,7 @@
 //note: there should just be one postcard component which can have or not have a deck
 //always use postcard without deck as an item within Deck
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
@@ -46,15 +46,8 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  // Animated card width for the deck
-  const animatedDeckCardWidth = useMemo(() => {
-    if (!revealProgress) return finalCardWidth;
-    
-    return revealProgress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [finalCardWidth, finalCardWidth * 1.4],
-    });
-  }, [revealProgress, finalCardWidth]);
+  // Render deck at its final large size
+  const deckCardWidthLarge = finalCardWidth * 1.4;
 
   const handlePanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translationY } }],
@@ -129,25 +122,31 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     // Add your trade logic here
   };
 
+  // Scale from small (1/1.4) to large (1) - deck renders at large size, scales down when collapsed
+  const deckScale = revealProgress?.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1 / 1.4, 1],
+  }) || 1;
+
   // Move deck upward
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -580], // Move up 580px when revealed
+    outputRange: [0, -580],
   }) || 0;
 
   // Animate TRADE button opacity
   const tradeButtonOpacity = revealProgress?.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1], // Fade in when revealed
+    outputRange: [0, 0, 1],
   }) || 0;
 
-  // Animate button vertical position based on deck size change
+  // Animate button vertical position
   const buttonTranslateY = revealProgress?.interpolate({
     inputRange: [0, 1],
     outputRange: [0, (cardHeight * 1.4 * 0.87) - (cardHeight * 0.87)],
   }) || 0;
 
-  // Static button top position
+  // Static button top position (based on small size)
   const buttonTopBase = (cardHeight * 0.87) + 20;
 
   return (
@@ -155,8 +154,8 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
       <PanGestureHandler
         onGestureEvent={handlePanGestureEvent}
         onHandlerStateChange={handlePanStateChange}
-        activeOffsetY={10} // Only activate after 10px vertical movement
-        failOffsetX={[-20, 20]} // Fail if horizontal movement exceeds 20px
+        activeOffsetY={10}
+        failOffsetX={[-20, 20]}
       >
         <Animated.View 
           style={[
@@ -171,18 +170,14 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                 top: -peekAmount - 190,
                 transform: [
                   { translateY: deckExpandY },
+                  { scale: deckScale },
                 ],
               }
             ]} 
             pointerEvents="box-none"
           >
-            {/* Create a wrapper to handle the animated width */}
-            <Animated.View style={{ width: animatedDeckCardWidth }}>
-              <DeckWrapper 
-                posts={deckPosts} 
-                cardWidth={animatedDeckCardWidth}
-              />
-            </Animated.View>
+            {/* Render deck at large size - will be scaled down when collapsed */}
+            <Deck posts={deckPosts} cardWidth={deckCardWidthLarge} />
 
             {/* TRADE Button - positioned below the deck */}
             <Animated.View 
@@ -268,27 +263,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
       </PanGestureHandler>
     </Animated.View>
   );
-};
-
-// Wrapper component to re-render Deck when cardWidth changes
-const DeckWrapper: React.FC<{ posts: Post[], cardWidth: Animated.AnimatedInterpolation<number> }> = ({ posts, cardWidth }) => {
-  // We can't pass animated values directly to non-animated components
-  // So we'll use a static width and let the parent Animated.View handle scaling
-  const [width, setWidth] = React.useState(0);
-  
-  React.useEffect(() => {
-    const listener = cardWidth.addListener(({ value }) => {
-      setWidth(value);
-    });
-    
-    return () => {
-      cardWidth.removeListener(listener);
-    };
-  }, [cardWidth]);
-  
-  if (width === 0) return null;
-  
-  return <Deck posts={posts} cardWidth={width} />;
 };
 
 const styles = StyleSheet.create({

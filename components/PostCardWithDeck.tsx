@@ -5,11 +5,8 @@ import React, { useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
-import UserCard from './UserCard';
-import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
-
-
-//will need to pass in the actual deck component
+import Deck from './Deck';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 interface Post {
   type: 'good' | 'service';
@@ -19,8 +16,8 @@ interface Post {
 }
 
 interface PostCardWithDeckProps {
-  //need to pa
   post: Post;
+  deckPosts: Post[]; // Posts to show in the deck
   cardWidth?: number;
   scale?: number;
   onRevealChange?: (revealed: boolean) => void;
@@ -29,6 +26,7 @@ interface PostCardWithDeckProps {
 
 const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({ 
   post, 
+  deckPosts,
   cardWidth,
   scale = 1,
   onRevealChange,
@@ -121,7 +119,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     // Add your trade logic here
   };
 
-
   // Animate deck scale and position when revealed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
@@ -153,7 +150,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             styles.container,
           ]}
         >
-          {/* Deck peeking out from behind - UserCard at front, wireframe behind */}
+          {/* Deck component peeking out from behind */}
           <Animated.View 
             style={[
               styles.deckPeek, 
@@ -167,15 +164,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             ]} 
             pointerEvents="box-none"
           >
-            {/* Wireframe card behind */}
-            <View style={[styles.deckCard, styles.deckCardSecond, { height: cardHeight * 0.85 }]} />
-            
-            {/* UserCard in front with border - no tap handler, just visual */}
-            <View style={[styles.userCardWrapper, { height: cardHeight * 0.85 }]}>
-              <View style={styles.userCardBorder}>
-                <UserCard scale={1} cardWidth={finalCardWidth * 0.85} />
-              </View>
-            </View>
+            <Deck posts={deckPosts} cardWidth={finalCardWidth} />
 
             {/* TRADE Button - positioned below the deck */}
             <Animated.View 
@@ -273,31 +262,6 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     zIndex: 1,
-  },
-  userCardWrapper: {
-    position: 'absolute',
-    top: 0,
-    width: '85%',
-    zIndex: 3,
-  },
-  userCardBorder: {
-    borderWidth: 2,
-    borderColor: '#d4d4d4',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  deckCard: {
-    width: '90%',
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#d4d4d4',
-    borderRadius: 8,
-    position: 'absolute',
-  },
-  deckCardSecond: {
-    top: -8,
-    width: '80%',
-    zIndex: 2,
   },
   tradeButtonWrapper: {
     position: 'absolute',

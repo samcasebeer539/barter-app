@@ -120,7 +120,7 @@ export default function BarterScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} scrollEnabled={!isPlaying}>
+    <View style={styles.container}>
       <StatusBar style="light" />
       
       {/* Back Button */}
@@ -132,200 +132,201 @@ export default function BarterScreen() {
         <FontAwesome6 name="angle-left" size={28} color="#fff" />
       </TouchableOpacity>
 
-      <Animated.View 
-        style={[
-          styles.activeTradeaSection,
-          {
-            transform: [{ translateY: activeTradesTranslateY }],
-          },
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.tradeSectionHeader}
-          onPress={() => setActiveTradesExpanded(!activeTradesExpanded)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.tradeSectionTitle}>Active Trades</Text>
-          <MaterialIcons 
-            name={activeTradesExpanded ? "expand-less" : "expand-more"} 
-            size={28} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-        
-        {activeTradesExpanded && (
-          <>
-  
-
-            {/* 2nd Active Trade */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"{'\n'}
-                Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"{'\n'}
-                You proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>{'\n'}
-                Jay asked <Text style={styles.highlightPurple}>QUESTION</Text>{'\n'}
-                <Text style={styles.questionText}>       Is the Charizard in good condition?</Text>{'\n'}
-
-              
-              </Text>
-              <View style={styles.questionButtonContainer} pointerEvents="auto">
-                <TouchableOpacity 
-                  style={styles.answerButton}
-                  onPress={handleAnswer}
-                >
-                  <Text style={styles.buttonText}>ANSWER</Text>
-                </TouchableOpacity>
-              </View>
-              {showInput && (
-                <TextInput
-                  ref={inputRef}
-                  style={styles.textAnswerInput}
-                  placeholder="Answer question to begin your turn!"
-                  placeholderTextColor="#ffffff"
-                />
-              )}
-
-              <View style={styles.playButtonContainer} pointerEvents="auto">
-                <TouchableOpacity 
-                  style={styles.playButton}
-                  onPress={handlePlay}
-                >
-                  <Text style={styles.buttonText}>YOUR TURN</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* 3rd Active Trade */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books" {'\n'}
-              
-                Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards" {'\n'}
-        
-                You <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
-            
-                Jay <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
-              </Text>
-              <View style={styles.playButtonContainer} pointerEvents="auto">
-                <TouchableOpacity 
-                  style={styles.playButton}
-                  onPress={handlePlay}
-                >
-                  <Text style={styles.buttonText}>YOUR TURN</Text>
-                </TouchableOpacity>
-              </View>
-              
-            </View>
-
-          </>
-        )}
-        {/* Card area */}
-        <View style={styles.mainContent}>
-          <View style={styles.leftArrowContainer}>
-            <FontAwesome6 name="arrow-left-long" size={28} color="#fff" />
+      {/* Cards and CardWheel - positioned behind active trades */}
+      <View style={styles.mainContent}>
+        <View style={styles.leftArrowContainer}>
+          <FontAwesome6 name="arrow-left-long" size={28} color="#fff" />
+        </View>
+        <View style={styles.rightArrowContainer}>
+          <FontAwesome6 name="arrow-right-long" size={28} color="#fff" />
+        </View>
+        <View style={styles.cardsContainer}>
+          {/* Left card - larger and higher */}
+          <View style={styles.leftCard}>
+            <PostCard 
+              post={leftPost}
+              cardWidth={180}
+              scale={1}
+            />
           </View>
-          <View style={styles.rightArrowContainer}>
-            <FontAwesome6 name="arrow-right-long" size={28} color="#fff" />
-          </View>
-          <View style={styles.cardsContainer}>
-            {/* Left card - larger and higher */}
-            
-            <View style={styles.leftCard}>
-              <PostCard 
-                post={leftPost}
-                cardWidth={180}
-                scale={1}
-              />
-            </View>
-            
-            {/* Right card - smaller and lower */}
-            <View style={styles.rightCard}>
-              <PostCard 
-                post={rightPost}
-                cardWidth={180}
-                scale={1}
-              />
-            </View>
+          
+          {/* Right card - smaller and lower */}
+          <View style={styles.rightCard}>
+            <PostCard 
+              post={rightPost}
+              cardWidth={180}
+              scale={1}
+            />
           </View>
         </View>
-      
-      </Animated.View>
-          
-      
 
-      
-
-      {/* Card Wheel at bottom */}
-      <View style={styles.cardWheelContainer}>
-        <CardWheel cards={sampleCards} resetKey={resetKey} />
+        {/* Card Wheel */}
+        <View style={styles.cardWheelContainer}>
+          <CardWheel cards={sampleCards} resetKey={resetKey} />
+        </View>
       </View>
 
-
-      {/* Outgoing Offers Section */}
-      <Animated.View 
-        style={[
-          styles.offersAndDeclinedSection,
-          {
-            transform: [{ translateY: belowContentTranslateY }],
-          },
-        ]}
+      {/* ScrollView with active trades and offers - overlays on top */}
+      <ScrollView 
+        style={styles.scrollViewOverlay} 
+        contentContainerStyle={styles.scrollContent}
+        scrollEnabled={!isPlaying}
       >
-        <TouchableOpacity 
-          style={styles.tradeSectionHeader}
-          onPress={() => setOutgoingOffersExpanded(!outgoingOffersExpanded)}
-          activeOpacity={0.7}
+        <Animated.View 
+          style={[
+            styles.activeTradeaSection,
+            {
+              transform: [{ translateY: activeTradesTranslateY }],
+            },
+          ]}
         >
-          <Text style={styles.tradeSectionTitle}>Outgoing Offers</Text>
-          <MaterialIcons 
-            name={outgoingOffersExpanded ? "expand-less" : "expand-more"} 
-            size={28} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-        
-        {outgoingOffersExpanded && (
-          <>
-            {/* Outgoing Offer 1 */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
-              </Text>
-            </View>
-          </>
-        )}
-      
-        <TouchableOpacity 
-          style={styles.tradeSectionHeader}
-          onPress={() => setDeclinedExpiredExpanded(!declinedExpiredExpanded)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.tradeSectionTitle}>Declined/Expired Offers</Text>
-          <MaterialIcons 
-            name={declinedExpiredExpanded ? "expand-less" : "expand-more"} 
-            size={28} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
-        
-        {declinedExpiredExpanded && (
-          <>
-            {/* Declined Offer 1 */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
-              </Text>
-            </View>
+          <TouchableOpacity 
+            style={styles.tradeSectionHeader}
+            onPress={() => setActiveTradesExpanded(!activeTradesExpanded)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.tradeSectionTitle}>Active Trades</Text>
+            <MaterialIcons 
+              name={activeTradesExpanded ? "expand-less" : "expand-more"} 
+              size={28} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+          
+          {activeTradesExpanded && (
+            <>
+    
 
-            {/* Expired Offer 1 */}
-            <View style={styles.tradeSection}>
-              <Text style={styles.tradeText}>
-                Your <Text style={styles.highlightBlue}>OFFER</Text> on "item" expired
-              </Text>
-            </View>
-          </>
-        )}
-      </Animated.View>
-    </ScrollView>
+              {/* 2nd Active Trade */}
+              <View style={styles.tradeSection}>
+                <Text style={styles.tradeText}>
+                  You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"{'\n'}
+                  Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"{'\n'}
+                  You proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>{'\n'}
+                  Jay asked <Text style={styles.highlightPurple}>QUESTION</Text>{'\n'}
+                  <Text style={styles.questionText}>       Is the Charizard in good condition?</Text>{'\n'}
+
+                
+                </Text>
+                <View style={styles.questionButtonContainer} pointerEvents="auto">
+                  <TouchableOpacity 
+                    style={styles.answerButton}
+                    onPress={handleAnswer}
+                  >
+                    <Text style={styles.buttonText}>ANSWER</Text>
+                  </TouchableOpacity>
+                </View>
+                {showInput && (
+                  <TextInput
+                    ref={inputRef}
+                    style={styles.textAnswerInput}
+                    placeholder="Answer question to begin your turn!"
+                    placeholderTextColor="#ffffff"
+                  />
+                )}
+
+                <View style={styles.playButtonContainer} pointerEvents="auto">
+                  <TouchableOpacity 
+                    style={styles.playButton}
+                    onPress={handlePlay}
+                  >
+                    <Text style={styles.buttonText}>YOUR TURN</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* 3rd Active Trade */}
+              <View style={styles.tradeSection}>
+                <Text style={styles.tradeText}>
+                  You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books" {'\n'}
+                
+                  Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards" {'\n'}
+          
+                  You <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
+              
+                  Jay <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
+                </Text>
+                <View style={styles.playButtonContainer} pointerEvents="auto">
+                  <TouchableOpacity 
+                    style={styles.playButton}
+                    onPress={handlePlay}
+                  >
+                    <Text style={styles.buttonText}>YOUR TURN</Text>
+                  </TouchableOpacity>
+                </View>
+                
+              </View>
+
+            </>
+          )}
+        </Animated.View>
+
+        {/* Outgoing Offers Section */}
+        <Animated.View 
+          style={[
+            styles.offersAndDeclinedSection,
+            {
+              transform: [{ translateY: belowContentTranslateY }],
+            },
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.tradeSectionHeader}
+            onPress={() => setOutgoingOffersExpanded(!outgoingOffersExpanded)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.tradeSectionTitle}>Outgoing Offers</Text>
+            <MaterialIcons 
+              name={outgoingOffersExpanded ? "expand-less" : "expand-more"} 
+              size={28} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+          
+          {outgoingOffersExpanded && (
+            <>
+              {/* Outgoing Offer 1 */}
+              <View style={styles.tradeSection}>
+                <Text style={styles.tradeText}>
+                  You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                </Text>
+              </View>
+            </>
+          )}
+        
+          <TouchableOpacity 
+            style={styles.tradeSectionHeader}
+            onPress={() => setDeclinedExpiredExpanded(!declinedExpiredExpanded)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.tradeSectionTitle}>Declined/Expired Offers</Text>
+            <MaterialIcons 
+              name={declinedExpiredExpanded ? "expand-less" : "expand-more"} 
+              size={28} 
+              color="#fff" 
+            />
+          </TouchableOpacity>
+          
+          {declinedExpiredExpanded && (
+            <>
+              {/* Declined Offer 1 */}
+              <View style={styles.tradeSection}>
+                <Text style={styles.tradeText}>
+                  Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+                </Text>
+              </View>
+
+              {/* Expired Offer 1 */}
+              <View style={styles.tradeSection}>
+                <Text style={styles.tradeText}>
+                  Your <Text style={styles.highlightBlue}>OFFER</Text> on "item" expired
+                </Text>
+              </View>
+            </>
+          )}
+        </Animated.View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -333,43 +334,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
+  },
+  scrollViewOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+  },
+  scrollContent: {
     padding: 20,
     paddingTop: 60,
+    backgroundColor: '#121212',
   },
-
-  //get rid of
   backButton: {
     position: 'absolute',
     top: 50,
     left: 20,
-    zIndex: 10,
+    zIndex: 20,
     padding: 8,
   },
-
-  //get rid of
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    marginLeft: 52,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#fff',
-    marginLeft: 12,
-    marginTop: 26,
-  },
   mainContent: {
-    //trades goes in here
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingTop: 100,
   },
-
   activeTradeaSection: {
     marginBottom: 30,
   },
@@ -391,80 +382,38 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 20,
   },
-  activeTradesContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-    marginBottom: 400,
-  },
-  
-  
   cardsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 10,
-    marginBottom: 400,
+    marginBottom: 100,
   },
-  
-  
-
-
   leftCard: {
-   
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 34,
-    right: 0
   },
   rightCard: {
-
     justifyContent: 'center',
     alignItems: 'center',
-    right: 0
-  
   },
   leftArrowContainer: {
-
-    justifyContent: 'center',
-    alignItems: 'center',
-    top: 56,
-    left: 20
-  
+    position: 'absolute',
+    top: 180,
+    left: 40,
   },
   rightArrowContainer: {
-    
-    justifyContent: 'center',
-    alignItems: 'center',
-    
-    top: 280,
-    right: 20
-  
+    position: 'absolute',
+    top: 400,
+    right: 40,
   },
   cardWheelContainer: {
-    position: 'absolute',
-    bottom: -720,
-    left: 0,
-    right: 0,
-    paddingBottom: 0,
+    marginTop: 50,
   },
   tradeText: {
     fontSize: 16,
     color: '#E0E0E0',
     lineHeight: 24,
-  },
-  yourTurnText: {
-    fontSize: 16,
-    color: '#e99700',
-    fontWeight: '600',
-    lineHeight: 24,
-  },
-  heavyChar: {
-    fontWeight: '900',
-    fontSize: 16,
-  },
-  arrow: {
-    fontSize: 40,
-    lineHeight: 10,
   },
   playButtonContainer: {
     alignItems: 'flex-start',
@@ -542,13 +491,10 @@ const styles = StyleSheet.create({
   },
   questionText: {
     color: '#ffffff',
-    
   },
   answerText: {
     color: '#a73bff',
-    
   },
-
   textAnswerInput: {
     color: '#fff',
     height: 44,
@@ -557,6 +503,4 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
   }
-
-
 });

@@ -224,6 +224,7 @@ export default function ProfileScreen() {
                       // Use PostCardWithDeck for the second card (first actual post)
                       <PostCardWithDeck 
                         post={item} 
+                        deckPosts={POSTS} // Pass all POSTS as deck posts
                         scale={1} 
                         cardWidth={cardWidth}
                         revealProgress={revealProgress}

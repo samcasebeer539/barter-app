@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Animated,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
@@ -27,6 +28,11 @@ export default function BarterScreen() {
   const [activeTradesExpanded, setActiveTradesExpanded] = useState(true);
   const [outgoingOffersExpanded, setOutgoingOffersExpanded] = useState(true);
   const [declinedExpiredExpanded, setDeclinedExpiredExpanded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Animated values for sliding
+  const activeTradesTranslateY = useRef(new Animated.Value(0)).current;
+  const belowContentTranslateY = useRef(new Animated.Value(0)).current;
 
   // Reset CardWheel whenever this screen comes into focus
   useFocusEffect(
@@ -46,9 +52,23 @@ export default function BarterScreen() {
   const [showInput, setShowInput] = useState(false);
   
   const handlePlay = () => {
-    router.push('/barter');
-    console.log('Play button pressed');
-    // Add your offer logic here
+    setIsPlaying(true);
+    
+    // Animate active trades section up
+    Animated.spring(activeTradesTranslateY, {
+      toValue: -600, // Slide up
+      useNativeDriver: true,
+      damping: 20,
+      stiffness: 100,
+    }).start();
+
+    // Animate below content down
+    Animated.spring(belowContentTranslateY, {
+      toValue: 600, // Slide down
+      useNativeDriver: true,
+      damping: 20,
+      stiffness: 100,
+    }).start();
   };
 
   const handleAnswer = () => {
@@ -100,7 +120,7 @@ export default function BarterScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} scrollEnabled={!isPlaying}>
       <StatusBar style="light" />
       
       {/* Back Button */}
@@ -112,13 +132,14 @@ export default function BarterScreen() {
         <FontAwesome6 name="angle-left" size={28} color="#fff" />
       </TouchableOpacity>
 
-      {/* Header with profile photo and name - centered */}
-      {/* <View style={styles.header}>
-        <ProfilePicture size={50} avatarText="👤" />
-        <Text style={styles.name}>Jay Wilson</Text>
-      </View> */}
-
-      <View style={styles.activeTradeaSection}>
+      <Animated.View 
+        style={[
+          styles.activeTradeaSection,
+          {
+            transform: [{ translateY: activeTradesTranslateY }],
+          },
+        ]}
+      >
         <TouchableOpacity 
           style={styles.tradeSectionHeader}
           onPress={() => setActiveTradesExpanded(!activeTradesExpanded)}
@@ -174,7 +195,7 @@ export default function BarterScreen() {
               </View>
             </View>
 
-            {/* 3st Active Trade */}
+            {/* 3rd Active Trade */}
             <View style={styles.tradeSection}>
               <Text style={styles.tradeText}>
                 You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books" {'\n'}
@@ -228,7 +249,7 @@ export default function BarterScreen() {
           </View>
         </View>
       
-      </View>
+      </Animated.View>
           
       
 
@@ -241,7 +262,14 @@ export default function BarterScreen() {
 
 
       {/* Outgoing Offers Section */}
-      <View style={styles.offersAndDeclinedSection}>
+      <Animated.View 
+        style={[
+          styles.offersAndDeclinedSection,
+          {
+            transform: [{ translateY: belowContentTranslateY }],
+          },
+        ]}
+      >
         <TouchableOpacity 
           style={styles.tradeSectionHeader}
           onPress={() => setOutgoingOffersExpanded(!outgoingOffersExpanded)}
@@ -296,7 +324,7 @@ export default function BarterScreen() {
             </View>
           </>
         )}
-      </View>
+      </Animated.View>
     </ScrollView>
   );
 }

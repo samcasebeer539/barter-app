@@ -35,7 +35,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   const scaledHeight = cardHeight * 0.85;
   const offset = 6;
 
-  const positionX = useRef(new Animated.Value(0)).current; // X only
+  const positionX = useRef(new Animated.Value(0)).current; // x only
   const SWIPE_THRESHOLD = screenWidth * 0.25;
 
   const [cards, setCards] = useState<DeckItem[]>([
@@ -67,7 +67,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   const swipeOut = (direction: number) => {
     Animated.timing(positionX, {
       toValue: direction * screenWidth,
-      duration: 500,
+      duration: 250,
       useNativeDriver: true, // smooth
     }).start(() => {
       
@@ -87,7 +87,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
     }).start();
   };
 
-  // Optional: rotation while dragging
+  // rotation while dragging
   const rotate = positionX.interpolate({
     inputRange: [-screenWidth, 0, screenWidth],
     outputRange: ['-10deg', '0deg', '10deg'],

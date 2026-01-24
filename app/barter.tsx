@@ -41,23 +41,23 @@ export default function BarterScreen() {
 
     
   
-    const inputRef = useRef<TextInput>(null);
-      
-    const [showInput, setShowInput] = useState(false);
+  const inputRef = useRef<TextInput>(null);
     
-    const handlePlay = () => {
-      router.push('/barter');
-      console.log('Play button pressed');
-      // Add your offer logic here
-    };
+  const [showInput, setShowInput] = useState(false);
   
-    const handleAnswer = () => {
-      console.log('Answer button pressed');
-      // Add your offer logic here
-      setShowInput(prev => !prev);
-      setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
+  const handlePlay = () => {
+    router.push('/barter');
+    console.log('Play button pressed');
+    // Add your offer logic here
+  };
+
+  const handleAnswer = () => {
+    console.log('Answer button pressed');
+    // Add your offer logic here
+    setShowInput(prev => !prev);
+    setTimeout(() => {
+    inputRef.current?.focus();
+  }, 0);}
 
   const sampleCards = [
     {
@@ -163,6 +163,15 @@ export default function BarterScreen() {
                   placeholderTextColor="#ffffff"
                 />
               )}
+
+              <View style={styles.playButtonContainer} pointerEvents="auto">
+                <TouchableOpacity 
+                  style={styles.playButton}
+                  onPress={handlePlay}
+                >
+                  <Text style={styles.buttonText}>YOUR TURN</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* 3st Active Trade */}
@@ -229,6 +238,65 @@ export default function BarterScreen() {
       <View style={styles.cardWheelContainer}>
         <CardWheel cards={sampleCards} resetKey={resetKey} />
       </View>
+
+
+      {/* Outgoing Offers Section */}
+      <View style={styles.offersAndDeclinedSection}>
+        <TouchableOpacity 
+          style={styles.tradeSectionHeader}
+          onPress={() => setOutgoingOffersExpanded(!outgoingOffersExpanded)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.tradeSectionTitle}>Outgoing Offers</Text>
+          <MaterialIcons 
+            name={outgoingOffersExpanded ? "expand-less" : "expand-more"} 
+            size={28} 
+            color="#fff" 
+          />
+        </TouchableOpacity>
+        
+        {outgoingOffersExpanded && (
+          <>
+            {/* Outgoing Offer 1 */}
+            <View style={styles.tradeSection}>
+              <Text style={styles.tradeText}>
+                You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+              </Text>
+            </View>
+          </>
+        )}
+      
+        <TouchableOpacity 
+          style={styles.tradeSectionHeader}
+          onPress={() => setDeclinedExpiredExpanded(!declinedExpiredExpanded)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.tradeSectionTitle}>Declined/Expired Offers</Text>
+          <MaterialIcons 
+            name={declinedExpiredExpanded ? "expand-less" : "expand-more"} 
+            size={28} 
+            color="#fff" 
+          />
+        </TouchableOpacity>
+        
+        {declinedExpiredExpanded && (
+          <>
+            {/* Declined Offer 1 */}
+            <View style={styles.tradeSection}>
+              <Text style={styles.tradeText}>
+                Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
+              </Text>
+            </View>
+
+            {/* Expired Offer 1 */}
+            <View style={styles.tradeSection}>
+              <Text style={styles.tradeText}>
+                Your <Text style={styles.highlightBlue}>OFFER</Text> on "item" expired
+              </Text>
+            </View>
+          </>
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -237,6 +305,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
+    padding: 20,
+    paddingTop: 60,
   },
 
   //get rid of
@@ -344,7 +414,7 @@ const styles = StyleSheet.create({
   },
   cardWheelContainer: {
     position: 'absolute',
-    bottom: -870,
+    bottom: -720,
     left: 0,
     right: 0,
     paddingBottom: 0,
@@ -461,4 +531,4 @@ const styles = StyleSheet.create({
   }
 
 
-});}
+});

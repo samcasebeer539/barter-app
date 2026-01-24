@@ -19,13 +19,14 @@ interface Post {
 interface DeckProps {
   posts: Post[];
   cardWidth?: number;
+  enabled?: boolean; // Whether the deck is interactive
 }
 
 type DeckItem =
   | { type: 'user' }
   | { type: 'post'; post: Post };
 
-const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
+const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -78,10 +79,11 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => !isAnimatingRef.current,
-      onMoveShouldSetPanResponder: (_, g) => !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
+      onStartShouldSetPanResponder: () => enabled && !isAnimatingRef.current,
+      onMoveShouldSetPanResponder: (_, g) => enabled && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderGrant: () => {
+        if (!enabled) return;
         // Ensure the front card's swipeX is at 0 when we start touching
         const firstCardIndex = visibleIndicesRef.current.first;
         cardAnimations[firstCardIndex].swipeX.setOffset(0);
@@ -89,11 +91,13 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
       },
 
       onPanResponderMove: (_, gesture) => {
+        if (!enabled) return;
         const firstCardIndex = visibleIndicesRef.current.first;
         cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
       },
 
       onPanResponderRelease: (_, gesture) => {
+        if (!enabled) return;
         if (gesture.dx > SWIPE_THRESHOLD) {
           swipeOut(1);
         } else if (gesture.dx < -SWIPE_THRESHOLD) {

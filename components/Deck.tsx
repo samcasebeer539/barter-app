@@ -42,18 +42,6 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
     third: { x: -22, y: -32 },
   };
 
-  // Track which card is in which position
-  const [cardIndices, setCardIndices] = useState({
-    first: 0,
-    second: 1,
-    third: 2,
-  });
-
-  // Animated values for each card slot
-  const firstCardX = useRef(new Animated.Value(0)).current;
-  const secondCardAnim = useRef(new Animated.ValueXY(POSITIONS.second)).current;
-  const thirdCardAnim = useRef(new Animated.ValueXY(POSITIONS.third)).current;
-  
   const SWIPE_THRESHOLD = screenWidth * 0.25;
 
   const [cards, setCards] = useState<DeckItem[]>([
@@ -61,13 +49,33 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
     ...posts.map((post): DeckItem => ({ type: 'post', post })),
   ]);
 
+  // Create animated values for each card in the deck
+  const cardAnimations = useRef(
+    cards.map((_, index) => ({
+      position: new Animated.ValueXY(
+        index === 0 ? POSITIONS.first :
+        index === 1 ? POSITIONS.second :
+        index === 2 ? POSITIONS.third :
+        { x: -22, y: -32 } // Cards beyond third start at third position
+      ),
+      swipeX: new Animated.Value(0),
+    }))
+  ).current;
+
+  // Track which card indices are currently visible
+  const [visibleIndices, setVisibleIndices] = useState({
+    first: 0,
+    second: 1,
+    third: 2,
+  });
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderMove: (_, gesture) => {
-        firstCardX.setValue(gesture.dx); // only horizontal
+        cardAnimations[visibleIndices.first].swipeX.setValue(gesture.dx);
       },
 
       onPanResponderRelease: (_, gesture) => {
@@ -83,52 +91,50 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   ).current;
 
   const swipeOut = (direction: number) => {
-    // Animate all cards
+    const firstIndex = visibleIndices.first;
+    const secondIndex = visibleIndices.second;
+    const thirdIndex = visibleIndices.third;
+    
+    // Calculate next card index (wrap around)
+    const nextIndex = (thirdIndex + 1) % cards.length;
+
     Animated.parallel([
       // Swipe out the first card
-      Animated.timing(firstCardX, {
+      Animated.timing(cardAnimations[firstIndex].swipeX, {
         toValue: direction * screenWidth,
         duration: 250,
         useNativeDriver: true,
       }),
       // Move second card to first position
-      Animated.timing(secondCardAnim, {
+      Animated.timing(cardAnimations[secondIndex].position, {
         toValue: POSITIONS.first,
         duration: 250,
         useNativeDriver: true,
       }),
       // Move third card to second position
-      Animated.timing(thirdCardAnim, {
+      Animated.timing(cardAnimations[thirdIndex].position, {
         toValue: POSITIONS.second,
         duration: 250,
         useNativeDriver: true,
       }),
+      // Move next card to third position
+      Animated.timing(cardAnimations[nextIndex].position, {
+        toValue: POSITIONS.third,
+        duration: 250,
+        useNativeDriver: true,
+      }),
     ]).start(() => {
-      // Cycle the cards array - move first card to end
-      setCards((prev) => {
-        const [first, ...rest] = prev;
-        return [...rest, first];
+      // Update visible indices
+      setVisibleIndices({
+        first: secondIndex,
+        second: thirdIndex,
+        third: nextIndex,
       });
-      
-      // Update card indices - rotate positions
-      setCardIndices((prev) => ({
-        first: prev.second,
-        second: prev.third,
-        third: (prev.first + 3) % cards.length, // Next card in sequence
-      }));
-
-      // Reset first card position for next swipe
-      firstCardX.setValue(0);
-      
-      // Reset second and third to their starting positions
-      // (they'll now hold different cards)
-      secondCardAnim.setValue(POSITIONS.second);
-      thirdCardAnim.setValue(POSITIONS.third);
     });
   };
 
   const resetPosition = () => {
-    Animated.spring(firstCardX, {
+    Animated.spring(cardAnimations[visibleIndices.first].swipeX, {
       toValue: 0,
       useNativeDriver: true,
       friction: 5,
@@ -136,85 +142,54 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   };
 
   // rotation while dragging
-  const rotate = firstCardX.interpolate({
+  const rotate = cardAnimations[visibleIndices.first].swipeX.interpolate({
     inputRange: [-screenWidth, 0, screenWidth],
     outputRange: ['-10deg', '0deg', '10deg'],
   });
 
+  const renderCard = (index: number, isFirst: boolean = false) => {
+    const card = cards[index];
+    if (!card) return null;
+
+    const cardAnim = cardAnimations[index];
+
+    return (
+      <Animated.View
+        key={index}
+        style={[
+          styles.frontCard,
+          {
+            transform: isFirst ? [
+              { translateX: cardAnim.swipeX },
+              { translateY: cardAnim.position.y },
+              { rotate }
+            ] : [
+              { translateX: cardAnim.position.x },
+              { translateY: cardAnim.position.y },
+              { scale: 1.0 }
+            ],
+          },
+        ]}
+      >
+        {card.type === 'user' ? (
+          <UserCard scale={0.85} cardWidth={finalCardWidth} />
+        ) : (
+          <PostCard
+            post={card.post}
+            scale={0.85}
+            cardWidth={finalCardWidth}
+          />
+        )}
+      </Animated.View>
+    );
+  };
+
   return (
     <View style={styles.deckContainer} {...panResponder.panHandlers}>
-      {/* back card (third position) */}
-      <Animated.View
-        style={[
-          styles.frontCard,
-          {
-            transform: [
-              { translateX: thirdCardAnim.x },
-              { translateY: thirdCardAnim.y },
-              { scale: 1.0 }
-            ],
-          },
-        ]}
-      >
-        {cards[cardIndices.third]?.type === 'user' ? (
-          <UserCard scale={0.85} cardWidth={finalCardWidth} />
-        ) : (
-          <PostCard
-            post={cards[cardIndices.third]?.post}
-            scale={0.85}
-            cardWidth={finalCardWidth}
-          />
-        )}
-      </Animated.View>
-
-      {/* middle card (second position) */}
-      <Animated.View
-        style={[
-          styles.frontCard,
-          {
-            transform: [
-              { translateX: secondCardAnim.x },
-              { translateY: secondCardAnim.y },
-              { scale: 1.0 }
-            ],
-          },
-        ]}
-      >
-        {cards[cardIndices.second]?.type === 'user' ? (
-          <UserCard scale={0.85} cardWidth={finalCardWidth} />
-        ) : (
-          <PostCard
-            post={cards[cardIndices.second]?.post}
-            scale={0.85}
-            cardWidth={finalCardWidth}
-          />
-        )}
-      </Animated.View>
-
-      {/* Front card (first position) */}
-      <Animated.View
-        style={[
-          styles.frontCard,
-          {
-            transform: [
-              { translateX: firstCardX },
-              { translateY: POSITIONS.first.y },
-              { rotate }
-            ],
-            right: POSITIONS.first.x,
-          },
-        ]}
-      >
-        {cards[cardIndices.first]?.type === 'user' ? (
-          <UserCard scale={0.85} cardWidth={finalCardWidth} />
-        ) : (
-          <PostCard
-            post={cards[cardIndices.first]?.post}
-            scale={0.85}
-            cardWidth={finalCardWidth}
-          />
-        )}
-      </Animated.View>
+      {/* Render all cards, but only visible ones will be seen */}
+      {renderCard(visibleIndices.third)}
+      {renderCard(visibleIndices.second)}
+      {renderCard(visibleIndices.first, true)}
     </View>
   );
 };

@@ -28,7 +28,7 @@ type DeckItem =
 
 const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   const screenWidth = Dimensions.get('window').width;
-  const defaultCardWidth = Math.min(screenWidth - 12, 400);
+  const defaultCardWidth = Math.min(screenWidth - 60, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
@@ -206,12 +206,12 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard scale={0.85} cardWidth={finalCardWidth} />
+          <UserCard scale={1} cardWidth={defaultCardWidth} />
         ) : (
           <PostCard
             post={card.post}
-            scale={0.85}
-            cardWidth={finalCardWidth}
+            scale={1}
+            cardWidth={defaultCardWidth}
           />
         )}
       </Animated.View>

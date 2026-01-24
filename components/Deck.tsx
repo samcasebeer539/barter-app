@@ -124,6 +124,9 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         useNativeDriver: true,
       }),
     ]).start(() => {
+      // Reset the swipeX for the new front card so it can be swiped
+      cardAnimations[secondIndex].swipeX.setValue(0);
+      
       // Update visible indices
       setVisibleIndices({
         first: secondIndex,

@@ -210,12 +210,12 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard scale={1} cardWidth={finalCardWidth} />
+          <UserCard scale={1} cardWidth={defaultCardWidth} />
         ) : (
           <PostCard
             post={card.post}
             scale={1}
-            cardWidth={finalCardWidth}
+            cardWidth={defaultCardWidth}
           />
         )}
       </Animated.View>

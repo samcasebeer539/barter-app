@@ -232,6 +232,7 @@ export default function ProfileScreen() {
                         cardWidth={cardWidth}
                         revealProgress={revealProgress}
                         onRevealChange={handleRevealChange}
+                        deckRevealed={isDeckRevealed}
                       />
                     ) : (
                       <PostCard post={item} scale={1} cardWidth={cardWidth} />

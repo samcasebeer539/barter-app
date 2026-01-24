@@ -1,6 +1,9 @@
 //todo: add profile background photo
 //    this will be added to user card as well
 
+// and a box for the top of postcard for deck
+// 12 available TRADES!
+
 
 import React, { useRef, useState } from 'react';
 import {

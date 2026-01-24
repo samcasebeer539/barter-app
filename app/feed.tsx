@@ -1,3 +1,5 @@
+//feed gets down animation for deck
+
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
@@ -143,6 +145,7 @@ export default function FeedScreen() {
             size={20} 
             color={item.type === 'service' ? '#FFA600' : '#FF3B81'}
             style={styles.typeIcon}
+           
           />
         </View>
       </TouchableOpacity>

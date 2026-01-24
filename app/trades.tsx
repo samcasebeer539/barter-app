@@ -1,4 +1,9 @@
 //limit amount of text as much as possible
+//scrolling text?
+
+//has to be some animation
+
+//boxes for seperate trades?
 
 import React, { useState } from 'react';
 import {

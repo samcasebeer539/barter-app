@@ -83,10 +83,6 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
 
   const panResponder = useRef(
     PanResponder.create({
-      // Allow child ScrollViews to handle gestures first
-      onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponderCapture: () => false,
-      
       onStartShouldSetPanResponder: () => enabledRef.current && !isAnimatingRef.current,
       onMoveShouldSetPanResponder: (_, g) => enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
 
@@ -216,6 +212,8 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
             post={card.post}
             scale={1}
             cardWidth={defaultCardWidth}
+            // Pass pan handlers to PostCard so it can apply them to swipeable zones
+            swipeHandlers={isFirst && enabled ? panResponder.panHandlers : undefined}
           />
         )}
       </Animated.View>
@@ -223,10 +221,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   };
 
   return (
-    <View 
-      style={styles.deckContainer} 
-      {...(enabled ? panResponder.panHandlers : {})}
-    >
+    <View style={styles.deckContainer}>
       {/* Render all cards, but only visible ones will be seen */}
       {renderCard(visibleIndices.third)}
       {renderCard(visibleIndices.second)}

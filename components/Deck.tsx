@@ -69,13 +69,17 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
     third: 2,
   });
 
+  // Use a ref to track the current visible indices immediately
+  const visibleIndicesRef = useRef(visibleIndices);
+  visibleIndicesRef.current = visibleIndices;
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderMove: (_, gesture) => {
-        cardAnimations[visibleIndices.first].swipeX.setValue(gesture.dx);
+        cardAnimations[visibleIndicesRef.current.first].swipeX.setValue(gesture.dx);
       },
 
       onPanResponderRelease: (_, gesture) => {
@@ -91,15 +95,24 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   ).current;
 
   const swipeOut = (direction: number) => {
-    const firstIndex = visibleIndices.first;
-    const secondIndex = visibleIndices.second;
-    const thirdIndex = visibleIndices.third;
+    const firstIndex = visibleIndicesRef.current.first;
+    const secondIndex = visibleIndicesRef.current.second;
+    const thirdIndex = visibleIndicesRef.current.third;
     
     // Calculate next card index (wrap around)
     const nextIndex = (thirdIndex + 1) % cards.length;
 
+    // Update visible indices immediately
+    const newIndices = {
+      first: secondIndex,
+      second: thirdIndex,
+      third: nextIndex,
+    };
+    setVisibleIndices(newIndices);
+    visibleIndicesRef.current = newIndices;
+
     Animated.parallel([
-      // Swipe out the first card
+      // Swipe out the old first card
       Animated.timing(cardAnimations[firstIndex].swipeX, {
         toValue: direction * screenWidth,
         duration: 250,
@@ -124,28 +137,21 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Update visible indices first
-      setVisibleIndices({
-        first: secondIndex,
-        second: thirdIndex,
-        third: nextIndex,
-      });
-      
-      // Reset the swipeX for the new front card (which is secondIndex)
+      // Reset the swipeX for the new front card (which is now secondIndex)
       cardAnimations[secondIndex].swipeX.setValue(0);
     });
   };
 
   const resetPosition = () => {
-    Animated.spring(cardAnimations[visibleIndices.first].swipeX, {
+    Animated.spring(cardAnimations[visibleIndicesRef.current.first].swipeX, {
       toValue: 0,
       useNativeDriver: true,
       friction: 5,
     }).start();
   };
 
-  // rotation while dragging
-  const rotate = cardAnimations[visibleIndices.first].swipeX.interpolate({
+  // rotation while dragging - use ref for current first card
+  const rotate = cardAnimations[visibleIndicesRef.current.first].swipeX.interpolate({
     inputRange: [-screenWidth, 0, screenWidth],
     outputRange: ['-10deg', '0deg', '10deg'],
   });

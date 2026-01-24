@@ -35,9 +35,24 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   const scaledHeight = cardHeight * 0.85;
   const offset = 6;
 
-  const positionX = useRef(new Animated.Value(0)).current; // x only
-  const secondCardAnim = useRef(new Animated.ValueXY({ x: -14, y: -24 })).current;
-  const thirdCardAnim = useRef(new Animated.ValueXY({ x: -22, y: -32 })).current;
+  // Card position definitions
+  const POSITIONS = {
+    first: { x: -5, y: -15 },
+    second: { x: -14, y: -24 },
+    third: { x: -22, y: -32 },
+  };
+
+  // Track which card is in which position
+  const [cardIndices, setCardIndices] = useState({
+    first: 0,
+    second: 1,
+    third: 2,
+  });
+
+  // Animated values for each card slot
+  const firstCardX = useRef(new Animated.Value(0)).current;
+  const secondCardAnim = useRef(new Animated.ValueXY(POSITIONS.second)).current;
+  const thirdCardAnim = useRef(new Animated.ValueXY(POSITIONS.third)).current;
   
   const SWIPE_THRESHOLD = screenWidth * 0.25;
 
@@ -52,7 +67,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy),
 
       onPanResponderMove: (_, gesture) => {
-        positionX.setValue(gesture.dx); // only horizontal
+        firstCardX.setValue(gesture.dx); // only horizontal
       },
 
       onPanResponderRelease: (_, gesture) => {
@@ -68,42 +83,52 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   ).current;
 
   const swipeOut = (direction: number) => {
-    // Animate all three cards simultaneously
+    // Animate all cards
     Animated.parallel([
-      // Swipe out the front card
-      Animated.timing(positionX, {
+      // Swipe out the first card
+      Animated.timing(firstCardX, {
         toValue: direction * screenWidth,
         duration: 250,
         useNativeDriver: true,
       }),
-      // Move second card to front position
+      // Move second card to first position
       Animated.timing(secondCardAnim, {
-        toValue: { x: -5, y: -15 },
+        toValue: POSITIONS.first,
         duration: 250,
         useNativeDriver: true,
       }),
       // Move third card to second position
       Animated.timing(thirdCardAnim, {
-        toValue: { x: -14, y: -24 },
+        toValue: POSITIONS.second,
         duration: 250,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // After animation completes, update the cards array
+      // Cycle the cards array - move first card to end
       setCards((prev) => {
         const [first, ...rest] = prev;
         return [...rest, first];
       });
       
-      // Reset animations for next swipe
-      positionX.setValue(0);
-      secondCardAnim.setValue({ x: -14, y: -24 });
-      thirdCardAnim.setValue({ x: -22, y: -32 });
+      // Update card indices - rotate positions
+      setCardIndices((prev) => ({
+        first: prev.second,
+        second: prev.third,
+        third: (prev.first + 3) % cards.length, // Next card in sequence
+      }));
+
+      // Reset first card position for next swipe
+      firstCardX.setValue(0);
+      
+      // Reset second and third to their starting positions
+      // (they'll now hold different cards)
+      secondCardAnim.setValue(POSITIONS.second);
+      thirdCardAnim.setValue(POSITIONS.third);
     });
   };
 
   const resetPosition = () => {
-    Animated.spring(positionX, {
+    Animated.spring(firstCardX, {
       toValue: 0,
       useNativeDriver: true,
       friction: 5,
@@ -111,28 +136,14 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
   };
 
   // rotation while dragging
-  const rotate = positionX.interpolate({
+  const rotate = firstCardX.interpolate({
     inputRange: [-screenWidth, 0, screenWidth],
     outputRange: ['-10deg', '0deg', '10deg'],
   });
 
   return (
     <View style={styles.deckContainer} {...panResponder.panHandlers}>
-      {/* Backing cards */}
-      
-      {/* <View
-        style={[
-          styles.backingCard,
-          {
-            width: scaledWidth,
-            height: scaledHeight,
-            bottom: offset,
-            right: offset,
-          },
-        ]}
-      /> */}
-
-      {/* back card (third in stack) */}
+      {/* back card (third position) */}
       <Animated.View
         style={[
           styles.frontCard,
@@ -145,18 +156,18 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
           },
         ]}
       >
-        {cards[2].type === 'user' ? (
+        {cards[cardIndices.third]?.type === 'user' ? (
           <UserCard scale={0.85} cardWidth={finalCardWidth} />
         ) : (
           <PostCard
-            post={cards[2].post}
+            post={cards[cardIndices.third]?.post}
             scale={0.85}
             cardWidth={finalCardWidth}
           />
         )}
       </Animated.View>
 
-      {/* middle card (second in stack) */}
+      {/* middle card (second position) */}
       <Animated.View
         style={[
           styles.frontCard,
@@ -169,37 +180,36 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth }) => {
           },
         ]}
       >
-        {cards[1].type === 'user' ? (
+        {cards[cardIndices.second]?.type === 'user' ? (
           <UserCard scale={0.85} cardWidth={finalCardWidth} />
         ) : (
           <PostCard
-            post={cards[1].post}
+            post={cards[cardIndices.second]?.post}
             scale={0.85}
             cardWidth={finalCardWidth}
           />
         )}
       </Animated.View>
 
-
-      {/* Front card */}
+      {/* Front card (first position) */}
       <Animated.View
         style={[
           styles.frontCard,
           {
             transform: [
-              { translateX: positionX },
-              { translateY: -15 },
+              { translateX: firstCardX },
+              { translateY: POSITIONS.first.y },
               { rotate }
             ],
-            right: -5,
+            right: POSITIONS.first.x,
           },
         ]}
       >
-        {cards[0].type === 'user' ? (
+        {cards[cardIndices.first]?.type === 'user' ? (
           <UserCard scale={0.85} cardWidth={finalCardWidth} />
         ) : (
           <PostCard
-            post={cards[0].post}
+            post={cards[cardIndices.first]?.post}
             scale={0.85}
             cardWidth={finalCardWidth}
           />

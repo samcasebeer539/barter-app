@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Anima
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
-import PostCard from '@/components/PostCard';
+import Deck from '@/components/Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const { width } = Dimensions.get('window');
@@ -23,21 +23,63 @@ const BARTER_ITEMS = [
   { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/450', type: 'good', height: 225 },
 ];
 
-// Sample post data for the modal
-const SAMPLE_POST = {
-  type: 'service' as const,
-  name: 'Bike Repair service',
-  description: 'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
-  photos: [
-    'https://picsum.photos/seed/landscape1/800/400',
-    'https://picsum.photos/seed/portrait1/400/600',
-    'https://picsum.photos/seed/square1/500/500',
-  ],
-};
+// Sample posts for the deck
+const DECK_POSTS = [
+  {
+    type: 'service' as const,
+    name: 'Bike Repair Service',
+    description: 'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+    photos: [
+      'https://picsum.photos/seed/landscape1/800/400',
+      'https://picsum.photos/seed/portrait1/400/600',
+      'https://picsum.photos/seed/square1/500/500',
+    ],
+  },
+  {
+    type: 'good' as const,
+    name: 'Vintage Camera Collection',
+    description: 'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition, includes lenses and cases.',
+    photos: [
+      'https://picsum.photos/seed/camera1/600/400',
+      'https://picsum.photos/seed/camera2/500/700',
+      'https://picsum.photos/seed/camera3/600/600',
+    ],
+  },
+  {
+    type: 'service' as const,
+    name: 'Guitar Lessons',
+    description: 'Experienced guitar teacher offering beginner to intermediate lessons. All ages welcome!',
+    photos: [
+      'https://picsum.photos/seed/guitar1/700/500',
+      'https://picsum.photos/seed/guitar2/400/600',
+      'https://picsum.photos/seed/guitar3/500/500',
+    ],
+  },
+  {
+    type: 'good' as const,
+    name: 'Handmade Pottery Set',
+    description: 'Beautiful hand-thrown ceramic bowls, plates, and mugs. Food-safe glazes in earthy tones.',
+    photos: [
+      'https://picsum.photos/seed/pottery1/600/400',
+      'https://picsum.photos/seed/pottery2/500/700',
+      'https://picsum.photos/seed/pottery3/600/600',
+    ],
+  },
+  {
+    type: 'service' as const,
+    name: 'Professional Photography',
+    description: 'Portrait and event photography services. 10+ years experience with professional equipment.',
+    photos: [
+      'https://picsum.photos/seed/photo1/700/500',
+      'https://picsum.photos/seed/photo2/400/600',
+      'https://picsum.photos/seed/photo3/500/500',
+    ],
+  },
+];
 
 export default function FeedScreen() {
   const [showHeader, setShowHeader] = useState(true);
-  const [selectedPost, setSelectedPost] = useState<typeof SAMPLE_POST | null>(null);
+  const [showDeck, setShowDeck] = useState(false);
   const scrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -69,25 +111,21 @@ export default function FeedScreen() {
   };
 
   const handleCardPress = () => {
-    setSelectedPost(SAMPLE_POST);
+    setShowDeck(true);
   };
 
   const handleCloseModal = () => {
-    setSelectedPost(null);
+    setShowDeck(false);
   };
-
-  
 
   const handleOffer = () => {
     console.log('Offer button pressed');
     // Add your offer logic here
-    
   };
 
-  const [showSaved, setShowSaved] = useState(false);  //use state: is this in user's saved posts?
+  const [showSaved, setShowSaved] = useState(false);
   const handleSave = () => {
     console.log('Save button', showSaved);
-    // Add your offer logic here
     setShowSaved(prev => !prev);
   };
 
@@ -147,8 +185,8 @@ export default function FeedScreen() {
         </View>
       </ScrollView>
 
-      {/* Overlay for PostCard - renders below tab bar */}
-      {selectedPost && (
+      {/* Overlay for Deck - renders below tab bar */}
+      {showDeck && (
         <View style={styles.modalOverlay} pointerEvents="box-none">
           <TouchableOpacity 
             style={styles.modalBackground} 
@@ -163,11 +201,11 @@ export default function FeedScreen() {
               <MaterialIcons name="close" size={28} color="#fff" />
             </TouchableOpacity>
 
-            <View pointerEvents="auto" style={styles.cardContainer}>
-              <PostCard 
-                post={selectedPost}
-                scale={1}
+            <View pointerEvents="auto" style={styles.deckContainer}>
+              <Deck 
+                posts={DECK_POSTS}
                 cardWidth={Math.min(width - 40, 400)}
+                enabled={true}
               />
             </View>
 
@@ -181,14 +219,13 @@ export default function FeedScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Save button 1 */}
+            {/* Save button */}
             <View style={styles.saveButtonContainer} pointerEvents="auto">
               <TouchableOpacity 
                 style={styles.saveButton}
                 onPress={handleSave}
               >
                 <Icon name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={30} color='#FFFFFF' />
-
               </TouchableOpacity>
             </View>
             
@@ -283,7 +320,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
   },
-  cardContainer: {
+  deckContainer: {
     alignItems: 'center',
   },
   closeButton: {
@@ -333,7 +370,6 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   saveButton: {
-    
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderRadius: 8,

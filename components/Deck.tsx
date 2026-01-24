@@ -83,8 +83,16 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
 
   const panResponder = useRef(
     PanResponder.create({
+      // Don't capture on start - allow child ScrollViews to claim gestures
+      onStartShouldSetPanResponderCapture: () => false,
       onStartShouldSetPanResponder: () => enabledRef.current && !isAnimatingRef.current,
-      onMoveShouldSetPanResponder: (_, g) => enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
+      onMoveShouldSetPanResponder: (_, g) => {
+        // Only claim horizontal gestures that are clearly horizontal (not diagonal)
+        // and only if enabled and not animating
+        const isHorizontal = Math.abs(g.dx) > Math.abs(g.dy) * 1.5; // Require 1.5x more horizontal movement
+        const hasSignificantMovement = Math.abs(g.dx) > 10; // Require at least 10px of movement
+        return enabledRef.current && !isAnimatingRef.current && isHorizontal && hasSignificantMovement;
+      },
 
       onPanResponderGrant: () => {
         if (!enabledRef.current) return;
@@ -206,12 +214,12 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard scale={1} cardWidth={defaultCardWidth} />
+          <UserCard scale={1} cardWidth={finalCardWidth} />
         ) : (
           <PostCard
             post={card.post}
             scale={1}
-            cardWidth={defaultCardWidth}
+            cardWidth={finalCardWidth}
           />
         )}
       </Animated.View>

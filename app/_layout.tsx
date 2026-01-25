@@ -52,7 +52,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="trades"
+          name="activetradestest"
           options={{
             tabBarIcon: ({ color }) => (
               <FontAwesome6 name="arrow-right-arrow-left" size={28} color={color} />
@@ -68,7 +68,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="barter"
+          name="trades"
           options={{
             href: null, // Hide from tab bar - accessed from trades page
           }}
@@ -82,17 +82,13 @@ export default function RootLayout() {
         <Tabs.Screen
           name="decktest"
           options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="layer-group" size={24} color={color} />
-            ), // Hide from tab bar completely
+            href: null,
           }}
         />
         <Tabs.Screen
-          name="activetradestest"
+          name="barter"
           options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="layer-group" size={24} color={color} />
-            ), // Hide from tab bar completely
+              href: null,
           }}
         />
       </Tabs>

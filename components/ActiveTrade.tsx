@@ -65,7 +65,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         setIsExpanded(false); // Auto-collapse when playing
         // Slide header to top
         Animated.spring(headerPosition, {
-          toValue: -40, // Move header up (adjust based on your layout)
+          toValue: -50, // Move header up (adjust based on your layout)
           useNativeDriver: true,
           damping: 20,
           stiffness: 100,
@@ -74,7 +74,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         // Slide content so cards bottom is at screen center
         // Adjust this value based on your card heights and layout
         Animated.spring(contentPosition, {
-          toValue: -(SCREEN_HEIGHT / 2 - 400), // Position cards at center
+          toValue: -(SCREEN_HEIGHT / 2 - 380), // Position cards at center
           useNativeDriver: true,
           damping: 20,
           stiffness: 100,
@@ -106,7 +106,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 
     const getArrowForTurn = (turn: TradeTurn) => {
       const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
-      return sentTypes.includes(turn.type) ? 'arrow-left' : 'arrow-right';
+      return sentTypes.includes(turn.type) ? 'arrow-left-long' : 'arrow-right-long';
     };
 
     const renderLine = (turn: TradeTurn, index: number) => {
@@ -132,7 +132,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         return (
         <>
           <View style={styles.turnRow}>
-            <FontAwesome6 name={arrowIcon} size={16} color="#E0E0E0" style={styles.arrow} />
+            <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
             <Text style={styles.tradeText}>
               {parts[0]}
               <Text style={action.style}>{action.text}</Text>
@@ -185,7 +185,8 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           onPress={() => setIsExpanded(!isExpanded)}
           activeOpacity={0.7}
         >
-          <Text style={styles.headerTitle}>Trade History</Text>
+          {/* pass text up, should say like Trade with {user} */}
+          <Text style={styles.headerTitle}>Trade with [user]</Text>  
           <MaterialIcons 
             name={isExpanded ? "expand-less" : "expand-more"} 
             size={28} 
@@ -293,8 +294,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
-    backgroundColor: '#1f1f1f',
+    marginTop: 20,
+    marginBottom: -160,
+    backgroundColor: '#121212',
   },
   containerPlaying: {
     position: 'absolute',
@@ -305,8 +307,9 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
 
-    backgroundColor: '#1f1f1f',
-    marginTop: 20,
+    backgroundColor: '#121212',
+    marginTop: 10,
+    marginBottom: -10,
     zIndex: 20,
     elevation: 20, // For Android
   },
@@ -334,10 +337,10 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   scrollContent: {
-    padding: 0,
+    padding: 12,
   },
   tradeSection: {
-    gap: 8,
+    gap: 2,
   },
   turnRow: {
     flexDirection: 'row',

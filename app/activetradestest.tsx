@@ -1,6 +1,10 @@
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
+import { useFocusEffect } from '@react-navigation/native';
+import CardWheel from '../components/CardWheel';
+
+
 
 const POSTS = [
   {
@@ -49,9 +53,6 @@ const trade2Turns: TradeTurn[] = [
   { type: 'sentOffer', item: 'Guitar Lessons' },
   { type: 'receivedTrade', user: 'Sarah', item: 'Bike Repair' },
   { type: 'youAccepted' },
-  { type: 'sentOffer', item: 'Guitar Lessons' },
-  { type: 'receivedTrade', user: 'Sarah', item: 'Bike Repair' },
-  { type: 'youAccepted' },
 ];
 
 const trade3Turns: TradeTurn[] = [
@@ -81,8 +82,37 @@ const activeTrades = [
   },
 ];
 
+const sampleCards = [
+    {
+      title: 'Accept',
+      photo: require('@/assets/barter-cards/accept.png'),
+    },
+    {
+      title: 'Decline',
+      photo: require('@/assets/barter-cards/decline.png'),
+    },
+    {
+      title: 'Counter',
+      photo: require('@/assets/barter-cards/counter.png'),
+    },
+    {
+      title: 'Query',
+      photo: require('@/assets/barter-cards/query.png'),
+    },
+];
+
+
+
 export default function ActiveTradesTestScreen() {
   const [playingTradeId, setPlayingTradeId] = useState<number | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+
+   // Reset CardWheel whenever this screen comes into focus
+    useFocusEffect(
+      useCallback(() => {
+        setResetKey(prev => prev + 1);
+      }, [])
+    );
 
   return (
     <View style={styles.container}>
@@ -103,56 +133,68 @@ export default function ActiveTradesTestScreen() {
 
             />
           ))}
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       ) : (
-        <ActiveTrade 
-          playercards={activeTrades.find(t => t.id === playingTradeId)!.playercards} 
-          partnercards={activeTrades.find(t => t.id === playingTradeId)!.partnercards} 
-          turns={activeTrades.find(t => t.id === playingTradeId)!.turns} 
-          isPlaying={true}
-          onPlayPress={() => setPlayingTradeId(null)}  // Just set to null
-          onPlayCardPress={() => setPlayingTradeId(null)}
-        />
+        <View style={{ flex: 1 }}>
+            
+            <View style={{ flex: 1 }}>
+                <ActiveTrade 
+                    playercards={activeTrades.find(t => t.id === playingTradeId)!.playercards} 
+                    partnercards={activeTrades.find(t => t.id === playingTradeId)!.partnercards} 
+                    turns={activeTrades.find(t => t.id === playingTradeId)!.turns} 
+                    isPlaying={true}
+                    onPlayPress={() => setPlayingTradeId(null)}  // Just set to null
+                    onPlayCardPress={() => setPlayingTradeId(null)}
+                />
+            </View>
+
+            {/* Card Wheel */}
+            <View style={styles.cardWheelContainer}>
+                <CardWheel cards={sampleCards} resetKey={resetKey} />
+            </View>
+        </View>
       )}
 
-      {/* Test button to toggle back */}
-      {playingTradeId !== null && (
-        <TouchableOpacity 
-          style={styles.toggleButton}
-          onPress={() => setPlayingTradeId(null)}
-        >
-          <Text style={styles.buttonText}>Stop Playing</Text>
-        </TouchableOpacity>
-      )}
+      
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#141414',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    marginTop: 20,
-    marginBottom: 50,
-    paddingHorizontal: 0,
-  },
-  toggleButton: {
-    position: 'absolute',
-    bottom: 80,
-    alignSelf: 'center',
-    backgroundColor: '#e99700',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#121212',
+    },
+    scrollView: {
+        flex: 1,
+        
+    },
+    contentContainer: {
+        marginTop: 20,
+        marginBottom: 50,
+        
+    },
+    toggleButton: {
+        position: 'absolute',
+        bottom: 80,
+        alignSelf: 'center',
+        backgroundColor: '#e99700',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    cardWheelContainer: {
+        alignItems: 'center',
+        top: 676,
+        zIndex: 20
+    },
+    bottomSpacer: {
+        height: 100,
+    },
 });

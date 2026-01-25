@@ -3,7 +3,9 @@ import { useCallback, useState } from 'react';
 import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import CardWheel from '../components/CardWheel';
-
+import { LinearGradient } from 'expo-linear-gradient';
+import { Animated, Dimensions } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 
 const POSTS = [
@@ -107,6 +109,26 @@ export default function ActiveTradesTestScreen() {
   const [playingTradeId, setPlayingTradeId] = useState<number | null>(null);
   const [resetKey, setResetKey] = useState(0);
 
+  const screenWidth = Dimensions.get('window').width;
+
+    // const wheelTranslateX = useRef(new Animated.Value(screenWidth)).current;
+    const wheelRotate = useRef(new Animated.Value(1)).current;
+    useEffect(() => {
+        if (playingTradeId !== null) {
+            
+            wheelRotate.setValue(1);
+            
+            
+            Animated.spring(wheelRotate, {
+                toValue: 0,
+                useNativeDriver: true,
+                damping: 18,
+                stiffness: 130,
+            }).start();
+        }
+    }, [playingTradeId]);
+
+
    // Reset CardWheel whenever this screen comes into focus
     useFocusEffect(
       useCallback(() => {
@@ -148,11 +170,33 @@ export default function ActiveTradesTestScreen() {
                     onPlayCardPress={() => setPlayingTradeId(null)}
                 />
             </View>
-
+            
             {/* Card Wheel */}
             <View style={styles.cardWheelContainer}>
-                <CardWheel cards={sampleCards} resetKey={resetKey} />
+                <Animated.View
+                    style={{
+                        transform: [
+                            
+                            {
+                            rotate: wheelRotate.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '30deg'],
+                            }),
+                            },
+                        ],
+                    }}
+                >
+                    <CardWheel cards={sampleCards} resetKey={resetKey} />
+                </Animated.View>
             </View>
+
+            <LinearGradient
+                colors={['rgba(12, 12, 12, 0)', 'rgba(12, 12, 12, 0.9)', '#121212']}
+                locations={[0, 0.5, 1]}
+                style={styles.cardWheelGradient}
+                pointerEvents="none"
+            />
+
         </View>
       )}
 
@@ -190,10 +234,21 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     cardWheelContainer: {
+        position: 'absolute',
         alignItems: 'center',
         top: 676,
+        right: 0,
+        left: 0,
         zIndex: 20
     },
+    
+
+    cardWheelGradient: {
+
+        height: 400,
+        zIndex: 15
+    },
+
     bottomSpacer: {
         height: 100,
     },

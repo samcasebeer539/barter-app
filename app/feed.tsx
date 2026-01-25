@@ -3,7 +3,7 @@
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Deck from '@/components/Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -88,6 +88,9 @@ export default function FeedScreen() {
   const leftColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 0);
   const rightColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 1);
 
+  //for deck animation
+  const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
+
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
@@ -116,8 +119,27 @@ export default function FeedScreen() {
     setShowDeck(true);
   };
 
+  useEffect(() => {
+  if (showDeck) {
+    deckTranslateY.setValue(-Dimensions.get('window').height);
+
+    Animated.spring(deckTranslateY, {
+      toValue: 40,
+      useNativeDriver: true,
+      damping: 22,
+      stiffness: 180,
+    }).start();
+  }
+}, [showDeck]);
+
   const handleCloseModal = () => {
-    setShowDeck(false);
+    Animated.timing(deckTranslateY, {
+      toValue: -Dimensions.get('window').height,
+      duration: 150,  // fast
+      useNativeDriver: true,
+    }).start(() => {
+      setShowDeck(false);
+    });
   };
 
   const handleOffer = () => {
@@ -204,13 +226,21 @@ export default function FeedScreen() {
               <FontAwesome6 name="angle-left" size={28} color="#fff" />
             </TouchableOpacity>
 
-            <View pointerEvents="auto" style={styles.deckContainer}>
+            <Animated.View
+              pointerEvents="auto"
+              style={[
+                styles.animatedDeck,
+                {
+                  transform: [{ translateY: deckTranslateY }],
+                },
+              ]}
+            >
               <Deck 
                 posts={DECK_POSTS}
                 cardWidth={Math.min(width - 40, 400)}
                 enabled={true}
               />
-            </View>
+            </Animated.View>
 
             {/* Offer button */}
             <View style={styles.buttonContainer} pointerEvents="auto">
@@ -304,9 +334,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 15,
+    justifyContent: 'flex-end',
+    zIndex: 20,
   },
   modalBackground: {
     position: 'absolute',
@@ -322,11 +351,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingHorizontal: 20,
     alignItems: 'center',
+    bottom: 400,
   },
   deckContainer: {
     alignItems: 'center',
-    top: -10,
-    right: 13,
   },
   closeButton: {
     position: 'absolute',
@@ -390,4 +418,12 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+    animatedDeck: {
+    position: 'absolute',
+    bottom: 120,      // leaves room for buttons
+    left: 0,
+    right: 26,
+    alignItems: 'center',
+  }
+
 });

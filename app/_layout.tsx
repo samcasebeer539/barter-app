@@ -87,6 +87,14 @@ export default function RootLayout() {
             ), // Hide from tab bar completely
           }}
         />
+        <Tabs.Screen
+          name="activetradestest"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <FontAwesome6 name="layer-group" size={24} color={color} />
+            ), // Hide from tab bar completely
+          }}
+        />
       </Tabs>
     </SafeAreaProvider>
   );

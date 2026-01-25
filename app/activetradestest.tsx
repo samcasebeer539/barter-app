@@ -87,19 +87,19 @@ const activeTrades = [
 const sampleCards = [
     {
       title: 'Accept',
-      photo: require('@/assets/barter-cards/accept.png'),
+      photo: require('@/assets/barter-cards/accept1.png'),
     },
     {
       title: 'Decline',
-      photo: require('@/assets/barter-cards/decline.png'),
+      photo: require('@/assets/barter-cards/decline1.png'),
     },
     {
       title: 'Counter',
-      photo: require('@/assets/barter-cards/counter.png'),
+      photo: require('@/assets/barter-cards/counter1.png'),
     },
     {
       title: 'Query',
-      photo: require('@/assets/barter-cards/query.png'),
+      photo: require('@/assets/barter-cards/query1.png'),
     },
 ];
 

@@ -126,8 +126,8 @@ export default function FeedScreen() {
     Animated.spring(deckTranslateY, {
       toValue: 40,
       useNativeDriver: true,
-      damping: 22,
-      stiffness: 180,
+      damping: 23,
+      stiffness: 200,
     }).start();
   }
 }, [showDeck]);

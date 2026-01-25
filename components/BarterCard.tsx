@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     height: 280,
     backgroundColor: '#fff',
     borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#e0e0e0',
     overflow: 'hidden',
   },

@@ -1,6 +1,7 @@
 //note: is there a way to scale cards width
 //  through deck instead of scaling down whole deck?
 
+//add button over deck peek
 
 import React, { useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from 'react-native';
@@ -118,6 +119,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     console.log('Trade button pressed');
     // Add your trade logic here
   };
+
   const handlePlusPress = () => {
     console.log('Plus button pressed');
     // Add your trade logic here
@@ -225,7 +227,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                 onPress={handlePlusPress}
                 activeOpacity={0.7}
               >
-                <FontAwesome6 name="plus" size={14} color='#FFFFFF' />
+                <FontAwesome6 name="plus" size={24} color='#FFFFFF' />
               </TouchableOpacity>
             </Animated.View>
 
@@ -246,7 +248,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
                 onPress={handleMinusPress}
                 activeOpacity={0.7}
               >
-                <FontAwesome6 name="minus" size={14} color='#FFFFFF' />
+                <FontAwesome6 name="minus" size={24} color='#FFFFFF' />
               </TouchableOpacity>
             </Animated.View>
           </Animated.View>
@@ -323,7 +325,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '85%',
     alignItems: 'flex-start',
-    marginLeft: 56,
+    marginTop: 6,
+    marginLeft: 32,
     zIndex: 4,
   },
   plusButton: {
@@ -331,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#292929',
     paddingVertical: 6,
     paddingHorizontal: 8,
-    borderRadius: 8,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -347,7 +350,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '85%',
     alignItems: 'flex-end',
-    marginRight: 56,
+    marginTop: 6,
+    marginRight: 32,
     zIndex: 4,
   },
   minusButton: {
@@ -355,7 +359,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#292929',
     paddingVertical: 6,
     paddingHorizontal: 8,
-    borderRadius: 8,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

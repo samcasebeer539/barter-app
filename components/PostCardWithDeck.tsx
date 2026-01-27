@@ -26,7 +26,7 @@ interface PostCardWithDeckProps {
   cardWidth?: number;
   scale?: number;
   onRevealChange?: (revealed: boolean) => void; 
-  revealProgress?: Animated.Value; // Shared animated value from parent
+  revealProgress?: Animated.Value; // Shared animated value from parent, not necessary?
   deckRevealed?: boolean; // Whether the deck is currently revealed
 }
 
@@ -138,10 +138,10 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Move deck upward
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -540],
+    outputRange: [0, -500],
   }) || 0;
 
-  // Animate TRADE button opacity
+  // Animate TRADE button opacity - get rid of
   const tradeButtonOpacity = revealProgress?.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [0, 0, 1],
@@ -150,7 +150,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Animate button vertical position
   const buttonTranslateY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, (cardHeight * 1.4 * 0.87) - (cardHeight * 0.87)],
+    outputRange: [0, (cardHeight * 1.4 * 0.85) - (cardHeight * 0.86)],
   }) || 0;
 
   // Static button top position (based on small size)

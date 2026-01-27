@@ -29,6 +29,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const titleScrollX = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
+
+  const isGood = post.type === 'good';
+  const borderColor = isGood ? '#FFA600' : '#FF3B81';
+
+
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(post.type === 'service' ? 250 : 100)).current;
   const photoMode4Lines = 100;
@@ -130,11 +135,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
     if (index >= 0 && index < post.photos.length) setCurrentPhotoIndex(index);
   };
 
+  
+
   return (
     <Animated.View
-      style={[styles.container, { transform: [{ scale }] }]} // apply scale here safely
+      style={[styles.container, { transform: [{ scale }] }]} 
     >
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+      <View style={[styles.card, { width: finalCardWidth, height: cardHeight, borderColor: borderColor }]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
@@ -206,22 +213,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                           style={styles.gradientBottom}
                           pointerEvents="none"
                         />
-                        {/* Left gradient */}
-                        <LinearGradient
-                          colors={['rgba(0,0,0,0.1)', 'transparent']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                          style={styles.gradientLeft}
-                          pointerEvents="none"
-                        />
-                        {/* Right gradient */}
-                        <LinearGradient
-                          colors={['transparent', 'rgba(0,0,0,0.1)']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                          style={styles.gradientRight}
-                          pointerEvents="none"
-                        />
+                        
+                    
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -270,23 +263,25 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
+    borderWidth: 3,
     borderRadius: 8,
+    borderColor: '#f39406',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.0,
     shadowRadius: 40,
     elevation: 10,
     position: 'relative',
   },
   header: {
-    padding: 16,
+    padding: 14,
     paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
   },
-  iconContainer: { flexShrink: 0, paddingBottom: 10 },
+  iconContainer: { flexShrink: 0, paddingBottom: 12 },
   titleContainer: { 
     flex: 1,
     overflow: 'hidden',
@@ -300,7 +295,7 @@ const styles = StyleSheet.create({
     lineHeight: 24, 
     color: '#000',
   },
-  photoSectionWrapper: { position: 'absolute', top: 60, left: 16, right: 16 },
+  photoSectionWrapper: { position: 'absolute', top: 60, left: 13, right: 13 },
   photoSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { alignItems: 'center' },
   photoContainer: { justifyContent: 'center', alignItems: 'center', height: '100%' },

@@ -1,6 +1,6 @@
 //will contain text turn lines, two stacks of cards with plus and minus buttons, play button, action button
 //header should collapse the whole section when not in play mode (pass boolean)
-
+//put timer in header
 
 import {
   View,
@@ -267,16 +267,18 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         onPress={onPlayPress}
                         //disabled={!isPlayerTurn || isPlaying}
                     >
+                     
                         <Text style={styles.playButtonText}>
-                        {isPlayerTurn ? 'YOUR TURN' : 'WAITING'}
+                        {isPlayerTurn ? 'PLAY' : 'WAITING'}
                         </Text>
                     </TouchableOpacity>
 
+                    {/* this goes in with cardwheel */}
                     {/* play card Button - visible in both states */}
                     <TouchableOpacity 
                         style={[styles.playCardButton, !isPlayerTurn && styles.playButtonDisabled]}
                         onPress={onPlayCardPress}
-                        //disabled={!isPlayerTurn || isPlaying}
+                        disabled={!isPlayerTurn || isPlaying}
                     >
                         <Text style={styles.playButtonText}>
                         {isPlayerTurn ? 'PLAY CARD' : 'PLAY CARD'}
@@ -340,13 +342,13 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   tradeSection: {
-    gap: 2,
+    gap: -4,
   },
   turnRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
-    marginBottom: 4,
+    marginBottom: 0,
   },
   arrow: {
     marginTop: 4,
@@ -355,7 +357,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#E0E0E0',
-    lineHeight: 24,
+    lineHeight: 22,
   },
   questionButtonContainer: {
     alignItems: 'flex-start',
@@ -400,7 +402,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   arrowsAndCards: {
-    marginTop: -60,
+    marginTop: -62,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
@@ -432,9 +434,10 @@ const styles = StyleSheet.create({
   },
   playButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 10,
+    paddingHorizontal: 16,
+    width: "100%",
+    gap: 12,
     top: -144
   },
 

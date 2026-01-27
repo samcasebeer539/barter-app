@@ -262,10 +262,6 @@ const styles = StyleSheet.create({
   frontCard: {
   position: 'absolute',
   zIndex: 10,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 6 },
-  shadowOpacity: 0.2,
-  shadowRadius: 10,
   elevation: 8, // Android shadow
 },
 });

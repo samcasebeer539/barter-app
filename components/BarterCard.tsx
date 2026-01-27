@@ -1,3 +1,10 @@
+//card(s)
+//import here
+
+//pass in booleans to talk to active trade
+
+//need special animation values for some. 
+
 import React from 'react';
 import { View, Image, StyleSheet, ImageSourcePropType } from 'react-native';
 
@@ -29,7 +36,7 @@ const styles = StyleSheet.create({
     height: 280,
     backgroundColor: '#fff',
     borderRadius: 6,
-    borderWidth: 2,
+    borderWidth: 0,
     borderColor: '#e0e0e0',
     overflow: 'hidden',
   },

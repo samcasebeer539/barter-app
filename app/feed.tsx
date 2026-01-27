@@ -91,6 +91,7 @@ export default function FeedScreen() {
   //for deck animation
   const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
 
+
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 
 // Enable LayoutAnimation for Android
@@ -22,7 +22,7 @@ export const BARTER_CARDS = [
   {
     title: 'Counter',
     photo: require('@/assets/barter-cards/counter1.png'),
-    color: '#ff00bf', // Orange
+    color: '#ff00bf', // Magenta
   },
   {
     title: 'Query',
@@ -96,13 +96,13 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
                     style={[styles.counterButton, { backgroundColor: color }]}
                     onPress={handleDecrement}
                   >
-                    <Text style={styles.counterButtonText}>-</Text>
+                    <FontAwesome6 name="minus" size={16} color="#FFFFFF" />
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={[styles.counterButton, { backgroundColor: color }]}
                     onPress={handleIncrement}
                   >
-                    <Text style={styles.counterButtonText}>+</Text>
+                    <FontAwesome6 name="plus" size={16} color="#FFFFFF" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -174,11 +174,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  counterButtonText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
   },
   spacer: {
     flex: 1,

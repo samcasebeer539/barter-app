@@ -79,7 +79,12 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
     console.log(`${title}: Minus button pressed`);
   };
 
+  const handleWriteQuery = () => {
+    console.log(`${title}: Write query button pressed`);
+  };
+
   const isCounterCard = title === 'Counter';
+  const isQueryCard = title === 'Query';
 
   return (
     <View style={styles.outerContainer}>
@@ -103,6 +108,18 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
                     onPress={handleIncrement}
                   >
                     <FontAwesome6 name="plus" size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Query controls - only show for Query card */}
+              {isQueryCard && (
+                <View style={styles.queryControls}>
+                  <TouchableOpacity 
+                    style={[styles.queryButton, { backgroundColor: color }]}
+                    onPress={handleWriteQuery}
+                  >
+                    <FontAwesome6 name="pen-to-square" size={16} color="#FFFFFF" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -169,6 +186,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   counterButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  queryControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  queryButton: {
     width: 32,
     height: 32,
     borderRadius: 20,

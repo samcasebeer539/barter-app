@@ -15,6 +15,7 @@ interface CardWheelProps {
 
 const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayedTopIndex, setDisplayedTopIndex] = useState(0); // Delayed update for visual state
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
   const RADIUS = 900;
@@ -24,18 +25,23 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) =>
   // Reset wheel when resetKey changes
   useEffect(() => {
     setCurrentIndex(0);
+    setDisplayedTopIndex(0);
     rotationAnim.setValue(0);
   }, [resetKey]);
 
   const animateToIndex = (targetIndex: number) => {
     const targetRotation = -targetIndex * anglePerCard;
 
+    // Start the rotation animation
     Animated.spring(rotationAnim, {
       toValue: targetRotation,
       useNativeDriver: true,
       damping: 15,
       stiffness: 100,
-    }).start();
+    }).start(() => {
+      // After animation completes, update which card is considered "top"
+      setDisplayedTopIndex(targetIndex);
+    });
 
     setCurrentIndex(targetIndex);
   };
@@ -93,8 +99,8 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) =>
           // zIndex: top card highest
           const zIndex = displayIndex === 0 ? 100 : 100 - displayIndex;
           
-          // Calculate which card is currently at the top position (index 0)
-          const topCardIndex = currentIndex % cards.length;
+          // Use displayedTopIndex instead of currentIndex for determining top card
+          const topCardIndex = displayedTopIndex % cards.length;
           const isTopCard = displayIndex === topCardIndex;
 
           return (

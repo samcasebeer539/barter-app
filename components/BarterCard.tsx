@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, Animated, Platform, UIManager } from 'react-native';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -34,10 +34,16 @@ interface BarterCardProps {
 
 const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const headerHeight = useRef(new Animated.Value(0)).current;
 
   const handleCardPress = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
+    
+    Animated.timing(headerHeight, {
+      toValue: isExpanded ? 0 : 44,
+      duration: 250,
+      useNativeDriver: false,
+    }).start();
   };
 
   const handlePlayCard = () => {
@@ -52,8 +58,8 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
     <View style={styles.outerContainer}>
       {/* White container that wraps everything */}
       <View style={styles.whiteContainer}>
-        {/* Expandable Header - positioned absolutely so it doesn't push card down */}
-        {isExpanded && (
+        {/* Expandable Header - slides up smoothly */}
+        <Animated.View style={[styles.headerContainer, { height: headerHeight }]}>
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <TouchableOpacity 
@@ -64,7 +70,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
               </TouchableOpacity>
             </View>
           </View>
-        )}
+        </Animated.View>
 
         {/* Card Container - this stays in the same position */}
         <TouchableOpacity 
@@ -96,17 +102,21 @@ const styles = StyleSheet.create({
     overflow: 'visible',
     position: 'relative',
   },
-  header: {
+  headerContainer: {
+    overflow: 'hidden',
     position: 'absolute',
-    top: -44, // Position above the white container
+    top: -44,
     left: 0,
     right: 0,
+    zIndex: 10,
+  },
+  header: {
     backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    zIndex: 10,
+    height: 44,
   },
   headerContent: {
     flexDirection: 'row',

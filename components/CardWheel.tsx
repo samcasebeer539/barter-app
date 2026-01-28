@@ -5,6 +5,7 @@ import BarterCard from './BarterCard';
 interface CardData {
   title: string;
   photo: any;
+  color?: string;
 }
 
 interface CardWheelProps {
@@ -121,6 +122,7 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) =>
               <BarterCard 
                 title={card.title} 
                 photo={card.photo}
+                color={card.color}
                 onPlay={handleCardPlay}
                 isTopCard={isTopCard}
                 cardIndex={displayIndex}

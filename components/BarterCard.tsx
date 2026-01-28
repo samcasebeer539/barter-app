@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text } from 'react-native';
+import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, LayoutAnimation, Platform, UIManager } from 'react-native';
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Sample cards data - these are the 4 barter cards
 export const BARTER_CARDS = [
@@ -35,6 +40,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
   // Reset expansion when this card is no longer the top card
   useEffect(() => {
     if (!isTopCard && isExpanded) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setIsExpanded(false);
     }
   }, [isTopCard]);
@@ -45,6 +51,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
       return;
     }
     
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
   };
 

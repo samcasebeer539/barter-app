@@ -11,18 +11,22 @@ export const BARTER_CARDS = [
   {
     title: 'Accept',
     photo: require('@/assets/barter-cards/accept1.png'),
+    color: '#4CAF50', // Green
   },
   {
     title: 'Decline',
     photo: require('@/assets/barter-cards/decline1.png'),
+    color: '#F44336', // Red
   },
   {
     title: 'Counter',
     photo: require('@/assets/barter-cards/counter1.png'),
+    color: '#FF9800', // Orange
   },
   {
     title: 'Query',
     photo: require('@/assets/barter-cards/query1.png'),
+    color: '#9C27B0', // Purple
   },
 ];
 
@@ -32,10 +36,12 @@ interface BarterCardProps {
   onPlay?: (cardTitle: string) => void;
   isTopCard?: boolean;
   cardIndex?: number;
+  color?: string;
 }
 
-const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard = false, cardIndex = 0 }) => {
+const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard = false, cardIndex = 0, color = '#007AFF' }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [counterValue, setCounterValue] = useState(0);
 
   // Reset expansion when this card is no longer the top card
   useEffect(() => {
@@ -64,6 +70,16 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
     // Add your play card logic here
   };
 
+  const handleIncrement = () => {
+    setCounterValue(prev => prev + 1);
+  };
+
+  const handleDecrement = () => {
+    setCounterValue(prev => prev - 1);
+  };
+
+  const isCounterCard = title === 'Counter';
+
   return (
     <View style={styles.outerContainer}>
       {/* White container that wraps everything */}
@@ -72,8 +88,28 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
         {isExpanded && (
           <View style={styles.header}>
             <View style={styles.headerContent}>
+              {/* Counter controls - only show for Counter card */}
+              {isCounterCard && (
+                <View style={styles.counterControls}>
+                  <TouchableOpacity 
+                    style={[styles.counterButton, { backgroundColor: color }]}
+                    onPress={handleDecrement}
+                  >
+                    <Text style={styles.counterButtonText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{counterValue}</Text>
+                  <TouchableOpacity 
+                    style={[styles.counterButton, { backgroundColor: color }]}
+                    onPress={handleIncrement}
+                  >
+                    <Text style={styles.counterButtonText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              {/* Play Card button */}
               <TouchableOpacity 
-                style={styles.playButton}
+                style={[styles.playButton, { backgroundColor: color }]}
                 onPress={handlePlayCard}
               >
                 <Text style={styles.playButtonText}>Play Card</Text>
@@ -121,11 +157,35 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  counterControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  counterButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    justifyContent: 'center',
     alignItems: 'center',
   },
+  counterButtonText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  counterValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    minWidth: 24,
+    textAlign: 'center',
+  },
   playButton: {
-    backgroundColor: '#007AFF',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,

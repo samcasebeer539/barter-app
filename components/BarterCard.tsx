@@ -41,7 +41,6 @@ interface BarterCardProps {
 
 const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard = false, cardIndex = 0, color = '#007AFF' }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [counterValue, setCounterValue] = useState(0);
 
   // Reset expansion when this card is no longer the top card
   useEffect(() => {
@@ -71,11 +70,11 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
   };
 
   const handleIncrement = () => {
-    setCounterValue(prev => prev + 1);
+    console.log(`${title}: Plus button pressed`);
   };
 
   const handleDecrement = () => {
-    setCounterValue(prev => prev - 1);
+    console.log(`${title}: Minus button pressed`);
   };
 
   const isCounterCard = title === 'Counter';
@@ -97,7 +96,6 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
                   >
                     <Text style={styles.counterButtonText}>-</Text>
                   </TouchableOpacity>
-                  <Text style={styles.counterValue}>{counterValue}</Text>
                   <TouchableOpacity 
                     style={[styles.counterButton, { backgroundColor: color }]}
                     onPress={handleIncrement}
@@ -106,6 +104,9 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
                   </TouchableOpacity>
                 </View>
               )}
+              
+              {/* Spacer to push Play Card button to the right */}
+              <View style={styles.spacer} />
               
               {/* Play Card button */}
               <TouchableOpacity 
@@ -157,9 +158,8 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   counterControls: {
     flexDirection: 'row',
@@ -178,12 +178,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
   },
-  counterValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    minWidth: 24,
-    textAlign: 'center',
+  spacer: {
+    flex: 1,
   },
   playButton: {
     paddingVertical: 8,

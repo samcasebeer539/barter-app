@@ -1,13 +1,8 @@
-//feed gets down animation for deck
-
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
-import { useState, useRef, useEffect } from 'react';
-import Deck from '@/components/Deck';
-import Icon from 'react-native-vector-icons/FontAwesome';
-
-const { width } = Dimensions.get('window');
+import { FontAwesome6 } from '@expo/vector-icons';
+import { useState, useRef } from 'react';
+import FeedDeck from '@/components/FeedDeck';
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
@@ -88,9 +83,6 @@ export default function FeedScreen() {
   const leftColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 0);
   const rightColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 1);
 
-  //for deck animation
-  const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
-
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
@@ -119,38 +111,8 @@ export default function FeedScreen() {
     setShowDeck(true);
   };
 
-  useEffect(() => {
-  if (showDeck) {
-    deckTranslateY.setValue(-Dimensions.get('window').height);
-
-    Animated.spring(deckTranslateY, {
-      toValue: 40,
-      useNativeDriver: true,
-      damping: 23,
-      stiffness: 200,
-    }).start();
-  }
-}, [showDeck]);
-
-  const handleCloseModal = () => {
-    Animated.timing(deckTranslateY, {
-      toValue: -Dimensions.get('window').height,
-      duration: 150,  // fast
-      useNativeDriver: true,
-    }).start(() => {
-      setShowDeck(false);
-    });
-  };
-
-  const handleOffer = () => {
-    console.log('Offer button pressed');
-    // Add your offer logic here
-  };
-
-  const [showSaved, setShowSaved] = useState(false);
-  const handleSave = () => {
-    console.log('Save button', showSaved);
-    setShowSaved(prev => !prev);
+  const handleCloseDeck = () => {
+    setShowDeck(false);
   };
 
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
@@ -167,7 +129,6 @@ export default function FeedScreen() {
             size={20} 
             color={item.type === 'service' ? '#FFA600' : '#FF3B81'}
             style={styles.typeIcon}
-           
           />
         </View>
       </TouchableOpacity>
@@ -210,61 +171,12 @@ export default function FeedScreen() {
         </View>
       </ScrollView>
 
-      {/* Overlay for Deck - renders below tab bar */}
-      {showDeck && (
-        <View style={styles.modalOverlay} pointerEvents="box-none">
-          <TouchableOpacity 
-            style={styles.modalBackground} 
-            activeOpacity={1} 
-            onPress={handleCloseModal}
-          />
-          <View style={styles.modalContent} pointerEvents="box-none">
-            <TouchableOpacity 
-              style={styles.closeButton} 
-              onPress={handleCloseModal}
-            >
-              <FontAwesome6 name="angle-left" size={28} color="#fff" />
-            </TouchableOpacity>
-
-            <Animated.View
-              pointerEvents="auto"
-              style={[
-                styles.animatedDeck,
-                {
-                  transform: [{ translateY: deckTranslateY }],
-                },
-              ]}
-            >
-              <Deck 
-                posts={DECK_POSTS}
-                cardWidth={Math.min(width - 40, 400)}
-                enabled={true}
-              />
-            </Animated.View>
-
-            {/* Offer button */}
-            <View style={styles.buttonContainer} pointerEvents="auto">
-              <TouchableOpacity 
-                style={styles.offerButton}
-                onPress={handleOffer}
-              >
-                <Text style={styles.offerButtonText}>OFFER</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Save button */}
-            <View style={styles.saveButtonContainer} pointerEvents="auto">
-              <TouchableOpacity 
-                style={styles.saveButton}
-                onPress={handleSave}
-              >
-                <Icon name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={30} color='#FFFFFF' />
-              </TouchableOpacity>
-            </View>
-            
-          </View>
-        </View>
-      )}
+      {/* FeedDeck Component */}
+      <FeedDeck 
+        posts={DECK_POSTS}
+        visible={showDeck}
+        onClose={handleCloseDeck}
+      />
     </View>
   );
 }
@@ -328,102 +240,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginLeft: 4,
   },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'flex-end',
-    zIndex: 20,
-  },
-  modalBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(20, 20, 20, 0.85)',
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 400,
-    position: 'relative',
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    bottom: 400,
-  },
-  deckContainer: {
-    alignItems: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: -280,
-    left: 20,
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonContainer: {
-    alignItems: 'center',
-    marginTop: 16,
-    zIndex: 5,
-  },
-  offerButton: {
-    top: 260,
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  offerButtonText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  saveButtonContainer: {
-    alignItems: 'flex-end',
-    width: '100%',
-    marginTop: -54,
-    marginLeft: -82,
-    zIndex: 4,
-  },
-  saveButton: {
-    top: 260,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-    animatedDeck: {
-    position: 'absolute',
-    bottom: 120,      // leaves room for buttons
-    left: 0,
-    right: 26,
-    alignItems: 'center',
-  }
-
 });

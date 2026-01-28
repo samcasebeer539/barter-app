@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, Animated, Platform, UIManager } from 'react-native';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -30,12 +30,37 @@ interface BarterCardProps {
   title: string;
   photo: ImageSourcePropType;
   onPlay?: (cardTitle: string) => void;
+  isTopCard?: boolean;
+  cardIndex?: number;
 }
 
-const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
+const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard = false, cardIndex = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  const HEADER_HEIGHT = 44; // Approximate header height
+
+  // Reset expansion when this card is no longer the top card
+  useEffect(() => {
+    if (!isTopCard && isExpanded) {
+      setIsExpanded(false);
+    }
+  }, [isTopCard]);
+
+  useEffect(() => {
+    Animated.timing(translateY, {
+      toValue: isExpanded ? -HEADER_HEIGHT : 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [isExpanded]);
 
   const handleCardPress = () => {
+    // Only allow pressing if this is the top card
+    if (!isTopCard) {
+      return;
+    }
+    
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
   };
@@ -49,7 +74,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
   };
 
   return (
-    <View style={styles.outerContainer}>
+    <Animated.View style={[styles.outerContainer, { transform: [{ translateY }] }]}>
       {/* White container that wraps everything */}
       <View style={styles.whiteContainer}>
         {/* Expandable Header */}
@@ -68,15 +93,16 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
 
         {/* Card Container */}
         <TouchableOpacity 
-          activeOpacity={0.9}
+          activeOpacity={isTopCard ? 0.9 : 1}
           onPress={handleCardPress}
+          disabled={!isTopCard}
         >
           <View style={styles.card}>
             <Image source={photo} style={styles.photo} resizeMode="cover" />
           </View>
         </TouchableOpacity>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

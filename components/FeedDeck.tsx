@@ -66,13 +66,6 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         onPress={handleCloseModal}
       />
       <View style={styles.modalContent} pointerEvents="box-none">
-        <TouchableOpacity 
-          style={styles.closeButton} 
-          onPress={handleCloseModal}
-        >
-          <FontAwesome6 name="angle-left" size={28} color="#fff" />
-        </TouchableOpacity>
-
         <Animated.View
           pointerEvents="auto"
           style={[
@@ -89,23 +82,30 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
           />
         </Animated.View>
 
-        {/* Offer button */}
-        <View style={styles.buttonContainer} pointerEvents="auto">
+        {/* Button row with up chevron, offer button, and save button */}
+        <View style={styles.buttonRow} pointerEvents="auto">
+          {/* Up/Close button */}
+          <TouchableOpacity 
+            style={styles.circularButton}
+            onPress={handleCloseModal}
+          >
+            <FontAwesome6 name="chevron-up" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {/* Offer button */}
           <TouchableOpacity 
             style={styles.offerButton}
             onPress={handleOffer}
           >
             <Text style={styles.offerButtonText}>OFFER</Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Save button */}
-        <View style={styles.saveButtonContainer} pointerEvents="auto">
+          {/* Save button */}
           <TouchableOpacity 
-            style={styles.saveButton}
+            style={styles.circularButton}
             onPress={handleSave}
           >
-            <Icon name={showSaved === true ? 'bookmark-o' : 'bookmark'} size={30} color='#FFFFFF' />
+            <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={22} color='#FFFFFF' />
           </TouchableOpacity>
         </View>
       </View>
@@ -139,27 +139,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     bottom: 400,
   },
-  closeButton: {
+  animatedDeck: {
     position: 'absolute',
-    top: -280,
-    left: 20,
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
+    bottom: 120,
+    left: 0,
+    right: 26,
     alignItems: 'center',
   },
-  buttonContainer: {
+  buttonRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 16,
+    justifyContent: 'center',
+    gap: 16,
+    top: 260,
     zIndex: 5,
   },
+  circularButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#1C1C1E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   offerButton: {
-    top: 260,
     backgroundColor: '#007AFF',
     paddingVertical: 12,
-    paddingHorizontal: 18,
+    paddingHorizontal: 32,
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
@@ -177,35 +191,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: 0.5,
-  },
-  saveButtonContainer: {
-    alignItems: 'flex-end',
-    width: '100%',
-    marginTop: -54,
-    marginLeft: -82,
-    zIndex: 4,
-  },
-  saveButton: {
-    top: 260,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  animatedDeck: {
-    position: 'absolute',
-    bottom: 120,
-    left: 0,
-    right: 26,
-    alignItems: 'center',
   },
 });

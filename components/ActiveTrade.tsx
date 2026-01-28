@@ -319,7 +319,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 0,
     backgroundColor: '#121212',
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
 
     backgroundColor: '#121212',
     marginTop: 10,
-    marginBottom: -10,
+    marginBottom: -5,
     zIndex: 20,
     elevation: 20, // For Android
   },
@@ -356,13 +356,17 @@ const styles = StyleSheet.create({
     zIndex: 10
   },
   expandedContent: {
-    padding: 12,
+    padding: 16,
+    marginTop: -12,
+    marginBottom: -12
   },
   scrollView: {
     maxHeight: 200,
+    marginTop: -12,
+    marginBottom: -12
   },
   scrollContent: {
-    padding: 12,
+    padding: 16,
   },
   tradeSection: {
     gap: -4,

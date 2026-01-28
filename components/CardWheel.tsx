@@ -92,6 +92,10 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) =>
 
           // zIndex: top card highest
           const zIndex = displayIndex === 0 ? 100 : 100 - displayIndex;
+          
+          // Calculate which card is currently at the top position (index 0)
+          const topCardIndex = currentIndex % cards.length;
+          const isTopCard = displayIndex === topCardIndex;
 
           return (
             <Animated.View
@@ -112,6 +116,8 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) =>
                 title={card.title} 
                 photo={card.photo}
                 onPlay={handleCardPlay}
+                isTopCard={isTopCard}
+                cardIndex={displayIndex}
               />
             </Animated.View>
           );

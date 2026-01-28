@@ -11,17 +11,17 @@ export const BARTER_CARDS = [
   {
     title: 'Accept',
     photo: require('@/assets/barter-cards/accept1.png'),
-    color: '#4CAF50', // Green
+    color: '#3cb940', // Green
   },
   {
     title: 'Decline',
     photo: require('@/assets/barter-cards/decline1.png'),
-    color: '#F44336', // Red
+    color: '#d32114', // Red
   },
   {
     title: 'Counter',
     photo: require('@/assets/barter-cards/counter1.png'),
-    color: '#FF9800', // Orange
+    color: '#ff00bf', // Orange
   },
   {
     title: 'Query',
@@ -69,10 +69,11 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
     // Add your play card logic here
   };
 
+  //for counter card. plus button pulls up other user's deck, allowing you to add a card to the trade
+  //minus button calls a deck with all the cards in the trade, with user cards seperating them, allowing you to remove something from the trade
   const handleIncrement = () => {
     console.log(`${title}: Plus button pressed`);
   };
-
   const handleDecrement = () => {
     console.log(`${title}: Minus button pressed`);
   };

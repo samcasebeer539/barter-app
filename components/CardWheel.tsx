@@ -1,28 +1,25 @@
-//add gradient behind cards
-//make cards clickable and impliment logic per card
-//import cards here 
-
 import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, PanResponder, Animated } from 'react-native';
 import BarterCard from './BarterCard';
 
 interface CardData {
   title: string;
-  photo: string;
+  photo: any;
 }
 
 interface CardWheelProps {
   cards: CardData[];
-  resetKey?: number; // Optional prop to force reset
+  resetKey?: number;
+  onCardPlay?: (cardTitle: string) => void;
 }
 
-const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
+const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey, onCardPlay }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
   const RADIUS = 900;
-  const TOTAL_CARDS = cards.length; // always show up to 5 cards
-  const anglePerCard = (2 * Math.PI) / 28
+  const TOTAL_CARDS = cards.length;
+  const anglePerCard = (2 * Math.PI) / 28;
 
   // Reset wheel when resetKey changes
   useEffect(() => {
@@ -63,11 +60,15 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
     },
   });
 
+  const handleCardPlay = (cardTitle: string) => {
+    console.log(`Card played from CardWheel: ${cardTitle}`);
+    if (onCardPlay) {
+      onCardPlay(cardTitle);
+    }
+  };
+
   return (
     <View style={styles.container} {...containerPanResponder.panHandlers}>
-      {/* Static Wireframe around top card position */}
-      
-      
       <Animated.View
         style={[
           styles.wheel,
@@ -107,7 +108,11 @@ const CardWheel: React.FC<CardWheelProps> = ({ cards, resetKey }) => {
                 },
               ]}
             >
-              <BarterCard title={card.title} photo={card.photo} />
+              <BarterCard 
+                title={card.title} 
+                photo={card.photo}
+                onPlay={handleCardPlay}
+              />
             </Animated.View>
           );
         })}
@@ -123,25 +128,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 450,
     overflow: 'visible',
-  },
-  staticWireframe: {
-    position: 'absolute',
-    width: 216,
-    height: 296,
-    borderWidth: 3,
-    borderColor: '#FFA600',
-    borderRadius: 14,
-    borderStyle: 'solid',
-    top: '50%',
-    left: '50%',
-    marginLeft: 97, // Half of width
-    marginTop: -148 - 250, // Half of height + offset to match top card position
-    zIndex: 50,
-    shadowColor: '#FFA600',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
-    elevation: 10,
   },
   wheel: {
     position: 'relative',

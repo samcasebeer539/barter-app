@@ -108,15 +108,15 @@ const styles = StyleSheet.create({
   },
   whiteContainer: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 6,
     overflow: 'visible',
   },
   header: {
     backgroundColor: '#fff',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    marginBottom: 4,
     borderRadius: 8,
   },
   headerContent: {
@@ -126,9 +126,9 @@ const styles = StyleSheet.create({
   },
   playButton: {
     backgroundColor: '#007AFF',
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 6,
+    borderRadius: 20,
   },
   playButtonText: {
     color: '#FFFFFF',

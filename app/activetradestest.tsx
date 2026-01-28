@@ -172,8 +172,8 @@ export default function ActiveTradesTestScreen() {
             </View>
 
             <LinearGradient
-                colors={['rgba(12, 12, 12, 0)', 'rgba(12, 12, 12, 0.9)', '#121212']}
-                locations={[0, 0.5, 1]}
+                colors={['rgba(12, 12, 12, 0)', 'rgba(12, 12, 12, 1)', '#121212']}
+                locations={[0, 0.1, 1]}
                 style={styles.cardWheelGradient}
                 pointerEvents="none"
             />

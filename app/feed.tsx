@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import FeedDeck from '@/components/FeedDeck';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
@@ -77,6 +78,7 @@ const DECK_POSTS = [
 export default function FeedScreen() {
   const [showHeader, setShowHeader] = useState(true);
   const [showDeck, setShowDeck] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
   const scrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -116,6 +118,11 @@ export default function FeedScreen() {
     setShowDeck(false);
   };
 
+  const handleSave = () => {
+    console.log('Save button', showSaved);
+    setShowSaved(prev => !prev);
+  };
+
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     <View key={item.id} style={styles.cardWrapper}>
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
@@ -147,11 +154,18 @@ export default function FeedScreen() {
           { transform: [{ translateY: headerTranslateY }] }
         ]}
       >
-        <TouchableOpacity>
-          <FontAwesome6 name="location-arrow" size={24} color="#FFFFFF" />
+        
+        <TouchableOpacity 
+          style={styles.circularButton}
+          onPress={handleSave}
+        >
+          <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={24} color='#FFFFFF' />
         </TouchableOpacity>
-        <TouchableOpacity>
-          <FontAwesome6 name="magnifying-glass" size={24} color="#FFFFFF" />
+        <TouchableOpacity 
+          style={styles.circularButton}
+          onPress={handleSave}
+        >
+          <FontAwesome6  name='magnifying-glass' size={22} color='#FFFFFF' />
         </TouchableOpacity>
       </Animated.View>
 
@@ -240,5 +254,21 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 8,
     marginLeft: 4,
+  },
+  circularButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#1C1C1E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

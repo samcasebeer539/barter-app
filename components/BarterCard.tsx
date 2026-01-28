@@ -153,15 +153,15 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#fff',
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-    marginBottom: 4,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    marginBottom: 5,
     borderRadius: 8,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   counterControls: {
     flexDirection: 'row',
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   counterButton: {
     width: 32,
     height: 32,
-    borderRadius: 6,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

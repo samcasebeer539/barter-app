@@ -229,9 +229,26 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         )}
 
         {/* Cards section - always visible */}
-        <View style={styles.arrowsAndCards}>
-          <View style={styles.cardsSection}>
-            
+        {/* outer container should flex row */}
+        <View style={styles.cardsAndButtonsSection}>
+          <View style={styles.playButtonsContainer}>
+              {/* Play Button - visible in both states */}
+              <TouchableOpacity 
+                  style={[styles.playButton, !isPlayerTurn && styles.playButtonDisabled]}
+                  onPress={onPlayPress}
+                  //disabled={!isPlayerTurn || isPlaying}
+              >
+                  <FontAwesome6  name='arrow-right-long' size={22} color='#FFFFFF' />
+                  <Text style={styles.playButtonText}>
+                  {isPlayerTurn ? 'PLAY' : 'WAITING'}
+                  </Text>
+              </TouchableOpacity>
+
+              {/* this goes in with cardwheel */}
+              
+          </View>
+          <View style={styles.tradeCardsSection}>
+            {/* then two flex column containers */}
             
             <View style={styles.cardsContainer}>
               <View style={styles.leftCard}>
@@ -241,54 +258,27 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                   scale={1}
                 />
               </View>
-              
+
+              <View style={styles.rightArrowContainer}>
+                    <FontAwesome6 name="arrow-right-long" size={28} color="#fff" />
+              </View>
+            </View>
+
+            <View style={styles.cardsContainer}>
+              <View style={styles.leftArrowContainer}>
+                    <FontAwesome6 name="arrow-left-long" size={28} color="#fff" />
+              </View>
               <View style={styles.rightCard}>
                 <PostCard 
                   post={partnercards[0] || { type: 'good', name: 'Their Item', description: '', photos: [] }}
                   cardWidth={180}
                   scale={1}
                 />
-              </View>
+              </View> 
             </View>
-
-
-            </View>
-                <View style={styles.leftArrowContainer}>
-                    <FontAwesome6 name="arrow-left-long" size={28} color="#fff" />
-                </View>
-                <View style={styles.rightArrowContainer}>
-                    <FontAwesome6 name="arrow-right-long" size={28} color="#fff" />
-                </View>
-
-                <View style={styles.playButtonsContainer}>
-                    {/* Play Button - visible in both states */}
-                    <TouchableOpacity 
-                        style={[styles.playButton, !isPlayerTurn && styles.playButtonDisabled]}
-                        onPress={onPlayPress}
-                        //disabled={!isPlayerTurn || isPlaying}
-                    >
-                     
-                        <Text style={styles.playButtonText}>
-                        {isPlayerTurn ? 'PLAY' : 'WAITING'}
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* this goes in with cardwheel */}
-                    {/* play card Button - visible in both states */}
-                    <TouchableOpacity 
-                        style={[styles.playCardButton, !isPlayerTurn && styles.playButtonDisabled]}
-                        onPress={onPlayCardPress}
-                        disabled={!isPlayerTurn || isPlaying}
-                    >
-                        <Text style={styles.playButtonText}>
-                        {isPlayerTurn ? 'PLAY CARD' : 'PLAY CARD'}
-                        </Text>
-                    </TouchableOpacity>
-
-
-                </View>
-
-            </View>
+            
+          </View>
+        </View>
       </Animated.View>
     </View>
   );
@@ -297,7 +287,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-    marginBottom: -160,
+    marginBottom: 0,
     backgroundColor: '#121212',
   },
   containerPlaying: {
@@ -396,32 +386,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: '#1f1f1f',
   },
-  cardsSection: {
-    paddingVertical: 40,
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  arrowsAndCards: {
-    marginTop: -62,
+  cardsAndButtonsSection: {
     flexDirection: 'column',
+    marginTop: 4,
+    gap: 4,
+  },
+  tradeCardsSection: {
+    marginTop: 4,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
+    gap: 8,
   },
  leftArrowContainer: {
-    
-    top: -344,
-    left: 22,
+    right: 70,
   },
   rightArrowContainer: {
-    
-    top: -138,
-    left: -22,
+    left: 70,
   },
   cardsContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 10,
+    gap: 4,
   },
   leftCard: {
     justifyContent: 'center',
@@ -430,21 +416,21 @@ const styles = StyleSheet.create({
   rightCard: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 65
   },
   playButtonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     width: "100%",
     gap: 12,
-    top: -144
   },
 
   playButton: {
+    flexDirection: 'row',
+    gap: 8,
     backgroundColor: '#e99700',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 20,
     marginTop: 0,
     marginBottom: 0,
@@ -457,22 +443,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  playCardButton: {
-    backgroundColor: '#e99700',  //should inherit color of active card
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginTop: 0,
-    marginBottom: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
+ 
   playButtonDisabled: {
     backgroundColor: '#555',
     opacity: 0.5,

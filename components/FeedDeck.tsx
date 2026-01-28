@@ -84,12 +84,12 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
         {/* Button row with up chevron, offer button, and save button */}
         <View style={styles.buttonRow} pointerEvents="auto">
-          {/* Up/Close button */}
+          {/* Save button */}
           <TouchableOpacity 
             style={styles.circularButton}
-            onPress={handleCloseModal}
+            onPress={handleSave}
           >
-            <FontAwesome6 name="chevron-up" size={20} color="#FFFFFF" />
+            <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={22} color='#FFFFFF' />
           </TouchableOpacity>
 
           {/* Offer button */}
@@ -100,13 +100,15 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             <Text style={styles.offerButtonText}>OFFER</Text>
           </TouchableOpacity>
 
-          {/* Save button */}
+          
+          {/* Up/Close button */}
           <TouchableOpacity 
             style={styles.circularButton}
-            onPress={handleSave}
+            onPress={handleCloseModal}
           >
-            <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={22} color='#FFFFFF' />
+            <FontAwesome6 name="chevron-up" size={20} color="#FFFFFF" />
           </TouchableOpacity>
+
         </View>
       </View>
     </View>

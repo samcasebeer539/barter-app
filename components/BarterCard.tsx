@@ -40,10 +40,11 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
   // Reset expansion when this card is no longer the top card
   useEffect(() => {
     if (!isTopCard && isExpanded) {
+      // Trigger animation before collapsing
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setIsExpanded(false);
     }
-  }, [isTopCard]);
+  }, [isTopCard, isExpanded]);
 
   const handleCardPress = () => {
     // Only allow pressing if this is the top card

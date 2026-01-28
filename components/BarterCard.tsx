@@ -22,12 +22,12 @@ export const BARTER_CARDS = [
   {
     title: 'Counter',
     photo: require('@/assets/barter-cards/counter1.png'),
-    color: '#ff00bf', // Magenta
+    color: '#e700b5', // Magenta
   },
   {
     title: 'Query',
     photo: require('@/assets/barter-cards/query1.png'),
-    color: '#9C27B0', // Purple
+    color: '#8720e7', // Purple
   },
 ];
 

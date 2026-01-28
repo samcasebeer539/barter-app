@@ -89,25 +89,25 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
   return (
     <View style={styles.outerContainer}>
       {/* White container that wraps everything */}
-      <View style={styles.whiteContainer}>
+      <View style={[styles.whiteContainer, { backgroundColor: color }]}>
         {/* Expandable Header */}
         {isExpanded && (
-          <View style={styles.header}>
+          <View style={[styles.header, { backgroundColor: color }]}>
             <View style={styles.headerContent}>
               {/* Counter controls - only show for Counter card */}
               {isCounterCard && (
                 <View style={styles.counterControls}>
                   <TouchableOpacity 
-                    style={[styles.counterButton, { backgroundColor: color }]}
+                    style={[styles.counterButton, { backgroundColor: '#FFFFFF' }]}
                     onPress={handleDecrement}
                   >
-                    <FontAwesome6 name="minus" size={16} color="#FFFFFF" />
+                    <FontAwesome6 name="minus" size={16} color={color} />
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={[styles.counterButton, { backgroundColor: color }]}
+                    style={[styles.counterButton, { backgroundColor: '#FFFFFF' }]}
                     onPress={handleIncrement}
                   >
-                    <FontAwesome6 name="plus" size={16} color="#FFFFFF" />
+                    <FontAwesome6 name="plus" size={16} color={color} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -116,10 +116,10 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
               {isQueryCard && (
                 <View style={styles.queryControls}>
                   <TouchableOpacity 
-                    style={[styles.queryButton, { backgroundColor: color }]}
+                    style={[styles.queryButton, { backgroundColor: '#FFFFFF' }]}
                     onPress={handleWriteQuery}
                   >
-                    <FontAwesome6 name="pen-to-square" size={16} color="#FFFFFF" />
+                    <FontAwesome6 name="pen-to-square" size={16} color={color} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -129,10 +129,10 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
               
               {/* Play Card button */}
               <TouchableOpacity 
-                style={[styles.playButton, { backgroundColor: color }]}
+                style={[styles.playButton, { backgroundColor: '#FFFFFF' }]}
                 onPress={handlePlayCard}
               >
-                <FontAwesome6 name="arrow-right-long" size={18} color="#FFFFFF" />
+                <FontAwesome6 name="arrow-right-long" size={18} color={color} />
               </TouchableOpacity>
             </View>
           </View>
@@ -163,13 +163,11 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   whiteContainer: {
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 6,
     overflow: 'visible',
   },
   header: {
-    backgroundColor: '#fff',
     paddingVertical: 0,
     paddingHorizontal: 0,
     marginBottom: 5,

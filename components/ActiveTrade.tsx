@@ -1,3 +1,5 @@
+// ... (keeping all imports and interfaces the same until the render section)
+
 //will contain text turn lines, two stacks of cards with plus and minus buttons, play button, action button
 //header should collapse the whole section when not in play mode (pass boolean)
 //put timer in header
@@ -170,6 +172,34 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         );
     };
 
+    // Determine play button appearance
+    const getPlayButtonContent = () => {
+      if (isPlaying) {
+        // Currently playing - show back button
+        return {
+          icon: 'chevron-left',
+          text: 'BACK',
+          disabled: false,
+        };
+      } else if (isPlayerTurn) {
+        // Your turn but not playing - show right arrow
+        return {
+          icon: 'arrow-right-long',
+          text: 'PLAY',
+          disabled: false,
+        };
+      } else {
+        // Not your turn - show left arrow
+        return {
+          icon: 'arrow-left-long',
+          text: 'WAITING',
+          disabled: true,
+        };
+      }
+    };
+
+    const playButtonContent = getPlayButtonContent();
+
     return (
     <View style={[styles.container, isPlaying && styles.containerPlaying]}>
       <Animated.View
@@ -232,15 +262,18 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         {/* outer container should flex row */}
         <View style={styles.cardsAndButtonsSection}>
           <View style={styles.playButtonsContainer}>
-              {/* Play Button - visible in both states */}
+              {/* Play Button - changes based on state */}
               <TouchableOpacity 
-                  style={[styles.playButton, !isPlayerTurn && styles.playButtonDisabled]}
+                  style={[
+                    styles.playButton, 
+                    playButtonContent.disabled && styles.playButtonDisabled
+                  ]}
                   onPress={onPlayPress}
-                  //disabled={!isPlayerTurn || isPlaying}
+                  disabled={playButtonContent.disabled}
               >
-                  <FontAwesome6  name='arrow-right-long' size={22} color='#FFFFFF' />
+                  <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
                   <Text style={styles.playButtonText}>
-                  {isPlayerTurn ? 'PLAY' : 'WAITING'}
+                    {playButtonContent.text}
                   </Text>
               </TouchableOpacity>
 

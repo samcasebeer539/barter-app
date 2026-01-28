@@ -52,7 +52,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
     <View style={styles.outerContainer}>
       {/* White container that wraps everything */}
       <View style={styles.whiteContainer}>
-        {/* Expandable Header */}
+        {/* Expandable Header - positioned absolutely so it doesn't push card down */}
         {isExpanded && (
           <View style={styles.header}>
             <View style={styles.headerContent}>
@@ -66,7 +66,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
           </View>
         )}
 
-        {/* Card Container */}
+        {/* Card Container - this stays in the same position */}
         <TouchableOpacity 
           activeOpacity={0.9}
           onPress={handleCardPress}
@@ -94,13 +94,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
     overflow: 'visible',
+    position: 'relative',
   },
   header: {
+    position: 'absolute',
+    top: -44, // Position above the white container
+    left: 0,
+    right: 0,
     backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    marginBottom: 6,
-    borderRadius: 8,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    zIndex: 10,
   },
   headerContent: {
     flexDirection: 'row',

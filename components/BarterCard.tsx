@@ -49,54 +49,58 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay }) => {
   };
 
   return (
-    <View style={styles.cardWrapper}>
-      {/* Expandable Header */}
-      {isExpanded && (
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity 
-              style={styles.playButton}
-              onPress={handlePlayCard}
-            >
-              <Text style={styles.playButtonText}>Play Card</Text>
-            </TouchableOpacity>
+    <View style={styles.outerContainer}>
+      {/* White container that wraps everything */}
+      <View style={styles.whiteContainer}>
+        {/* Expandable Header */}
+        {isExpanded && (
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <TouchableOpacity 
+                style={styles.playButton}
+                onPress={handlePlayCard}
+              >
+                <Text style={styles.playButtonText}>Play Card</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* Card Container */}
-      <TouchableOpacity 
-        activeOpacity={0.9}
-        onPress={handleCardPress}
-      >
-        <View style={styles.cardShadow}>
+        {/* Card Container */}
+        <TouchableOpacity 
+          activeOpacity={0.9}
+          onPress={handleCardPress}
+        >
           <View style={styles.card}>
             <Image source={photo} style={styles.photo} resizeMode="cover" />
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  cardWrapper: {
+  outerContainer: {
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  whiteContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 6,
+    overflow: 'visible',
   },
   header: {
-    width: 200,
-    backgroundColor: '#1C1C1E',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    marginBottom: -6,
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    marginBottom: 6,
+    borderRadius: 8,
   },
   headerContent: {
     flexDirection: 'row',
@@ -114,20 +118,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  cardShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 12,
-  },
   card: {
     width: 200,
     height: 280,
     backgroundColor: '#fff',
     borderRadius: 6,
-    borderWidth: 0,
-    borderColor: '#e0e0e0',
     overflow: 'hidden',
   },
   photo: {

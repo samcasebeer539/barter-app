@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, StyleSheet, ImageSourcePropType, TouchableOpacity, Text, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -114,7 +115,7 @@ const BarterCard: React.FC<BarterCardProps> = ({ title, photo, onPlay, isTopCard
                 style={[styles.playButton, { backgroundColor: color }]}
                 onPress={handlePlayCard}
               >
-                <Text style={styles.playButtonText}>Play Card</Text>
+                <FontAwesome6 name="arrow-right-long" size={18} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -183,14 +184,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   playButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    width: 40,
+    height: 32,
     borderRadius: 20,
-  },
-  playButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   card: {
     width: 200,

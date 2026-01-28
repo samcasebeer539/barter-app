@@ -1,8 +1,9 @@
-import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import { useCallback, useState } from 'react';
 import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import CardWheel from '../components/CardWheel';
+import { BARTER_CARDS } from '../components/BarterCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Animated, Dimensions } from 'react-native';
 import { useEffect, useRef } from 'react';
@@ -84,25 +85,6 @@ const activeTrades = [
   },
 ];
 
-const sampleCards = [
-    {
-      title: 'Accept',
-      photo: require('@/assets/barter-cards/accept1.png'),
-    },
-    {
-      title: 'Decline',
-      photo: require('@/assets/barter-cards/decline1.png'),
-    },
-    {
-      title: 'Counter',
-      photo: require('@/assets/barter-cards/counter1.png'),
-    },
-    {
-      title: 'Query',
-      photo: require('@/assets/barter-cards/query1.png'),
-    },
-];
-
 
 
 export default function ActiveTradesTestScreen() {
@@ -111,7 +93,6 @@ export default function ActiveTradesTestScreen() {
 
   const screenWidth = Dimensions.get('window').width;
 
-    // const wheelTranslateX = useRef(new Animated.Value(screenWidth)).current;
     const wheelRotate = useRef(new Animated.Value(1)).current;
     useEffect(() => {
         if (playingTradeId !== null) {
@@ -166,7 +147,7 @@ export default function ActiveTradesTestScreen() {
                     partnercards={activeTrades.find(t => t.id === playingTradeId)!.partnercards} 
                     turns={activeTrades.find(t => t.id === playingTradeId)!.turns} 
                     isPlaying={true}
-                    onPlayPress={() => setPlayingTradeId(null)}  // Just set to null
+                    onPlayPress={() => setPlayingTradeId(null)}
                     onPlayCardPress={() => setPlayingTradeId(null)}
                 />
             </View>
@@ -186,7 +167,7 @@ export default function ActiveTradesTestScreen() {
                         ],
                     }}
                 >
-                    <CardWheel cards={sampleCards} resetKey={resetKey} />
+                    <CardWheel cards={BARTER_CARDS} resetKey={resetKey} />
                 </Animated.View>
             </View>
 
@@ -218,20 +199,6 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginBottom: 50,
         
-    },
-    toggleButton: {
-        position: 'absolute',
-        bottom: 80,
-        alignSelf: 'center',
-        backgroundColor: '#e99700',
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderRadius: 8,
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '700',
     },
     cardWheelContainer: {
         position: 'absolute',

@@ -21,44 +21,27 @@ interface FeedDeckProps {
 
 export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
-  const buttonsTranslateY = useRef(new Animated.Value(100)).current;
   const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
     if (visible) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
-      buttonsTranslateY.setValue(100);
 
-      Animated.parallel([
-        Animated.spring(deckTranslateY, {
-          toValue: 40,
-          useNativeDriver: true,
-          damping: 24,
-          stiffness: 200,
-        }),
-        Animated.spring(buttonsTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 24,
-          stiffness: 200,
-        }),
-      ]).start();
+      Animated.spring(deckTranslateY, {
+        toValue: 40,
+        useNativeDriver: true,
+        damping: 24,
+        stiffness: 200,
+      }).start();
     }
   }, [visible]);
 
   const handleCloseModal = () => {
-    Animated.parallel([
-      Animated.timing(deckTranslateY, {
-        toValue: -Dimensions.get('window').height,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonsTranslateY, {
-        toValue: 100,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(deckTranslateY, {
+      toValue: -Dimensions.get('window').height,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
       onClose();
     });
   };
@@ -86,54 +69,48 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         <Animated.View
           pointerEvents="auto"
           style={[
-            styles.animatedDeck,
+            styles.animatedContainer,
             {
               transform: [{ translateY: deckTranslateY }],
             },
           ]}
         >
-          <Deck 
-            posts={posts}
-            cardWidth={Math.min(width - 40, 400)}
-            enabled={true}
-          />
-        </Animated.View>
+          <View style={styles.deckWrapper}>
+            <Deck 
+              posts={posts}
+              cardWidth={Math.min(width - 40, 400)}
+              enabled={true}
+            />
+          </View>
 
-        {/* Button row with up chevron, offer button, and save button */}
-        <Animated.View 
-          style={[
-            styles.buttonRow,
-            {
-              transform: [{ translateY: buttonsTranslateY }],
-            },
-          ]} 
-          pointerEvents="auto"
-        >
-          {/* Save button */}
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={handleSave}
-          >
-            <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
-          </TouchableOpacity>
+          {/* Button row with up chevron, offer button, and save button */}
+          <View style={styles.buttonRow}>
+            {/* Save button */}
+            <TouchableOpacity 
+              style={styles.saveButton}
+              onPress={handleSave}
+            >
+              <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
+            </TouchableOpacity>
 
-          {/* Offer button */}
-          <TouchableOpacity 
-            style={styles.offerButton}
-            onPress={handleOffer}
-          >
-            <Text style={styles.offerButtonText}>OFFER</Text>
-          </TouchableOpacity>
+            {/* Offer button */}
+            <TouchableOpacity 
+              style={styles.offerButton}
+              onPress={handleOffer}
+            >
+              <Text style={styles.offerButtonText}>OFFER</Text>
+            </TouchableOpacity>
 
-          
-          {/* Up/Close button */}
-          <TouchableOpacity 
-            style={styles.upButton}
-            onPress={handleCloseModal}
-          >
-            <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
-          </TouchableOpacity>
+            
+            {/* Up/Close button */}
+            <TouchableOpacity 
+              style={styles.upButton}
+              onPress={handleCloseModal}
+            >
+              <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
+            </TouchableOpacity>
 
+          </View>
         </Animated.View>
       </View>
     </View>
@@ -166,20 +143,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     bottom: 400,
   },
-  animatedDeck: {
+  animatedContainer: {
     position: 'absolute',
     bottom: 120,
     left: 0,
     right: 26,
     alignItems: 'center',
   },
+  deckWrapper: {
+    marginBottom: 20,
+  },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    top: 240,
-    zIndex: 5,
   },
   upButton: {
     width: 50,

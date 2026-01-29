@@ -31,7 +31,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
 
   const isGood = post.type === 'good';
-  const borderColor = isGood ? '#FFA600' : '#FF3B81';
+  const borderColor = isGood ? '#FFA600' : '#ff536a';
 
 
   // Animation values
@@ -148,7 +148,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
             <FontAwesome6
               name={post.type === 'good' ? 'cube' : 'stopwatch'}
               size={24}
-              color={post.type === 'good' ? '#FFA600' : '#FF3B81'}
+              color={post.type === 'good' ? '#FFA600' : '#ff536a'}
             />
         
 
@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    borderWidth: 3,
-    borderRadius: 8,
+    borderWidth: 4,
+    borderRadius: 12,
     borderColor: '#f39406',
     overflow: 'hidden',
     shadowColor: '#000',

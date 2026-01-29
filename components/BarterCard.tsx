@@ -12,17 +12,17 @@ export const BARTER_CARDS = [
   {
     title: 'Accept',
     photo: require('@/assets/barter-cards/accept1.png'),
-    color: '#3cb940', // Green
+    color: '#0bbd6a', // Green
   },
   {
     title: 'Decline',
     photo: require('@/assets/barter-cards/decline1.png'),
-    color: '#d32114', // Red
+    color: '#d32533', // Red
   },
   {
     title: 'Counter',
     photo: require('@/assets/barter-cards/counter1.png'),
-    color: '#e700b5', // Magenta
+    color: '#cc3aac', // Magenta
   },
   {
     title: 'Query',
@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 12,
+    
   },
   whiteContainer: {
     borderRadius: 10,

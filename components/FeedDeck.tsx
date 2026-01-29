@@ -30,7 +30,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       Animated.spring(deckTranslateY, {
         toValue: 40,
         useNativeDriver: true,
-        damping: 23,
+        damping: 24,
         stiffness: 200,
       }).start();
     }
@@ -86,10 +86,10 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         <View style={styles.buttonRow} pointerEvents="auto">
           {/* Save button */}
           <TouchableOpacity 
-            style={styles.circularButton}
+            style={styles.saveButton}
             onPress={handleSave}
           >
-            <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={22} color='#FFFFFF' />
+            <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
           </TouchableOpacity>
 
           {/* Offer button */}
@@ -103,10 +103,10 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
           
           {/* Up/Close button */}
           <TouchableOpacity 
-            style={styles.circularButton}
+            style={styles.upButton}
             onPress={handleCloseModal}
           >
-            <FontAwesome6 name="chevron-up" size={20} color="#FFFFFF" />
+            <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
           </TouchableOpacity>
 
         </View>
@@ -152,44 +152,47 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
-    top: 260,
+    gap: 4,
+    top: 240,
     zIndex: 5,
   },
-  circularButton: {
+  upButton: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: '#1C1C1E',
+    
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+    backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+   
+  },
+  saveButton: {
+    width: 50,
+    height: 50,
+    
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 25,
+    backgroundColor: '#5c5579',
+    justifyContent: 'center',
+    alignItems: 'center',
+    
   },
   offerButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
+    backgroundColor: '#1c8aff',
+    paddingVertical: 13,
     paddingHorizontal: 32,
-    borderRadius: 30,
+    borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    
   },
   offerButtonText: {
-    color: '#FFFFFF',
+    color: '#ffffff',
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: 0.5,

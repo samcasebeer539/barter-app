@@ -54,7 +54,7 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
             {/* Services count */}
             <View style={styles.statRow}>
               <Text style={styles.statNumber}>{user.servicesCount}</Text>
-              <FontAwesome6 name="stopwatch" size={32} color="#FF3B81" />
+              <FontAwesome6 name="stopwatch" size={32} color="#ff3b55" />
             </View>
           </View>
         </View>
@@ -103,8 +103,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
     card: {
-    backgroundColor: '#121212',
-    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 20 },
@@ -115,9 +115,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingBottom: 16,
 
-    // Add white border without increasing size
-    borderWidth: 3,
-    borderColor: '#509cff',
+    borderWidth: 4,
+    borderColor: '#1c8aff',
   },
   topRow: {
     flexDirection: 'row',

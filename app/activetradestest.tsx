@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     cardWheelContainer: {
         position: 'absolute',
         alignItems: 'center',
-        top: 660,
+        top: 640,
         right: 0,
         left: 0,
         zIndex: 20
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
 
     cardWheelGradient: {
 
-        height: 400,
+        height: 430,
         zIndex: 15
     },
 

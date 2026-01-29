@@ -46,8 +46,8 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   // Card position definitions
   const POSITIONS = {
     first: { x: 5, y: 15 },
-    second: { x: 14, y: 24 },
-    third: { x: 22, y: 32 },
+    second: { x: 12, y: 22 },
+    third: { x: 19, y: 29 },
   };
 
   const SWIPE_THRESHOLD = screenWidth * 0.1;

@@ -177,7 +177,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
       if (isPlaying) {
         // Currently playing - show back button
         return {
-          icon: 'chevron-left',
+          icon: 'arrow-left-long',
           text: 'BACK',
           disabled: false,
         };
@@ -192,7 +192,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         // Not your turn - show left arrow
         return {
           icon: 'arrow-left-long',
-          text: 'WAITING',
+          text: 'WAIT',
           disabled: true,
         };
       }
@@ -217,9 +217,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         >
           {/* pass text up, should say like Trade with {user} */}
           <Text style={styles.headerTitle}>Trade with [user]</Text>  
-          <MaterialIcons 
-            name={isExpanded ? "expand-less" : "expand-more"} 
-            size={28} 
+          <FontAwesome6 
+            name={isExpanded ? "chevron-up" : "chevron-down"} 
+            size={22} 
             color="#fff" 
           />
         </TouchableOpacity>
@@ -261,25 +261,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         {/* Cards section - always visible */}
         {/* outer container should flex row */}
         <View style={styles.cardsAndButtonsSection}>
-          <View style={styles.playButtonsContainer}>
-              {/* Play Button - changes based on state */}
-              <TouchableOpacity 
-                  style={[
-                    styles.playButton, 
-                    playButtonContent.disabled && styles.playButtonDisabled
-                  ]}
-                  onPress={onPlayPress}
-                  disabled={playButtonContent.disabled}
-              >
-                  <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
-                  <Text style={styles.playButtonText}>
-                    {playButtonContent.text}
-                  </Text>
-              </TouchableOpacity>
-
-              {/* this goes in with cardwheel */}
-              
-          </View>
+          
           <View style={styles.tradeCardsSection}>
             {/* then two flex column containers */}
             
@@ -293,13 +275,38 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               </View>
 
               <View style={styles.rightArrowContainer}>
-                    <FontAwesome6 name="arrow-right-long" size={28} color="#fff" />
+                    {/* <FontAwesome6 name="arrow-right-long" size={28} color="#fff" /> */}
+                    <TouchableOpacity 
+                        style={[
+                          styles.playButton, 
+                          playButtonContent.disabled && styles.playButtonDisabled
+                        ]}
+                        onPress={onPlayPress}
+                        disabled={playButtonContent.disabled}
+                    >
+                        <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
+                        <Text style={styles.playButtonText}>
+                          {playButtonContent.text}
+                        </Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.circularButton}>
+                      <FontAwesome6 name="caret-left" size={24} color="#fff" />
+                      <FontAwesome6 name="caret-right" size={24} color="#fff" />
+                    </View>
               </View>
             </View>
 
             <View style={styles.cardsContainer}>
               <View style={styles.leftArrowContainer}>
-                    <FontAwesome6 name="arrow-left-long" size={28} color="#fff" />
+                    <FontAwesome6 name="arrow-left-long" size={24} color="#fff" />
+                  
+                    <View style={styles.circularButton}>
+                      <FontAwesome6 name="caret-left" size={30} color="#fff" />
+                      <FontAwesome6 name="caret-right" size={30} color="#fff" />
+                    </View>
+                    
+                    
               </View>
               <View style={styles.rightCard}>
                 <PostCard 
@@ -319,9 +326,10 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
+    marginTop: 16,
     marginBottom: 0,
     backgroundColor: '#121212',
+    paddingHorizontal: 10,
   },
   containerPlaying: {
     position: 'absolute',
@@ -331,8 +339,13 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerContainer: {
-
-    backgroundColor: '#121212',
+    justifyContent: 'center',
+    backgroundColor: '#5c5579',
+    
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 4,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 4,
     marginTop: 10,
     marginBottom: -5,
     zIndex: 20,
@@ -342,7 +355,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 16,
     
   },
@@ -433,13 +446,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 4,
   },
  leftArrowContainer: {
-    right: 70,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 100,
+    
   },
   rightArrowContainer: {
-    left: 70,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 40,
+   
   },
   cardsContainer: {
     flexDirection: 'column',
@@ -465,24 +486,19 @@ const styles = StyleSheet.create({
   playButton: {
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: '#e99700',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginTop: 0,
-    marginBottom: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 20,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
   },
  
   playButtonDisabled: {
-    backgroundColor: '#555',
+    backgroundColor: '#5c5579',
     opacity: 0.5,
   },
   playButtonText: {
@@ -490,6 +506,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  circularButton: {
+    gap: 8,
+    borderRadius: 25,
+    paddingVertical: 2,
+    
+    backgroundColor: '#121212',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    
   },
 });
 

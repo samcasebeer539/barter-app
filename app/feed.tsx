@@ -135,7 +135,7 @@ export default function FeedScreen() {
           <FontAwesome6 
             name={item.type === 'service' ? 'cube' : 'stopwatch'} 
             size={20} 
-            color={item.type === 'service' ? '#FFA600' : '#FF3B81'}
+            color={item.type === 'service' ? '#FFA600' : '#ff3b55'}
             style={styles.typeIcon}
           />
         </View>
@@ -258,17 +258,13 @@ const styles = StyleSheet.create({
   circularButton: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: '#1C1C1E',
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 25,
+    backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  
   },
 });

@@ -30,7 +30,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
           height: outerRingSize, 
           borderRadius: outerRingSize / 2,
           borderWidth: ringThickness,
-          borderColor: '#FF3B81',
+          borderColor: '#ff3b55',
           backgroundColor: 'transparent',
         }} />
       </View>

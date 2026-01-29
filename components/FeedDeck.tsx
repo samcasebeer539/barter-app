@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
@@ -22,6 +22,13 @@ interface FeedDeckProps {
 export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
   const [showSaved, setShowSaved] = useState(false);
+
+  // Count good and service posts
+  const { goodCount, serviceCount } = useMemo(() => {
+    const goodCount = posts.filter(post => post.type === 'good').length;
+    const serviceCount = posts.filter(post => post.type === 'service').length;
+    return { goodCount, serviceCount };
+  }, [posts]);
 
   useEffect(() => {
     if (visible) {
@@ -77,11 +84,11 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         >
           <View style={styles.goodServiceRow}>
             <View style={styles.goodButton}>
-              <Text style={styles.offerButtonText}>12</Text>
+              <Text style={styles.offerButtonText}>{goodCount}</Text>
               <FontAwesome6 name="cube" size={22} color="#ffffff" />
             </View>
             <View style={styles.serviceButton}>
-              <Text style={styles.offerButtonText}>4</Text>
+              <Text style={styles.offerButtonText}>{serviceCount}</Text>
               <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
             </View>
           </View>
@@ -178,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
     top: -226,
-    zIndex: 6
+    zIndex: 6,
   },
   upButton: {
     width: 50,

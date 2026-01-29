@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
@@ -36,19 +36,17 @@ export default function RootLayout() {
           tabBarShowLabel: false,
           headerShown: false,
           tabBarButton: (props) => {
-            const { children, onPress, onLongPress, accessibilityState, style, ...rest } = props;
+            const { children, ...rest } = props;
             
             // Determine button position based on the route
-            const href = props.href as string;
+            const href = (props as any).href as string;
             const isFirst = href === '/feed';
             const isLast = href === '/profile';
             const isMiddle = href === '/activetradestest';
             
             return (
-              <Pressable
+              <TouchableOpacity
                 {...rest}
-                onPress={onPress}
-                onLongPress={onLongPress}
                 style={[
                   styles.tabButton,
                   isFirst && styles.leftButton,
@@ -57,7 +55,7 @@ export default function RootLayout() {
                 ]}
               >
                 {children}
-              </Pressable>
+              </TouchableOpacity>
             );
           },
         }}

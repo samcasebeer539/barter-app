@@ -43,20 +43,9 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         {/* Top Row: Profile Picture (left) and Stats (right) */}
         <View style={styles.topRow}>
-          <ProfilePicture size={80} avatarText={user.avatarText} />
+          <ProfilePicture size={120} avatarText={user.avatarText} />
           
-          <View style={styles.statsContainer}>
-            {/* Goods count */}
-            <View style={styles.statRow}>
-              <Text style={styles.statNumber}>{user.goodsCount}</Text>
-              <FontAwesome6 name="cube" size={32} color="#FFA600"/>
-            </View>
-            {/* Services count */}
-            <View style={styles.statRow}>
-              <Text style={styles.statNumber}>{user.servicesCount}</Text>
-              <FontAwesome6 name="stopwatch" size={32} color="#ff3b55" />
-            </View>
-          </View>
+      
         </View>
 
         {/* Name and Location - Left Aligned */}
@@ -120,26 +109,11 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
-  statsContainer: {
-    gap: 4,
-    justifyContent: 'center',
-  },
-  statRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  statNumber: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: '#fff',
-    minWidth: 30,
-    textAlign: 'right',
-  },
+  
   infoContainer: {
     alignItems: 'flex-start',
     marginBottom: 12,
@@ -147,7 +121,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#fff',
+    color: '#000000',
     marginBottom: 4,
   },
   locationRow: {

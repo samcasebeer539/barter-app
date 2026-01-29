@@ -126,14 +126,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    top: 250,
+    top: 246,
   },
   goodServiceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    top: -226,
+    top: -222,
     zIndex: 6,
   },
   plusButton: {

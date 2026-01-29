@@ -12,7 +12,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   avatarText = '👤',
   imageSource
 }) => {
-  const ringGap = 2;
+  const ringGap = 3;
   const ringThickness = 3;
   
   // Calculate sizes for each ring
@@ -30,7 +30,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
           height: outerRingSize, 
           borderRadius: outerRingSize / 2,
           borderWidth: ringThickness,
-          borderColor: '#ff3b55',
+          borderColor: '#ff536a',
           backgroundColor: 'transparent',
         }} />
       </View>

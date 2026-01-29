@@ -135,7 +135,7 @@ export default function FeedScreen() {
           <FontAwesome6 
             name={item.type === 'service' ? 'cube' : 'stopwatch'} 
             size={20} 
-            color={item.type === 'service' ? '#FFA600' : '#ff3b55'}
+            color={item.type === 'service' ? '#FFA600' : '#ff536a'}
             style={styles.typeIcon}
           />
         </View>
@@ -259,9 +259,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 25,
     borderTopRightRadius: 25,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 25,
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',

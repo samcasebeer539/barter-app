@@ -9,8 +9,8 @@ function TabBarBackground() {
   return (
     <View style={[StyleSheet.absoluteFill, { height: 120 }]}>
       <LinearGradient
-        colors={['rgba(20, 20, 20, 0)', 'rgba(20, 20, 20, 0.95)', '#121212']}
-        locations={[0, 0.6, 1]}
+        colors={['rgba(20, 20, 20, 0)', 'rgba(20, 20, 20, 1)', '#121212']}
+        locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
     </View>
@@ -27,8 +27,8 @@ export default function RootLayout() {
           tabBarStyle: {
             backgroundColor: 'transparent',
             borderTopWidth: 0,
-            height: 80,
-            paddingBottom: 10,
+            height: 90,
+            paddingBottom: 20,
             paddingTop: 20,
             position: 'absolute',
           },
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 25,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
-    marginLeft: 20,
+    marginLeft: 45,
   },
   middleButton: {
     borderRadius: 4,
@@ -158,6 +158,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-    marginRight: 20,
+    marginRight: 45,
   },
 });

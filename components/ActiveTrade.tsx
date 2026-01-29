@@ -76,7 +76,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         // Slide content so cards bottom is at screen center
         // Adjust this value based on your card heights and layout
         Animated.spring(contentPosition, {
-          toValue: -(SCREEN_HEIGHT / 2 - 380), // Position cards at center
+          toValue: -(SCREEN_HEIGHT / 16), // Position cards at center
           useNativeDriver: true,
           damping: 20,
           stiffness: 100,
@@ -246,7 +246,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               </View>
             </View>
           ) : (
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <View style={styles.expandedContent}>
               <View style={styles.tradeSection}>
                 {turns.map((turn, index) => (
                   <React.Fragment key={index}>
@@ -254,7 +254,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                   </React.Fragment>
                 ))}
               </View>
-            </ScrollView>
+            </View>
           )
         )}
 
@@ -290,9 +290,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         </Text>
                     </TouchableOpacity>
 
-                    <View style={styles.circularButton}>
-                      <FontAwesome6 name="caret-left" size={24} color="#fff" />
-                      <FontAwesome6 name="caret-right" size={24} color="#fff" />
+                    <View style={styles.partnerLeftRightButton}>
+                      <FontAwesome6 name="caret-left" size={30} color="#fff" />
+                      <FontAwesome6 name="caret-right" size={30} color="#fff" />
                     </View>
               </View>
             </View>
@@ -301,7 +301,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               <View style={styles.leftArrowContainer}>
                     <FontAwesome6 name="arrow-left-long" size={24} color="#fff" />
                   
-                    <View style={styles.circularButton}>
+                    <View style={styles.playerLeftRightButton}>
                       <FontAwesome6 name="caret-left" size={30} color="#fff" />
                       <FontAwesome6 name="caret-right" size={30} color="#fff" />
                     </View>
@@ -368,18 +368,11 @@ const styles = StyleSheet.create({
     zIndex: 10
   },
   expandedContent: {
-    padding: 16,
-    marginTop: -12,
+    padding: 12,
+    marginTop: -6,
     marginBottom: -12
   },
-  scrollView: {
-    maxHeight: 200,
-    marginTop: -12,
-    marginBottom: -12
-  },
-  scrollContent: {
-    padding: 16,
-  },
+  
   tradeSection: {
     gap: -4,
   },
@@ -451,14 +444,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 100,
+    gap: 74,
     
   },
   rightArrowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 40,
+    gap: 4,
    
   },
   cardsContainer: {
@@ -506,12 +499,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  circularButton: {
+  playerLeftRightButton: {
     gap: 8,
-    borderRadius: 25,
+    borderRadius: 4,
     paddingVertical: 2,
+    paddingHorizontal: 20,
+    backgroundColor: '#5c5579',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     
-    backgroundColor: '#121212',
+  },
+  partnerLeftRightButton: {
+    gap: 8,
+    borderRadius: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 20,
+    backgroundColor: '#5c5579',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

@@ -60,7 +60,8 @@ export default function ProfileDeck({ posts, onToggleReveal }: ProfileDeckProps)
           style={styles.toggleButton}
           onPress={handleToggleReveal}
         >
-          <FontAwesome6 name="up-down" size={18} color="#ffffff" />
+          <FontAwesome6 name="arrow-up-long" size={22} color="#ffffff" />
+          <FontAwesome6 name="arrow-down-long" size={22} color="#ffffff" />
         </TouchableOpacity>
 
         <View style={styles.serviceButton}>
@@ -139,9 +140,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderTopRightRadius: 4,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 4,
     borderTopLeftRadius: 4,
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 25,
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
@@ -150,15 +151,15 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 25,
     borderTopLeftRadius: 4,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 4,
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
   },
   tradeButton: {
-    backgroundColor: '#1c8aff',
+    backgroundColor: '#FFA600',
     paddingVertical: 13,
     paddingHorizontal: 26,
     borderRadius: 4,
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   goodButton: {
-    width: 110,
+    width: 90,
     height: 40,
     flexDirection: 'row',
     gap: 8,
@@ -191,15 +192,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toggleButton: {
-    width: 40,
+    width: 60,
     height: 40,
     borderRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: '#FFA600',
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   serviceButton: {
-    width: 110,
+    width: 90,
     height: 40,
     flexDirection: 'row',
     gap: 8,

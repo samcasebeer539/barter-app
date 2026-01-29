@@ -103,7 +103,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
         Animated.spring(revealProgress, {
           toValue: 0,
           useNativeDriver: true,
-          damping: 20,
+          damping: 24,
           stiffness: 200,
         }).start();
       }
@@ -144,7 +144,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Move deck upward
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -500],
+    outputRange: [0, -380],
   }) || 0;
 
   return (

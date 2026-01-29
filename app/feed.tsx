@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#1C1C1E',
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -258,10 +258,10 @@ const styles = StyleSheet.create({
   circularButton: {
     width: 50,
     height: 50,
-    borderTopLeftRadius: 4,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 4,
     borderTopRightRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 4,
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',

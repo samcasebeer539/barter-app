@@ -59,93 +59,60 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   if (!visible) return null;
 
   return (
-    <View style={styles.modalOverlay} pointerEvents="box-none">
-      <TouchableOpacity 
-        style={styles.modalBackground} 
-        activeOpacity={1} 
-        onPress={handleCloseModal}
-      />
-      <View style={styles.modalContent} pointerEvents="box-none">
-        <Animated.View
-          pointerEvents="auto"
-          style={[
-            styles.animatedContainer,
-            {
-              transform: [{ translateY: deckTranslateY }],
-            },
-          ]}
-        >
-          <View style={styles.goodServiceRow}>
+    <View style={styles.modalContent} pointerEvents="box-none">
+        <View style={styles.goodServiceRow}>
             <View style={styles.goodButton}>
-              <Text style={styles.offerButtonText}>12</Text>
-              <FontAwesome6 name="cube" size={22} color="#ffffff" />
+                <Text style={styles.tradeButtonText}>12</Text>
+                <FontAwesome6 name="cube" size={22} color="#ffffff" />
             </View>
             <View style={styles.serviceButton}>
-              <Text style={styles.offerButtonText}>4</Text>
-              <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
+                <Text style={styles.tradeButtonText}>4</Text>
+                <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
             </View>
-          </View>
+        </View>
           
-          <View style={styles.deckWrapper}>
+        <View style={styles.deckWrapper}>
             <Deck 
-              posts={posts}
-              cardWidth={Math.min(width - 40, 400)}
-              enabled={true}
+                posts={posts}
+                cardWidth={Math.min(width - 40, 400)}
+                enabled={true}
             />
-          </View>
+        </View>
 
-          {/* Button row with up chevron, offer button, and save button */}
-          <View style={styles.buttonRow}>
-            {/* Save button */}
-            <TouchableOpacity 
-              style={styles.saveButton}
-              onPress={handleSave}
-            >
-              <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
-            </TouchableOpacity>
+        {/* Button row with up chevron, offer button, and save button */}
+        <View style={styles.buttonRow}>
+        {/* plus button */}
+        <TouchableOpacity 
+            style={styles.plusButton}
+            onPress={handleSave}
+        >
+            <FontAwesome6 name="plus" size={22} color="#ffffff" />
+        </TouchableOpacity>
 
-            {/* Offer button */}
-            <TouchableOpacity 
-              style={styles.offerButton}
-              onPress={handleOffer}
-            >
-              <Text style={styles.offerButtonText}>OFFER</Text>
-            </TouchableOpacity>
+        {/* Offer button */}
+        <TouchableOpacity 
+            style={styles.tradeButton}
+            onPress={handleOffer}
+        >
+            <Text style={styles.tradeButtonText}>TRADE</Text>
+        </TouchableOpacity>
 
-            
-            {/* Up/Close button */}
-            <TouchableOpacity 
-              style={styles.upButton}
-              onPress={handleCloseModal}
-            >
-              <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
-            </TouchableOpacity>
+        
+        {/* minus button */}
+        <TouchableOpacity 
+            style={styles.minusButton}
+            onPress={handleCloseModal}
+        >
+            <FontAwesome6 name="minus" size={22} color="#ffffff" />
+        </TouchableOpacity>
 
-          </View>
-        </Animated.View>
-      </View>
+    </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'flex-end',
-    zIndex: 20,
-  },
-  modalBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(20, 20, 20, 0.85)',
-  },
+
   modalContent: {
     width: '100%',
     maxWidth: 400,
@@ -180,7 +147,7 @@ const styles = StyleSheet.create({
     top: -226,
     zIndex: 6
   },
-  upButton: {
+  plusButton: {
     width: 50,
     height: 50,
     
@@ -193,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
    
   },
-  saveButton: {
+  minusButton: {
     width: 50,
     height: 50,
     
@@ -206,7 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     
   },
-  offerButton: {
+  tradeButton: {
     backgroundColor: '#1c8aff',
     paddingVertical: 13,
     paddingHorizontal: 26,
@@ -215,7 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     
   },
-  offerButtonText: {
+  tradeButtonText: {
     color: '#ffffff',
     fontSize: 20,
     fontWeight: '700',

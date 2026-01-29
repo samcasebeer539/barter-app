@@ -347,7 +347,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     borderBottomRightRadius: 4,
     marginTop: 10,
-    marginBottom: -5,
     zIndex: 20,
     elevation: 20, // For Android
   },
@@ -355,7 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     
   },

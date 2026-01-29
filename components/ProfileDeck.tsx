@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 const { width } = Dimensions.get('window');
 
@@ -13,120 +12,85 @@ interface Post {
   photos: string[];
 }
 
-interface FeedDeckProps {
+interface ProfileDeckProps {
   posts: Post[];
-  visible: boolean;
-  onClose: () => void;
 }
 
-export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
-  const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
-  const [showSaved, setShowSaved] = useState(false);
-
-  useEffect(() => {
-    if (visible) {
-      deckTranslateY.setValue(-Dimensions.get('window').height);
-
-      Animated.spring(deckTranslateY, {
-        toValue: Dimensions.get('window').height / 7,
-        useNativeDriver: true,
-        damping: 24,
-        stiffness: 200,
-      }).start();
-    }
-  }, [visible]);
-
-  const handleCloseModal = () => {
-    Animated.timing(deckTranslateY, {
-      toValue: -Dimensions.get('window').height,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose();
-    });
+export default function ProfileDeck({ posts }: ProfileDeckProps) {
+  const handleTrade = () => {
+    console.log('Trade button pressed');
+    // Add your trade logic here
   };
 
-  const handleOffer = () => {
-    console.log('Offer button pressed');
-    // Add your offer logic here
+  const handlePlus = () => {
+    console.log('Plus button pressed');
+    // Add your plus logic here
   };
 
-  const handleSave = () => {
-    console.log('Save button', showSaved);
-    setShowSaved(prev => !prev);
+  const handleMinus = () => {
+    console.log('Minus button pressed');
+    // Add your minus logic here
   };
-
-  if (!visible) return null;
 
   return (
-    <View style={styles.modalContent} pointerEvents="box-none">
-        <View style={styles.goodServiceRow}>
-            <View style={styles.goodButton}>
-                <Text style={styles.tradeButtonText}>12</Text>
-                <FontAwesome6 name="cube" size={22} color="#ffffff" />
-            </View>
-            <View style={styles.serviceButton}>
-                <Text style={styles.tradeButtonText}>4</Text>
-                <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
-            </View>
+    <View style={styles.container} pointerEvents="box-none">
+      <View style={styles.goodServiceRow}>
+        <View style={styles.goodButton}>
+          <Text style={styles.tradeButtonText}>12</Text>
+          <FontAwesome6 name="cube" size={22} color="#ffffff" />
         </View>
-          
-        <View style={styles.deckWrapper}>
-            <Deck 
-                posts={posts}
-                cardWidth={Math.min(width - 40, 400)}
-                enabled={true}
-            />
+        <View style={styles.serviceButton}>
+          <Text style={styles.tradeButtonText}>4</Text>
+          <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
         </View>
+      </View>
+        
+      <View style={styles.deckWrapper}>
+        <Deck 
+          posts={posts}
+          cardWidth={Math.min(width - 40, 400)}
+          enabled={true}
+        />
+      </View>
 
-        {/* Button row with up chevron, offer button, and save button */}
-        <View style={styles.buttonRow}>
+      {/* Button row with plus, trade, and minus buttons */}
+      <View style={styles.buttonRow}>
         {/* plus button */}
         <TouchableOpacity 
-            style={styles.plusButton}
-            onPress={handleSave}
+          style={styles.plusButton}
+          onPress={handlePlus}
         >
-            <FontAwesome6 name="plus" size={22} color="#ffffff" />
+          <FontAwesome6 name="plus" size={22} color="#ffffff" />
         </TouchableOpacity>
 
-        {/* Offer button */}
+        {/* Trade button */}
         <TouchableOpacity 
-            style={styles.tradeButton}
-            onPress={handleOffer}
+          style={styles.tradeButton}
+          onPress={handleTrade}
         >
-            <Text style={styles.tradeButtonText}>TRADE</Text>
+          <Text style={styles.tradeButtonText}>TRADE</Text>
         </TouchableOpacity>
 
-        
         {/* minus button */}
         <TouchableOpacity 
-            style={styles.minusButton}
-            onPress={handleCloseModal}
+          style={styles.minusButton}
+          onPress={handleMinus}
         >
-            <FontAwesome6 name="minus" size={22} color="#ffffff" />
+          <FontAwesome6 name="minus" size={22} color="#ffffff" />
         </TouchableOpacity>
-
-    </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
-  modalContent: {
+  container: {
     width: '100%',
     maxWidth: 400,
     position: 'relative',
     paddingHorizontal: 20,
     alignItems: 'center',
     bottom: 400,
-  },
-  animatedContainer: {
-    position: 'absolute',
-    bottom: 120,
-  
-    
-    alignItems: 'center',
   },
   deckWrapper: {
     marginBottom: 20,
@@ -145,12 +109,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
     top: -226,
-    zIndex: 6
+    zIndex: 6,
   },
   plusButton: {
     width: 50,
     height: 50,
-    
     borderTopRightRadius: 4,
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 4,
@@ -158,12 +121,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
-   
   },
   minusButton: {
     width: 50,
     height: 50,
-    
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 4,
@@ -171,7 +132,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
   tradeButton: {
     backgroundColor: '#1c8aff',
@@ -180,7 +140,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    
   },
   tradeButtonText: {
     color: '#ffffff',
@@ -200,7 +159,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
   serviceButton: {
     width: 110,
@@ -214,7 +172,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
-
 });

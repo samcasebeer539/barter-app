@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
@@ -21,7 +21,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <Tabs
-        screenOptions={({}) => ({
+        screenOptions={{
           tabBarActiveTintColor: '#FFA600',
           tabBarInactiveTintColor: '#fff',
           tabBarStyle: {
@@ -36,17 +36,19 @@ export default function RootLayout() {
           tabBarShowLabel: false,
           headerShown: false,
           tabBarButton: (props) => {
-            // Don't render a container for hidden tabs
-            if (props.accessibilityState?.selected === undefined && !props.to) {
-              return null;
-            }
+            const { children, onPress, onLongPress, accessibilityState, style, ...rest } = props;
             
-            const isFirst = props.to === '/feed';
-            const isLast = props.to === '/profile';
-            const isMiddle = props.to === '/activetradestest';
+            // Determine button position based on the route
+            const href = props.href as string;
+            const isFirst = href === '/feed';
+            const isLast = href === '/profile';
+            const isMiddle = href === '/activetradestest';
             
             return (
-              <View 
+              <Pressable
+                {...rest}
+                onPress={onPress}
+                onLongPress={onLongPress}
                 style={[
                   styles.tabButton,
                   isFirst && styles.leftButton,
@@ -54,11 +56,11 @@ export default function RootLayout() {
                   isMiddle && styles.middleButton,
                 ]}
               >
-                <View {...props} />
-              </View>
+                {children}
+              </Pressable>
             );
           },
-        })}
+        }}
       >
         <Tabs.Screen
           name="index"

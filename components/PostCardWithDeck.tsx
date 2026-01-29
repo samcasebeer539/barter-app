@@ -42,7 +42,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const isRevealed = useRef(false); // Track if currently revealed
   const postCardTapRef = useRef<TapGestureHandler>(null);
   
-  const peekAmount = 64; // How much the deck peeks out from the top
+  const peekAmount = -200; // How much the deck peeks out from the top
   const revealThreshold = 100; // How far down to swipe to trigger reveal
   
  

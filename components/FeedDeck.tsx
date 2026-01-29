@@ -21,27 +21,44 @@ interface FeedDeckProps {
 
 export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
+  const buttonsTranslateY = useRef(new Animated.Value(100)).current;
   const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
     if (visible) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
+      buttonsTranslateY.setValue(100);
 
-      Animated.spring(deckTranslateY, {
-        toValue: 40,
-        useNativeDriver: true,
-        damping: 24,
-        stiffness: 200,
-      }).start();
+      Animated.parallel([
+        Animated.spring(deckTranslateY, {
+          toValue: 40,
+          useNativeDriver: true,
+          damping: 24,
+          stiffness: 200,
+        }),
+        Animated.spring(buttonsTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 24,
+          stiffness: 200,
+        }),
+      ]).start();
     }
   }, [visible]);
 
   const handleCloseModal = () => {
-    Animated.timing(deckTranslateY, {
-      toValue: -Dimensions.get('window').height,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
+    Animated.parallel([
+      Animated.timing(deckTranslateY, {
+        toValue: -Dimensions.get('window').height,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonsTranslateY, {
+        toValue: 100,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       onClose();
     });
   };
@@ -83,7 +100,15 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         </Animated.View>
 
         {/* Button row with up chevron, offer button, and save button */}
-        <View style={styles.buttonRow} pointerEvents="auto">
+        <Animated.View 
+          style={[
+            styles.buttonRow,
+            {
+              transform: [{ translateY: buttonsTranslateY }],
+            },
+          ]} 
+          pointerEvents="auto"
+        >
           {/* Save button */}
           <TouchableOpacity 
             style={styles.saveButton}
@@ -109,7 +134,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
           </TouchableOpacity>
 
-        </View>
+        </Animated.View>
       </View>
     </View>
   );

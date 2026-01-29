@@ -4,11 +4,10 @@
 //add button over deck peek
 
 import React, { useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler';
 import PostCard from './PostCard';
-import Deck from './Deck';
-import { FontAwesome6 } from '@expo/vector-icons';
+import ProfileDeck from './ProfileDeck';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -115,20 +114,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
-  const handleTradePress = () => {
-    console.log('Trade button pressed');
-    // Add your trade logic here
-  };
-
-  const handlePlusPress = () => {
-    console.log('Plus button pressed');
-    // Add your trade logic here
-  };
-  const handleMinusPress = () => {
-    console.log('Minus button pressed');
-    // Add your trade logic here
-  };
-
   // Scale from small (1/1.4) to large (1) - deck renders at large size, scales down when collapsed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
@@ -140,21 +125,6 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     inputRange: [0, 1],
     outputRange: [0, -500],
   }) || 0;
-
-  // Animate TRADE button opacity - get rid of
-  const tradeButtonOpacity = revealProgress?.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
-  }) || 0;
-
-  // Animate button vertical position
-  const buttonTranslateY = revealProgress?.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, (cardHeight * 1.4 * 0.85) - (cardHeight * 0.86)],
-  }) || 0;
-
-  // Static button top position (based on small size)
-  const buttonTopBase = (cardHeight * 0.87) + 20;
 
   return (
     <Animated.View style={{ flex: 1 }}>
@@ -169,7 +139,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             styles.container,
           ]}
         >
-          {/* Deck component peeking out from behind */}
+          {/* ProfileDeck component peeking out from behind */}
           <Animated.View 
             style={[
               styles.deckPeek, 
@@ -183,74 +153,8 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             ]} 
             pointerEvents="box-none"
           >
-            {/* Render deck at large size - will be scaled down when collapsed */}
-            <View style={styles.deckWrapper}>
-              <Deck posts={deckPosts} cardWidth={deckCardWidthLarge} enabled={deckRevealed} />
-            </View>
-
-
-            {/* TRADE Button - positioned below the deck */}
-            <Animated.View 
-              style={[
-                styles.tradeButtonWrapper,
-                { 
-                  top: buttonTopBase,
-                  opacity: tradeButtonOpacity,
-                  transform: [{ translateY: buttonTranslateY }],
-                }
-              ]}
-              pointerEvents="box-none"
-            >
-              <TouchableOpacity 
-                style={styles.tradeButton}
-                onPress={handleTradePress}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.tradeButtonText}>TRADE</Text>
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* plus Button - positioned below the deck */}
-            <Animated.View 
-              style={[
-                styles.plusButtonWrapper,
-                { 
-                  top: buttonTopBase,
-                  opacity: tradeButtonOpacity,
-                  transform: [{ translateY: buttonTranslateY }],
-                }
-              ]}
-              pointerEvents="box-none"
-            >
-              <TouchableOpacity 
-                style={styles.plusButton}
-                onPress={handlePlusPress}
-                activeOpacity={0.7}
-              >
-                <FontAwesome6 name="plus" size={24} color='#FFFFFF' />
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* minus Button - positioned below the deck */}
-            <Animated.View 
-              style={[
-                styles.minusButtonWrapper,
-                { 
-                  top: buttonTopBase,
-                  opacity: tradeButtonOpacity,
-                  transform: [{ translateY: buttonTranslateY }],
-                }
-              ]}
-              pointerEvents="box-none"
-            >
-              <TouchableOpacity 
-                style={styles.minusButton}
-                onPress={handleMinusPress}
-                activeOpacity={0.7}
-              >
-                <FontAwesome6 name="minus" size={24} color='#FFFFFF' />
-              </TouchableOpacity>
-            </Animated.View>
+            {/* ProfileDeck includes the deck and buttons */}
+            <ProfileDeck posts={deckPosts} />
           </Animated.View>
           
           {/* Main PostCard - moves during drag and tappable to collapse */}
@@ -288,94 +192,6 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     zIndex: 1,
-  },
-  deckWrapper: {
-    right: 13
-  },
-  tradeButtonWrapper: {
-    position: 'absolute',
-    width: '85%',
-    alignItems: 'center',
-    zIndex: 4,
-  },
-  tradeButton: {
-    top: -200,
-    backgroundColor: '#FFA600',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  tradeButtonText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  plusButtonWrapper: {
-    position: 'absolute',
-    width: '85%',
-    alignItems: 'flex-start',
-    marginTop: 6,
-    marginLeft: 32,
-    zIndex: 4,
-  },
-  plusButton: {
-    top: -200,
-    backgroundColor: '#292929',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  minusButtonWrapper: {
-    position: 'absolute',
-    width: '85%',
-    alignItems: 'flex-end',
-    marginTop: 6,
-    marginRight: 32,
-    zIndex: 4,
-  },
-  minusButton: {
-    top: -200,
-    backgroundColor: '#292929',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  plusMinusButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
 });
 

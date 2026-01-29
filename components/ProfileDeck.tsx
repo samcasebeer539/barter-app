@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
@@ -17,6 +17,13 @@ interface ProfileDeckProps {
 }
 
 export default function ProfileDeck({ posts }: ProfileDeckProps) {
+  // Count good and service posts
+  const { goodCount, serviceCount } = useMemo(() => {
+    const goodCount = posts.filter(post => post.type === 'good').length;
+    const serviceCount = posts.filter(post => post.type === 'service').length;
+    return { goodCount, serviceCount };
+  }, [posts]);
+
   const handleTrade = () => {
     console.log('Trade button pressed');
     // Add your trade logic here
@@ -36,11 +43,11 @@ export default function ProfileDeck({ posts }: ProfileDeckProps) {
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.goodServiceRow}>
         <View style={styles.goodButton}>
-          <Text style={styles.tradeButtonText}>12</Text>
+          <Text style={styles.tradeButtonText}>{goodCount}</Text>
           <FontAwesome6 name="cube" size={22} color="#ffffff" />
         </View>
         <View style={styles.serviceButton}>
-          <Text style={styles.tradeButtonText}>4</Text>
+          <Text style={styles.tradeButtonText}>{serviceCount}</Text>
           <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
         </View>
       </View>

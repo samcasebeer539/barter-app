@@ -114,6 +114,27 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
     }
   };
 
+  const handleToggleReveal = () => {
+    // Toggle the revealed state
+    const newRevealedState = !isRevealed.current;
+    isRevealed.current = newRevealedState;
+    
+    // Animate reveal progress
+    if (revealProgress) {
+      Animated.spring(revealProgress, {
+        toValue: newRevealedState ? 1 : 0,
+        useNativeDriver: true,
+        damping: 20,
+        stiffness: 200,
+      }).start();
+    }
+    
+    // Notify parent of reveal state change
+    if (onRevealChange) {
+      onRevealChange(newRevealedState);
+    }
+  };
+
   // Scale from small (1/1.4) to large (1) - deck renders at large size, scales down when collapsed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
@@ -154,7 +175,10 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
             pointerEvents="box-none"
           >
             {/* ProfileDeck includes the deck and buttons */}
-            <ProfileDeck posts={deckPosts} />
+            <ProfileDeck 
+              posts={deckPosts}
+              onToggleReveal={handleToggleReveal}
+            />
           </Animated.View>
           
           {/* Main PostCard - moves during drag and tappable to collapse */}

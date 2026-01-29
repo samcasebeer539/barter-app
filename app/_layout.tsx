@@ -36,17 +36,32 @@ export default function RootLayout() {
           tabBarShowLabel: false,
           headerShown: false,
           tabBarButton: (props) => {
-            const { children, ...rest } = props;
+            const { 
+              children, 
+              onPress, 
+              onLongPress,
+              testID,
+              accessibilityLabel,
+              accessibilityRole,
+              accessibilityState,
+              style,
+              ...rest 
+            } = props as any;
             
             // Determine button position based on the route
-            const href = (props as any).href as string;
+            const href = props.href as string;
             const isFirst = href === '/feed';
             const isLast = href === '/profile';
             const isMiddle = href === '/activetradestest';
             
             return (
               <TouchableOpacity
-                {...rest}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                testID={testID}
+                accessibilityLabel={accessibilityLabel}
+                accessibilityRole={accessibilityRole}
+                accessibilityState={accessibilityState}
                 style={[
                   styles.tabButton,
                   isFirst && styles.leftButton,

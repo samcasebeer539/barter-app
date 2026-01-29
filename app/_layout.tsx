@@ -21,7 +21,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <Tabs
-        screenOptions={{
+        screenOptions={({}) => ({
           tabBarActiveTintColor: '#FFA600',
           tabBarInactiveTintColor: '#fff',
           tabBarStyle: {
@@ -35,7 +35,30 @@ export default function RootLayout() {
           tabBarBackground: () => <TabBarBackground />,
           tabBarShowLabel: false,
           headerShown: false,
-        }}
+          tabBarButton: (props) => {
+            // Don't render a container for hidden tabs
+            if (props.accessibilityState?.selected === undefined && !props.to) {
+              return null;
+            }
+            
+            const isFirst = props.to === '/feed';
+            const isLast = props.to === '/profile';
+            const isMiddle = props.to === '/activetradestest';
+            
+            return (
+              <View 
+                style={[
+                  styles.tabButton,
+                  isFirst && styles.leftButton,
+                  isLast && styles.rightButton,
+                  isMiddle && styles.middleButton,
+                ]}
+              >
+                <View {...props} />
+              </View>
+            );
+          },
+        })}
       >
         <Tabs.Screen
           name="index"
@@ -95,3 +118,31 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    backgroundColor: '#5c5579',
+    marginHorizontal: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 50,
+  },
+  leftButton: {
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    marginLeft: 20,
+  },
+  middleButton: {
+    borderRadius: 4,
+  },
+  rightButton: {
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+    marginRight: 20,
+  },
+});

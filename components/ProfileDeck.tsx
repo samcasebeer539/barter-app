@@ -14,9 +14,10 @@ interface Post {
 
 interface ProfileDeckProps {
   posts: Post[];
+  onToggleReveal?: () => void;
 }
 
-export default function ProfileDeck({ posts }: ProfileDeckProps) {
+export default function ProfileDeck({ posts, onToggleReveal }: ProfileDeckProps) {
   // Count good and service posts
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
@@ -39,15 +40,31 @@ export default function ProfileDeck({ posts }: ProfileDeckProps) {
     // Add your minus logic here
   };
 
+  const handleToggleReveal = () => {
+    console.log('Toggle reveal button pressed');
+    if (onToggleReveal) {
+      onToggleReveal();
+    }
+  };
+
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.goodServiceRow}>
         <View style={styles.goodButton}>
-          <Text style={styles.tradeButtonText}>{goodCount}</Text>
+          <Text style={styles.countText}>{goodCount}</Text>
           <FontAwesome6 name="cube" size={22} color="#ffffff" />
         </View>
+        
+        {/* Toggle reveal button */}
+        <TouchableOpacity 
+          style={styles.toggleButton}
+          onPress={handleToggleReveal}
+        >
+          <FontAwesome6 name="up-down" size={18} color="#ffffff" />
+        </TouchableOpacity>
+
         <View style={styles.serviceButton}>
-          <Text style={styles.tradeButtonText}>{serviceCount}</Text>
+          <Text style={styles.countText}>{serviceCount}</Text>
           <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
         </View>
       </View>
@@ -154,6 +171,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  countText: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
   goodButton: {
     width: 110,
     height: 40,
@@ -163,6 +186,14 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 4,
+    backgroundColor: '#5c5579',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toggleButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
     backgroundColor: '#5c5579',
     justifyContent: 'center',
     alignItems: 'center',

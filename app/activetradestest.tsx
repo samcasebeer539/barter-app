@@ -67,13 +67,13 @@ const trade3Turns: TradeTurn[] = [
 const activeTrades = [
   {
     id: 1,
-    playercards: POSTS.slice(0, 1),
-    partnercards: POSTS.slice(1, 2),
+    playercards: POSTS.slice(0, 2),
+    partnercards: POSTS.slice(1, 3),
     turns: trade1Turns,
   },
   {
     id: 2,
-    playercards: POSTS.slice(2, 3),
+    playercards: POSTS.slice(0, 3),
     partnercards: POSTS.slice(0, 1),
     turns: trade2Turns,
   },

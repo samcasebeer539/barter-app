@@ -581,11 +581,11 @@ const styles = StyleSheet.create({
   },
   timeButton: {
     flex: 1,
-    gap: 8,
+    
     borderRadius: 4,
     minHeight: 40,
     paddingVertical: 8,
-    paddingHorizontal: 27,
+    paddingHorizontal: 8,
     backgroundColor: '#007AFF',
     flexDirection: 'row',
     justifyContent: 'center',

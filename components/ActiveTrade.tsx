@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 4,
-    
+    width: 180,
   },
   
   cardsContainer: {
@@ -470,11 +470,13 @@ const styles = StyleSheet.create({
   },
 
   playButton: {
+    flex: 1,
     flexDirection: 'row',
     gap: 8,
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
+    minHeight: 44,
     paddingVertical: 6,
     paddingHorizontal: 13,
     borderTopLeftRadius: 4,
@@ -494,26 +496,28 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   leftRightButton: {
+    flex: 1,
     gap: 8,
     borderRadius: 4,
+    minHeight: 44,
     paddingVertical: 2,
     paddingHorizontal: 10,
     backgroundColor: '#5c5579',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
   timeButton: {
+    flex: 1,
     gap: 8,
     borderRadius: 4,
+    minHeight: 44,
     paddingVertical: 8,
     paddingHorizontal: 27,
     backgroundColor: '#5c5579',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
 
 });

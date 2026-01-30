@@ -22,6 +22,8 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
     goodsCount: 5,
     servicesCount: 3,
   };
+  // replace this with actual user data from API
+  const profileImageUrl = 'https://picsum.photos/seed/camera3/600/600';
 
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
@@ -43,7 +45,7 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         {/* Top Row: Profile Picture (left) and Stats (right) */}
         <View style={styles.topRow}>
-          <ProfilePicture size={120} avatarText={user.avatarText} />
+          <ProfilePicture size={120} avatarText={user.avatarText} imageSource={profileImageUrl}/>
           
       
         </View>

@@ -19,7 +19,7 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   
-  const [isDescriptionMode, setIsDescriptionMode] = useState(post.type === 'service');
+  const [isDescriptionMode, setIsDescriptionMode] = useState(false);
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },
   descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
   descriptionScroll: { flex: 1 },
-  descriptionText: { fontSize: 14, lineHeight: 21, color: '#525252' },
+  descriptionText: { fontSize: 14, lineHeight: 21, color: '#000000' },
 });
 
 export default PostCard;

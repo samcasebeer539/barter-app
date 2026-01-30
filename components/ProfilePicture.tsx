@@ -12,12 +12,12 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   avatarText = '👤',
   imageSource
 }) => {
-  const ringGap = 3;
+  const ringGap = 2;
   const ringThickness = 3;
   
   // Calculate sizes for each ring
   const avatarSize = size;
-  const innerRingSize = avatarSize + (ringGap * 2) + (ringThickness * 2);
+  const innerRingSize = avatarSize + (ringThickness * 2);
   const middleRingSize = innerRingSize + (ringGap * 2) + (ringThickness * 2);
   const outerRingSize = middleRingSize + (ringGap * 2) + (ringThickness * 2);
   

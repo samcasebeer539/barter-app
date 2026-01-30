@@ -76,7 +76,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         // Slide content so cards bottom is at screen center
         // Adjust this value based on your card heights and layout
         Animated.spring(contentPosition, {
-          toValue: -(SCREEN_HEIGHT / 16), // Position cards at center
+          toValue: -(SCREEN_HEIGHT / 17), // Position cards at center
           useNativeDriver: true,
           damping: 20,
           stiffness: 100,
@@ -290,8 +290,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         </Text>
                     </TouchableOpacity>
 
-                    <View style={styles.partnerLeftRightButton}>
+                    <View style={styles.leftRightButton}>
                       <FontAwesome6 name="caret-left" size={30} color="#fff" />
+                      <Text style={styles.playButtonText}>2</Text>
                       <FontAwesome6 name="caret-right" size={30} color="#fff" />
                     </View>
               </View>
@@ -299,13 +300,18 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 
             <View style={styles.cardsContainer}>
               <View style={styles.leftArrowContainer}>
-                    <FontAwesome6 name="arrow-left-long" size={24} color="#fff" />
+                    
                   
-                    <View style={styles.playerLeftRightButton}>
+                    <View style={styles.leftRightButton}>
                       <FontAwesome6 name="caret-left" size={30} color="#fff" />
+                      <Text style={styles.playButtonText}>3</Text>
                       <FontAwesome6 name="caret-right" size={30} color="#fff" />
                     </View>
-                    
+                    <View style={styles.timeButton}>
+                      
+                      <Text style={styles.playButtonText}>11:49</Text>
+                      
+                    </View>
                     
               </View>
               <View style={styles.rightCard}>
@@ -329,7 +335,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 0,
     backgroundColor: '#121212',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
   },
   containerPlaying: {
     position: 'absolute',
@@ -346,7 +352,8 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 4,
-    marginTop: 10,
+    marginTop: 12,
+    marginBottom: -4,
     zIndex: 20,
     elevation: 20, // For Android
   },
@@ -444,7 +451,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 74,
+    gap: 4,
     
   },
   rightArrowContainer: {
@@ -467,13 +474,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  playButtonsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    width: "100%",
-    gap: 12,
-  },
 
   playButton: {
     flexDirection: 'row',
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 20,
     borderTopRightRadius: 4,
@@ -499,28 +499,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  playerLeftRightButton: {
+  leftRightButton: {
     gap: 8,
     borderRadius: 4,
     paddingVertical: 2,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     backgroundColor: '#5c5579',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     
   },
-  partnerLeftRightButton: {
+  timeButton: {
     gap: 8,
     borderRadius: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 27,
     backgroundColor: '#5c5579',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     
   },
+
 });
 
 

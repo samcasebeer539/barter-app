@@ -4,6 +4,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { useFonts } from 'expo-font';
+
 
 function TabBarBackground() {
   return (
@@ -18,6 +20,16 @@ function TabBarBackground() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'YourFontName-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
+    'YourFontName-Bold': require('../assets/fonts/RobotoCondensed-SemiBold.ttf'),
+    // Add other font weights/styles as needed
+  });
+ 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
       <Tabs

@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+
 
 const { width } = Dimensions.get('window');
 
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
   },
   tradeButton: {
     backgroundColor: '#FFA600',
-    paddingVertical: 13,
+    height: 50,
     paddingHorizontal: 26,
     borderRadius: 4,
     alignItems: 'center',
@@ -168,15 +170,14 @@ const styles = StyleSheet.create({
   },
   tradeButtonText: {
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 24,
+    
+    fontFamily: globalFonts.bold
   },
   countText: {
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 24,
+    fontFamily: globalFonts.bold
   },
   goodButton: {
     width: 90,
@@ -192,13 +193,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   toggleButton: {
-    width: 60,
+    width: 40,
     height: 40,
     borderRadius: 4,
     backgroundColor: '#FFA600',
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+    gap:0
   },
   serviceButton: {
     width: 90,

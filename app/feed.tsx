@@ -4,6 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import FeedDeck from '@/components/FeedDeck';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
   itemTitleWrapper: {
     backgroundColor: '#5c5579',
     marginTop: 4,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     
     flexDirection: 'row',
@@ -267,10 +268,10 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
   },
   itemTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-    
+    fontFamily: globalFonts.bold,
     
   },
   circularButton: {

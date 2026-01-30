@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+
 
 const { width } = Dimensions.get('window');
 
@@ -215,7 +217,7 @@ const styles = StyleSheet.create({
   },
   offerButton: {
     backgroundColor: '#1c8aff',
-    paddingVertical: 13,
+    height: 50,
     paddingHorizontal: 26,
     borderRadius: 4,
     alignItems: 'center',
@@ -224,9 +226,9 @@ const styles = StyleSheet.create({
   },
   offerButtonText: {
     color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 24,
+    fontFamily: globalFonts.bold
+    
   },
   goodButton: {
     width: 110,

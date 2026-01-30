@@ -20,6 +20,8 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import PostCard from '@/components/PostCard';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+
 
 import { TRADE_LINES } from '../content/tradelines';
 import { TRADE_STYLES } from '../content/tradelinestyles';
@@ -184,7 +186,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                   style={styles.answerButton}
                   onPress={handleAnswer}
                 >
-                  <Text style={styles.buttonText}>ANSWER</Text>
+                  <Text style={styles.playButtonText}>ANSWER</Text>
                 </TouchableOpacity>
               </View>
               {showInput && (
@@ -245,7 +247,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           activeOpacity={0.7}
         >
           {/* pass text up, should say like Trade with {user} */}
-          <Text style={styles.headerTitle}>Trade with [user]</Text>  
+          <Text style={styles.headerTitle}>TRADE with [user]</Text>  
           <FontAwesome6 
             name={isExpanded ? "chevron-up" : "chevron-down"} 
             size={22} 
@@ -402,7 +404,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 const styles = StyleSheet.create({
   container: {
     marginTop: 16,
-    marginBottom: 0,
+    marginBottom: -8,
     backgroundColor: '#121212',
     paddingHorizontal: 12,
   },
@@ -436,8 +438,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
     color: '#fff',
+    fontFamily: globalFonts.bold
   },
   animatedContent: {
     backgroundColor: '#121212',
@@ -466,6 +468,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#E0E0E0',
     lineHeight: 22,
+    ...defaultTextStyle
   },
   questionButtonContainer: {
     alignItems: 'flex-start',
@@ -492,6 +495,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.5,
+    
   },
   textAnswerInput: {
     color: '#fff',
@@ -561,8 +565,8 @@ const styles = StyleSheet.create({
   playButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
     letterSpacing: 0.5,
+    fontFamily: globalFonts.bold
   },
   leftRightButton: {
     flex: 1,

@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+
 
 interface UserCardProps {
   scale?: number;
@@ -67,7 +69,7 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
         </View>
 
         {/* Tags */}
-        <View style={styles.tagsContainer}>
+        {/* <View style={styles.tagsContainer}>
           {user.tags.map((tag, index) => {
             const colors = getTagColors(tag.color);
             return (
@@ -81,7 +83,7 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
               </View>
             );
           })}
-        </View>
+        </View> */}
       </View>
     </View>
   );
@@ -117,7 +119,7 @@ const styles = StyleSheet.create({
   },
   
   infoContainer: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
   },
   name: {
@@ -125,6 +127,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000000',
     marginBottom: 4,
+    fontFamily: globalFonts.bold,
   },
   locationRow: {
     flexDirection: 'row',
@@ -133,15 +136,18 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#999',
+    color: '#000000',
+    fontFamily: globalFonts.regular,
   },
   bioContainer: {
     marginBottom: 12,
+    alignItems: 'center',
   },
   bio: {
     fontSize: 16,
     lineHeight: 16,
-    color: '#ccc',
+    color: '#000000',
+    fontFamily: globalFonts.regular,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -157,7 +163,9 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-    fontWeight: '500',
+    
+    color: '#000000',
+    fontFamily: globalFonts.regular,
   },
 });
 

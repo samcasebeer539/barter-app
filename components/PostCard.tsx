@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
 
 
 interface Post {
@@ -294,6 +295,7 @@ const styles = StyleSheet.create({
     fontWeight: '600', 
     lineHeight: 24, 
     color: '#000',
+    fontFamily: globalFonts.bold,
   },
   photoSectionWrapper: { position: 'absolute', top: 60, left: 13, right: 13 },
   photoSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
   descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },
   descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
   descriptionScroll: { flex: 1 },
-  descriptionText: { fontSize: 14, lineHeight: 21, color: '#000000' },
+  descriptionText: { fontSize: 14, lineHeight: 21, color: '#000000', ...defaultTextStyle },
 });
 
 export default PostCard;

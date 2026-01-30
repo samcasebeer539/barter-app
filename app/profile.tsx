@@ -23,6 +23,8 @@ import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
 import CreateCard from '@/components/CreateCard';
+import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+
 
 const POSTS = [
   {
@@ -161,7 +163,7 @@ export default function ProfileScreen() {
             Always looking for unique trades and meaningful connections.
           </Text>
 
-          {/* Tags */}
+          {/* Tags
           <View style={styles.tagsContainer}>
             <View style={[styles.tag, styles.tagPink]}>
               <Text style={styles.tagtextPink}>Community Builder</Text>
@@ -172,7 +174,7 @@ export default function ProfileScreen() {
             <View style={[styles.tag, styles.tagPurple]}>
               <Text style={styles.tagtextPurple}>Master Barterer</Text>
             </View>
-          </View>
+          </View> */}
         </Animated.View>
 
         {/* CAROUSEL */}
@@ -259,6 +261,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#141414',
+    
   },
   topGradientContainer: {
     position: 'absolute',
@@ -292,6 +295,8 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingBottom: 10,
     paddingHorizontal: 20,
+    
+    
   },
   profileRow: {
     flexDirection: 'row',
@@ -303,10 +308,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 4,
+    fontFamily: globalFonts.bold,
   },
   locationRow: {
     flexDirection: 'row',
@@ -316,12 +322,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginLeft: 4,
+    ...defaultTextStyle
   },
   bio: {
     fontSize: 14,
     lineHeight: 20,
     color: '#ccc',
-    marginBottom: 16,
+    marginBottom: 8,
+    ...defaultTextStyle
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -338,10 +346,10 @@ const styles = StyleSheet.create({
   tagPink: { borderColor: '#FF3B81' },
   tagGreen: { borderColor: '#34C759' },
   tagPurple: { borderColor: '#9747FF' },
-  tagtextPink: { color: '#FF3B81', fontSize: 12, fontWeight: '500' },
-  tagtextGreen: { color: '#34C759', fontSize: 12, fontWeight: '500' },
-  tagtextPurple: { color: '#9747FF', fontSize: 12, fontWeight: '500' },
+  tagtextPink: { color: '#FF3B81', fontSize: 14, fontWeight: '500', ...defaultTextStyle },
+  tagtextGreen: { color: '#34C759', fontSize: 14, fontWeight: '500', ...defaultTextStyle },
+  tagtextPurple: { color: '#9747FF', fontSize: 14, fontWeight: '500', ...defaultTextStyle },
   cardsWrapper: {
-    marginTop: 230, // Increased to push carousel down more in initial position
+    top: 300 // Increased to push carousel down more in initial position
   },
 });

@@ -12,7 +12,7 @@ const BARTER_ITEMS = [
   { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 },
   { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 },
   { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/520', type: 'service', height: 260 },
-  { id: '6', title: 'Handmade Pottery', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'good', height: 250 },
+  { id: '6', title: 'Handmade Pottery Set For Sale Now', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'good', height: 250 },
   { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/310', type: 'service', height: 155 },
   { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/460', type: 'good', height: 230 },
   { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/530', type: 'service', height: 265 },
@@ -140,7 +140,9 @@ export default function FeedScreen() {
           />
         </View>
       </TouchableOpacity>
-      <Text style={styles.itemTitle}>{item.title}</Text>
+      <View style={styles.itemTitleWrapper}>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+      </View>
     </View>
   );
 
@@ -231,7 +233,10 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#1C1C1E',
-    borderRadius: 12,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 4,
+    borderBottomLeftRadius: 4,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -248,12 +253,25 @@ const styles = StyleSheet.create({
     top: 8,
     left: 8,
   },
+  itemTitleWrapper: {
+    backgroundColor: '#5c5579',
+    marginTop: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 12,
+    borderBottomLeftRadius: 12,
+  },
   itemTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginTop: 8,
-    marginLeft: 4,
+    
+    
   },
   circularButton: {
     width: 50,

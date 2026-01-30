@@ -19,7 +19,7 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   
-  const [isDescriptionMode, setIsDescriptionMode] = useState(post.type === 'service');
+  const [isDescriptionMode, setIsDescriptionMode] = useState(false);
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -35,12 +35,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
 
   // Animation values
-  const descriptionHeight = useRef(new Animated.Value(post.type === 'service' ? 250 : 100)).current;
+  const descriptionHeight = useRef(new Animated.Value(100)).current;
   const photoMode4Lines = 100;
   const descriptionModeHeight = 250;
 
   // New animated value for photo section bottom
-  const photoBottom = useRef(new Animated.Value(post.type === 'service' ? descriptionModeHeight : photoMode4Lines)).current;
+  const photoBottom = useRef(new Animated.Value(photoMode4Lines)).current;
 
   useEffect(() => {
     const ratios: number[] = [];

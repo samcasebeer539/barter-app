@@ -274,7 +274,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                 />
               </View>
 
-              <View style={styles.rightArrowContainer}>
+              <View style={styles.buttonRowContainer}>
                     {/* <FontAwesome6 name="arrow-right-long" size={28} color="#fff" /> */}
                     <TouchableOpacity 
                         style={[
@@ -299,7 +299,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
             </View>
 
             <View style={styles.cardsContainer}>
-              <View style={styles.leftArrowContainer}>
+              <View style={styles.buttonRowContainer}>
                     
                   
                     <View style={styles.leftRightButton}>
@@ -447,20 +447,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
   },
- leftArrowContainer: {
+ buttonRowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 4,
     
   },
-  rightArrowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 4,
-   
-  },
+  
   cardsContainer: {
     flexDirection: 'column',
     alignItems: 'center',

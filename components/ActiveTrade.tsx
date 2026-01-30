@@ -53,6 +53,10 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     const [isExpanded, setIsExpanded] = useState(true);
     const [showInput, setShowInput] = useState(false);
     const inputRef = useRef<TextInput>(null);
+    
+    // Card navigation state
+    const [playerCardIndex, setPlayerCardIndex] = useState(0);
+    const [partnerCardIndex, setPartnerCardIndex] = useState(0);
 
     // Animated values
     const headerPosition = useRef(new Animated.Value(0)).current;
@@ -109,6 +113,31 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     const getArrowForTurn = (turn: TradeTurn) => {
       const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
       return sentTypes.includes(turn.type) ? 'arrow-left-long' : 'arrow-right-long';
+    };
+
+    // Card navigation handlers
+    const handlePlayerCardLeft = () => {
+      if (playerCardIndex > 0) {
+        setPlayerCardIndex(playerCardIndex - 1);
+      }
+    };
+
+    const handlePlayerCardRight = () => {
+      if (playerCardIndex < playercards.length - 1) {
+        setPlayerCardIndex(playerCardIndex + 1);
+      }
+    };
+
+    const handlePartnerCardLeft = () => {
+      if (partnerCardIndex > 0) {
+        setPartnerCardIndex(partnerCardIndex - 1);
+      }
+    };
+
+    const handlePartnerCardRight = () => {
+      if (partnerCardIndex < partnercards.length - 1) {
+        setPartnerCardIndex(partnerCardIndex + 1);
+      }
     };
 
     const renderLine = (turn: TradeTurn, index: number) => {
@@ -268,7 +297,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
             <View style={styles.cardsContainer}>
               <View style={styles.leftCard}>
                 <PostCard 
-                  post={playercards[0] || { type: 'service', name: 'Your Item', description: '', photos: [] }}
+                  post={playercards[playerCardIndex] || { type: 'service', name: 'Your Item', description: '', photos: [] }}
                   cardWidth={180}
                   scale={1}
                 />
@@ -291,9 +320,29 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                     </TouchableOpacity>
 
                     <View style={styles.leftRightButton}>
-                      <FontAwesome6 name="caret-left" size={30} color="#fff" />
-                      <Text style={styles.playButtonText}>2</Text>
-                      <FontAwesome6 name="caret-right" size={30} color="#fff" />
+                      <TouchableOpacity 
+                        onPress={handlePlayerCardLeft}
+                        disabled={playerCardIndex === 0}
+                        style={styles.caretButton}
+                      >
+                        <FontAwesome6 
+                          name="caret-left" 
+                          size={30} 
+                          color={playerCardIndex === 0 ? '#888' : '#fff'} 
+                        />
+                      </TouchableOpacity>
+                      <Text style={styles.playButtonText}>{playerCardIndex + 1}/{playercards.length}</Text>
+                      <TouchableOpacity 
+                        onPress={handlePlayerCardRight}
+                        disabled={playerCardIndex === playercards.length - 1}
+                        style={styles.caretButton}
+                      >
+                        <FontAwesome6 
+                          name="caret-right" 
+                          size={30} 
+                          color={playerCardIndex === playercards.length - 1 ? '#888' : '#fff'} 
+                        />
+                      </TouchableOpacity>
                     </View>
               </View>
             </View>
@@ -303,9 +352,29 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                     
                   
                     <View style={styles.leftRightButton}>
-                      <FontAwesome6 name="caret-left" size={30} color="#fff" />
-                      <Text style={styles.playButtonText}>3</Text>
-                      <FontAwesome6 name="caret-right" size={30} color="#fff" />
+                      <TouchableOpacity 
+                        onPress={handlePartnerCardLeft}
+                        disabled={partnerCardIndex === 0}
+                        style={styles.caretButton}
+                      >
+                        <FontAwesome6 
+                          name="caret-left" 
+                          size={30} 
+                          color={partnerCardIndex === 0 ? '#888' : '#fff'} 
+                        />
+                      </TouchableOpacity>
+                      <Text style={styles.playButtonText}>{partnerCardIndex + 1}/{partnercards.length}</Text>
+                      <TouchableOpacity 
+                        onPress={handlePartnerCardRight}
+                        disabled={partnerCardIndex === partnercards.length - 1}
+                        style={styles.caretButton}
+                      >
+                        <FontAwesome6 
+                          name="caret-right" 
+                          size={30} 
+                          color={partnerCardIndex === partnercards.length - 1 ? '#888' : '#fff'} 
+                        />
+                      </TouchableOpacity>
                     </View>
                     <View style={styles.timeButton}>
                       
@@ -316,7 +385,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               </View>
               <View style={styles.rightCard}>
                 <PostCard 
-                  post={partnercards[0] || { type: 'good', name: 'Their Item', description: '', photos: [] }}
+                  post={partnercards[partnerCardIndex] || { type: 'good', name: 'Their Item', description: '', photos: [] }}
                   cardWidth={180}
                   scale={1}
                 />
@@ -506,6 +575,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  caretButton: {
+    padding: 0,
   },
   timeButton: {
     flex: 1,

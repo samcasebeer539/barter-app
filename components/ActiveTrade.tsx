@@ -112,7 +112,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
 
     const getArrowForTurn = (turn: TradeTurn) => {
       const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
-      return sentTypes.includes(turn.type) ? 'arrow-left-long' : 'arrow-right-long';
+      return sentTypes.includes(turn.type) ? 'arrow-right-long' : 'arrow-left-long';
     };
 
     // Card navigation handlers
@@ -328,7 +328,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         <FontAwesome6 
                           name="caret-left" 
                           size={30} 
-                          color={playerCardIndex === 0 ? '#888' : '#fff'} 
+                          color={playerCardIndex === 0 ? '#7f7997' : '#fff'} 
                         />
                       </TouchableOpacity>
                       <Text style={styles.playButtonText}>{playerCardIndex + 1}/{playercards.length}</Text>
@@ -340,7 +340,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         <FontAwesome6 
                           name="caret-right" 
                           size={30} 
-                          color={playerCardIndex === playercards.length - 1 ? '#888' : '#fff'} 
+                          color={playerCardIndex === playercards.length - 1 ? '#7f7997' : '#fff'} 
                         />
                       </TouchableOpacity>
                     </View>
@@ -360,7 +360,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         <FontAwesome6 
                           name="caret-left" 
                           size={30} 
-                          color={partnerCardIndex === 0 ? '#888' : '#fff'} 
+                          color={partnerCardIndex === 0 ? '#7f7997' : '#fff'} 
                         />
                       </TouchableOpacity>
                       <Text style={styles.playButtonText}>{partnerCardIndex + 1}/{partnercards.length}</Text>
@@ -372,7 +372,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                         <FontAwesome6 
                           name="caret-right" 
                           size={30} 
-                          color={partnerCardIndex === partnercards.length - 1 ? '#888' : '#fff'} 
+                          color={partnerCardIndex === partnercards.length - 1 ? '#7f7997' : '#fff'} 
                         />
                       </TouchableOpacity>
                     </View>
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
  
   playButtonDisabled: {
     backgroundColor: '#5c5579',
-    opacity: 0.5,
+    
   },
   playButtonText: {
     color: '#FFFFFF',

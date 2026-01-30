@@ -47,9 +47,9 @@ const POSTS = [
 
 const trade1Turns: TradeTurn[] = [
   { type: 'sentOffer', item: 'Vintage Books' },
-  { type: 'receivedTrade', user: 'Jay', item: 'Pokemon Cards' },
+  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Pokemon Cards' },
   { type: 'sentCounteroffer' },
-  { type: 'receivedTrade', user: 'Jay', item: 'Pokemon Cards' },
+  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Pokemon Cards' },
 ];
 
 const trade2Turns: TradeTurn[] = [

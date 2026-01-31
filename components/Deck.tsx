@@ -1,4 +1,3 @@
-//todo: prevent deck animation from interfering with scrolling on pictures
 //todo: modify order of deck based on where its called
 //     profile (implemented): usercard on top
 //     feed (todo): clicked on post on top, usercard 2nd
@@ -51,6 +50,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   };
 
   const SWIPE_THRESHOLD = screenWidth * 0.1;
+  const GESTURE_THRESHOLD = 10; // Minimum horizontal movement before capturing gesture
 
   //if user only has single item, duplicate usercard and postcard in array
   const shouldRepeat = posts.length < 2;
@@ -98,8 +98,18 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => enabledRef.current && !isAnimatingRef.current,
-      onMoveShouldSetPanResponder: (_, g) => enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > Math.abs(g.dy),
+      onStartShouldSetPanResponder: () => false, // Don't capture on touch start
+      onMoveShouldSetPanResponder: (_, g) => {
+        // Only capture if:
+        // 1. Deck is enabled
+        // 2. Not currently animating
+        // 3. Horizontal movement is dominant AND exceeds threshold
+        // This prevents interfering with photo ScrollView
+        return enabledRef.current && 
+               !isAnimatingRef.current && 
+               Math.abs(g.dx) > GESTURE_THRESHOLD &&
+               Math.abs(g.dx) > Math.abs(g.dy) * 1.5; // Require significantly more horizontal than vertical movement
+      },
 
       onPanResponderGrant: () => {
         if (!enabledRef.current) return;

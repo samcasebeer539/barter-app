@@ -144,14 +144,18 @@ export default function FeedScreen() {
           />
         </View>
       </TouchableOpacity>
+      
       <View style={styles.itemTitleWrapper}>
         <Text style={styles.itemTitle}>{item.title}</Text>
       </View>
+     
     </View>
   );
 
   return (
+    
     <View style={styles.container}>
+      
       <StatusBar style="light" />
       {/* Top Gradient Overlay */}
             <View style={styles.topGradientContainer}>
@@ -206,7 +210,11 @@ export default function FeedScreen() {
         visible={showDeck}
         onClose={handleCloseDeck}
       />
+
+      
     </View>
+    
+   
   );
 }
 
@@ -215,6 +223,7 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: colors.ui.background,
   },
+
   topIconsContainer: {
     position: 'absolute',
     top: 60,

@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const { width } = Dimensions.get('window');
@@ -84,6 +85,14 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             },
           ]}
         >
+          {/* <View style={styles.topGradientContainer}>
+            <LinearGradient
+              colors={['#000000', 'rgba(0, 0, 0, 0.95)', 'rgba(180, 0, 0, 0)']}
+              locations={[0, 0.4, 1]}
+              style={styles.topGradient}
+            />
+          </View> */}
+          
           <View style={styles.goodServiceRow}>
             <View style={styles.goodButton}>
               <Text style={styles.offerButtonText}>{goodCount}</Text>
@@ -153,23 +162,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(20, 20, 20, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalContent: {
     width: '100%',
-    maxWidth: 400,
+    
     position: 'relative',
-    paddingHorizontal: 20,
+    
     alignItems: 'center',
     bottom: 400,
   },
   animatedContainer: {
     position: 'absolute',
     bottom: 120,
-  
-    
     alignItems: 'center',
   },
+ 
   deckWrapper: {
     marginBottom: 20,
     left: -12,

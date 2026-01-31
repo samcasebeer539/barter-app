@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },
   descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
   descriptionScroll: { flex: 1 },
-  descriptionText: { fontSize: 14, lineHeight: 21, color: '#000000', ...defaultTextStyle },
+  descriptionText: { fontSize: 15, lineHeight: 21, color: '#000000', ...defaultTextStyle },
 });
 
 export default PostCard;

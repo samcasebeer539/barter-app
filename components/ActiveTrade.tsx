@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   },
   expandedContent: {
     padding: 12,
-    marginTop: -6,
+    marginTop: -2,
     marginBottom: -12
   },
   
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#5c5579',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

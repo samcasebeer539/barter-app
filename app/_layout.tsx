@@ -5,14 +5,14 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
-
+import colors, { uiColors } from '@/styles/globalStyles';
 
 function TabBarBackground() {
   return (
     <View style={[StyleSheet.absoluteFill, { height: 120 }]}>
       <LinearGradient
-        colors={['rgba(20, 20, 20, 0)', 'rgba(20, 20, 20, 1)', '#121212']}
-        locations={[0, 0.5, 1]}
+        colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', uiColors.background]}
+        locations={[0, 0.7, 1]}
         style={StyleSheet.absoluteFill}
       />
     </View>
@@ -105,7 +105,7 @@ export default function RootLayout() {
           name="activetradestest"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="arrow-right-arrow-left" size={28} color={color} />
+              <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} />
             ),
           }}
         />

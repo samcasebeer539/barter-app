@@ -20,7 +20,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import PostCard from '@/components/PostCard';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
 import { TRADE_LINES } from '../content/tradelines';
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 16,
     marginBottom: -8,
-    backgroundColor: '#121212',
+    backgroundColor: colors.ui.background,
     paddingHorizontal: 12,
   },
   containerPlaying: {
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     justifyContent: 'center',
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 4,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold
   },
   animatedContent: {
-    backgroundColor: '#121212',
+    backgroundColor: colors.ui.background,
     zIndex: 10
   },
   expandedContent: {
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     marginLeft: 24,
   },
   answerButton: {
-    backgroundColor: '#a73bff',
+    backgroundColor: colors.actions.query,
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 8,
@@ -501,12 +501,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     height: 44,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#fff',
     borderRadius: 8,
     paddingHorizontal: 12,
     marginTop: 8,
     marginBottom: 12,
-    backgroundColor: '#1f1f1f',
+    backgroundColor: colors.ui.background,
   },
   cardsAndButtonsSection: {
     flexDirection: 'column',
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 40,

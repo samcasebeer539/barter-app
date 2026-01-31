@@ -4,7 +4,9 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import FeedDeck from '@/components/FeedDeck';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors, uiColors } from '../styles/globalStyles';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
@@ -125,6 +127,7 @@ export default function FeedScreen() {
   };
 
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
+    
     <View key={item.id} style={styles.cardWrapper}>
       <TouchableOpacity style={styles.card} onPress={handleCardPress}>
         <View style={[styles.imageContainer, { height: item.height }]}>
@@ -150,6 +153,14 @@ export default function FeedScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      {/* Top Gradient Overlay */}
+            <View style={styles.topGradientContainer}>
+              <LinearGradient
+                colors={['#000000', 'rgba(0, 0, 0, 0.95)', 'rgba(0, 0, 0, 0)']}
+                locations={[0, 0.4, 1]}
+                style={styles.topGradient}
+              />
+            </View>
       
       <Animated.View 
         style={[
@@ -201,8 +212,8 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#121212',
+    flex: 1, 
+    backgroundColor: colors.ui.background,
   },
   topIconsContainer: {
     position: 'absolute',
@@ -213,6 +224,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     zIndex: 10,
+  },
+  topGradientContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    zIndex: 5,
+    pointerEvents: 'none',
+  },
+  topGradient: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
@@ -255,7 +278,7 @@ const styles = StyleSheet.create({
     left: 8,
   },
   itemTitleWrapper: {
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     marginTop: 4,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -281,7 +304,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 25,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 25,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   

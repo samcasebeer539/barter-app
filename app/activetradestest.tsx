@@ -7,7 +7,7 @@ import { BARTER_CARDS } from '../components/BarterCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Animated, Dimensions } from 'react-native';
 import { useEffect, useRef } from 'react';
-
+import {colors } from '../styles/globalStyles';
 
 const POSTS = [
   {
@@ -172,8 +172,8 @@ export default function ActiveTradesTestScreen() {
             </View>
 
             <LinearGradient
-                colors={['rgba(12, 12, 12, 0)', 'rgba(12, 12, 12, 1)', '#121212']}
-                locations={[0, 0.1, 1]}
+                colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', '#000000']}
+                locations={[0, 0.2, 1]}
                 style={styles.cardWheelGradient}
                 pointerEvents="none"
             />
@@ -189,7 +189,7 @@ export default function ActiveTradesTestScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
+        backgroundColor: colors.ui.background,
     },
     scrollView: {
         flex: 1,

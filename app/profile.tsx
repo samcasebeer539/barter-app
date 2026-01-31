@@ -23,7 +23,7 @@ import PostCard from '@/components/PostCard';
 import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
 import CreateCard from '@/components/CreateCard';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
 const POSTS = [
@@ -105,7 +105,7 @@ export default function ProfileScreen() {
       {/* Top Gradient Overlay */}
       <View style={styles.topGradientContainer}>
         <LinearGradient
-          colors={['#141414', 'rgba(20, 20, 20, 0.95)', 'rgba(20, 20, 20, 0)']}
+          colors={['#000000', 'rgba(0, 0, 0, 0.95)', 'rgba(0, 0, 0, 0)']}
           locations={[0, 0.4, 1]}
           style={styles.topGradient}
         />
@@ -260,7 +260,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: colors.ui.background,
     
   },
   topGradientContainer: {
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
     paddingTop: 30,
-    backgroundColor: '#121212',
+    backgroundColor: colors.ui.background,
     flexGrow: 1,
     overflow: 'visible',
   },
@@ -320,14 +320,14 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#999',
+    color: '#fff',
     marginLeft: 4,
     ...defaultTextStyle
   },
   bio: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#ccc',
+    color: '#fff',
     marginBottom: 8,
     ...defaultTextStyle
   },

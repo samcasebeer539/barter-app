@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
 interface UserCardProps {
@@ -94,22 +94,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
+    
   },
     card: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.2,
-    shadowRadius: 40,
+    borderRadius: 6,
+    // overflow: 'hidden',
+    shadowColor: colors.ui.secondary,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
     elevation: 10,
+    position: 'relative',
     paddingTop: 30,
     paddingHorizontal: 30,
     paddingBottom: 16,
-
-    borderWidth: 4,
-    borderColor: '#1c8aff',
+    
+    borderWidth: 0,
+    // borderColor: colors.ui.background, 
+    borderColor: '#c94545'
   },
   topRow: {
     flexDirection: 'row',

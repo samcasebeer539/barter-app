@@ -449,9 +449,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.ui.secondary,
     
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 24,
     borderBottomLeftRadius: 4,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 24,
     borderBottomRightRadius: 4,
     marginTop: 12,
     marginBottom: -4,

@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
     top: -222,
-    zIndex: 6,
+    zIndex: 0,
   },
   upButton: {
     width: 54,

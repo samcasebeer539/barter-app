@@ -155,7 +155,12 @@ export default function ActiveTradesTestScreen() {
             {/* <View style={styles.tradeUIContainer}>
                 <TradeUI/>
             </View> */}
-
+        <LinearGradient
+            colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', '#000000']}
+            locations={[0, 0.8, 1]}
+            style={styles.cardWheelGradient}
+            pointerEvents="none"
+        />
      
         </View>
       )}
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
 
     cardWheelGradient: {
 
-        height: 430,
+        height: 300,
         zIndex: 15
     },
 

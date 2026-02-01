@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     position: 'relative',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     alignItems: 'center',
     bottom: 400,
   },
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold
   },
   goodButton: {
-    width: 90,
+    width: 100,
     height: 40,
     flexDirection: 'row',
     gap: 8,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     gap:0
   },
   serviceButton: {
-    width: 90,
+    width: 100,
     height: 40,
     flexDirection: 'row',
     gap: 8,

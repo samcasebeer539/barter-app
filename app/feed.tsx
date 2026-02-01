@@ -266,8 +266,8 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#1C1C1E',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
     borderBottomRightRadius: 4,
     borderBottomLeftRadius: 4,
     overflow: 'hidden',
@@ -296,8 +296,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
-    borderBottomRightRadius: 12,
-    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 6,
   },
   itemTitle: {
     fontSize: 16,

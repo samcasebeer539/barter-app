@@ -23,7 +23,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'YourFontName-Regular': require('../assets/fonts/RobotoCondensed-Regular.ttf'),
     'YourFontName-Bold': require('../assets/fonts/RobotoCondensed-SemiBold.ttf'),
-    'YourFontName-ExtraBold': require('../assets/fonts/RobotoCondensed-ExtraBold.ttf'),
+    'YourFontName-ExtraBold': require('../assets/fonts/RobotoCondensed-Black.ttf'),
     // Add other font weights/styles as needed
   });
  
@@ -65,7 +65,7 @@ export default function RootLayout() {
             const href = props.href as string;
             const isFirst = href === '/feed';
             const isLast = href === '/profile';
-            const isMiddle = href === '/activetradestest';
+            const isMiddle = href === '/activetradestest1';
             
             return (
               <TouchableOpacity

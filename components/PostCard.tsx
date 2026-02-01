@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
 interface Post {
@@ -32,9 +32,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
 
   const isGood = post.type === 'good';
-  const borderColor = isGood ? '#FFA600' : '#ff536a';
-
-
+  // const borderColor = isGood ? '#000000' : '#000000';
+  
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(100)).current;
   const photoMode4Lines = 100;
@@ -142,7 +141,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
     <Animated.View
       style={[styles.container, { transform: [{ scale }] }]} 
     >
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight, borderColor: borderColor }]}>
+      <View style={[styles.card, { width: finalCardWidth, height: cardHeight}]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
@@ -261,17 +260,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
+  
   },
   card: {
     backgroundColor: '#fff',
-    borderWidth: 4,
-    borderRadius: 12,
-    borderColor: '#f39406',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.0,
-    shadowRadius: 40,
+    borderWidth: 0,
+    borderRadius: 6,
+    
+    // overflow: 'hidden',
+    shadowColor: colors.ui.secondary,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
     elevation: 10,
     position: 'relative',
   },

@@ -261,6 +261,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
+  
   },
   backingCard: {
     position: 'absolute',

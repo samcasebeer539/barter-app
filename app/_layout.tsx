@@ -12,7 +12,7 @@ function TabBarBackground() {
     <View style={[StyleSheet.absoluteFill, { height: 120 }]}>
       <LinearGradient
         colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', uiColors.background]}
-        locations={[0, 0.7, 1]}
+        locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
     </View>

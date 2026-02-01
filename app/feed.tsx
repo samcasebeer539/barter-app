@@ -259,10 +259,10 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
-    gap: 16,
+    gap: 8,
   },
   cardWrapper: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   card: {
     backgroundColor: '#1C1C1E',

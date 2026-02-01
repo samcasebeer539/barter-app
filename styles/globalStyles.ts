@@ -2,6 +2,7 @@
 export const globalFonts = {
   regular: 'YourFontName-Regular',
   bold: 'YourFontName-Bold',
+  extrabold: 'YourFontName-ExtraBold'
 };
 
 export const defaultTextStyle = {
@@ -12,12 +13,12 @@ export const defaultTextStyle = {
 export const colors = {
   // Trade Action Colors
   actions: {
-    offer: '#007AFF',      // Blue - Initial offer
+    offer: '#1686ff',      // Blue - Initial offer
     trade: '#FFA600',      // Yellow/Orange - Trade/exchange
-    counter: '#FF3B81',    // Pink - Counter offer
-    query: '#a73bff',      // Purple - Question
-    decline: '#ff3b3b',    // Red - Decline/reject
-    accept: '#00eb00',     // Green - Accept
+    counter: '#ff19d9',    // Pink - Counter offer
+    query: '#9232ff',      // Purple - Question
+    decline: '#ff2121',    // Red - Decline/reject
+    accept: '#00d81d',     // Green - Accept
   },
 
   // Post Type Colors
@@ -30,6 +31,7 @@ export const colors = {
   // UI Element Colors
   ui: {
     secondary: '#5c5579',     // Secondary button color (purple-grey)
+    secondarydisabled: '#908aa7',
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
     background: '#000000',    // Main app background
   },

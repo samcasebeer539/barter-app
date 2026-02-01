@@ -1,31 +1,31 @@
 
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
 export const TRADE_STYLES = {
   actions: {
     offer: {
-      color: '#3B82F6',
+      color: colors.actions.offer,
       fontFamily: globalFonts.bold
     },
     trade: {
-      color: '#FFA600',
+      color: colors.actions.trade,
       fontFamily: globalFonts.bold
     },
     counteroffer: {
-      color: '#FF3B81',
+      color: colors.actions.counter,
       fontFamily: globalFonts.bold
     },
     question: {
-      color: '#a73bff',
+      color: colors.actions.query,
       fontFamily: globalFonts.bold
     },
     accepted: {
-      color: '#00eb00',
+      color: colors.actions.accept,
       fontFamily: globalFonts.bold
     },
     declined: {
-      color: '#ff3b3b',
+      color: colors.actions.decline,
       fontFamily: globalFonts.bold
     },
   },
@@ -35,7 +35,7 @@ export const TRADE_STYLES = {
       fontFamily: globalFonts.regular
     },
     answer: {
-      color: '#a73bff',
+      color: colors.actions.query,
       fontFamily: globalFonts.regular
     },
   },

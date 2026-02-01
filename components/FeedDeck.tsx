@@ -85,23 +85,26 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             },
           ]}
         >
-          {/* <View style={styles.topGradientContainer}>
-            <LinearGradient
-              colors={['#000000', 'rgba(0, 0, 0, 0.95)', 'rgba(180, 0, 0, 0)']}
-              locations={[0, 0.4, 1]}
-              style={styles.topGradient}
-            />
-          </View> */}
+     
           
           <View style={styles.goodServiceRow}>
             <View style={styles.goodButton}>
               <Text style={styles.offerButtonText}>{goodCount}</Text>
               <FontAwesome6 name="cube" size={22} color="#ffffff" />
             </View>
+            {/* Save button */}
+            <TouchableOpacity 
+              style={styles.saveButton}
+              onPress={handleSave}
+            >
+              <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
+            </TouchableOpacity>
+
             <View style={styles.serviceButton}>
               <Text style={styles.offerButtonText}>{serviceCount}</Text>
               <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
             </View>
+            
           </View>
           
           <View style={styles.deckWrapper}>
@@ -114,20 +117,23 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
           {/* Button row with up chevron, offer button, and save button */}
           <View style={styles.buttonRow}>
-            {/* Save button */}
+            {/* play button */}
             <TouchableOpacity 
-              style={styles.saveButton}
+              style={styles.playButton}
               onPress={handleSave}
             >
-              <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
+              <FontAwesome6 name='arrow-right-long' size={22} color='#ffffff' />
             </TouchableOpacity>
 
             {/* Offer button */}
-            <TouchableOpacity 
+            {/* <TouchableOpacity 
               style={styles.offerButton}
               onPress={handleOffer}
             >
               <Text style={styles.offerButtonText}>OFFER</Text>
+            </TouchableOpacity> */}
+            <TouchableOpacity onPress={handleOffer} >
+                <Text style={styles.offerText}>OFFER</Text>
             </TouchableOpacity>
 
             
@@ -187,7 +193,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    top: 246,
+    top: 236,
   },
   goodServiceRow: {
     flexDirection: 'row',
@@ -198,33 +204,53 @@ const styles = StyleSheet.create({
     zIndex: 6,
   },
   upButton: {
-    width: 50,
-    height: 50,
+    width: 54,
+    height: 40,
     
     borderTopRightRadius: 4,
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
    
   },
   saveButton: {
     width: 50,
-    height: 50,
+    height: 40,
+    
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  playButton: {
+    width: 54,
+    height: 40,
     
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 25,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     
   },
+  offerText: {
+    color: colors.actions.offer,
+    fontSize: 52,
+    fontFamily: globalFonts.extrabold,
+    
+    
+  },
   offerButton: {
-    backgroundColor: '#1c8aff',
+    backgroundColor: colors.actions.offer,
     height: 50,
     paddingHorizontal: 26,
     borderRadius: 4,
@@ -239,7 +265,7 @@ const styles = StyleSheet.create({
     
   },
   goodButton: {
-    width: 110,
+    width: 90,
     height: 40,
     flexDirection: 'row',
     gap: 8,
@@ -247,21 +273,21 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     
   },
   serviceButton: {
-    width: 110,
-    height: 40,
+    width: 90,
+    height: 38,
     flexDirection: 'row',
     gap: 8,
     borderTopRightRadius: 24,
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     

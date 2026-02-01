@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
 const { width } = Dimensions.get('window');
@@ -84,26 +84,30 @@ export default function ProfileDeck({ posts, onToggleReveal }: ProfileDeckProps)
       <View style={styles.buttonRow}>
         {/* plus button */}
         <TouchableOpacity 
-          style={styles.plusButton}
+          style={styles.playButton}
           onPress={handlePlus}
         >
-          <FontAwesome6 name="plus" size={22} color="#ffffff" />
+          <FontAwesome6 name="arrow-right-long" size={22} color="#ffffff" />
         </TouchableOpacity>
 
         {/* Trade button */}
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.tradeButton}
           onPress={handleTrade}
         >
           <Text style={styles.tradeButtonText}>TRADE</Text>
+        </TouchableOpacity> */}
+
+        <TouchableOpacity onPress={handleTrade} >
+            <Text style={styles.tradeText}>TRADE</Text>
         </TouchableOpacity>
 
         {/* minus button */}
         <TouchableOpacity 
-          style={styles.minusButton}
+          style={styles.plusMinusButton}
           onPress={handleMinus}
         >
-          <FontAwesome6 name="minus" size={22} color="#ffffff" />
+          <FontAwesome6 name="plus" size={22} color="#ffffff" />
         </TouchableOpacity>
       </View>
     </View>
@@ -128,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    top: 246,
+    top: 236,
   },
   goodServiceRow: {
     flexDirection: 'row',
@@ -138,30 +142,35 @@ const styles = StyleSheet.create({
     top: -222,
     zIndex: 6,
   },
-  plusButton: {
+  playButton: {
     width: 50,
-    height: 50,
+    height: 40,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 25,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  minusButton: {
+  plusMinusButton: {
     width: 50,
-    height: 50,
+    height: 40,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  tradeText: {
+      color: colors.actions.trade,
+      fontSize: 52,
+      fontFamily: globalFonts.extrabold,
+    },
   tradeButton: {
-    backgroundColor: '#FFA600',
+    backgroundColor: colors.actions.trade,
     height: 50,
     paddingHorizontal: 26,
     borderRadius: 4,
@@ -188,15 +197,15 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   toggleButton: {
-    width: 40,
+    width: 50,
     height: 40,
     borderRadius: 4,
-    backgroundColor: '#FFA600',
+    backgroundColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -211,7 +220,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },

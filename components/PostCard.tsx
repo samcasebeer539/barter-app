@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   dotsContainer: { position: 'absolute', top: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },
-  descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
   descriptionScroll: { flex: 1 },
   descriptionText: { fontSize: 15, lineHeight: 21, color: '#000000', ...defaultTextStyle },
 });

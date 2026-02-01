@@ -23,6 +23,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'YourFontName-Regular': require('../assets/fonts/RobotoCondensed-Regular.ttf'),
     'YourFontName-Bold': require('../assets/fonts/RobotoCondensed-SemiBold.ttf'),
+    'YourFontName-ExtraBold': require('../assets/fonts/RobotoCondensed-ExtraBold.ttf'),
     // Add other font weights/styles as needed
   });
  
@@ -102,7 +103,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="activetradestest"
+          name="activetradestest1"
           options={{
             tabBarIcon: ({ color }) => (
               <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} />
@@ -137,6 +138,12 @@ export default function RootLayout() {
         />
         <Tabs.Screen
           name="barter"
+          options={{
+              href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="activetradestest"
           options={{
               href: null,
           }}

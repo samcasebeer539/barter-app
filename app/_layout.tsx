@@ -9,10 +9,10 @@ import { colors } from '@/styles/globalStyles';
 
 function TabBarBackground() {
   return (
-    <View style={[StyleSheet.absoluteFill, { height: 120 }]}>
+    <View style={[StyleSheet.absoluteFill, { height: 120, top: 34}]}>
       <LinearGradient
-        colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0, .8)', colors.ui.background]}
-        locations={[0, 0.7, 1]}
+        colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0, 1)', colors.ui.background]}
+        locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
     </View>
@@ -37,14 +37,17 @@ export default function RootLayout() {
         screenOptions={{
           tabBarActiveTintColor: colors.actions.trade,
           tabBarInactiveTintColor: '#fff',
+          
           tabBarStyle: {
             backgroundColor: 'transparent',
             borderTopWidth: 0,
-            height: 86,
+            height: 105,
             paddingBottom: 20,
             paddingTop: 20,
             position: 'absolute',
+            
           },
+          
           tabBarBackground: () => <TabBarBackground />,
           tabBarShowLabel: false,
           headerShown: false,
@@ -98,7 +101,8 @@ export default function RootLayout() {
           name="feed"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="square" size={24} color={color} />
+              <FontAwesome6 name="square" size={24} color={color} style={{ marginTop: -14 }}/>
+              
             ),
           }}
         />
@@ -106,7 +110,7 @@ export default function RootLayout() {
           name="activetradestest1"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} />
+              <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} style={{ marginTop: -14 }}/>
             ),
           }}
         />
@@ -114,7 +118,7 @@ export default function RootLayout() {
           name="profile"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="user-circle" size={24} color={color} />
+              <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: -14 }}/>
             ),
           }}
         />
@@ -156,7 +160,7 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     marginHorizontal: 2,
     justifyContent: 'center',
     alignItems: 'center',
@@ -164,19 +168,22 @@ const styles = StyleSheet.create({
   },
   leftButton: {
     borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    marginLeft: 48,
+    marginLeft: 46,
+    top: 22,
   },
   middleButton: {
     borderRadius: 2,
+    top: 22,
   },
   rightButton: {
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 25,
+    borderTopRightRadius: 30,
+    borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    marginRight: 48,
+    marginRight: 46,
+    top: 22,
   },
 });

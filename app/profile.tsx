@@ -85,7 +85,7 @@ export default function ProfileScreen() {
 
   const carouselTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, screenHeight * 0.37], // Move carousel way down (70% of screen height)
+    outputRange: [0, screenHeight * 0.34], // Move carousel way down (70% of screen height)
   });
 
   const handleRevealChange = (revealed: boolean) => {

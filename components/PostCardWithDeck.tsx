@@ -144,7 +144,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Move deck upward
   const deckExpandY = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -360],
+    outputRange: [0, -350],
   }) || 0;
 
   return (

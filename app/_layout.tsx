@@ -5,14 +5,14 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
-import colors, { uiColors } from '@/styles/globalStyles';
+import { colors } from '@/styles/globalStyles';
 
 function TabBarBackground() {
   return (
     <View style={[StyleSheet.absoluteFill, { height: 120 }]}>
       <LinearGradient
-        colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', uiColors.background]}
-        locations={[0, 0.5, 1]}
+        colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0, .8)', colors.ui.background]}
+        locations={[0, 0.7, 1]}
         style={StyleSheet.absoluteFill}
       />
     </View>
@@ -35,7 +35,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#FFA600',
+          tabBarActiveTintColor: colors.actions.trade,
           tabBarInactiveTintColor: '#fff',
           tabBarStyle: {
             backgroundColor: 'transparent',

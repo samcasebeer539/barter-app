@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
-
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const { width } = Dimensions.get('window');
 
@@ -107,7 +107,7 @@ export default function ProfileDeck({ posts, onToggleReveal }: ProfileDeckProps)
           style={styles.plusMinusButton}
           onPress={handleMinus}
         >
-          <FontAwesome6 name="plus" size={22} color="#ffffff" />
+          <Icon name={'circle-o'} size={22} color='#FFFFFF' />
         </TouchableOpacity>
       </View>
     </View>
@@ -143,18 +143,18 @@ const styles = StyleSheet.create({
     zIndex: 6,
   },
   playButton: {
-    width: 50,
+    width: 60,
     height: 40,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
-    borderTopLeftRadius: 4,
-    borderBottomLeftRadius: 25,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 4,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   plusMinusButton: {
-    width: 50,
+    width: 60,
     height: 40,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 25,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   tradeText: {
       color: colors.actions.trade,
-      fontSize: 52,
+      fontSize: 54,
       fontFamily: globalFonts.extrabold,
     },
   tradeButton: {

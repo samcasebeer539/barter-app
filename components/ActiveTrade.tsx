@@ -450,9 +450,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.secondary,
     
     borderTopLeftRadius: 24,
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 2,
     borderTopRightRadius: 24,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 2,
     marginTop: 12,
     marginBottom: -4,
     zIndex: 20,
@@ -575,10 +575,10 @@ const styles = StyleSheet.create({
     minHeight: 40,
     paddingVertical: 6,
     paddingHorizontal: 13,
-    borderTopLeftRadius: 4,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 20,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
   },
  
   playButtonDisabled: {
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   leftRightButton: {
     flex: 1,
     gap: 8,
-    borderRadius: 4,
+    borderRadius: 2,
     minHeight: 40,
     paddingVertical: 2,
     paddingHorizontal: 10,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
   timeButton: {
     flex: 1,
     gap: 8,
-    borderRadius: 4,
+    borderRadius: 2,
     minHeight: 40,
     paddingVertical: 8,
     paddingHorizontal: 10,

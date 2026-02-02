@@ -262,14 +262,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardWrapper: {
-    marginBottom: 4,
+    marginBottom: 8,
   },
   card: {
     backgroundColor: '#1C1C1E',
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,
-    borderBottomRightRadius: 4,
-    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 2,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -294,10 +294,10 @@ const styles = StyleSheet.create({
     
     flexDirection: 'row',
     alignItems: 'flex-start',
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 24,
-    borderBottomLeftRadius: 6,
+    borderBottomLeftRadius: 2,
   },
   itemTitle: {
     fontSize: 16,

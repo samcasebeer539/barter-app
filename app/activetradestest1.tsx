@@ -1,12 +1,8 @@
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useCallback, useState } from 'react';
 import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
-import TradeUI from '../components/TradeUI';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Animated, Dimensions } from 'react-native';
-import { useEffect, useRef } from 'react';
-import {colors } from '../styles/globalStyles';
+import { colors } from '../styles/globalStyles';
 
 const POSTS = [
   {
@@ -84,123 +80,42 @@ const activeTrades = [
   },
 ];
 
-
-
 export default function ActiveTradesTestScreen() {
-  const [playingTradeId, setPlayingTradeId] = useState<number | null>(null);
   const [resetKey, setResetKey] = useState(0);
 
-  const screenWidth = Dimensions.get('window').width;
-
-    const wheelRotate = useRef(new Animated.Value(1)).current;
-    useEffect(() => {
-        if (playingTradeId !== null) {
-            
-            wheelRotate.setValue(1);
-            
-            
-            Animated.spring(wheelRotate, {
-                toValue: 0,
-                useNativeDriver: true,
-                damping: 18,
-                stiffness: 130,
-            }).start();
-        }
-    }, [playingTradeId]);
-
-
-   // Reset CardWheel whenever this screen comes into focus
-    useFocusEffect(
-      useCallback(() => {
-        setResetKey(prev => prev + 1);
-      }, [])
-    );
+  useFocusEffect(
+    useCallback(() => {
+      setResetKey(prev => prev + 1);
+    }, [])
+  );
 
   return (
-    <View style={styles.container}>
-      {playingTradeId === null ? (
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.contentContainer}
-        >
-          {activeTrades.map((trade) => (
-            <ActiveTrade 
-              key={trade.id}
-              playercards={trade.playercards} 
-              partnercards={trade.partnercards} 
-              turns={trade.turns} 
-              isPlaying={false}
-              onPlayPress={() => setPlayingTradeId(trade.id)}
-              onPlayCardPress={() => setPlayingTradeId(trade.id)}
-
-            />
-          ))}
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-      ) : (
-        <View style={{ flex: 1 }}>
-            
-            <View style={{ flex: 1 }}>
-                <ActiveTrade 
-                    playercards={activeTrades.find(t => t.id === playingTradeId)!.playercards} 
-                    partnercards={activeTrades.find(t => t.id === playingTradeId)!.partnercards} 
-                    turns={activeTrades.find(t => t.id === playingTradeId)!.turns} 
-                    isPlaying={true}
-                    onPlayPress={() => setPlayingTradeId(null)}
-                    onPlayCardPress={() => setPlayingTradeId(null)}
-                />
-            </View>
-            
-            {/* Trade UI */}
-            {/* <View style={styles.tradeUIContainer}>
-                <TradeUI/>
-            </View> */}
-        <LinearGradient
-            colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', '#000000']}
-            locations={[0, 0.8, 1]}
-            style={styles.cardWheelGradient}
-            pointerEvents="none"
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
+      {activeTrades.map((trade) => (
+        <ActiveTrade
+          key={trade.id}
+          playercards={trade.playercards}
+          partnercards={trade.partnercards}
+          turns={trade.turns}
         />
-     
-        </View>
-      )}
-
-      
-    </View>
+      ))}
+      <View style={styles.bottomSpacer} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.ui.background,
-    },
-    scrollView: {
-        flex: 1,
-        
-    },
-    contentContainer: {
-        marginTop: 20,
-        marginBottom: 50,
-        
-    },
-    tradeUIContainer: {
-        position: 'absolute',
-        alignItems: 'center',
-        top: 420,
-        right: 0,
-        left: 0,
-        zIndex: 20
-    },
-    
-
-    cardWheelGradient: {
-
-        height: 300,
-        zIndex: 15
-    },
-
-    bottomSpacer: {
-        height: 100,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: colors.ui.background,
+  },
+  contentContainer: {
+    marginTop: 20,
+  },
+  bottomSpacer: {
+    height: 100,
+  },
 });

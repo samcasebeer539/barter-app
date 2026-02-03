@@ -4,7 +4,6 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
-import { LinearGradient } from 'expo-linear-gradient';
 
 
 const { width } = Dimensions.get('window');
@@ -86,65 +85,65 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
           ]}
         >
      
-          
-          <View style={styles.goodServiceRow}>
-            <View style={styles.goodButton}>
-              <Text style={styles.offerButtonText}>{goodCount}</Text>
-              <FontAwesome6 name="cube" size={22} color="#ffffff" />
-            </View>
-            {/* Save button */}
-            <TouchableOpacity 
-              style={styles.saveButton}
-              onPress={handleSave}
-            >
-              <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={28} color='#ffffff' />
-            </TouchableOpacity>
+          <View style={styles.column}>
+            <View style={styles.goodServiceRow}>
+              <View style={styles.goodServiceButton}>
+                <Text style={styles.offerButtonText}>{goodCount}</Text>
+                <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
+                <Text style={styles.offerButtonText}> </Text>
+                <Text style={styles.offerButtonText}>{serviceCount}</Text>
+                <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
+              </View>
+              {/* Save button */}
+              
 
-            <View style={styles.serviceButton}>
-              <Text style={styles.offerButtonText}>{serviceCount}</Text>
-              <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
+              <TouchableOpacity 
+                style={styles.saveButton}
+                onPress={handleSave}
+              >
+                <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
+              </TouchableOpacity>
             </View>
             
-          </View>
-          
-          <View style={styles.deckWrapper}>
-            <Deck 
-              posts={posts}
-              cardWidth={Math.min(width - 40, 400)}
-              enabled={true}
-            />
-          </View>
+            <View style={styles.deckWrapper}>
+              <Deck 
+                posts={posts}
+                cardWidth={Math.min(width - 40, 400)}
+                enabled={true}
+              />
+            </View>
 
-          {/* Button row with up chevron, offer button, and save button */}
-          <View style={styles.buttonRow}>
-            {/* play button */}
-            <TouchableOpacity 
-              style={styles.playButton}
-              onPress={handleSave}
-            >
-              <FontAwesome6 name='arrow-right-long' size={22} color='#ffffff' />
-            </TouchableOpacity>
+            {/* Button row with up chevron, offer button, and save button */}
+            <View style={styles.buttonRow}>
+              {/* play button */}
+              <TouchableOpacity 
+                style={styles.playButton}
+                onPress={handleSave}
+              >
+                <FontAwesome6 name='arrow-right-long' size={22} color='#ffffff' />
+              </TouchableOpacity>
 
-            {/* Offer button */}
-            {/* <TouchableOpacity 
-              style={styles.offerButton}
-              onPress={handleOffer}
-            >
-              <Text style={styles.offerButtonText}>OFFER</Text>
-            </TouchableOpacity> */}
-            <TouchableOpacity onPress={handleOffer} >
-                <Text style={styles.offerText}>OFFER</Text>
-            </TouchableOpacity>
+              {/* Offer button */}
+              {/* <TouchableOpacity 
+                style={styles.offerButton}
+                onPress={handleOffer}
+              >
+                <Text style={styles.offerButtonText}>OFFER</Text>
+              </TouchableOpacity> */}
+              <TouchableOpacity onPress={handleOffer} >
+                  <Text style={styles.offerText}>OFFER</Text>
+              </TouchableOpacity>
 
-            
-            {/* Up/Close button */}
-            <TouchableOpacity 
-              style={styles.upButton}
-              onPress={handleCloseModal}
-            >
-              <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
-            </TouchableOpacity>
+              
+              {/* Up/Close button */}
+              <TouchableOpacity 
+                style={styles.upButton}
+                onPress={handleCloseModal}
+              >
+                <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
+              </TouchableOpacity>
 
+            </View>
           </View>
         </Animated.View>
       </View>
@@ -183,58 +182,71 @@ const styles = StyleSheet.create({
     bottom: 120,
     alignItems: 'center',
   },
- 
+  column: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
   deckWrapper: {
     marginBottom: 20,
     left: -12,
   },
   buttonRow: {
+    width: 288,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: 4,
-    top: 236,
+    top: 226,
+    left: 0,
   },
   goodServiceRow: {
+    width: 288,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+
     gap: 4,
-    top: -224,
+    top: -216,
+    left: 0,
     zIndex: 0,
   },
   upButton: {
     width: 54,
-    height: 40,
+    height: 42,
     
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 'auto',
    
   },
   saveButton: {
-    width: 50,
-    height: 40,
+    width: 54,
+    height: 42,
     
-    borderRadius: 2,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     
   },
   playButton: {
-    width: 54,
-    height: 40,
     
-    borderTopRightRadius: 2,
+    width: 54,
+    height: 42,
+    
+    borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
-    backgroundColor: colors.ui.secondary,
+    backgroundColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
     
@@ -243,6 +255,7 @@ const styles = StyleSheet.create({
     color: colors.actions.offer,
     fontSize: 52,
     fontFamily: globalFonts.extrabold,
+    top: -3
     
     
   },
@@ -261,9 +274,9 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold
     
   },
-  goodButton: {
-    width: 90,
-    height: 40,
+  goodServiceButton: {
+    flex: 1,
+    height: 42,
     flexDirection: 'row',
     gap: 8,
     borderTopRightRadius: 2,
@@ -271,23 +284,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingHorizontal: 14,
     
   },
-  serviceButton: {
-    width: 90,
-    height: 38,
-    flexDirection: 'row',
-    gap: 8,
-    borderTopRightRadius: 24,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    
-  },
+  
 
 });

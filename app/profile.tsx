@@ -1,11 +1,8 @@
 //todo: add profile background photo
 //    this will be added to user card as well
 
-// and a box for the top of postcard for deck
-// 12 available TRADES!
 
-
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import {
   ScrollView,
   View,
@@ -16,13 +13,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import PostCard from '@/components/PostCard';
-import PostCardWithDeck from '@/components/PostCardWithDeck';
 import ProfilePicture from '@/components/ProfilePicture';
-import CreateCard from '@/components/CreateCard';
+import Carousel from '@/components/Carousel';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
@@ -37,6 +32,7 @@ const POSTS = [
       'https://picsum.photos/seed/portrait1/400/600',
       'https://picsum.photos/seed/square1/500/500',
     ],
+    hasDeck: true,
   },
   {
     type: 'good' as const,
@@ -48,6 +44,7 @@ const POSTS = [
       'https://picsum.photos/seed/camera2/500/700',
       'https://picsum.photos/seed/camera3/600/600',
     ],
+    hasDeck: true,
   },
   {
     type: 'service' as const,
@@ -59,46 +56,37 @@ const POSTS = [
       'https://picsum.photos/seed/guitar2/400/600',
       'https://picsum.photos/seed/guitar3/500/500',
     ],
+    hasDeck: true,
   },
 ];
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const revealProgress = useRef(new Animated.Value(0)).current; // 0 = collapsed, 1 = revealed
+  const revealProgress = useRef(new Animated.Value(0)).current;
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
-  const screenWidth = Dimensions.get('window').width;
-  const screenHeight = Dimensions.get('window').height;
-
-  const cardWidth = Math.min(screenWidth - 110, 400);
-  const cardSpacing = 0;
-  const sidePadding = (screenWidth - cardWidth) / 2;
 
   // replace this with actual user data from API
   const profileImageUrl = 'https://picsum.photos/seed/profile/400/400';
 
-  // Interpolate animations based on reveal progress
   const headerTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -700], // Move header completely out of view
+    outputRange: [0, -700],
   });
 
-  const carouselTranslateY = revealProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, screenHeight * 0.36], // Move carousel way down (70% of screen height)
-  });
-
-  const handleRevealChange = (revealed: boolean) => {
-    console.log('Deck revealed:', revealed);
-    setIsDeckRevealed(revealed);
-  };
+  const handleToggleReveal = useCallback(() => {
+    const toValue = isDeckRevealed ? 0 : 1;
+    setIsDeckRevealed(!isDeckRevealed);
+    Animated.spring(revealProgress, {
+      toValue,
+      useNativeDriver: true,
+      damping: 20,
+      stiffness: 200,
+    }).start();
+  }, [isDeckRevealed, revealProgress]);
 
   const handleSettingsPress = () => {
     router.push('/settings');
   };
-
-  // Create array with CreateCard at the front
-  const carouselItems = [{ type: 'create' }, ...POSTS];
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -112,12 +100,10 @@ export default function ProfileScreen() {
       </View>
 
       {/* Settings Icon - Animates with header */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.settingsIconContainer,
-          {
-            transform: [{ translateY: headerTranslateY }],
-          },
+          { transform: [{ translateY: headerTranslateY }] },
         ]}
       >
         <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
@@ -125,13 +111,13 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </Animated.View>
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         scrollEnabled={false}
         style={{ overflow: 'visible' }}
       >
         {/* HEADER */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.header,
             {
@@ -140,16 +126,15 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          {/* Profile Picture and Name Row */}
           <View style={styles.profileRow}>
-            <ProfilePicture 
-              size={80} 
+            <ProfilePicture
+              size={80}
               imageSource={profileImageUrl}
-              avatarText="SC" 
+              avatarText="SC"
             />
             <View style={styles.nameContainer}>
-               {/* replace with api data */}
-              <Text style={styles.name}>Sam Casebeer</Text>   
+              {/* replace with api data */}
+              <Text style={styles.name}>Sam Casebeer</Text>
               <View style={styles.locationRow}>
                 <FontAwesome6 name="location-dot" size={14} color="#FFFFFF" />
                 <Text style={styles.location}>Santa Cruz, CA</Text>
@@ -159,99 +144,21 @@ export default function ProfileScreen() {
 
           {/* Bio - api */}
           <Text style={styles.bio}>
-            Passionate about sustainable living and building community through sharing. 
+            Passionate about sustainable living and building community through sharing.
             Always looking for unique trades and meaningful connections.
           </Text>
-
-          {/* Tags
-          <View style={styles.tagsContainer}>
-            <View style={[styles.tag, styles.tagPink]}>
-              <Text style={styles.tagtextPink}>Community Builder</Text>
-            </View>
-            <View style={[styles.tag, styles.tagGreen]}>
-              <Text style={styles.tagtextGreen}>Eco-Friendly</Text>
-            </View>
-            <View style={[styles.tag, styles.tagPurple]}>
-              <Text style={styles.tagtextPurple}>Master Barterer</Text>
-            </View>
-          </View> */}
         </Animated.View>
 
-        {/* CAROUSEL */}
-        <Animated.View 
-          style={[
-            styles.cardsWrapper,
-            {
-              transform: [{ translateY: carouselTranslateY }],
-              zIndex: 10,
-              overflow: 'visible',
-            },
-          ]}
-        >
-          <Animated.ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={cardWidth + cardSpacing}
-            decelerationRate="fast"
-            scrollEnabled={!isDeckRevealed} // Disable carousel scrolling when deck is revealed
-            style={{ overflow: 'visible' }}
-            contentContainerStyle={{
-              paddingHorizontal: sidePadding,
-              paddingBottom: 50, // Extra bottom padding for drag space
-            }}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: true }
-            )}
-            scrollEventThrottle={16}
-          >
-            {carouselItems.map((item, index) => {
-              // Calculate the scale for each card
-              const inputRange = [
-                (index - 1) * (cardWidth + cardSpacing),
-                index * (cardWidth + cardSpacing),
-                (index + 1) * (cardWidth + cardSpacing),
-              ];
-              const scale = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.9, 1, 0.9],
-                extrapolate: 'clamp',
-              });
-
-              return (
-                <Animated.View
-                  key={index}
-                  style={{
-                    width: cardWidth,
-                    marginRight: index < carouselItems.length - 1 ? cardSpacing : 0,
-                    transform: [{ scale: scale ?? 1 }],
-                    overflow: 'visible',
-                  }}
-                >
-                  <View style={{ flex: 1, overflow: 'visible' }}>
-                    {/* Render CreateCard for the first item */}
-                    {item.type === 'create' ? (
-                      <CreateCard scale={1} cardWidth={cardWidth} />
-                    ) : index === 1 ? (
-                      // Use PostCardWithDeck for the second card (first actual post)
-                      <PostCardWithDeck 
-                        post={item} 
-                        deckPosts={POSTS} // Pass all POSTS as deck posts
-                        scale={1} 
-                        cardWidth={cardWidth}
-                        revealProgress={revealProgress}
-                        onRevealChange={handleRevealChange}
-                        deckRevealed={isDeckRevealed}
-                      />
-                    ) : (
-                      <PostCard post={item} scale={1} cardWidth={cardWidth} />
-                    ) }
-                  </View>
-                </Animated.View>
-              );
-            })}
-          </Animated.ScrollView>
-        </Animated.View>
+        <View style={styles.cardsWrapper}>
+          <Carousel
+            posts={POSTS}
+            deckPosts={POSTS}
+            showCreateCard={true}
+            revealProgress={revealProgress}
+            isDeckRevealed={isDeckRevealed}
+            onToggleReveal={handleToggleReveal}
+          />
+        </View>
       </ScrollView>
     </GestureHandlerRootView>
   );
@@ -261,7 +168,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.ui.background,
-    
   },
   topGradientContainer: {
     position: 'absolute',
@@ -295,8 +201,6 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingBottom: 10,
     paddingHorizontal: 20,
-    
-    
   },
   profileRow: {
     flexDirection: 'row',
@@ -322,34 +226,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     marginLeft: 4,
-    ...defaultTextStyle
+    ...defaultTextStyle,
   },
   bio: {
     fontSize: 14,
     lineHeight: 20,
     color: '#fff',
     marginBottom: 8,
-    ...defaultTextStyle
+    ...defaultTextStyle,
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    backgroundColor: 'transparent',
-  },
-  tagPink: { borderColor: '#FF3B81' },
-  tagGreen: { borderColor: '#34C759' },
-  tagPurple: { borderColor: '#9747FF' },
-  tagtextPink: { color: '#FF3B81', fontSize: 14, fontWeight: '500', ...defaultTextStyle },
-  tagtextGreen: { color: '#34C759', fontSize: 14, fontWeight: '500', ...defaultTextStyle },
-  tagtextPurple: { color: '#9747FF', fontSize: 14, fontWeight: '500', ...defaultTextStyle },
   cardsWrapper: {
-    top: 300 // Increased to push carousel down more in initial position
+    top: 100,
   },
 });

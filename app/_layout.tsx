@@ -23,7 +23,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'YourFontName-Regular': require('../assets/fonts/RobotoCondensed-Regular.ttf'),
     'YourFontName-Bold': require('../assets/fonts/RobotoCondensed-SemiBold.ttf'),
-    'YourFontName-ExtraBold': require('../assets/fonts/RobotoCondensed-Black.ttf'),
+    'YourFontName-ExtraBold': require('../assets/fonts/Oswald-Bold.ttf'),
     // Add other font weights/styles as needed
   });
  
@@ -41,8 +41,8 @@ export default function RootLayout() {
           tabBarStyle: {
             backgroundColor: 'transparent',
             borderTopWidth: 0,
-            height: 105,
-            paddingBottom: 20,
+            height: 110,
+            paddingBottom: 40,
             paddingTop: 20,
             position: 'absolute',
             
@@ -101,7 +101,7 @@ export default function RootLayout() {
           name="feed"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="square" size={24} color={color} style={{ marginTop: -14 }}/>
+              <FontAwesome6 name="square" size={24} color={color} style={{ marginTop: 0 }}/>
               
             ),
           }}
@@ -110,7 +110,7 @@ export default function RootLayout() {
           name="activetradestest1"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} style={{ marginTop: -14 }}/>
+              <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} style={{ marginTop: 0 }}/>
             ),
           }}
         />
@@ -118,7 +118,7 @@ export default function RootLayout() {
           name="profile"
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: -14 }}/>
+              <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
             ),
           }}
         />
@@ -152,6 +152,12 @@ export default function RootLayout() {
               href: null,
           }}
         />
+        <Tabs.Screen
+          name="profile1"
+          options={{
+              href: null,
+          }}
+        />
       </Tabs>
     </SafeAreaProvider>
   );
@@ -167,20 +173,23 @@ const styles = StyleSheet.create({
     height: 40,
   },
   leftButton: {
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderTopLeftRadius: 30,
+    borderBottomLeftRadius: 30,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     marginLeft: 46,
     top: 22,
   },
   middleButton: {
-    borderRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
     top: 22,
   },
   rightButton: {
     borderTopRightRadius: 30,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 30,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     marginRight: 46,

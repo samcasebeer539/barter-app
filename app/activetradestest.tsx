@@ -171,12 +171,12 @@ export default function ActiveTradesTestScreen() {
                 </Animated.View>
             </View>
 
-            <LinearGradient
+            {/* <LinearGradient
                 colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0)', '#000000']}
                 locations={[0, 0.2, 1]}
                 style={styles.cardWheelGradient}
                 pointerEvents="none"
-            />
+            /> */}
 
         </View>
       )}

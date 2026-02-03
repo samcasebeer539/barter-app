@@ -1,3 +1,5 @@
+//old profile deck, will delete
+
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -17,11 +19,10 @@ interface Post {
 interface ProfileDeckProps {
   posts: Post[];
   onToggleReveal?: () => void;
-  toggleEnabled?: boolean;
-  isDeckRevealed?: boolean;
 }
 
-export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = false, isDeckRevealed = false  }: ProfileDeckProps) {
+export default function ProfileDeck({ posts, onToggleReveal }: ProfileDeckProps) {
+  // Count good and service posts
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
     const serviceCount = posts.filter(post => post.type === 'service').length;
@@ -30,14 +31,17 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
 
   const handleTrade = () => {
     console.log('Trade button pressed');
+    // Add your trade logic here
   };
 
   const handlePlus = () => {
     console.log('Plus button pressed');
+    // Add your plus logic here
   };
 
   const handleMinus = () => {
     console.log('Minus button pressed');
+    // Add your minus logic here
   };
 
   const handleToggleReveal = () => {
@@ -50,23 +54,24 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.goodServiceRow}>
-        <View style={styles.goodServiceButton}>
-          <Text style={styles.buttonText}>{goodCount}</Text>
-          <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
-          <Text style={styles.buttonText}> </Text>
-          <Text style={styles.buttonText}>{serviceCount}</Text>
-          <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
+        <View style={styles.goodButton}>
+          <Text style={styles.countText}>{goodCount}</Text>
+          <FontAwesome6 name="cube" size={22} color="#ffffff" />
         </View>
-
+        
         {/* Toggle reveal button */}
         <TouchableOpacity 
-          style={[styles.toggleButton, !toggleEnabled && styles.toggleButtonDisabled, isDeckRevealed && styles.toggleButtonDisabled]}
+          style={styles.toggleButton}
           onPress={handleToggleReveal}
-          disabled={!toggleEnabled}
         >
-          <FontAwesome6 name={isDeckRevealed ? "chevron-down" : "chevron-up"}  size={22} color="#ffffff" />
-          
+          <FontAwesome6 name="arrow-up-long" size={22} color="#ffffff" />
+          <FontAwesome6 name="arrow-down-long" size={22} color="#ffffff" />
         </TouchableOpacity>
+
+        <View style={styles.serviceButton}>
+          <Text style={styles.countText}>{serviceCount}</Text>
+          <FontAwesome6 name="stopwatch" size={22} color="#ffffff" />
+        </View>
       </View>
         
       <View style={styles.deckWrapper}>
@@ -79,6 +84,7 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
 
       {/* Button row with plus, trade, and minus buttons */}
       <View style={styles.buttonRow}>
+        {/* plus button */}
         <TouchableOpacity 
           style={styles.playButton}
           onPress={handlePlus}
@@ -86,15 +92,24 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           <FontAwesome6 name="arrow-right-long" size={22} color="#ffffff" />
         </TouchableOpacity>
 
+        {/* Trade button */}
+        {/* <TouchableOpacity 
+          style={styles.tradeButton}
+          onPress={handleTrade}
+        >
+          <Text style={styles.tradeButtonText}>TRADE</Text>
+        </TouchableOpacity> */}
+
         <TouchableOpacity onPress={handleTrade} >
             <Text style={styles.tradeText}>TRADE</Text>
         </TouchableOpacity>
 
+        {/* minus button */}
         <TouchableOpacity 
-          style={styles.selectButton}
+          style={styles.plusMinusButton}
           onPress={handleMinus}
         >
-          <FontAwesome6 name="circle" size={22} color="#ffffff" />
+          <Icon name={'circle-o'} size={22} color='#FFFFFF' />
         </TouchableOpacity>
       </View>
     </View>
@@ -115,30 +130,28 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 286,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     gap: 4,
-    top: 234,
-    left: 0,
+    top: 238,
   },
   goodServiceRow: {
-    width: 210,
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
     top: -224,
-    left: 40,
     zIndex: 0,
   },
   playButton: {
-    width: 54,
-    height: 42,
-    borderTopRightRadius: 25,
+    width: 60,
+    height: 40,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
-    backgroundColor: colors.actions.trade,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -155,10 +168,9 @@ const styles = StyleSheet.create({
   },
   tradeText: {
       color: colors.actions.trade,
-      fontSize: 52,
+      fontSize: 54,
       fontFamily: globalFonts.extrabold,
-      top: -3
-  },
+    },
   tradeButton: {
     backgroundColor: colors.actions.trade,
     height: 50,
@@ -170,6 +182,7 @@ const styles = StyleSheet.create({
   tradeButtonText: {
     color: '#ffffff',
     fontSize: 24,
+    
     fontFamily: globalFonts.bold
   },
   countText: {
@@ -177,24 +190,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: globalFonts.bold
   },
-  toggleButton: {
-    width: 54,
-    height: 42,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.actions.trade,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  toggleButtonDisabled: {
-    backgroundColor: colors.ui.secondary,
-  },
-  goodServiceButton: {
-    flex: 1,
-    height: 42,
+  goodButton: {
+    width: 110,
+    height: 46,
     flexDirection: 'row',
     gap: 8,
     borderTopRightRadius: 2,
@@ -202,25 +200,30 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 14,
   },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 24,
-    fontFamily: globalFonts.bold
-  },
-  selectButton: {
-    width: 54,
-    height: 42,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+  toggleButton: {
+    width: 50,
+    height: 46,
+    borderRadius: 2,
     backgroundColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 'auto',
+    flexDirection: 'row',
+    gap:0
+  },
+  serviceButton: {
+    width: 110,
+    height: 46,
+    flexDirection: 'row',
+    gap: 8,
+    borderTopRightRadius: 24,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

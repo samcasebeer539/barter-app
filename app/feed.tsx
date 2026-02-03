@@ -6,6 +6,7 @@ import FeedDeck from '@/components/FeedDeck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { defaultTextStyle, globalFonts, colors, uiColors } from '../styles/globalStyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { RotateInDownLeft } from 'react-native-reanimated';
 
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
@@ -22,6 +23,11 @@ const BARTER_ITEMS = [
   { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/330', type: 'good', height: 165 },
   { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/490', type: 'service', height: 245 },
   { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/450', type: 'good', height: 225 },
+  { id: '13', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 150 },
+  { id: '14', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 200 },
+  { id: '15', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 },
+  { id: '16', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 },
+ 
 ];
 
 // Sample posts for the deck
@@ -81,7 +87,8 @@ const DECK_POSTS = [
 export default function FeedScreen() {
   const [showHeader, setShowHeader] = useState(true);
   const [showDeck, setShowDeck] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
+  const [showSaved, setShowSaved] = useState(true);
+  const [showLocation, setShowLocation] = useState(true);
   const scrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -97,7 +104,7 @@ export default function FeedScreen() {
     if (scrollingDown && showHeader) {
       setShowHeader(false);
       Animated.timing(headerTranslateY, {
-        toValue: -100,
+        toValue: -110,
         duration: 200,
         useNativeDriver: true,
       }).start();
@@ -125,6 +132,15 @@ export default function FeedScreen() {
     console.log('Save button', showSaved);
     setShowSaved(prev => !prev);
   };
+  const handleLocation = () => {
+    console.log('Location button', showLocation);
+    setShowLocation(prev => !prev);
+  };
+  const handleSearch = () => {
+    console.log('Search bar');
+
+  };
+
 
   const renderItem = (item: typeof BARTER_ITEMS[0]) => (
     
@@ -160,8 +176,8 @@ export default function FeedScreen() {
       {/* Top Gradient Overlay */}
             <View style={styles.topGradientContainer}>
               <LinearGradient
-                colors={['#000000', 'rgba(0, 0, 0, 0.95)', 'rgba(0, 0, 0, 0)']}
-                locations={[0, 0.4, 1]}
+                colors={['#000000', 'rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0)']}
+                locations={[0, 0.5, 1]}
                 style={styles.topGradient}
               />
             </View>
@@ -172,18 +188,26 @@ export default function FeedScreen() {
           { transform: [{ translateY: headerTranslateY }] }
         ]}
       >
+        <TouchableOpacity 
+          style={styles.locationButton}
+          onPress={handleLocation}
+        >
+          <FontAwesome6  name='location-dot' size={22} color={showLocation ? '#fff' : colors.actions.offer} />
+        </TouchableOpacity>
         
         <TouchableOpacity 
-          style={styles.circularButton}
-          onPress={handleSave}
+          style={styles.searchBar}
+          onPress={handleSearch}
         >
-          <Icon name={showSaved ? 'bookmark' : 'bookmark-o'} size={24} color='#FFFFFF' />
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.circularButton}
-          onPress={handleSave}
-        >
+          <Text style={styles.searchText}>Search</Text>
           <FontAwesome6  name='magnifying-glass' size={22} color='#FFFFFF' />
+        </TouchableOpacity>
+     
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={handleSave}
+        >
+          <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -225,15 +249,20 @@ const styles = StyleSheet.create({
   },
 
   topIconsContainer: {
+    backgroundColor: colors.ui.background,
     position: 'absolute',
-    top: 60,
+    top: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 4,
     paddingHorizontal: 16,
     zIndex: 10,
+    paddingBottom: 10,
+    paddingTop: 58,
   },
+  
   topGradientContainer: {
     position: 'absolute',
     top: 0,
@@ -250,8 +279,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingTop: 120,
+    padding: 12,
+    paddingTop: 112,
   },
   columnsContainer: {
     flexDirection: 'row',
@@ -306,16 +335,48 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold,
     
   },
-  circularButton: {
+  searchText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    fontFamily: globalFonts.regular,
+  },
+
+  saveButton: {
     width: 50,
-    height: 50,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 25,
+    height: 44,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
     borderTopRightRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   
+  },
+  locationButton: {
+    width: 50,
+    height: 44,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  
+  },
+  searchBar: {
+    width: 258,
+    height: 44,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    backgroundColor: colors.ui.secondary,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
   },
 });

@@ -21,7 +21,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import PostCard from '@/components/PostCard';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
-
+import TradeUI from '../components/TradeUI';
 
 import { TRADE_LINES } from '../content/tradelines';
 import { TRADE_STYLES } from '../content/tradelinestyles';
@@ -63,6 +63,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     // Animated values
     const headerPosition = useRef(new Animated.Value(0)).current;
     const contentPosition = useRef(new Animated.Value(0)).current;
+    const tradeUIOpacity = useRef(new Animated.Value(0)).current;
 
     const isPlayerTurn = turns.length > 0 && 
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
@@ -87,6 +88,13 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           damping: 20,
           stiffness: 100,
         }).start();
+
+        // Fade in TradeUI
+        Animated.timing(tradeUIOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
       } else {
         // Reset to original positions
         Animated.spring(headerPosition, {
@@ -101,6 +109,13 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           useNativeDriver: true,
           damping: 20,
           stiffness: 100,
+        }).start();
+
+        // Fade out TradeUI
+        Animated.timing(tradeUIOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
         }).start();
       }
     }, [isPlaying]);
@@ -306,11 +321,12 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               </View>
 
               <View style={styles.buttonRowContainer}>
-                    {/* <FontAwesome6 name="arrow-right-long" size={28} color="#fff" /> */}
+                    
                     <TouchableOpacity 
                         style={[
                           styles.playButton, 
-                          playButtonContent.disabled && styles.playButtonDisabled
+                          playButtonContent.disabled && styles.playButtonDisabled,
+                          isPlaying && styles.playButtonBack
                         ]}
                         onPress={onPlayPress}
                         disabled={playButtonContent.disabled}
@@ -396,6 +412,20 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
             
           </View>
         </View>
+
+        {/* TradeUI section - only visible when playing */}
+        {isPlaying && (
+          <Animated.View 
+            style={[
+              styles.tradeUIContainer,
+              {
+                opacity: tradeUIOpacity,
+              }
+            ]}
+          >
+            <TradeUI />
+          </Animated.View>
+        )}
       </Animated.View>
     </View>
   );
@@ -419,12 +449,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.ui.secondary,
     
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 4,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 4,
+    borderTopLeftRadius: 24,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 24,
+    borderBottomRightRadius: 2,
     marginTop: 12,
-    marginBottom: -4,
+    marginBottom: 2,
     zIndex: 20,
     elevation: 20, // For Android
   },
@@ -447,7 +477,7 @@ const styles = StyleSheet.create({
   },
   expandedContent: {
     padding: 12,
-    marginTop: -2,
+    marginTop: -8,
     marginBottom: -12
   },
   
@@ -481,14 +511,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    
   },
   buttonText: {
     color: '#FFFFFF',
@@ -552,14 +575,18 @@ const styles = StyleSheet.create({
     minHeight: 40,
     paddingVertical: 6,
     paddingHorizontal: 13,
-    borderTopLeftRadius: 4,
-    borderBottomLeftRadius: 20,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
   },
  
   playButtonDisabled: {
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
+    
+  },
+  playButtonBack: {
+    backgroundColor: colors.ui.secondary,
     
   },
   playButtonText: {
@@ -571,11 +598,11 @@ const styles = StyleSheet.create({
   leftRightButton: {
     flex: 1,
     gap: 8,
-    borderRadius: 4,
+    borderRadius: 2,
     minHeight: 40,
     paddingVertical: 2,
     paddingHorizontal: 10,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -586,14 +613,18 @@ const styles = StyleSheet.create({
   timeButton: {
     flex: 1,
     gap: 8,
-    borderRadius: 4,
+    borderRadius: 2,
     minHeight: 40,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#5c5579',
+    backgroundColor: colors.ui.secondary,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  tradeUIContainer: {
+    marginTop: 4,
+    height: 300, // Adjust based on your TradeUI height needs
   },
 
 });

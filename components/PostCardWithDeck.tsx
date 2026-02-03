@@ -42,7 +42,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   const isRevealed = useRef(false); // Track if currently revealed
   const postCardTapRef = useRef<TapGestureHandler>(null);
   
-  const peekAmount = -198; // How much the deck peeks out from the top
+  const peekAmount = -238; // How much the deck peeks out from the top
   const revealThreshold = 100; // How far down to swipe to trigger reveal
   
  
@@ -138,7 +138,7 @@ const PostCardWithDeck: React.FC<PostCardWithDeckProps> = ({
   // Scale from small (1/1.4) to large (1) - deck renders at large size, scales down when collapsed
   const deckScale = revealProgress?.interpolate({
     inputRange: [0, 1],
-    outputRange: [1 / 1.4, 1],
+    outputRange: [1 / 1.28, 1],
   }) || 1;
 
   // Move deck upward

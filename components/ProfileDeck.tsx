@@ -50,13 +50,7 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.goodServiceRow}>
-        <View style={styles.goodServiceButton}>
-          <Text style={styles.buttonText}>{goodCount}</Text>
-          <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
-          <Text style={styles.buttonText}> </Text>
-          <Text style={styles.buttonText}>{serviceCount}</Text>
-          <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
-        </View>
+        
 
         {/* Toggle reveal button */}
         <TouchableOpacity 
@@ -67,6 +61,13 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           <FontAwesome6 name={isDeckRevealed ? "chevron-down" : "chevron-up"}  size={22} color="#ffffff" />
           
         </TouchableOpacity>
+        <View style={styles.goodServiceButton}>
+          <Text style={styles.buttonText}>{goodCount}</Text>
+          <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
+          <Text style={styles.buttonText}> </Text>
+          <Text style={styles.buttonText}>{serviceCount}</Text>
+          <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
+        </View>
       </View>
         
       <View style={styles.deckWrapper}>
@@ -83,7 +84,7 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           style={styles.playButton}
           onPress={handlePlus}
         >
-          <FontAwesome6 name="arrow-right-long" size={22} color="#ffffff" />
+          <FontAwesome6 name="arrow-right-long" size={22} color="#000" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleTrade} >
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 4,
     top: -224,
-    left: 40,
+    left: -40,
     zIndex: 0,
   },
   playButton: {
@@ -180,9 +181,9 @@ const styles = StyleSheet.create({
   toggleButton: {
     width: 54,
     height: 42,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.actions.trade,
     justifyContent: 'center',
@@ -197,9 +198,9 @@ const styles = StyleSheet.create({
     height: 42,
     flexDirection: 'row',
     gap: 8,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
@@ -216,8 +217,8 @@ const styles = StyleSheet.create({
     height: 42,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     backgroundColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',

@@ -16,6 +16,9 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const collapseAnimation = useRef(new Animated.Value(1)).current;
+    const deckAnimation = useRef(new Animated.Value(0)).current;
     
     const tradeActions = [
         { text: 'QUERY', color: colors.actions.query, hasButtons: true },
@@ -31,10 +34,89 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
     // Create tripled array for infinite scroll
     const infiniteActions = [...tradeActions, ...tradeActions, ...tradeActions];
     
+    // Sample data for Deck - replace with your actual data
+    const deckPosts = [
+        {
+            type: 'service' as const,
+            name: 'Bike Repair Service',
+            description: 'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+            photos: [
+            'https://picsum.photos/seed/landscape1/800/400',
+            'https://picsum.photos/seed/portrait1/400/600',
+            'https://picsum.photos/seed/square1/500/500',
+            ],
+        },
+        {
+            type: 'good' as const,
+            name: 'Vintage Camera Collection',
+            description: 'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition, includes lenses and cases.',
+            photos: [
+            'https://picsum.photos/seed/camera1/600/400',
+            'https://picsum.photos/seed/camera2/500/700',
+            'https://picsum.photos/seed/camera3/600/600',
+            ],
+        },
+        {
+            type: 'service' as const,
+            name: 'Guitar Lessons',
+            description: 'Experienced guitar teacher offering beginner to intermediate lessons. All ages welcome!',
+            photos: [
+            'https://picsum.photos/seed/guitar1/700/500',
+            'https://picsum.photos/seed/guitar2/400/600',
+            'https://picsum.photos/seed/guitar3/500/500',
+            ],
+        },
+    ];
+    
+    const toggleCollapse = () => {
+        const toValue = isCollapsed ? 1 : 0;
+        const deckToValue = isCollapsed ? 0 : 1;
+        
+        Animated.parallel([
+            Animated.timing(collapseAnimation, {
+                toValue,
+                duration: 300,
+                useNativeDriver: false,
+            }),
+            Animated.timing(deckAnimation, {
+                toValue: deckToValue,
+                duration: 300,
+                useNativeDriver: false,
+            })
+        ]).start();
+        
+        setIsCollapsed(!isCollapsed);
+    };
+    
+    const containerHeight = collapseAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [ITEM_HEIGHT, ITEM_HEIGHT * tradeActions.length - 8],
+    });
+    
+    const deckHeight = deckAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 480], // Adjust the expanded height as needed
+    });
+    
+    const deckOpacity = deckAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+    });
+    const deckPaddingTop = deckAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 216],
+    });
+    
     const PlayAction = () => {
         if (!isActionSelected) return;
         // Execute the selected action here
         console.log('Playing action:', tradeActions[currentActionIndex].text);
+    };
+
+    const handleCounterPlus = () => {
+        toggleCollapse();
+        // Execute the selected action here
+        console.log('Deck revealed');
     };
     
     const handleActionTextPress = (index: number) => {
@@ -42,6 +124,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
         if (actualIndex === currentActionIndex) {
             setIsActionSelected((prev) => !prev);
         }
+    };
+    
+    const isActionInTopSpot = (index: number) => {
+        const actualIndex = index % tradeActions.length;
+        return actualIndex === currentActionIndex;
     };
     
     useEffect(() => {
@@ -120,17 +207,18 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                     { 
                         backgroundColor: isActionSelected 
                             ? tradeActions[currentActionIndex]?.color 
-                            : colors.ui.secondary,
+                            : colors.ui.background,
+                        borderColor: tradeActions[currentActionIndex]?.color,
                         opacity: isActionSelected ? 1 : 1
                     }
                 ]}
                 onPress={PlayAction}
                 disabled={!isActionSelected}
             >
-                <FontAwesome6 name={'arrow-right-long'} size={22} color={isActionSelected ? '#fff' : colors.ui.secondarydisabled} />
+                <FontAwesome6 name={'arrow-right-long'} size={22} color={isActionSelected ? '#000' : tradeActions[currentActionIndex]?.color} />
             </TouchableOpacity>
             
-            <View style={[styles.scrollViewContainer, { height: ITEM_HEIGHT * tradeActions.length - 8 }]}>
+            <Animated.View style={[styles.scrollViewContainer, { height: containerHeight }]}>
                 <ScrollView 
                     ref={scrollViewRef}
                     style={styles.scrollView}
@@ -143,63 +231,103 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                     onMomentumScrollEnd={handleMomentumScrollEnd}
                     scrollEventThrottle={16}
                     pagingEnabled={false}
+                    scrollEnabled={!isCollapsed}
                 >
-                    {infiniteActions.map((action, index) => (
-                        <View key={index} style={styles.tradeLine}>
-                            <TouchableOpacity onPress={() => handleActionTextPress(index)} style={{ flex: 1 }}>
-                                <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
-                            </TouchableOpacity>
-                            
-                            {action.hasButtons && action.text === 'COUNTER' && (
-                                <>
+                    {infiniteActions.map((action, index) => {
+                        const isInTopSpot = isActionInTopSpot(index);
+                        
+                        return (
+                            <View key={index} style={styles.tradeLine}>
+                                <TouchableOpacity onPress={() => handleActionTextPress(index)} style={{ flex: 1 }}>
+                                    <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
+                                </TouchableOpacity>
+                                
+                                {action.hasButtons && action.text === 'COUNTER' && (
+                                    <>
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.counterMinusButton,
+                                                { opacity: isInTopSpot ? 1 : 0.3 }
+                                            ]}
+                                            onPress={PlayAction}
+                                            disabled={!isInTopSpot}
+                                        >
+                                            <FontAwesome6 name={'minus'} size={22} color={colors.actions.counter} />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.counterPlusButton,
+                                                { opacity: isInTopSpot ? 1 : 0.3 }
+                                            ]}
+                                            onPress={handleCounterPlus}
+                                            disabled={!isInTopSpot}
+                                        >
+                                            <FontAwesome6 name={'plus'} size={22} color={colors.actions.counter} />
+                                        </TouchableOpacity>
+                                    </>
+                                )}
+                                
+                                {action.hasButtons && action.text === 'QUERY' && (
                                     <TouchableOpacity 
-                                        style={styles.counterMinusButton}
+                                        style={[
+                                            styles.queryButton,
+                                            { opacity: isInTopSpot ? 1 : 0.3 }
+                                        ]}
                                         onPress={PlayAction}
+                                        disabled={!isInTopSpot}
                                     >
-                                        <FontAwesome6 name={'minus'} size={22} color='#FFFFFF' />
+                                        <FontAwesome6 name={'pen-to-square'} size={22} color={colors.actions.query} />
                                     </TouchableOpacity>
+                                )}
+
+                                {action.hasButtons && action.text === 'LOCATION' && (
                                     <TouchableOpacity 
-                                        style={styles.counterPlusButton}
+                                        style={[
+                                            styles.locationButton,
+                                            { opacity: isInTopSpot ? 1 : 0.3 }
+                                        ]}
                                         onPress={PlayAction}
+                                        disabled={!isInTopSpot}
                                     >
-                                        <FontAwesome6 name={'plus'} size={22} color='#FFFFFF' />
+                                        <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.offer} />
                                     </TouchableOpacity>
-                                </>
-                            )}
-                            
-                            {action.hasButtons && action.text === 'QUERY' && (
-                                <TouchableOpacity 
-                                    style={styles.queryButton}
-                                    onPress={PlayAction}
-                                >
-                                    <FontAwesome6 name={'pen-to-square'} size={22} color='#FFFFFF' />
-                                </TouchableOpacity>
-                            )}
+                                )}
 
-                            {action.hasButtons && action.text === 'LOCATION' && (
-                                <TouchableOpacity 
-                                    style={styles.locationButton}
-                                    onPress={PlayAction}
-                                >
-                                    <FontAwesome6 name={'location-dot'} size={22} color='#FFFFFF' />
-                                </TouchableOpacity>
-                            )}
-
-                            {action.hasButtons && action.text === 'TIME' && (
-                                <TouchableOpacity 
-                                    style={styles.timeButton}
-                                    onPress={PlayAction}
-                                >
-                                    <FontAwesome6 name={'clock'} size={22} color='#FFFFFF' />
-                                </TouchableOpacity>
-                            )}
-                        </View>
-                    ))}
+                                {action.hasButtons && action.text === 'TIME' && (
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.timeButton,
+                                            { opacity: isInTopSpot ? 1 : 0.3 }
+                                        ]}
+                                        onPress={PlayAction}
+                                        disabled={!isInTopSpot}
+                                    >
+                                        <FontAwesome6 name={'clock'} size={22} color={colors.actions.trade} />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        );
+                    })}
                 </ScrollView>
-            </View>
+            </Animated.View>
             
             
         </View>
+        
+        {/* Deck Section - only render when collapsed */}
+        <Animated.View 
+            style={[
+                styles.deckContainer,
+                { 
+                    height: deckHeight,
+                    opacity: deckOpacity,
+                    paddingTop: deckPaddingTop,
+                }
+            ]}
+            onStartShouldSetResponder={() => false}
+        >
+            {isCollapsed && <Deck posts={deckPosts} />}
+        </Animated.View>
     </View>
     );
 }
@@ -209,7 +337,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'flex-start',
         backgroundColor: colors.ui.background,
-        marginVertical: 10,
+        marginVertical: 12,
         marginHorizontal: 12,
     },
     row: {
@@ -250,9 +378,10 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 25,
         borderTopRightRadius: 25,
         borderBottomRightRadius: 2,
+        borderWidth: 3,
+    
     },
     counterMinusButton: {
-        backgroundColor: colors.actions.counter,
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
@@ -262,9 +391,10 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         bottom: 12,
+        borderWidth: 3,
+        borderColor: colors.actions.counter
     },
     counterPlusButton: {
-        backgroundColor: colors.actions.counter,
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
@@ -274,9 +404,11 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 2,
         borderBottomRightRadius: 25,
         bottom: 12,
+        borderWidth: 3,
+        borderColor: colors.actions.counter
     },
     queryButton: {
-        backgroundColor: colors.actions.query,
+        
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
@@ -286,9 +418,11 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 2,
         borderBottomRightRadius: 25,
         bottom: 12,
+        borderWidth: 3,
+        borderColor: colors.actions.query
     },
     locationButton: {
-        backgroundColor: colors.actions.offer,
+        
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
@@ -298,9 +432,10 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 2,
         borderBottomRightRadius: 25,
         bottom: 12,
+        borderWidth: 3,
+        borderColor: colors.actions.offer
     },
     timeButton: {
-        backgroundColor: colors.actions.trade,
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
@@ -310,6 +445,14 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 2,
         borderBottomRightRadius: 25,
         bottom: 12,
+        borderWidth: 3,
+        borderColor: colors.actions.trade
+    },
+    deckContainer: {
+        width: '100%',
+        
+        paddingHorizontal: 24,
+        right: 12,
     },
     gradientTop: {
         position: 'absolute',

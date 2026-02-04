@@ -120,7 +120,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 style={styles.playButton}
                 onPress={handleSave}
               >
-                <FontAwesome6 name='arrow-right-long' size={22} color='#ffffff' />
+                <FontAwesome6 name='arrow-right-long' size={22} color={colors.actions.offer} />
               </TouchableOpacity>
 
               {/* Offer button */}
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   animatedContainer: {
     position: 'absolute',
-    bottom: 120,
+    bottom: 100,
     alignItems: 'center',
   },
   column: {
@@ -246,7 +246,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
-    backgroundColor: colors.actions.offer,
+    borderWidth: 3,
+    borderColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
     

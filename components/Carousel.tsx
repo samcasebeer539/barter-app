@@ -1,7 +1,7 @@
 //this will be refactored profile carousel
 import ProfileDeck from './ProfileDeck';
-import React, { useState, useCallback } from 'react';
-import { View, Dimensions, StyleSheet, Animated, ScrollView } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { View, Dimensions, StyleSheet, Animated, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import PostCard from '@/components/PostCard';
 import CreateCard from '@/components/CreateCard';
 import { colors } from '@/styles/globalStyles';
@@ -25,6 +25,7 @@ interface CarouselProps {
 
 const CARD_SLIDE_DOWN = 280;
 const DECK_SLIDE_UP = 262;
+const SIDE_CARD_SCALE = 0.85; // Scale for non-centered cards
 
 const Carousel: React.FC<CarouselProps> = ({
   posts,
@@ -35,11 +36,12 @@ const Carousel: React.FC<CarouselProps> = ({
   onToggleReveal,
 }) => {
   const [centeredIndex, setCenteredIndex] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const cardWidth = Math.min(screenWidth - 100, 400);
-  const cardSpacing = 12;
+  const cardSpacing = -8;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   const cardTranslateY = revealProgress.interpolate({
@@ -55,9 +57,9 @@ const Carousel: React.FC<CarouselProps> = ({
   const inactiveDeckTranslateY = cardTranslateY;
   const backdropTranslateY = cardTranslateY;
 
-  const handleScroll = useCallback((event: any) => {
-    const scrollX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollX / (cardWidth + cardSpacing));
+  const handleScrollEnd = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollXValue = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollXValue / (cardWidth + cardSpacing));
     setCenteredIndex(index);
   }, [cardWidth, cardSpacing]);
 
@@ -66,9 +68,23 @@ const Carousel: React.FC<CarouselProps> = ({
     ...posts,
   ];
 
+  const getCardScale = (index: number) => {
+    const inputRange = [
+      (index - 1) * (cardWidth + cardSpacing),
+      index * (cardWidth + cardSpacing),
+      (index + 1) * (cardWidth + cardSpacing),
+    ];
+
+    return scrollX.interpolate({
+      inputRange,
+      outputRange: [SIDE_CARD_SCALE, 1, SIDE_CARD_SCALE],
+      extrapolate: 'clamp',
+    });
+  };
+
   return (
     <View style={styles.cardsWrapper}>
-      <ScrollView
+      <Animated.ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={cardWidth + cardSpacing}
@@ -79,13 +95,18 @@ const Carousel: React.FC<CarouselProps> = ({
           paddingHorizontal: sidePadding,
           paddingBottom: 50,
         }}
-        onScroll={handleScroll}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: true }
+        )}
+        onMomentumScrollEnd={handleScrollEnd}
         scrollEventThrottle={16}
       >
         {carouselItems.map((item, index) => {
           const isCreate = item.type === 'create';
           const showDeck = !isCreate && item.hasDeck;
           const isCentered = index === centeredIndex;
+          const animatedScale = getCardScale(index);
 
           return (
             <View
@@ -96,7 +117,7 @@ const Carousel: React.FC<CarouselProps> = ({
                 overflow: 'visible',
               }}
             >
-              {/* Layer 1: ProfileDeck — centered goes up, rest go down */}
+              {/* Layer 1: ProfileDeck — centered goes up, rest go down and scale */}
               {showDeck && (
                 <Animated.View
                   style={[
@@ -104,6 +125,7 @@ const Carousel: React.FC<CarouselProps> = ({
                     {
                       transform: [
                         { translateY: isCentered ? activeDeckTranslateY : inactiveDeckTranslateY },
+                        { scale: animatedScale },
                       ],
                     },
                   ]}
@@ -118,19 +140,35 @@ const Carousel: React.FC<CarouselProps> = ({
                 </Animated.View>
               )}
 
-              {/* Layer 2: per-card backdrop — animates down with the card */}
+              {/* Layer 2: per-card backdrop — animates down with the card and scales */}
               {showDeck && (
                 <Animated.View
                   style={[
                     styles.perCardBackdrop,
-                    { height: screenHeight, transform: [{ translateY: backdropTranslateY }] },
+                    { 
+                      height: screenHeight, 
+                      transform: [
+                        { translateY: backdropTranslateY },
+                        { scale: animatedScale },
+                      ],
+                    },
                   ]}
                   pointerEvents="none"
                 />
               )}
 
-              {/* Layer 3: the actual card — animates down */}
-              <Animated.View style={[styles.cardLayer, { transform: [{ translateY: cardTranslateY }] }]}>
+              {/* Layer 3: the actual card — animates down and scales */}
+              <Animated.View 
+                style={[
+                  styles.cardLayer, 
+                  { 
+                    transform: [
+                      { translateY: cardTranslateY },
+                      { scale: animatedScale },
+                    ],
+                  }
+                ]}
+              >
                 {isCreate ? (
                   <CreateCard scale={1} cardWidth={cardWidth} />
                 ) : (
@@ -140,7 +178,7 @@ const Carousel: React.FC<CarouselProps> = ({
             </View>
           );
         })}
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 };

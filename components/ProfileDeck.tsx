@@ -66,7 +66,7 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           onPress={handleToggleReveal}
           disabled={!toggleEnabled}
         >
-          <FontAwesome6 name={isDeckRevealed ? "chevron-down" : "chevron-up"}  size={22} color="#ffffff" />
+          <FontAwesome6 name={isDeckRevealed ? "caret-down" : "caret-up"}  size={32} color='#fff' />
           
         </TouchableOpacity>
       </View>

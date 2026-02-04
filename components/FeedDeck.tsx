@@ -140,7 +140,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 style={styles.upButton}
                 onPress={handleCloseModal}
               >
-                <FontAwesome6 name="chevron-up" size={22} color="#ffffff" />
+                <FontAwesome6 name="caret-up" size={32} color="#ffffff" />
               </TouchableOpacity>
 
             </View>

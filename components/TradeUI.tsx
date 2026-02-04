@@ -5,6 +5,8 @@ import {globalFonts, colors } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
+//add line to ActiveTrade that reacts to the active trade here -> users can see what their turn will say
+//30 seconds to cancel in time button
 
 interface TradeUIProps {
 
@@ -24,11 +26,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
         { text: 'QUERY', color: colors.actions.query, hasButtons: true },
         { text: 'COUNTER', color: colors.actions.counter, hasButtons: true },
         
-        { text: 'ACCEPT', color: colors.actions.accept, hasButtons: false },
+        { text: 'ACCEPT*', color: colors.actions.accept, hasButtons: false },
         { text: 'DECLINE', color: colors.actions.decline, hasButtons: false },
         
-        { text: 'LOCATION', color: colors.actions.offer, hasButtons: true },
-        { text: 'TIME', color: colors.actions.trade, hasButtons: true },
+        { text: 'WHERE', color: colors.actions.location, hasButtons: true },
+        { text: 'WHEN', color: colors.actions.time, hasButtons: true },
     ];
     
     // Create tripled array for infinite scroll
@@ -280,7 +282,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                     </TouchableOpacity>
                                 )}
 
-                                {action.hasButtons && action.text === 'LOCATION' && (
+                                {action.hasButtons && action.text === 'WHERE' && (
                                     <TouchableOpacity 
                                         style={[
                                             styles.locationButton,
@@ -289,11 +291,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                         onPress={PlayAction}
                                         disabled={!isInTopSpot}
                                     >
-                                        <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.offer} />
+                                        <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.location} />
                                     </TouchableOpacity>
                                 )}
 
-                                {action.hasButtons && action.text === 'TIME' && (
+                                {action.hasButtons && action.text === 'WHEN' && (
                                     <TouchableOpacity 
                                         style={[
                                             styles.timeButton,
@@ -302,7 +304,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                         onPress={PlayAction}
                                         disabled={!isInTopSpot}
                                     >
-                                        <FontAwesome6 name={'clock'} size={22} color={colors.actions.trade} />
+                                        <FontAwesome6 name={'clock'} size={22} color={colors.actions.time} />
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -433,7 +435,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 25,
         bottom: 12,
         borderWidth: 3,
-        borderColor: colors.actions.offer
+        borderColor: colors.actions.location
     },
     timeButton: {
         justifyContent: 'center',
@@ -446,7 +448,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 25,
         bottom: 12,
         borderWidth: 3,
-        borderColor: colors.actions.trade
+        borderColor: colors.actions.time
     },
     deckContainer: {
         width: '100%',

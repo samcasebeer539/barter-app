@@ -52,6 +52,14 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
       <View style={styles.goodServiceRow}>
         
 
+        
+        <View style={styles.goodServiceButton}>
+          <Text style={styles.buttonText}>{goodCount}</Text>
+          <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
+          <Text style={styles.buttonText}> </Text>
+          <Text style={styles.buttonText}>{serviceCount}</Text>
+          <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
+        </View>
         {/* Toggle reveal button */}
         <TouchableOpacity 
           style={[styles.toggleButton, !toggleEnabled && styles.toggleButtonDisabled, isDeckRevealed && styles.toggleButtonDisabled]}
@@ -61,13 +69,6 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           <FontAwesome6 name={isDeckRevealed ? "chevron-down" : "chevron-up"}  size={22} color="#ffffff" />
           
         </TouchableOpacity>
-        <View style={styles.goodServiceButton}>
-          <Text style={styles.buttonText}>{goodCount}</Text>
-          <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
-          <Text style={styles.buttonText}> </Text>
-          <Text style={styles.buttonText}>{serviceCount}</Text>
-          <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
-        </View>
       </View>
         
       <View style={styles.deckWrapper}>
@@ -95,7 +96,7 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           style={styles.selectButton}
           onPress={handleMinus}
         >
-          <FontAwesome6 name="circle" size={22} color="#ffffff" />
+          <Icon name="circle-o" size={22} color={colors.actions.trade} />
         </TouchableOpacity>
       </View>
     </View>
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 286,
+    width: 288,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -125,11 +126,11 @@ const styles = StyleSheet.create({
     left: 0,
   },
   goodServiceRow: {
-    width: 210,
+    width: 288,
     flexDirection: 'row',
     gap: 4,
     top: -224,
-    left: -40,
+    left: 0,
     zIndex: 0,
   },
   playButton: {
@@ -181,14 +182,14 @@ const styles = StyleSheet.create({
   toggleButton: {
     width: 54,
     height: 42,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
+    
   },
   toggleButtonDisabled: {
     backgroundColor: colors.ui.secondary,
@@ -198,9 +199,9 @@ const styles = StyleSheet.create({
     height: 42,
     flexDirection: 'row',
     gap: 8,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
@@ -219,7 +220,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
-    backgroundColor: colors.actions.trade,
+    borderWidth: 3,
+    borderColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 'auto',

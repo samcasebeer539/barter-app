@@ -76,11 +76,10 @@ export default function ProfileScreen() {
   const handleToggleReveal = useCallback(() => {
     const toValue = isDeckRevealed ? 0 : 1;
     setIsDeckRevealed(!isDeckRevealed);
-    Animated.spring(revealProgress, {
+    Animated.timing(revealProgress, {
       toValue,
       useNativeDriver: true,
-      damping: 20,
-      stiffness: 200,
+      duration: 260,
     }).start();
   }, [isDeckRevealed, revealProgress]);
 

@@ -23,9 +23,10 @@ interface CarouselProps {
   deckPosts: Post[];
 }
 
-const CARD_SLIDE_DOWN = 280;
-const DECK_SLIDE_UP = 262;
-const SIDE_CARD_SCALE = 0.85; // Scale for non-centered cards
+const CARD_SLIDE_DOWN = 300;
+const DECK_SLIDE_UP = 242;
+const SIDE_CARD_SCALE = 0.9; // Scale for non-centered cards
+const SIDE_CARD_OFFSET = 20; // Vertical offset for non-centered cards
 
 const Carousel: React.FC<CarouselProps> = ({
   posts,
@@ -41,7 +42,7 @@ const Carousel: React.FC<CarouselProps> = ({
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const cardWidth = Math.min(screenWidth - 100, 400);
-  const cardSpacing = -8;
+  const cardSpacing = -4;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   const cardTranslateY = revealProgress.interpolate({
@@ -82,6 +83,26 @@ const Carousel: React.FC<CarouselProps> = ({
     });
   };
 
+  const getCardVerticalOffset = (index: number) => {
+    const inputRange = [
+      (index - 1) * (cardWidth + cardSpacing),
+      index * (cardWidth + cardSpacing),
+      (index + 1) * (cardWidth + cardSpacing),
+    ];
+
+    return scrollX.interpolate({
+      inputRange,
+      outputRange: [SIDE_CARD_OFFSET, 0, SIDE_CARD_OFFSET],
+      extrapolate: 'clamp',
+    });
+  };
+
+  const getDeckTranslateY = (index: number, isCentered: boolean) => {
+    const baseTranslateY = isCentered ? activeDeckTranslateY : inactiveDeckTranslateY;
+    const verticalOffset = getCardVerticalOffset(index);
+    return Animated.add(baseTranslateY, verticalOffset);
+  };
+
   return (
     <View style={styles.cardsWrapper}>
       <Animated.ScrollView
@@ -107,6 +128,7 @@ const Carousel: React.FC<CarouselProps> = ({
           const showDeck = !isCreate && item.hasDeck;
           const isCentered = index === centeredIndex;
           const animatedScale = getCardScale(index);
+          const animatedVerticalOffset = getCardVerticalOffset(index);
 
           return (
             <View
@@ -124,7 +146,7 @@ const Carousel: React.FC<CarouselProps> = ({
                     styles.deckLayer,
                     {
                       transform: [
-                        { translateY: isCentered ? activeDeckTranslateY : inactiveDeckTranslateY },
+                        { translateY: getDeckTranslateY(index, isCentered) },
                         { scale: animatedScale },
                       ],
                     },
@@ -148,7 +170,7 @@ const Carousel: React.FC<CarouselProps> = ({
                     { 
                       height: screenHeight, 
                       transform: [
-                        { translateY: backdropTranslateY },
+                        { translateY: Animated.add(backdropTranslateY, animatedVerticalOffset) },
                         { scale: animatedScale },
                       ],
                     },
@@ -163,7 +185,7 @@ const Carousel: React.FC<CarouselProps> = ({
                   styles.cardLayer, 
                   { 
                     transform: [
-                      { translateY: cardTranslateY },
+                      { translateY: Animated.add(cardTranslateY, animatedVerticalOffset) },
                       { scale: animatedScale },
                     ],
                   }
@@ -197,8 +219,8 @@ const styles = StyleSheet.create({
   perCardBackdrop: {
     position: 'absolute',
     top: -8,
-    left: -40,
-    right: -40,
+    left: -28,
+    right: -32,
     bottom: 0,
     backgroundColor: colors.ui.background,
     zIndex: 2,

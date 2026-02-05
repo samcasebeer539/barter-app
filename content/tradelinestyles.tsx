@@ -6,27 +6,27 @@ export const TRADE_STYLES = {
   actions: {
     offer: {
       color: colors.actions.offer,
-      fontFamily: globalFonts.bold
+      fontFamily: globalFonts.extrabold
     },
     trade: {
       color: colors.actions.trade,
-      fontFamily: globalFonts.bold
+      fontFamily: globalFonts.extrabold
     },
     counteroffer: {
       color: colors.actions.counter,
-      fontFamily: globalFonts.bold
+      fontFamily: globalFonts.extrabold
     },
     question: {
       color: colors.actions.query,
-      fontFamily: globalFonts.bold
+      fontFamily: globalFonts.extrabold
     },
     accepted: {
       color: colors.actions.accept,
-      fontFamily: globalFonts.bold
+      fontFamily: globalFonts.extrabold
     },
     declined: {
       color: colors.actions.decline,
-      fontFamily: globalFonts.bold
+      fontFamily: globalFonts.extrabold
     },
   },
   text: {

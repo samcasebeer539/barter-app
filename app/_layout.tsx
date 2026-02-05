@@ -2,20 +2,13 @@ import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
 import { colors } from '@/styles/globalStyles';
 
 function TabBarBackground() {
   return (
-    <View style={[StyleSheet.absoluteFill, { height: 120, top: 34}]}>
-      <LinearGradient
-        colors={['rgba(0, 0, 0, 0)', 'rgb(0, 0, 0, 1)', colors.ui.background]}
-        locations={[0, 0.5, 1]}
-        style={StyleSheet.absoluteFill}
-      />
-    </View>
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', top: 32}]} />
   );
 }
 
@@ -35,14 +28,14 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: colors.actions.trade,
+          tabBarActiveTintColor: colors.actions.offer,
           tabBarInactiveTintColor: '#fff',
           
           tabBarStyle: {
             backgroundColor: 'transparent',
             borderTopWidth: 0,
             height: 110,
-            paddingBottom: 40,
+            paddingBottom: 42,
             paddingTop: 20,
             position: 'absolute',
             
@@ -173,11 +166,11 @@ const styles = StyleSheet.create({
     height: 40,
   },
   leftButton: {
-    borderTopLeftRadius: 30,
-    borderBottomLeftRadius: 30,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 36,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    marginLeft: 46,
+    marginLeft: 12,
     top: 22,
   },
   middleButton: {
@@ -188,11 +181,11 @@ const styles = StyleSheet.create({
     top: 22,
   },
   rightButton: {
-    borderTopRightRadius: 30,
-    borderBottomRightRadius: 30,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 36,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    marginRight: 46,
+    marginRight: 12,
     top: 22,
   },
 });

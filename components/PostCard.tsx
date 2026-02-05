@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontFamily: globalFonts.bold,
   },
-  photoSectionWrapper: { position: 'absolute', top: 60, left: 16, right: 16 },
+  photoSectionWrapper: { position: 'absolute', top: 52, left: 16, right: 16 },
   photoSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { alignItems: 'center' },
   photoContainer: { justifyContent: 'center', alignItems: 'center', height: '100%' },

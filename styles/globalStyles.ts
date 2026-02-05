@@ -32,7 +32,7 @@ export const colors = {
 
   // UI Element Colors
   ui: {
-    secondary: '#5c5579',     // Secondary button color (purple-grey)
+    secondary: '#4a4468',     // Secondary button color (purple-grey) 5c5579
     secondarydisabled: '#908aa7',
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
     background: '#000000',    // Main app background

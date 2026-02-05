@@ -206,6 +206,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         {/* Partner side */}
         <View style={styles.cardsContainer}>
           <View style={styles.buttonRowContainer}>
+            <View style={styles.timeButton}>
+              <Text style={styles.timeButtonText}>11:49</Text>
+            </View>
             <View style={styles.leftRightButton}>
               <TouchableOpacity 
                 onPress={() => setPartnerCardIndex(i => i - 1)}
@@ -222,9 +225,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               </TouchableOpacity>
             </View>
 
-            <View style={styles.timeButton}>
-              <Text style={styles.playButtonText}>11:49</Text>
-            </View>
+            
           </View>
 
           <PostCard 
@@ -259,8 +260,9 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 24,
     borderBottomRightRadius: 2,
+    marginHorizontal: 1,
     marginTop: 12,
-    marginBottom: 2,
+    marginBottom: 6,
   },
   headerTitle: {
     fontSize: 20,
@@ -269,8 +271,8 @@ const styles = StyleSheet.create({
   },
   expandedContent: {
     padding: 12,
-    marginTop: -8,
-    marginBottom: -12
+    marginTop: -12,
+    marginBottom: -6
   },
   tradeSection: {
     gap: -4,
@@ -375,13 +377,17 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 8,
     borderRadius: 2,
-    minHeight: 40,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    height: 40,
     backgroundColor: colors.ui.secondary,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  timeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    
+    fontFamily: globalFonts.bold
   },
 });
 

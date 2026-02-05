@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardWrapper: {
-    marginBottom: 8,
+    marginBottom: 2,
   },
   card: {
     backgroundColor: '#1C1C1E',

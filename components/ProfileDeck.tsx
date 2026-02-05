@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   goodServiceRow: {
-    width: 288,
+    width: 250,
     flexDirection: 'row',
     gap: 4,
     top: -224,

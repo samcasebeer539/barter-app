@@ -36,11 +36,10 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     if (visible) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
 
-      Animated.spring(deckTranslateY, {
+      Animated.timing(deckTranslateY, {
         toValue: Dimensions.get('window').height / 7,
         useNativeDriver: true,
-        damping: 24,
-        stiffness: 200,
+        duration: 260,
       }).start();
     }
   }, [visible]);
@@ -193,20 +192,20 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 288,
+    width: 270,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 4,
-    top: 226,
+    top: 225,
     left: 0,
   },
   goodServiceRow: {
-    width: 288,
+    width: 270,
     flexDirection: 'row',
 
     gap: 4,
-    top: -216,
+    top: -217,
     left: 0,
     zIndex: 0,
   },

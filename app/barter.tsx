@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../styles/globalStyles';
+import OffersSection from '../components/OffersSection';
 
 const POSTS = [
   {
@@ -59,6 +60,12 @@ const trade3Turns: TradeTurn[] = [
   { type: 'receivedQuestion', user: 'Jay', question: 'Is the Charizard in good condition?' },
 ];
 
+const offerTurns: TradeTurn[] = [
+  { type: 'sentOffer', item: 'Vintage Books' },
+  { type: 'sentOffer', item: 'Pokemon Cards' },
+  { type: 'sentOffer', item: 'Idk' },
+];
+
 const activeTrades = [
   {
     id: 1,
@@ -102,6 +109,12 @@ export default function ActiveTradesTestScreen() {
           turns={trade.turns}
         />
       ))}
+      
+      <OffersSection
+        username="Alex"
+        turns={offerTurns}
+      />
+      
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );

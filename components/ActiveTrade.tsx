@@ -47,6 +47,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     const [isPlaying, setIsPlaying] = useState(false);
     const [answerText, setAnswerText] = useState('');
     const [showAnswerInput, setShowAnswerInput] = useState(false);
+    const [questionAnswered, setQuestionAnswered] = useState(false);
     const inputRef = useRef<TextInput>(null);
     
     const [playerCardIndex, setPlayerCardIndex] = useState(0);
@@ -59,17 +60,18 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
 
     const handlePlayButtonPress = () => {
-      if (isLastTurnQuestion && !showAnswerInput) {
+      if (isLastTurnQuestion && !showAnswerInput && !questionAnswered) {
         // Show answer input and focus
         setShowAnswerInput(true);
         setTimeout(() => {
           inputRef.current?.focus();
         }, 100);
-      } else if (isLastTurnQuestion && showAnswerInput) {
+      } else if (isLastTurnQuestion && showAnswerInput && !questionAnswered) {
         // Submit the answer
         console.log('Submitting answer:', answerText);
         // TODO: Actually submit the answer here
-        // For now, just reset the state
+        // Mark question as answered and reset input state
+        setQuestionAnswered(true);
         setShowAnswerInput(false);
         setAnswerText('');
         Keyboard.dismiss();
@@ -135,7 +137,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           showIcon: true,
           showText: true 
         };
-      } else if (isLastTurnQuestion && showAnswerInput) {
+      } else if (isLastTurnQuestion && showAnswerInput && !questionAnswered) {
         // After ANSWER is clicked, show just the arrow with query color
         return { 
           icon: 'arrow-right-long', 
@@ -145,7 +147,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           showIcon: true,
           showText: false 
         };
-      } else if (isLastTurnQuestion && !showAnswerInput) {
+      } else if (isLastTurnQuestion && !showAnswerInput && !questionAnswered) {
         return { 
           icon: null, 
           text: 'ANSWER', 

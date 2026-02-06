@@ -11,12 +11,12 @@ import {
   Dimensions,
   Animated,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import ProfilePicture from '@/components/ProfilePicture';
 import Carousel from '@/components/Carousel';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
@@ -126,10 +126,9 @@ export default function ProfileScreen() {
           ]}
         >
           <View style={styles.profileRow}>
-            <ProfilePicture
-              size={80}
-              imageSource={profileImageUrl}
-              avatarText="SC"
+            <Image
+              source={{ uri: profileImageUrl }}
+              style={styles.profileImage}
             />
             <View style={styles.nameContainer}>
               {/* replace with api data */}
@@ -205,6 +204,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   nameContainer: {
     marginLeft: 16,

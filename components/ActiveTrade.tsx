@@ -3,8 +3,6 @@
 //  pass in trade turn (action, associated info (card, question text, )) from TradeUI
 //  display proposed turn in trade lines area -> question will be typed here
 //  get timer button working + (optional) 30 seconds to cancel turn after playing button?
-//  play button turns to answer button after question is played (but no arrow - not a turn)
-//  
 
 import {
   View,
@@ -45,21 +43,30 @@ interface ActiveTradeProps {
 
 const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, turns }) => {
     const [isExpanded, setIsExpanded] = useState(true);
-    const [showInput, setShowInput] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [answerText, setAnswerText] = useState('');
+    const [showAnswerInput, setShowAnswerInput] = useState(false);
     const inputRef = useRef<TextInput>(null);
     
     const [playerCardIndex, setPlayerCardIndex] = useState(0);
     const [partnerCardIndex, setPartnerCardIndex] = useState(0);
 
+    const lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
+    const isLastTurnQuestion = lastTurn?.type === 'receivedQuestion';
+    
     const isPlayerTurn = turns.length > 0 && 
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
 
-    const handleAnswer = () => {
-      setShowInput(prev => !prev);
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
+    const handlePlayButtonPress = () => {
+      if (isLastTurnQuestion && !showAnswerInput) {
+        // Show answer input and focus
+        setShowAnswerInput(true);
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      } else {
+        setIsPlaying(!isPlaying);
+      }
     };
 
     const getArrowForTurn = (turn: TradeTurn) => {
@@ -88,7 +95,6 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         const arrowIcon = getArrowForTurn(turn);
 
         return (
-        <>
           <View style={styles.turnRow}>
             <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
             <Text style={styles.tradeText}>
@@ -103,38 +109,42 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               )}
             </Text>
           </View>
-
-          {turn.type === 'receivedQuestion' && (
-            <>
-              <View style={styles.questionButtonContainer}>
-                <TouchableOpacity 
-                  style={styles.answerButton}
-                  onPress={handleAnswer}
-                >
-                  <Text style={styles.playButtonText}>ANSWER</Text>
-                </TouchableOpacity>
-              </View>
-              {showInput && (
-                <TextInput
-                  ref={inputRef}
-                  style={styles.textAnswerInput}
-                  placeholder="Answer question to begin your turn!"
-                  placeholderTextColor="#888"
-                />
-              )}
-            </>
-          )}
-        </>
         );
     };
 
     const getPlayButtonContent = () => {
       if (isPlaying) {
-        return { icon: 'arrow-left-long', text: 'BACK', disabled: false };
+        return { 
+          icon: 'arrow-left-long', 
+          text: 'BACK', 
+          disabled: false, 
+          backgroundColor: colors.ui.secondary,
+          showIcon: true 
+        };
+      } else if (isLastTurnQuestion && !showAnswerInput) {
+        return { 
+          icon: null, 
+          text: 'ANSWER', 
+          disabled: false, 
+          backgroundColor: colors.actions.query,
+          showIcon: false 
+        };
       } else if (isPlayerTurn) {
-        return { icon: 'arrow-right-long', text: 'PLAY', disabled: false };
+        return { 
+          icon: 'arrow-right-long', 
+          text: 'PLAY', 
+          disabled: false, 
+          backgroundColor: colors.actions.offer,
+          showIcon: true 
+        };
       } else {
-        return { icon: 'arrow-left-long', text: 'WAIT', disabled: true };
+        return { 
+          icon: 'arrow-left-long', 
+          text: 'WAIT', 
+          disabled: true, 
+          backgroundColor: colors.ui.secondary,
+          showIcon: true 
+        };
       }
     };
 
@@ -166,6 +176,22 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                 {renderLine(turn, index)}
               </React.Fragment>
             ))}
+            
+            {/* Show answer input line when answering */}
+            {showAnswerInput && (
+              <View style={styles.turnRow}>
+                <FontAwesome6 name="arrow-right-long" size={18} color="#E0E0E0" style={styles.arrow} />
+                <TextInput
+                  ref={inputRef}
+                  style={styles.answerTextInput}
+                  placeholder="A: Type your answer here..."
+                  placeholderTextColor="#888"
+                  value={answerText}
+                  onChangeText={setAnswerText}
+                  multiline
+                />
+              </View>
+            )}
           </View>
         </View>
       )}
@@ -183,13 +209,15 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
             <TouchableOpacity 
               style={[
                 styles.playButton, 
+                { backgroundColor: playButtonContent.backgroundColor },
                 playButtonContent.disabled && styles.playButtonDisabled,
-                isPlaying && styles.playButtonBack
               ]}
-              onPress={() => setIsPlaying(!isPlaying)}
+              onPress={handlePlayButtonPress}
               disabled={playButtonContent.disabled}
             >
-              <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
+              {playButtonContent.showIcon && playButtonContent.icon && (
+                <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
+              )}
               <Text style={styles.playButtonText}>{playButtonContent.text}</Text>
             </TouchableOpacity>
 
@@ -300,28 +328,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     ...defaultTextStyle
   },
-  questionButtonContainer: {
-    alignItems: 'flex-start',
-    marginTop: 4,
-    marginBottom: 8,
-    marginLeft: 24,
-  },
-  answerButton: {
-    backgroundColor: colors.actions.query,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-  },
-  textAnswerInput: {
-    color: '#fff',
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginTop: 8,
-    marginBottom: 12,
-    backgroundColor: colors.ui.background,
+  answerTextInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#FFFFFF',
+    lineHeight: 22,
+    ...defaultTextStyle,
+    minHeight: 24,
   },
   tradeCardsSection: {
     marginTop: 4,
@@ -346,7 +359,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 40,
@@ -358,9 +370,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
   },
   playButtonDisabled: {
-    backgroundColor: colors.ui.secondary,
-  },
-  playButtonBack: {
     backgroundColor: colors.ui.secondary,
   },
   playButtonText: {

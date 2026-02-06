@@ -3,10 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import FeedDeck from '@/components/FeedDeck';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import FeedBar from '@/components/FeedBar';
 import { defaultTextStyle, globalFonts, colors, uiColors } from '../styles/globalStyles';
-import { LinearGradient } from 'expo-linear-gradient';
-import { RotateInDownLeft } from 'react-native-reanimated';
 
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
@@ -173,43 +171,15 @@ export default function FeedScreen() {
     <View style={styles.container}>
       
       <StatusBar style="light" />
-      {/* Top Gradient Overlay */}
-            <View style={styles.topGradientContainer}>
-              <LinearGradient
-                colors={['#000000', 'rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0)']}
-                locations={[0, 0.5, 1]}
-                style={styles.topGradient}
-              />
-            </View>
       
-      <Animated.View 
-        style={[
-          styles.topIconsContainer,
-          { transform: [{ translateY: headerTranslateY }] }
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.locationButton}
-          onPress={handleLocation}
-        >
-          <FontAwesome6  name='location-dot' size={22} color={showLocation ? '#fff' : colors.actions.offer} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.searchBar}
-          onPress={handleSearch}
-        >
-          <Text style={styles.searchText}>Search</Text>
-          <FontAwesome6  name='magnifying-glass' size={22} color='#FFFFFF' />
-        </TouchableOpacity>
-     
-        <TouchableOpacity 
-          style={styles.saveButton}
-          onPress={handleSave}
-        >
-          <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
-        </TouchableOpacity>
-      </Animated.View>
+      <FeedBar
+        showLocation={showLocation}
+        showSaved={showSaved}
+        onLocationPress={handleLocation}
+        onSearchPress={handleSearch}
+        onSavePress={handleSave}
+        headerTranslateY={headerTranslateY}
+      />
 
       <ScrollView 
         style={styles.scrollView}
@@ -248,33 +218,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.background,
   },
 
-  topIconsContainer: {
-    backgroundColor: colors.ui.background,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 4,
-    paddingHorizontal: 16,
-    zIndex: 10,
-    paddingBottom: 10,
-    paddingTop: 58,
-  },
-  
-  topGradientContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    zIndex: 5,
-    pointerEvents: 'none',
-  },
-  topGradient: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },
@@ -334,49 +277,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
     
-  },
-  searchText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: globalFonts.regular,
-  },
-
-  saveButton: {
-    width: 50,
-    height: 44,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  
-  },
-  locationButton: {
-    width: 50,
-    height: 44,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  
-  },
-  searchBar: {
-    width: 258,
-    height: 44,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
   },
 });

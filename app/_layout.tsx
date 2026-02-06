@@ -61,7 +61,7 @@ export default function RootLayout() {
             const href = props.href as string;
             const isFirst = href === '/feed';
             const isLast = href === '/profile';
-            const isMiddle = href === '/activetradestest1';
+            const isMiddle = href === '/barter';
             
             return (
               <TouchableOpacity
@@ -100,7 +100,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="activetradestest1"
+          name="barter"
           options={{
             tabBarIcon: ({ color }) => (
               <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} style={{ marginTop: 0 }}/>
@@ -115,42 +115,16 @@ export default function RootLayout() {
             ),
           }}
         />
-        <Tabs.Screen
-          name="trades"
-          options={{
-            href: null, // Hide from tab bar - accessed from trades page
-          }}
-        />
+  
         <Tabs.Screen
           name="settings"
           options={{
             href: null, // Hide from tab bar completely
           }}
         />
-        <Tabs.Screen
-          name="decktest"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="barter"
-          options={{
-              href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="activetradestest"
-          options={{
-              href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="profile1"
-          options={{
-              href: null,
-          }}
-        />
+   
+   
+        
       </Tabs>
     </SafeAreaProvider>
   );

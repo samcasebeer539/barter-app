@@ -1,4 +1,6 @@
-//this will be refactored profile carousel
+//todo
+// swipe down to trigger deck
+// header with edit button for deck-less cards 
 import ProfileDeck from './ProfileDeck';
 import React, { useState, useCallback, useRef } from 'react';
 import { View, Dimensions, StyleSheet, Animated, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';

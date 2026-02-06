@@ -1,3 +1,11 @@
+//an active trade instance, contains cards, turns, and trade buttons (Trade UI)
+//todo
+//  pass in trade turn (action, associated info (card, question text, )) from TradeUI
+//  display proposed turn in trade lines area -> question will be typed here
+//  get timer button working + (optional) 30 seconds to cancel turn after playing button?
+//  play button turns to answer button after question is played (but no arrow - not a turn)
+//  
+
 import {
   View,
   Text,

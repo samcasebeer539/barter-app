@@ -1,3 +1,6 @@
+//should have optional decline button for profile use, removes it and all user's cards from profile deck
+
+
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';

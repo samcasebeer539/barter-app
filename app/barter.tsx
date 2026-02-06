@@ -1,506 +1,121 @@
-// combine feed and barter pages?
-//yeah this makes sense. pull the cards out from under the active trade 
-
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Animated,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { useCallback, useState } from 'react';
+import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState, useRef } from 'react';
-import CardWheel from '../components/CardWheel';
-import ProfilePicture from '@/components/ProfilePicture';
-import PostCard from '@/components/PostCard';
+import { colors } from '../styles/globalStyles';
 
+const POSTS = [
+  {
+    type: 'service' as const,
+    name: 'Bike Repair service',
+    description:
+      'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+    photos: [
+      'https://picsum.photos/seed/landscape1/800/400',
+      'https://picsum.photos/seed/portrait1/400/600',
+      'https://picsum.photos/seed/square1/500/500',
+    ],
+  },
+  {
+    type: 'good' as const,
+    name: 'Vintage Camera Collection',
+    description:
+      'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition.',
+    photos: [
+      'https://picsum.photos/seed/camera1/600/400',
+      'https://picsum.photos/seed/camera2/500/700',
+      'https://picsum.photos/seed/camera3/600/600',
+    ],
+  },
+  {
+    type: 'service' as const,
+    name: 'Guitar Lessons',
+    description:
+      'Experienced guitar teacher offering beginner to intermediate lessons. ',
+    photos: [
+      'https://picsum.photos/seed/guitar1/700/500',
+      'https://picsum.photos/seed/guitar2/400/600',
+      'https://picsum.photos/seed/guitar3/500/500',
+    ],
+  },
+];
 
+const trade1Turns: TradeTurn[] = [
+  { type: 'sentOffer', item: 'Vintage Books' },
+  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Pokemon Cards' },
+  { type: 'sentCounteroffer' },
+  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Pokemon Cards' },
+];
 
+const trade2Turns: TradeTurn[] = [
+  { type: 'sentOffer', item: 'Guitar Lessons' },
+  { type: 'receivedTrade', user: 'Sarah', item: 'Bike Repair' },
+  { type: 'youAccepted' },
+];
 
-export default function BarterScreen() {
-  const router = useRouter();
+const trade3Turns: TradeTurn[] = [
+  { type: 'sentOffer', item: 'Camera Equipment' },
+  { type: 'receivedTrade', user: 'Mike', item: 'Photography Course' },
+  { type: 'receivedQuestion', user: 'Jay', question: 'Is the Charizard in good condition?' },
+];
+
+const activeTrades = [
+  {
+    id: 1,
+    playercards: POSTS.slice(0, 2),
+    partnercards: POSTS.slice(1, 3),
+    turns: trade1Turns,
+  },
+  {
+    id: 2,
+    playercards: POSTS.slice(0, 3),
+    partnercards: POSTS.slice(0, 1),
+    turns: trade2Turns,
+  },
+  {
+    id: 3,
+    playercards: POSTS.slice(1, 2),
+    partnercards: POSTS.slice(2, 3),
+    turns: trade3Turns,
+  },
+];
+
+export default function ActiveTradesTestScreen() {
   const [resetKey, setResetKey] = useState(0);
-  const [activeTradesExpanded, setActiveTradesExpanded] = useState(true);
-  const [outgoingOffersExpanded, setOutgoingOffersExpanded] = useState(true);
-  const [declinedExpiredExpanded, setDeclinedExpiredExpanded] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
 
-  // Animated values for sliding
-  const activeTradesTranslateY = useRef(new Animated.Value(0)).current;
-  const belowContentTranslateY = useRef(new Animated.Value(0)).current;
-
-  // Reset CardWheel whenever this screen comes into focus
   useFocusEffect(
     useCallback(() => {
       setResetKey(prev => prev + 1);
     }, [])
   );
 
-  const handleBackPress = () => {
-    router.push('/trades');
-  };
-
-    
-  
-  const inputRef = useRef<TextInput>(null);
-    
-  const [showInput, setShowInput] = useState(false);
-  
-  const handlePlay = () => {
-    setIsPlaying(true);
-    
-    // Animate active trades section up
-    Animated.spring(activeTradesTranslateY, {
-      toValue: -600, // Slide up
-      useNativeDriver: true,
-      damping: 20,
-      stiffness: 100,
-    }).start();
-
-    // Animate below content down
-    Animated.spring(belowContentTranslateY, {
-      toValue: 600, // Slide down
-      useNativeDriver: true,
-      damping: 20,
-      stiffness: 100,
-    }).start();
-  };
-
-  const handleAnswer = () => {
-    console.log('Answer button pressed');
-    // Add your offer logic here
-    setShowInput(prev => !prev);
-    setTimeout(() => {
-    inputRef.current?.focus();
-  }, 0);}
-
-  const sampleCards = [
-    {
-      title: 'Accept',
-      photo: require('@/assets/barter-cards/accept.png'),
-    },
-    {
-      title: 'Decline',
-      photo: require('@/assets/barter-cards/decline.png'),
-    },
-    {
-      title: 'Counter',
-      photo: require('@/assets/barter-cards/counter.png'),
-    },
-    {
-      title: 'Query',
-      photo: require('@/assets/barter-cards/query.png'),
-    },
-  ];
-
-  // Sample posts for the two cards
-  const leftPost = {
-    type: 'service' as const,
-    name: 'Guitar Lessons',
-    description: 'Professional guitar instruction for all skill levels. Learn music theory, techniques, and your favorite songs.',
-    photos: [
-      'https://picsum.photos/seed/guitar1/800/400',
-      'https://picsum.photos/seed/guitar2/400/600',
-    ],
-  };
-
-  const rightPost = {
-    type: 'good' as const,
-    name: 'Vintage Camera',
-    description: 'Classic film camera in excellent condition. Perfect for photography enthusiasts.',
-    photos: [
-      'https://picsum.photos/seed/camera1/800/400',
-      'https://picsum.photos/seed/camera2/400/600',
-    ],
-  };
-
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      
-      {/* Back Button */}
-      <TouchableOpacity 
-        style={styles.backButton} 
-        onPress={handleBackPress}
-        activeOpacity={0.7}
-      >
-        <FontAwesome6 name="angle-left" size={28} color="#fff" />
-      </TouchableOpacity>
-
-      {/* Cards and CardWheel - positioned behind active trades */}
-      <View style={styles.mainContent}>
-        <View style={styles.leftArrowContainer}>
-          <FontAwesome6 name="arrow-left-long" size={28} color="#fff" />
-        </View>
-        <View style={styles.rightArrowContainer}>
-          <FontAwesome6 name="arrow-right-long" size={28} color="#fff" />
-        </View>
-        <View style={styles.cardsContainer}>
-          {/* Left card - larger and higher */}
-          <View style={styles.leftCard}>
-            <PostCard 
-              post={leftPost}
-              cardWidth={180}
-              scale={1}
-            />
-          </View>
-          
-          {/* Right card - smaller and lower */}
-          <View style={styles.rightCard}>
-            <PostCard 
-              post={rightPost}
-              cardWidth={180}
-              scale={1}
-            />
-          </View>
-        </View>
-
-        {/* Card Wheel */}
-        <View style={styles.cardWheelContainer}>
-          <CardWheel cards={sampleCards} resetKey={resetKey} />
-        </View>
-      </View>
-
-      {/* ScrollView with active trades and offers - overlays on top */}
-      <ScrollView 
-        style={styles.scrollViewOverlay} 
-        contentContainerStyle={styles.scrollContent}
-        scrollEnabled={!isPlaying}
-      >
-        <Animated.View 
-          style={[
-            styles.activeTradeaSection,
-            {
-              transform: [{ translateY: activeTradesTranslateY }],
-            },
-          ]}
-        >
-          <TouchableOpacity 
-            style={styles.tradeSectionHeader}
-            onPress={() => setActiveTradesExpanded(!activeTradesExpanded)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.tradeSectionTitle}>Active Trades</Text>
-            <MaterialIcons 
-              name={activeTradesExpanded ? "expand-less" : "expand-more"} 
-              size={28} 
-              color="#fff" 
-            />
-          </TouchableOpacity>
-          
-          {activeTradesExpanded && (
-            <>
-    
-
-              {/* 2nd Active Trade */}
-              <View style={styles.tradeSection}>
-                <Text style={styles.tradeText}>
-                  You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books"{'\n'}
-                  Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards"{'\n'}
-                  You proposed <Text style={styles.highlightPink}>COUNTEROFFER</Text>{'\n'}
-                  Jay asked <Text style={styles.highlightPurple}>QUESTION</Text>{'\n'}
-                  <Text style={styles.questionText}>       Is the Charizard in good condition?</Text>{'\n'}
-
-                
-                </Text>
-                <View style={styles.questionButtonContainer} pointerEvents="auto">
-                  <TouchableOpacity 
-                    style={styles.answerButton}
-                    onPress={handleAnswer}
-                  >
-                    <Text style={styles.buttonText}>ANSWER</Text>
-                  </TouchableOpacity>
-                </View>
-                {showInput && (
-                  <TextInput
-                    ref={inputRef}
-                    style={styles.textAnswerInput}
-                    placeholder="Answer question to begin your turn!"
-                    placeholderTextColor="#ffffff"
-                  />
-                )}
-
-                <View style={styles.playButtonContainer} pointerEvents="auto">
-                  <TouchableOpacity 
-                    style={styles.playButton}
-                    onPress={handlePlay}
-                  >
-                    <Text style={styles.buttonText}>YOUR TURN</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* 3rd Active Trade */}
-              <View style={styles.tradeSection}>
-                <Text style={styles.tradeText}>
-                  You sent <Text style={styles.highlightBlue}>OFFER</Text> on "Vintage Books" {'\n'}
-                
-                  Jay proposed <Text style={styles.highlightYellow}>TRADE</Text> for "Pokemon Cards" {'\n'}
-          
-                  You <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
-              
-                  Jay <Text style={styles.highlightGreen}>ACCEPTED</Text> {'\n'}
-                </Text>
-                <View style={styles.playButtonContainer} pointerEvents="auto">
-                  <TouchableOpacity 
-                    style={styles.playButton}
-                    onPress={handlePlay}
-                  >
-                    <Text style={styles.buttonText}>YOUR TURN</Text>
-                  </TouchableOpacity>
-                </View>
-                
-              </View>
-
-            </>
-          )}
-        </Animated.View>
-
-        {/* Outgoing Offers Section */}
-        <Animated.View 
-          style={[
-            styles.offersAndDeclinedSection,
-            {
-              transform: [{ translateY: belowContentTranslateY }],
-            },
-          ]}
-        >
-          <TouchableOpacity 
-            style={styles.tradeSectionHeader}
-            onPress={() => setOutgoingOffersExpanded(!outgoingOffersExpanded)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.tradeSectionTitle}>Outgoing Offers</Text>
-            <MaterialIcons 
-              name={outgoingOffersExpanded ? "expand-less" : "expand-more"} 
-              size={28} 
-              color="#fff" 
-            />
-          </TouchableOpacity>
-          
-          {outgoingOffersExpanded && (
-            <>
-              {/* Outgoing Offer 1 */}
-              <View style={styles.tradeSection}>
-                <Text style={styles.tradeText}>
-                  You sent <Text style={styles.highlightBlue}>OFFER</Text> on "item"
-                </Text>
-              </View>
-            </>
-          )}
-        
-          <TouchableOpacity 
-            style={styles.tradeSectionHeader}
-            onPress={() => setDeclinedExpiredExpanded(!declinedExpiredExpanded)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.tradeSectionTitle}>Declined/Expired Offers</Text>
-            <MaterialIcons 
-              name={declinedExpiredExpanded ? "expand-less" : "expand-more"} 
-              size={28} 
-              color="#fff" 
-            />
-          </TouchableOpacity>
-          
-          {declinedExpiredExpanded && (
-            <>
-              {/* Declined Offer 1 */}
-              <View style={styles.tradeSection}>
-                <Text style={styles.tradeText}>
-                  Jay <Text style={styles.highlightRed}>DECLINED</Text> your <Text style={styles.highlightBlue}>OFFER</Text> on "item"
-                </Text>
-              </View>
-
-              {/* Expired Offer 1 */}
-              <View style={styles.tradeSection}>
-                <Text style={styles.tradeText}>
-                  Your <Text style={styles.highlightBlue}>OFFER</Text> on "item" expired
-                </Text>
-              </View>
-            </>
-          )}
-        </Animated.View>
-      </ScrollView>
-    </View>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
+      {activeTrades.map((trade) => (
+        <ActiveTrade
+          key={trade.id}
+          playercards={trade.playercards}
+          partnercards={trade.partnercards}
+          turns={trade.turns}
+        />
+      ))}
+      <View style={styles.bottomSpacer} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: colors.ui.background,
   },
-  scrollViewOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
+  contentContainer: {
+    marginTop: 20,
   },
-  scrollContent: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#121212',
+  bottomSpacer: {
+    height: 100,
   },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 20,
-    padding: 8,
-  },
-  mainContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 100,
-  },
-  activeTradeaSection: {
-    marginBottom: 30,
-  },
-  offersAndDeclinedSection: {
-    marginBottom: 30,
-  },
-  tradeSectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  tradeSectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  tradeSection: {
-    gap: 4,
-    marginBottom: 20,
-  },
-  cardsContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-    marginBottom: 100,
-  },
-  leftCard: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 34,
-  },
-  rightCard: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  leftArrowContainer: {
-    position: 'absolute',
-    top: 180,
-    left: 40,
-  },
-  rightArrowContainer: {
-    position: 'absolute',
-    top: 400,
-    right: 40,
-  },
-  cardWheelContainer: {
-    marginTop: 50,
-  },
-  tradeText: {
-    fontSize: 16,
-    color: '#E0E0E0',
-    lineHeight: 24,
-  },
-  playButtonContainer: {
-    alignItems: 'flex-start',
-    width: '100%',
-    marginTop: -20,
-    marginLeft: 36,
-  },
-  questionButtonContainer: {
-    alignItems: 'flex-start',
-    width: '100%',
-    marginTop: -20,
-    marginLeft: 48,
-  },
-  playButton: {
-    backgroundColor: '#e99700',
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  answerButton: {
-    backgroundColor: '#a73bff',
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  highlightBlue: {
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-  highlightYellow: {
-    color: '#FFA600',
-    fontWeight: '600',
-  },
-  highlightPink: {
-    color: '#FF3B81',
-    fontWeight: '600',
-  },
-  highlightPurple: {
-    color: '#a73bff',
-    fontWeight: '600',
-  },
-  highlightRed: {
-    color: '#ff3b3b',
-    fontWeight: '600',
-  },
-  highlightGreen: {
-    color: '#00eb00',
-    fontWeight: '600',
-  },
-  questionText: {
-    color: '#ffffff',
-  },
-  answerText: {
-    color: '#a73bff',
-  },
-  textAnswerInput: {
-    color: '#fff',
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-  }
 });

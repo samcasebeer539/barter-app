@@ -1,14 +1,14 @@
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useState, useRef } from 'react';
 import { globalFonts, colors } from '../styles/globalStyles';
 
 interface FeedBarProps {
   showLocation: boolean;
   showSaved: boolean;
   onLocationPress: () => void;
-  onSearchPress: () => void;
   onSavePress: () => void;
   headerTranslateY: Animated.Value;
 }
@@ -17,10 +17,21 @@ export default function FeedBar({
   showLocation,
   showSaved,
   onLocationPress,
-  onSearchPress,
   onSavePress,
   headerTranslateY,
 }: FeedBarProps) {
+  const [searchText, setSearchText] = useState('');
+  const searchInputRef = useRef<TextInput>(null);
+
+  const handleSearchBarPress = () => {
+    searchInputRef.current?.focus();
+  };
+
+  const handleSearchChange = (text: string) => {
+    setSearchText(text);
+    console.log('Search text:', text);
+  };
+
   return (
     <>
       {/* Top Gradient Overlay */}
@@ -47,9 +58,18 @@ export default function FeedBar({
 
         <TouchableOpacity
           style={styles.searchBar}
-          onPress={onSearchPress}
+          onPress={handleSearchBarPress}
+          activeOpacity={1}
         >
-          <Text style={styles.searchText}>Search</Text>
+          <TextInput
+            ref={searchInputRef}
+            style={styles.searchInput}
+            placeholder="Search"
+            placeholderTextColor="#999"
+            value={searchText}
+            onChangeText={handleSearchChange}
+            returnKeyType="search"
+          />
           <FontAwesome6 name='magnifying-glass' size={22} color='#FFFFFF' />
         </TouchableOpacity>
 
@@ -92,7 +112,8 @@ const styles = StyleSheet.create({
   topGradient: {
     flex: 1,
   },
-  searchText: {
+  searchInput: {
+    flex: 1,
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',

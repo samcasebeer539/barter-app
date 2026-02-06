@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   TextInput,
   Dimensions,
+  Keyboard,
 } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState, useRef } from 'react';
@@ -64,9 +65,21 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         setTimeout(() => {
           inputRef.current?.focus();
         }, 100);
+      } else if (isLastTurnQuestion && showAnswerInput) {
+        // Submit the answer
+        console.log('Submitting answer:', answerText);
+        // TODO: Actually submit the answer here
+        // For now, just reset the state
+        setShowAnswerInput(false);
+        setAnswerText('');
+        Keyboard.dismiss();
       } else {
         setIsPlaying(!isPlaying);
       }
+    };
+
+    const handleSubmitEditing = () => {
+      Keyboard.dismiss();
     };
 
     const getArrowForTurn = (turn: TradeTurn) => {
@@ -119,7 +132,18 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           text: 'BACK', 
           disabled: false, 
           backgroundColor: colors.ui.secondary,
-          showIcon: true 
+          showIcon: true,
+          showText: true 
+        };
+      } else if (isLastTurnQuestion && showAnswerInput) {
+        // After ANSWER is clicked, show just the arrow with query color
+        return { 
+          icon: 'arrow-right-long', 
+          text: '', 
+          disabled: false, 
+          backgroundColor: colors.actions.query,
+          showIcon: true,
+          showText: false 
         };
       } else if (isLastTurnQuestion && !showAnswerInput) {
         return { 
@@ -127,7 +151,8 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           text: 'ANSWER', 
           disabled: false, 
           backgroundColor: colors.actions.query,
-          showIcon: false 
+          showIcon: false,
+          showText: true 
         };
       } else if (isPlayerTurn) {
         return { 
@@ -135,7 +160,8 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           text: 'PLAY', 
           disabled: false, 
           backgroundColor: colors.actions.offer,
-          showIcon: true 
+          showIcon: true,
+          showText: true 
         };
       } else {
         return { 
@@ -143,7 +169,8 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
           text: 'WAIT', 
           disabled: true, 
           backgroundColor: colors.ui.secondary,
-          showIcon: true 
+          showIcon: true,
+          showText: true 
         };
       }
     };
@@ -189,6 +216,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
                   value={answerText}
                   onChangeText={setAnswerText}
                   multiline
+                  returnKeyType="done"
+                  onSubmitEditing={handleSubmitEditing}
+                  blurOnSubmit={true}
                 />
               </View>
             )}
@@ -218,7 +248,9 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
               {playButtonContent.showIcon && playButtonContent.icon && (
                 <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
               )}
-              <Text style={styles.playButtonText}>{playButtonContent.text}</Text>
+              {playButtonContent.showText && (
+                <Text style={styles.playButtonText}>{playButtonContent.text}</Text>
+              )}
             </TouchableOpacity>
 
             <View style={styles.leftRightButton}>

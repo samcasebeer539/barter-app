@@ -5,8 +5,18 @@ import {globalFonts, colors } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-//add line to ActiveTrade that reacts to the active trade here -> users can see what their turn will say
-//30 seconds to cancel in time button
+//other actions
+//   photo? open camera, no photo imports (react-native-image-picker or expo-image-picker or react-native-image-crop-picture)
+//   stall (skip turn)
+
+//turn description -> appears upon clicking action word
+
+//note: modal would be much easier 
+//  remove deck 
+//  - deck modal for counter (just a selector button and a play button, select -> play (close deck) -> play counter)
+//  - modals for time/location?
+
+
 
 interface TradeUIProps {
 
@@ -25,12 +35,13 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
     const tradeActions = [
         { text: 'QUERY', color: colors.actions.query, hasButtons: true },
         { text: 'COUNTER', color: colors.actions.counter, hasButtons: true },
-        
+        { text: 'STALL', color: colors.actions.time, hasButtons: true },
         { text: 'ACCEPT*', color: colors.actions.accept, hasButtons: false },
         { text: 'DECLINE', color: colors.actions.decline, hasButtons: false },
         
         { text: 'WHERE', color: colors.actions.location, hasButtons: true },
         { text: 'WHEN', color: colors.actions.time, hasButtons: true },
+        
     ];
     
     // Create tripled array for infinite scroll

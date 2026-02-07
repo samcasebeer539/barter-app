@@ -91,44 +91,42 @@ export default function ProfileDeck({
         </TouchableOpacity>
       </View>
         
-      {/* Deck (slides down) */}
+      {/* Animated container wrapping both deck and buttons */}
       <Animated.View 
         style={[
-          styles.deckWrapper,
+          styles.deckAndButtonsContainer,
           { transform: [{ translateY }] }
         ]}
       >
-        <Deck 
-          posts={posts}
-          cardWidth={Math.min(width - 40, 400)}
-          enabled={true}
-        />
-      </Animated.View>
+        {/* Deck */}
+        <View style={styles.deckWrapper}>
+          <Deck 
+            posts={posts}
+            cardWidth={Math.min(width - 40, 400)}
+            enabled={true}
+          />
+        </View>
 
-      {/* Button row (slides down with deck) */}
-      <Animated.View 
-        style={[
-          styles.buttonRow,
-          { transform: [{ translateY }] }
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.playButton}
-          onPress={handlePlus}
-        >
-          <FontAwesome6 name="arrow-right-long" size={22} color="#000" />
-        </TouchableOpacity>
+        {/* Button row */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity 
+            style={styles.playButton}
+            onPress={handlePlus}
+          >
+            <FontAwesome6 name="arrow-right-long" size={22} color="#000" />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleTrade} >
-            <Text style={styles.tradeText}>TRADE</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleTrade} >
+              <Text style={styles.tradeText}>TRADE</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.selectButton}
-          onPress={handleMinus}
-        >
-          <Icon name="circle-o" size={22} color={colors.actions.trade} />
-        </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.selectButton}
+            onPress={handleMinus}
+          >
+            <Icon name="circle-o" size={22} color={colors.actions.trade} />
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     </View>
   );
@@ -142,6 +140,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     alignItems: 'center',
     bottom: 400,
+  },
+  deckAndButtonsContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
   deckWrapper: {
     marginBottom: 20,

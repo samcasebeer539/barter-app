@@ -5,7 +5,6 @@ import { FontAwesome6 } from '@expo/vector-icons';
 
 //other actions
 //   photo? open camera, no photo imports (react-native-image-picker or expo-image-picker or react-native-image-crop-picture)
-//   stall (skip turn)
 
 export interface TradeAction {
     actionType: 'query' | 'counter' | 'stall' | 'accept' | 'decline' | 'where' | 'when';
@@ -19,61 +18,52 @@ interface TradeUIProps {
 
 const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     const ITEM_HEIGHT = 54; // tradeLine height + margin bottom
-    const DESCRIPTION_HEIGHT = 30; // constant height for description
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
-    const [showDescription, setShowDescription] = useState(false);
     
     const tradeActions = [
         { 
             text: 'QUERY', 
             color: colors.actions.query, 
             hasButtons: true,
-            description: 'Ask a question',
             actionType: 'query' as const
         },
         { 
             text: 'COUNTER', 
             color: colors.actions.counter, 
             hasButtons: true,
-            description: 'Add or remove and item from the trade',
             actionType: 'counter' as const
         },
         { 
             text: 'STALL', 
             color: colors.actions.time, 
-            hasButtons: true,
-            description: 'Skip turn',
+            hasButtons: false,
             actionType: 'stall' as const
         },
         { 
             text: 'ACCEPT*', 
             color: colors.actions.accept, 
             hasButtons: false,
-            description: 'Accept the trade and finalize the exchange',
             actionType: 'accept' as const
         },
         { 
             text: 'DECLINE', 
             color: colors.actions.decline, 
             hasButtons: false,
-            description: 'Reject the trade and end negotiations',
             actionType: 'decline' as const
         },
         { 
             text: 'WHERE', 
             color: colors.actions.location, 
             hasButtons: true,
-            description: 'Suggest or confirm a meeting location',
             actionType: 'where' as const
         },
         { 
             text: 'WHEN', 
             color: colors.actions.time, 
             hasButtons: true,
-            description: 'Propose or confirm a meeting time',
             actionType: 'when' as const
         },
     ];
@@ -81,10 +71,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     // Create tripled array for infinite scroll
     const infiniteActions = [...tradeActions, ...tradeActions, ...tradeActions];
     
-    // Calculate scrollview container height - add description height if showing
-    const scrollViewHeight = showDescription 
-        ? (ITEM_HEIGHT * tradeActions.length - 8)
-        : (ITEM_HEIGHT * tradeActions.length - 8);
+    const scrollViewHeight = ITEM_HEIGHT * tradeActions.length - 8;
     
     const PlayAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
         if (!isActionSelected && !subAction) return;
@@ -102,14 +89,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     const handleActionTextPress = (index: number) => {
         const actualIndex = index % tradeActions.length;
         if (actualIndex === currentActionIndex) {
-            // If already selected, toggle description
-            if (isActionSelected) {
-                setShowDescription((prev) => !prev);
-            } else {
-                // First click - select and show description
-                setIsActionSelected(true);
-                setShowDescription(true);
-            }
+            setIsActionSelected((prev) => !prev);
         }
     };
     
@@ -129,7 +109,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
         setIsActionSelected(false); // Reset selection when scrolling
-        setShowDescription(false); // Hide description when scrolling
     };
     
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -145,7 +124,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
         
         if (itemIndex !== currentActionIndex) {
             setIsActionSelected(false); // Reset selection when action changes
-            setShowDescription(false); // Hide description when action changes
         }
         
         setCurrentActionIndex(itemIndex);
@@ -209,7 +187,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                 <ScrollView 
                     ref={scrollViewRef}
                     style={styles.scrollView}
-                    contentContainerStyle={{ marginTop: showDescription ? -DESCRIPTION_HEIGHT : 0 }}
                     snapToInterval={ITEM_HEIGHT}
                     snapToAlignment="start"
                     decelerationRate="fast"
@@ -224,84 +201,73 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                         const isInTopSpot = isActionInTopSpot(index);
                         
                         return (
-                            <View key={index}>
-                                <View style={styles.tradeLine}>
-                                    <TouchableOpacity onPress={() => handleActionTextPress(index)} style={{ flex: 1 }}>
-                                        <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
-                                    </TouchableOpacity>
-                                    
-                                    {action.hasButtons && action.text === 'COUNTER' && (
-                                        <>
-                                            <TouchableOpacity 
-                                                style={[
-                                                    styles.counterMinusButton,
-                                                    { opacity: isInTopSpot ? 1 : 0.3 }
-                                                ]}
-                                                onPress={() => PlayAction('remove')}
-                                                disabled={!isInTopSpot}
-                                            >
-                                                <FontAwesome6 name={'minus'} size={22} color={colors.actions.counter} />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity 
-                                                style={[
-                                                    styles.counterPlusButton,
-                                                    { opacity: isInTopSpot ? 1 : 0.3 }
-                                                ]}
-                                                onPress={() => PlayAction('add')}
-                                                disabled={!isInTopSpot}
-                                            >
-                                                <FontAwesome6 name={'plus'} size={22} color={colors.actions.counter} />
-                                            </TouchableOpacity>
-                                        </>
-                                    )}
-                                    
-                                    {action.hasButtons && action.text === 'QUERY' && (
-                                        <TouchableOpacity 
-                                            style={[
-                                                styles.queryButton,
-                                                { opacity: isInTopSpot ? 1 : 0.3 }
-                                            ]}
-                                            onPress={() => PlayAction('write')}
-                                            disabled={!isInTopSpot}
-                                        >
-                                            <FontAwesome6 name={'pen-to-square'} size={22} color={colors.actions.query} />
-                                        </TouchableOpacity>
-                                    )}
-
-                                    {action.hasButtons && action.text === 'WHERE' && (
-                                        <TouchableOpacity 
-                                            style={[
-                                                styles.locationButton,
-                                                { opacity: isInTopSpot ? 1 : 0.3 }
-                                            ]}
-                                            onPress={() => PlayAction('select')}
-                                            disabled={!isInTopSpot}
-                                        >
-                                            <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.location} />
-                                        </TouchableOpacity>
-                                    )}
-
-                                    {action.hasButtons && action.text === 'WHEN' && (
-                                        <TouchableOpacity 
-                                            style={[
-                                                styles.timeButton,
-                                                { opacity: isInTopSpot ? 1 : 0.3 }
-                                            ]}
-                                            onPress={() => PlayAction('select')}
-                                            disabled={!isInTopSpot}
-                                        >
-                                            <FontAwesome6 name={'clock'} size={22} color={colors.actions.time} />
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
+                            <View key={index} style={styles.tradeLine}>
+                                <TouchableOpacity onPress={() => handleActionTextPress(index)} style={{ flex: 1 }}>
+                                    <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
+                                </TouchableOpacity>
                                 
-                                {/* Description appears directly under the selected action in scrollview */}
-                                {isInTopSpot && showDescription && (
-                                    <View style={styles.descriptionContainer}>
-                                        <Text style={[styles.descriptionText, { color: action.color }]}>
-                                            {action.description}
-                                        </Text>
-                                    </View>
+                                {action.hasButtons && action.text === 'COUNTER' && (
+                                    <>
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.counterMinusButton,
+                                                { opacity: isInTopSpot ? 1 : 0.3 }
+                                            ]}
+                                            onPress={() => PlayAction('remove')}
+                                            disabled={!isInTopSpot}
+                                        >
+                                            <FontAwesome6 name={'minus'} size={22} color={colors.actions.counter} />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={[
+                                                styles.counterPlusButton,
+                                                { opacity: isInTopSpot ? 1 : 0.3 }
+                                            ]}
+                                            onPress={() => PlayAction('add')}
+                                            disabled={!isInTopSpot}
+                                        >
+                                            <FontAwesome6 name={'plus'} size={22} color={colors.actions.counter} />
+                                        </TouchableOpacity>
+                                    </>
+                                )}
+                                
+                                {action.hasButtons && action.text === 'QUERY' && (
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.queryButton,
+                                            { opacity: isInTopSpot ? 1 : 0.3 }
+                                        ]}
+                                        onPress={() => PlayAction('write')}
+                                        disabled={!isInTopSpot}
+                                    >
+                                        <FontAwesome6 name={'pen-to-square'} size={22} color={colors.actions.query} />
+                                    </TouchableOpacity>
+                                )}
+
+                                {action.hasButtons && action.text === 'WHERE' && (
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.locationButton,
+                                            { opacity: isInTopSpot ? 1 : 0.3 }
+                                        ]}
+                                        onPress={() => PlayAction('select')}
+                                        disabled={!isInTopSpot}
+                                    >
+                                        <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.location} />
+                                    </TouchableOpacity>
+                                )}
+
+                                {action.hasButtons && action.text === 'WHEN' && (
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.timeButton,
+                                            { opacity: isInTopSpot ? 1 : 0.3 }
+                                        ]}
+                                        onPress={() => PlayAction('select')}
+                                        disabled={!isInTopSpot}
+                                    >
+                                        <FontAwesome6 name={'clock'} size={22} color={colors.actions.time} />
+                                    </TouchableOpacity>
                                 )}
                             </View>
                         );
@@ -421,20 +387,6 @@ const styles = StyleSheet.create({
         bottom: 12,
         borderWidth: 3,
         borderColor: colors.actions.time
-    },
-    descriptionContainer: {
-        height: 30,
-        marginTop: -10,
-        marginBottom: 4,
-        paddingHorizontal: 2,
-        paddingVertical: 6,
-        borderRadius: 6,
-        justifyContent: 'center',
-    },
-    descriptionText: {
-        fontSize: 16,
-        fontFamily: globalFonts.regular,
-        lineHeight: 18,
     },
 });
 

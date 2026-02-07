@@ -14,8 +14,8 @@ interface Post {
 
 interface PostCardProps {
   post: Post;
-  scale?: number; // optional scaling factor
-  cardWidth?: number; // optional width override
+  scale?: number;
+  cardWidth?: number;
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
@@ -28,18 +28,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const titleScrollX = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
-  
-  // Animated value for photo transitions
-  const photoTranslateX = useRef(new Animated.Value(0)).current;
 
-  const isGood = post.type === 'good';
-  
-  // Animation values
   const descriptionHeight = useRef(new Animated.Value(100)).current;
   const photoMode4Lines = 100;
   const descriptionModeHeight = 250;
-
-  // New animated value for photo section bottom
   const photoBottom = useRef(new Animated.Value(photoMode4Lines)).current;
 
   useEffect(() => {
@@ -63,16 +55,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
     });
   }, [post.photos]);
 
-  // Auto-scroll title if it's too long
   useEffect(() => {
-    // Stop any existing animation
     if (animationRef.current) {
       animationRef.current.stop();
     }
 
     if (titleWidth > containerWidth && containerWidth > 0) {
-      const scrollDistance = titleWidth - containerWidth + 20; // Add padding
-      const duration = Math.max(scrollDistance * 30, 2000); // Minimum 2 seconds
+      const scrollDistance = titleWidth - containerWidth + 20;
+      const duration = Math.max(scrollDistance * 30, 2000);
       
       animationRef.current = Animated.loop(
         Animated.sequence([
@@ -93,7 +83,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
       
       animationRef.current.start();
     } else {
-      // Reset position if title fits
       titleScrollX.setValue(0);
     }
 
@@ -104,7 +93,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
     };
   }, [titleWidth, containerWidth, titleScrollX]);
 
-  // Animate both description height and photo bottom
   useEffect(() => {
     Animated.spring(descriptionHeight, {
       toValue: isDescriptionMode ? descriptionModeHeight : photoMode4Lines,
@@ -127,21 +115,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
-  const photoContainerWidth = finalCardWidth - 32;
 
-  // Handle tap to cycle through photos with ping-pong behavior and animation
   const handlePhotoTap = () => {
     if (post.photos.length <= 1) return;
 
     let newIndex = currentPhotoIndex;
     let newDirection = direction;
-    const animationDirection = direction === 'forward' ? -1 : 1; // -1 = slide left, 1 = slide right
 
     if (direction === 'forward') {
       if (currentPhotoIndex < post.photos.length - 1) {
         newIndex = currentPhotoIndex + 1;
       } else {
-        // Reached the end, change direction
         newDirection = 'backward';
         newIndex = currentPhotoIndex - 1;
       }
@@ -149,44 +133,18 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
       if (currentPhotoIndex > 0) {
         newIndex = currentPhotoIndex - 1;
       } else {
-        // Reached the beginning, change direction
         newDirection = 'forward';
         newIndex = currentPhotoIndex + 1;
       }
     }
-
-    // Animate slide transition
-    Animated.sequence([
-      // Slide out
-      Animated.timing(photoTranslateX, {
-        toValue: animationDirection * photoContainerWidth,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      // Reset position instantly
-      Animated.timing(photoTranslateX, {
-        toValue: -animationDirection * photoContainerWidth,
-        duration: 0,
-        useNativeDriver: true,
-      }),
-      // Slide in
-      Animated.timing(photoTranslateX, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
 
     setCurrentPhotoIndex(newIndex);
     setDirection(newDirection);
   };
 
   return (
-    <Animated.View
-      style={[styles.container, { transform: [{ scale }] }]} 
-    >
+    <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight}]}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <FontAwesome6
@@ -201,10 +159,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
           >
             <View style={styles.titleScrollContainer}>
               <Animated.Text 
-                style={[
-                  styles.title,
-                  { transform: [{ translateX: titleScrollX }] }
-                ]}
+                style={[styles.title, { transform: [{ translateX: titleScrollX }] }]}
                 numberOfLines={1}
                 onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
               >
@@ -214,50 +169,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
           </View>
         </View>
 
-        {/* Photo Section */}
-        <Animated.View
-          style={[styles.photoSectionWrapper, { bottom: photoBottom }]}
-          pointerEvents="box-none"
-        >
+        <Animated.View style={[styles.photoSectionWrapper, { bottom: photoBottom }]} pointerEvents="box-none">
           <View style={styles.photoSection}>
             <View style={styles.photoContainer}>
-              <TouchableOpacity 
-                activeOpacity={0.8} 
-                onPress={handlePhotoTap} 
-                style={styles.photoTouchable}
-              >
-                <Animated.View
-                  style={[
-                    styles.photoFrame, 
-                    { 
-                      aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, 
-                      maxHeight: '100%', 
-                      maxWidth: '100%',
-                      transform: [{ translateX: photoTranslateX }]
-                    }
-                  ]}
-                >
-                  <Image 
-                    source={{ uri: post.photos[currentPhotoIndex] }} 
-                    style={styles.photo} 
-                    resizeMode="cover" 
-                  />
-                  {/* Inner shadow using LinearGradient overlays */}
+              <TouchableOpacity activeOpacity={0.8} onPress={handlePhotoTap} style={styles.photoTouchable}>
+                <View style={[styles.photoFrame, { aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, maxHeight: '100%', maxWidth: '100%' }]}>
+                  <Image source={{ uri: post.photos[currentPhotoIndex] }} style={styles.photo} resizeMode="cover" />
                   <View style={styles.innerShadowContainer} pointerEvents="none">
-                    {/* Top gradient */}
-                    <LinearGradient
-                      colors={['rgba(0,0,0,0.1)', 'transparent']}
-                      style={styles.gradientTop}
-                      pointerEvents="none"
-                    />
-                    {/* Bottom gradient */}
-                    <LinearGradient
-                      colors={['transparent', 'rgba(0,0,0,0.1)']}
-                      style={styles.gradientBottom}
-                      pointerEvents="none"
-                    />
+                    <LinearGradient colors={['rgba(0,0,0,0.1)', 'transparent']} style={styles.gradientTop} pointerEvents="none" />
+                    <LinearGradient colors={['transparent', 'rgba(0,0,0,0.1)']} style={styles.gradientBottom} pointerEvents="none" />
                   </View>
-                </Animated.View>
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -266,13 +188,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
-                    style={[
-                      styles.dot, 
-                      { 
-                        backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4', 
-                        transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] 
-                      }
-                    ]}
+                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
                   />
                 ))}
               </View>
@@ -280,7 +196,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
           </View>
         </Animated.View>
 
-        {/* Description */}
         <TouchableOpacity activeOpacity={0.9} onPress={toggleMode} style={styles.descriptionTouchable}>
           <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
             <View style={styles.descriptionScroll}>
@@ -338,8 +253,7 @@ const styles = StyleSheet.create({
     position: 'absolute', 
     top: 52, 
     left: 16, 
-    right: 16,
-    overflow: 'hidden',
+    right: 16 
   },
   photoSection: { 
     flex: 1, 
@@ -393,7 +307,7 @@ const styles = StyleSheet.create({
   },
   dotsContainer: { 
     position: 'absolute', 
-    top: 16, 
+    bottom: 8,
     left: 0, 
     right: 0, 
     flexDirection: 'row', 

@@ -28,7 +28,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const titleScrollX = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
-
+  
+  // Animated value for photo transitions
+  const photoTranslateX = useRef(new Animated.Value(0)).current;
 
   const isGood = post.type === 'good';
   
@@ -121,34 +123,63 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
   const toggleMode = () => setIsDescriptionMode(!isDescriptionMode);
 
-  // Handle tap to cycle through photos with ping-pong behavior
-  const handlePhotoTap = () => {
-    if (post.photos.length <= 1) return;
-
-    if (direction === 'forward') {
-      if (currentPhotoIndex < post.photos.length - 1) {
-        setCurrentPhotoIndex(currentPhotoIndex + 1);
-      } else {
-        // Reached the end, change direction
-        setDirection('backward');
-        setCurrentPhotoIndex(currentPhotoIndex - 1);
-      }
-    } else {
-      if (currentPhotoIndex > 0) {
-        setCurrentPhotoIndex(currentPhotoIndex - 1);
-      } else {
-        // Reached the beginning, change direction
-        setDirection('forward');
-        setCurrentPhotoIndex(currentPhotoIndex + 1);
-      }
-    }
-  };
-
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
   const photoContainerWidth = finalCardWidth - 32;
+
+  // Handle tap to cycle through photos with ping-pong behavior and animation
+  const handlePhotoTap = () => {
+    if (post.photos.length <= 1) return;
+
+    let newIndex = currentPhotoIndex;
+    let newDirection = direction;
+    const animationDirection = direction === 'forward' ? -1 : 1; // -1 = slide left, 1 = slide right
+
+    if (direction === 'forward') {
+      if (currentPhotoIndex < post.photos.length - 1) {
+        newIndex = currentPhotoIndex + 1;
+      } else {
+        // Reached the end, change direction
+        newDirection = 'backward';
+        newIndex = currentPhotoIndex - 1;
+      }
+    } else {
+      if (currentPhotoIndex > 0) {
+        newIndex = currentPhotoIndex - 1;
+      } else {
+        // Reached the beginning, change direction
+        newDirection = 'forward';
+        newIndex = currentPhotoIndex + 1;
+      }
+    }
+
+    // Animate slide transition
+    Animated.sequence([
+      // Slide out
+      Animated.timing(photoTranslateX, {
+        toValue: animationDirection * photoContainerWidth,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      // Reset position instantly
+      Animated.timing(photoTranslateX, {
+        toValue: -animationDirection * photoContainerWidth,
+        duration: 0,
+        useNativeDriver: true,
+      }),
+      // Slide in
+      Animated.timing(photoTranslateX, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    setCurrentPhotoIndex(newIndex);
+    setDirection(newDirection);
+  };
 
   return (
     <Animated.View
@@ -195,13 +226,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                 onPress={handlePhotoTap} 
                 style={styles.photoTouchable}
               >
-                <View
+                <Animated.View
                   style={[
                     styles.photoFrame, 
                     { 
                       aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, 
                       maxHeight: '100%', 
-                      maxWidth: '100%' 
+                      maxWidth: '100%',
+                      transform: [{ translateX: photoTranslateX }]
                     }
                   ]}
                 >
@@ -225,7 +257,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                       pointerEvents="none"
                     />
                   </View>
-                </View>
+                </Animated.View>
               </TouchableOpacity>
             </View>
 
@@ -306,7 +338,8 @@ const styles = StyleSheet.create({
     position: 'absolute', 
     top: 52, 
     left: 16, 
-    right: 16 
+    right: 16,
+    overflow: 'hidden',
   },
   photoSection: { 
     flex: 1, 

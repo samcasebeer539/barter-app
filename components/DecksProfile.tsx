@@ -16,7 +16,6 @@ interface Post {
 
 interface ProfileDeckProps {
   posts: Post[];
-  secondaryPosts?: Post[];
   onToggleReveal?: () => void;
   toggleEnabled?: boolean;
   isDeckRevealed?: boolean;
@@ -24,7 +23,6 @@ interface ProfileDeckProps {
 
 export default function ProfileDeck({ 
   posts, 
-  secondaryPosts = [], 
   onToggleReveal, 
   toggleEnabled = false, 
   isDeckRevealed = false 
@@ -66,7 +64,7 @@ export default function ProfileDeck({
     }
   };
 
-  // Calculate slide distance (move down by about 600px to reveal second deck)
+  // Calculate slide distance (move down by about 600px)
   const slideDistance = 600;
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
@@ -92,23 +90,11 @@ export default function ProfileDeck({
           <FontAwesome6 name={isDeckRevealed ? "caret-down" : "caret-up"}  size={32} color='#fff' />
         </TouchableOpacity>
       </View>
-
-      {/* Secondary deck (revealed behind) */}
-      {secondaryPosts.length > 0 && (
-        <View style={[styles.deckWrapper, styles.secondaryDeck]}>
-          <Deck 
-            posts={secondaryPosts}
-            cardWidth={Math.min(width - 40, 400)}
-            enabled={true}
-          />
-        </View>
-      )}
         
-      {/* Primary deck (slides down) */}
+      {/* Deck (slides down) */}
       <Animated.View 
         style={[
-          styles.deckWrapper, 
-          styles.primaryDeck,
+          styles.deckWrapper,
           { transform: [{ translateY }] }
         ]}
       >
@@ -119,7 +105,7 @@ export default function ProfileDeck({
         />
       </Animated.View>
 
-      {/* Button row (slides down with primary deck) */}
+      {/* Button row (slides down with deck) */}
       <Animated.View 
         style={[
           styles.buttonRow,
@@ -161,13 +147,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     left: -12,
   },
-  primaryDeck: {
-    zIndex: 2,
-  },
-  secondaryDeck: {
-    position: 'absolute',
-    zIndex: 1,
-  },
   buttonRow: {
     width: 310,
     flexDirection: 'row',
@@ -176,7 +155,6 @@ const styles = StyleSheet.create({
     gap: 4,
     top: 247,
     left: -10,
-    zIndex: 2,
   },
   goodServiceRow: {
     width: 200,
@@ -184,7 +162,7 @@ const styles = StyleSheet.create({
     gap: 4,
     top: -240,
     left: 44,
-    zIndex: 3,
+    zIndex: 0,
   },
   playButton: {
     width: 54,

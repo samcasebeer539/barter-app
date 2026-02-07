@@ -236,7 +236,7 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
             name: "Jay Wilson",
             location: "Santa Cruz, CA",
             bio: "pro smasher",
-            profileImageUrl: "https://example.com/image.jpg"
+            profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
           }}
           scale={1} cardWidth={defaultCardWidth} />
         ) : (

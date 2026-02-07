@@ -6,8 +6,8 @@ import { colors } from '../styles/globalStyles';
 export default function ProfileDeck() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
 
-  // Sample posts data
-  const samplePosts = [
+  // Primary deck posts (user's posts)
+  const primaryPosts = [
     {
       type: 'good' as const,
       name: 'Vintage Camera',
@@ -40,6 +40,34 @@ export default function ProfileDeck() {
     }
   ];
 
+  // Secondary deck posts (other user's posts or additional content)
+  const secondaryPosts = [
+    {
+      type: 'service' as const,
+      name: 'Web Design',
+      description: 'Professional website design services',
+      photos: ['https://picsum.photos/seed/web1/600/600']
+    },
+    {
+      type: 'good' as const,
+      name: 'Laptop Stand',
+      description: 'Adjustable aluminum laptop stand',
+      photos: ['https://picsum.photos/seed/stand1/600/600']
+    },
+    {
+      type: 'service' as const,
+      name: 'Tutoring',
+      description: 'Math and science tutoring for high school',
+      photos: ['https://picsum.photos/seed/tutor1/600/600']
+    },
+    {
+      type: 'good' as const,
+      name: 'Bicycle',
+      description: 'Mountain bike, lightly used',
+      photos: ['https://picsum.photos/seed/bike1/600/600']
+    }
+  ];
+
   const handleToggleReveal = () => {
     setIsDeckRevealed(!isDeckRevealed);
   };
@@ -48,7 +76,8 @@ export default function ProfileDeck() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <DecksProfile 
-          posts={samplePosts}
+          posts={primaryPosts}
+          secondaryPosts={secondaryPosts}
           onToggleReveal={handleToggleReveal}
           toggleEnabled={true}
           isDeckRevealed={isDeckRevealed}
@@ -67,5 +96,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    top: 320,
   },
 });

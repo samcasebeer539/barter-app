@@ -122,7 +122,14 @@ export default function RootLayout() {
             href: null, // Hide from tab bar completely
           }}
         />
-   
+        <Tabs.Screen
+          name="profiledeck"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
+            ),
+          }}
+        />
    
         
       </Tabs>

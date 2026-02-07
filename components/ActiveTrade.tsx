@@ -1,7 +1,5 @@
 //an active trade instance, contains cards, turns, and trade buttons (Trade UI)
 //todo
-//  pass in trade turn (action, associated info (card, question text, )) from TradeUI
-//  display proposed turn in trade lines area -> question will be typed here
 //  get timer button working + (optional) 30 seconds to cancel turn after playing button?
 
 import {
@@ -17,7 +15,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState, useRef } from 'react';
 import PostCard from '@/components/PostCard';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
-import TradeUI from '../components/TradeUI';
+import TradeUI, { TradeAction } from '../components/TradeUI';
 
 import { TRADE_LINES } from '../content/tradelines';
 import { TRADE_STYLES } from '../content/tradelinestyles';
@@ -30,7 +28,7 @@ interface TradeCardData {
 }
 
 export interface TradeTurn {
-  type: 'sentOffer' | 'receivedTrade' | 'sentCounteroffer' | 'receivedQuestion' | 'youAccepted' | 'theyAccepted';
+  type: 'sentOffer' | 'receivedTrade' | 'sentCounteroffer' | 'receivedQuestion' | 'youAccepted' | 'theyAccepted' | 'sentQuery' | 'sentCounter' | 'sentStall' | 'sentAccept' | 'sentDecline' | 'sentWhere' | 'sentWhen';
   user?: string;
   item?: string;
   question?: string;
@@ -42,12 +40,14 @@ interface ActiveTradeProps {
   turns: TradeTurn[];
 }
 
-const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, turns }) => {
+const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, turns: initialTurns }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [answerText, setAnswerText] = useState('');
     const [showAnswerInput, setShowAnswerInput] = useState(false);
     const [questionAnswered, setQuestionAnswered] = useState(false);
+    const [turns, setTurns] = useState<TradeTurn[]>(initialTurns);
+    const [pendingAction, setPendingAction] = useState<TradeAction | null>(null);
     const inputRef = useRef<TextInput>(null);
     
     const [playerCardIndex, setPlayerCardIndex] = useState(0);
@@ -58,6 +58,39 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     
     const isPlayerTurn = turns.length > 0 && 
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
+
+    const handleActionSelected = (action: TradeAction) => {
+      console.log('Action selected in ActiveTrade:', action);
+      setPendingAction(action);
+      
+      // Map action to turn type and add to turns
+      const turnTypeMap: Record<string, TradeTurn['type']> = {
+        'query': 'sentQuery',
+        'counter': 'sentCounter',
+        'stall': 'sentStall',
+        'accept': 'sentAccept',
+        'decline': 'sentDecline',
+        'where': 'sentWhere',
+        'when': 'sentWhen',
+      };
+      
+      const turnType = turnTypeMap[action.actionType];
+      if (turnType) {
+        const newTurn: TradeTurn = {
+          type: turnType,
+          // Add additional data based on action type if needed
+        };
+        
+        if (action.actionType === 'query' && action.subAction === 'write') {
+          // For query with write, we'll add the question text later
+          // For now just add a placeholder
+          newTurn.question = 'Question placeholder...';
+        }
+        
+        setTurns(prev => [...prev, newTurn]);
+        setIsPlaying(false); // Close TradeUI after action is selected
+      }
+    };
 
     const handlePlayButtonPress = () => {
       if (isLastTurnQuestion && !showAnswerInput && !questionAnswered) {
@@ -85,12 +118,22 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     };
 
     const getArrowForTurn = (turn: TradeTurn) => {
-      const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
+      const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted', 'sentQuery', 'sentCounter', 'sentStall', 'sentAccept', 'sentDecline', 'sentWhere', 'sentWhen'];
       return sentTypes.includes(turn.type) ? 'arrow-right-long' : 'arrow-left-long';
     };
 
     const renderLine = (turn: TradeTurn, index: number) => {
         const template = TRADE_LINES.activeTrades[turn.type];
+        if (!template) {
+          // Handle new action types that might not have templates yet
+          return (
+            <View key={index} style={styles.turnRow}>
+              <FontAwesome6 name={getArrowForTurn(turn)} size={18} color="#E0E0E0" style={styles.arrow} />
+              <Text style={styles.tradeText}>You played {turn.type}</Text>
+            </View>
+          );
+        }
+        
         let line = template;
         if (turn.user) line = line.replace('{user}', turn.user);
         if (turn.item) line = line.replace('{item}', turn.item);
@@ -103,6 +146,13 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         receivedQuestion: { text: 'QUESTION', style: TRADE_STYLES.actions.question },
         youAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
         theyAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
+        sentQuery: { text: 'QUERY', style: TRADE_STYLES.actions.question },
+        sentCounter: { text: 'COUNTER', style: TRADE_STYLES.actions.counteroffer },
+        sentStall: { text: 'STALL', style: TRADE_STYLES.text.secondary },
+        sentAccept: { text: 'ACCEPT', style: TRADE_STYLES.actions.accepted },
+        sentDecline: { text: 'DECLINE', style: TRADE_STYLES.actions.declined },
+        sentWhere: { text: 'WHERE', style: { color: colors.actions.location } },
+        sentWhen: { text: 'WHEN', style: { color: colors.actions.time } },
         };
 
         const action = actionMap[turn.type];
@@ -307,7 +357,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
       </View>
 
       {/* TradeUI — just in the flow, toggled by play */}
-      {isPlaying && <TradeUI />}
+      {isPlaying && <TradeUI onActionSelected={handleActionSelected} />}
     </View>
   );
 }

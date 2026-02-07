@@ -7,11 +7,17 @@ import { FontAwesome6 } from '@expo/vector-icons';
 //   photo? open camera, no photo imports (react-native-image-picker or expo-image-picker or react-native-image-crop-picture)
 //   stall (skip turn)
 
-interface TradeUIProps {
-
+export interface TradeAction {
+    actionType: 'query' | 'counter' | 'stall' | 'accept' | 'decline' | 'where' | 'when';
+    subAction?: 'add' | 'remove' | 'write' | 'select';
+    data?: any;
 }
 
-const TradeUI: React.FC<TradeUIProps> = ({ }) => {
+interface TradeUIProps {
+    onActionSelected?: (action: TradeAction) => void;
+}
+
+const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     const ITEM_HEIGHT = 54; // tradeLine height + margin bottom
     const DESCRIPTION_HEIGHT = 30; // constant height for description
     const scrollViewRef = useRef<ScrollView>(null);
@@ -25,43 +31,50 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
             text: 'QUERY', 
             color: colors.actions.query, 
             hasButtons: true,
-            description: 'Ask a question'
+            description: 'Ask a question',
+            actionType: 'query' as const
         },
         { 
             text: 'COUNTER', 
             color: colors.actions.counter, 
             hasButtons: true,
-            description: 'Add or remove and item from the trade'
+            description: 'Add or remove and item from the trade',
+            actionType: 'counter' as const
         },
         { 
             text: 'STALL', 
             color: colors.actions.time, 
             hasButtons: true,
-            description: 'Skip turn'
+            description: 'Skip turn',
+            actionType: 'stall' as const
         },
         { 
             text: 'ACCEPT*', 
             color: colors.actions.accept, 
             hasButtons: false,
-            description: 'Accept the trade and finalize the exchange'
+            description: 'Accept the trade and finalize the exchange',
+            actionType: 'accept' as const
         },
         { 
             text: 'DECLINE', 
             color: colors.actions.decline, 
             hasButtons: false,
-            description: 'Reject the trade and end negotiations'
+            description: 'Reject the trade and end negotiations',
+            actionType: 'decline' as const
         },
         { 
             text: 'WHERE', 
             color: colors.actions.location, 
             hasButtons: true,
-            description: 'Suggest or confirm a meeting location'
+            description: 'Suggest or confirm a meeting location',
+            actionType: 'where' as const
         },
         { 
             text: 'WHEN', 
             color: colors.actions.time, 
             hasButtons: true,
-            description: 'Propose or confirm a meeting time'
+            description: 'Propose or confirm a meeting time',
+            actionType: 'when' as const
         },
     ];
     
@@ -73,10 +86,17 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
         ? (ITEM_HEIGHT * tradeActions.length - 8)
         : (ITEM_HEIGHT * tradeActions.length - 8);
     
-    const PlayAction = () => {
-        if (!isActionSelected) return;
-        // Execute the selected action here
-        console.log('Playing action:', tradeActions[currentActionIndex].text);
+    const PlayAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
+        if (!isActionSelected && !subAction) return;
+        
+        const action = tradeActions[currentActionIndex];
+        const tradeAction: TradeAction = {
+            actionType: action.actionType,
+            subAction: subAction
+        };
+        
+        console.log('Playing action:', tradeAction);
+        onActionSelected?.(tradeAction);
     };
     
     const handleActionTextPress = (index: number) => {
@@ -179,7 +199,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                         opacity: isActionSelected ? 1 : 1
                     }
                 ]}
-                onPress={PlayAction}
+                onPress={() => PlayAction()}
                 disabled={!isActionSelected}
             >
                 <FontAwesome6 name={'arrow-right-long'} size={22} color={isActionSelected ? '#000' : tradeActions[currentActionIndex]?.color} />
@@ -217,7 +237,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                                     styles.counterMinusButton,
                                                     { opacity: isInTopSpot ? 1 : 0.3 }
                                                 ]}
-                                                onPress={PlayAction}
+                                                onPress={() => PlayAction('remove')}
                                                 disabled={!isInTopSpot}
                                             >
                                                 <FontAwesome6 name={'minus'} size={22} color={colors.actions.counter} />
@@ -227,7 +247,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                                     styles.counterPlusButton,
                                                     { opacity: isInTopSpot ? 1 : 0.3 }
                                                 ]}
-                                                onPress={PlayAction}
+                                                onPress={() => PlayAction('add')}
                                                 disabled={!isInTopSpot}
                                             >
                                                 <FontAwesome6 name={'plus'} size={22} color={colors.actions.counter} />
@@ -241,7 +261,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                                 styles.queryButton,
                                                 { opacity: isInTopSpot ? 1 : 0.3 }
                                             ]}
-                                            onPress={PlayAction}
+                                            onPress={() => PlayAction('write')}
                                             disabled={!isInTopSpot}
                                         >
                                             <FontAwesome6 name={'pen-to-square'} size={22} color={colors.actions.query} />
@@ -254,7 +274,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                                 styles.locationButton,
                                                 { opacity: isInTopSpot ? 1 : 0.3 }
                                             ]}
-                                            onPress={PlayAction}
+                                            onPress={() => PlayAction('select')}
                                             disabled={!isInTopSpot}
                                         >
                                             <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.location} />
@@ -267,7 +287,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ }) => {
                                                 styles.timeButton,
                                                 { opacity: isInTopSpot ? 1 : 0.3 }
                                             ]}
-                                            onPress={PlayAction}
+                                            onPress={() => PlayAction('select')}
                                             disabled={!isInTopSpot}
                                         >
                                             <FontAwesome6 name={'clock'} size={22} color={colors.actions.time} />

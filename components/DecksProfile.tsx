@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useMemo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
@@ -16,17 +16,36 @@ interface Post {
 
 interface ProfileDeckProps {
   posts: Post[];
+  secondaryPosts?: Post[];
   onToggleReveal?: () => void;
   toggleEnabled?: boolean;
   isDeckRevealed?: boolean;
 }
 
-export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = false, isDeckRevealed = false  }: ProfileDeckProps) {
+export default function ProfileDeck({ 
+  posts, 
+  secondaryPosts = [], 
+  onToggleReveal, 
+  toggleEnabled = false, 
+  isDeckRevealed = false 
+}: ProfileDeckProps) {
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
     const serviceCount = posts.filter(post => post.type === 'service').length;
     return { goodCount, serviceCount };
   }, [posts]);
+
+  // Animate when isDeckRevealed changes
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: isDeckRevealed ? 1 : 0,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 8,
+    }).start();
+  }, [isDeckRevealed]);
 
   const handleTrade = () => {
     console.log('Trade button pressed');
@@ -47,12 +66,16 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
     }
   };
 
+  // Calculate slide distance (move down by about 600px to reveal second deck)
+  const slideDistance = 600;
+  const translateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, slideDistance],
+  });
+
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={styles.goodServiceRow}>
-        
-
-        
         <View style={styles.goodServiceButton}>
           <Text style={styles.buttonText}>{goodCount}</Text>
           <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
@@ -67,20 +90,42 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
           disabled={!toggleEnabled}
         >
           <FontAwesome6 name={isDeckRevealed ? "caret-down" : "caret-up"}  size={32} color='#fff' />
-          
         </TouchableOpacity>
       </View>
+
+      {/* Secondary deck (revealed behind) */}
+      {secondaryPosts.length > 0 && (
+        <View style={[styles.deckWrapper, styles.secondaryDeck]}>
+          <Deck 
+            posts={secondaryPosts}
+            cardWidth={Math.min(width - 40, 400)}
+            enabled={true}
+          />
+        </View>
+      )}
         
-      <View style={styles.deckWrapper}>
+      {/* Primary deck (slides down) */}
+      <Animated.View 
+        style={[
+          styles.deckWrapper, 
+          styles.primaryDeck,
+          { transform: [{ translateY }] }
+        ]}
+      >
         <Deck 
           posts={posts}
           cardWidth={Math.min(width - 40, 400)}
           enabled={true}
         />
-      </View>
+      </Animated.View>
 
-      {/* Button row with plus, trade, and minus buttons */}
-      <View style={styles.buttonRow}>
+      {/* Button row (slides down with primary deck) */}
+      <Animated.View 
+        style={[
+          styles.buttonRow,
+          { transform: [{ translateY }] }
+        ]}
+      >
         <TouchableOpacity 
           style={styles.playButton}
           onPress={handlePlus}
@@ -98,7 +143,7 @@ export default function ProfileDeck({ posts, onToggleReveal, toggleEnabled = fal
         >
           <Icon name="circle-o" size={22} color={colors.actions.trade} />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -116,6 +161,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     left: -12,
   },
+  primaryDeck: {
+    zIndex: 2,
+  },
+  secondaryDeck: {
+    position: 'absolute',
+    zIndex: 1,
+  },
   buttonRow: {
     width: 310,
     flexDirection: 'row',
@@ -124,6 +176,7 @@ const styles = StyleSheet.create({
     gap: 4,
     top: 247,
     left: -10,
+    zIndex: 2,
   },
   goodServiceRow: {
     width: 200,
@@ -131,7 +184,7 @@ const styles = StyleSheet.create({
     gap: 4,
     top: -240,
     left: 44,
-    zIndex: 0,
+    zIndex: 3,
   },
   playButton: {
     width: 54,

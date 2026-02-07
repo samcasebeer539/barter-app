@@ -60,10 +60,17 @@ const trade3Turns: TradeTurn[] = [
   { type: 'receivedQuestion', user: 'Jay', question: 'Is the Charizard in good condition?' },
 ];
 
-const offerTurns: TradeTurn[] = [
+// Sent offers data
+const sentOfferTurns: TradeTurn[] = [
   { type: 'sentOffer', item: 'Vintage Books' },
   { type: 'sentOffer', item: 'Pokemon Cards' },
-  { type: 'sentOffer', item: 'Idk' },
+  { type: 'sentOffer', item: 'Rare Stamps' },
+];
+
+// Declined/Expired offers data
+const declinedExpiredTurns: TradeTurn[] = [
+  { type: 'sentDecline', item: 'Mountain Bike' },
+  { type: 'sentDecline', item: 'Art Supplies' },
 ];
 
 const activeTrades = [
@@ -110,9 +117,18 @@ export default function ActiveTradesTestScreen() {
         />
       ))}
       
+      {/* Sent Offers Section */}
       <OffersSection
-        username="Alex"
-        turns={offerTurns}
+        title="Sent OFFERS"
+        turns={sentOfferTurns}
+        defaultExpanded={true}
+      />
+      
+      {/* Declined/Expired Section */}
+      <OffersSection
+        title="DECLINED / EXPIRED"
+        turns={declinedExpiredTurns}
+        defaultExpanded={false}
       />
       
       <View style={styles.bottomSpacer} />

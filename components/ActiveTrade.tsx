@@ -15,7 +15,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState, useRef } from 'react';
 import PostCard from '@/components/PostCard';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
-import TradeUI, { TradeAction } from '../components/TradeUI';
+import TradeUI from '../components/TradeUI';
 
 import { TRADE_LINES } from '../content/tradelines';
 import { TRADE_STYLES } from '../content/tradelinestyles';
@@ -28,7 +28,7 @@ interface TradeCardData {
 }
 
 export interface TradeTurn {
-  type: 'sentOffer' | 'receivedTrade' | 'sentCounteroffer' | 'receivedQuestion' | 'youAccepted' | 'theyAccepted' | 'sentQuery' | 'sentCounter' | 'sentStall' | 'sentAccept' | 'sentDecline' | 'sentWhere' | 'sentWhen';
+  type: 'sentOffer' | 'receivedTrade' | 'sentCounteroffer' | 'receivedQuestion' | 'youAccepted' | 'theyAccepted';
   user?: string;
   item?: string;
   question?: string;
@@ -39,22 +39,19 @@ interface ActiveTradeProps {
   partnercards: TradeCardData[];
   turns: TradeTurn[];
   tradePartnerName?: string;
-  onTurnAdded?: (turn: TradeTurn) => void; // Optional callback for parent
 }
 
 const ActiveTrade: React.FC<ActiveTradeProps> = ({ 
   playercards, 
   partnercards, 
-  turns: initialTurns,
-  tradePartnerName = '[user]',
-  onTurnAdded
+  turns,
+  tradePartnerName = '[user]'
 }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [answerText, setAnswerText] = useState('');
     const [showAnswerInput, setShowAnswerInput] = useState(false);
     const [questionAnswered, setQuestionAnswered] = useState(false);
-    const [turns, setTurns] = useState<TradeTurn[]>(initialTurns);
     const inputRef = useRef<TextInput>(null);
     
     const [playerCardIndex, setPlayerCardIndex] = useState(0);
@@ -65,45 +62,6 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
     const isLastTurnQuestion = lastTurn?.type === 'receivedQuestion';
     const isPlayerTurn = turns.length > 0 && 
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
-
-    // Helper function to add a turn
-    const addTurn = (newTurn: TradeTurn) => {
-      setTurns(prev => [...prev, newTurn]);
-      onTurnAdded?.(newTurn); // Notify parent if callback exists
-    };
-
-    // Map action type to turn type
-    const mapActionToTurnType = (actionType: string): TradeTurn['type'] | null => {
-      const turnTypeMap: Record<string, TradeTurn['type']> = {
-        'query': 'sentQuery',
-        'counter': 'sentCounter',
-        'stall': 'sentStall',
-        'accept': 'sentAccept',
-        'decline': 'sentDecline',
-        'where': 'sentWhere',
-        'when': 'sentWhen',
-      };
-      return turnTypeMap[actionType] || null;
-    };
-
-    const handleActionSelected = (action: TradeAction) => {
-      console.log('Action selected:', action);
-      
-      const turnType = mapActionToTurnType(action.actionType);
-      if (!turnType) return;
-      
-      const newTurn: TradeTurn = {
-        type: turnType,
-      };
-      
-      // Add specific data based on action type
-      if (action.actionType === 'query' && action.subAction === 'write') {
-        newTurn.question = 'Question placeholder...';
-      }
-      
-      addTurn(newTurn);
-      setIsPlaying(false); // Close TradeUI after action is selected
-    };
 
     const handlePlayButtonPress = () => {
       if (isLastTurnQuestion && !showAnswerInput && !questionAnswered) {
@@ -129,7 +87,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
     };
 
     const getArrowForTurn = (turn: TradeTurn) => {
-      const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted', 'sentQuery', 'sentCounter', 'sentStall', 'sentAccept', 'sentDecline', 'sentWhere', 'sentWhen'];
+      const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
       return sentTypes.includes(turn.type) ? 'arrow-right-long' : 'arrow-left-long';
     };
 
@@ -141,13 +99,6 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         receivedQuestion: { text: 'QUESTION', style: TRADE_STYLES.actions.question },
         youAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
         theyAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-        sentQuery: { text: 'QUERY', style: TRADE_STYLES.actions.question },
-        sentCounter: { text: 'COUNTER', style: TRADE_STYLES.actions.counteroffer },
-        sentStall: { text: 'STALL', style: TRADE_STYLES.text.secondary },
-        sentAccept: { text: 'ACCEPT', style: TRADE_STYLES.actions.accepted },
-        sentDecline: { text: 'DECLINE', style: TRADE_STYLES.actions.declined },
-        sentWhere: { text: 'WHERE', style: { color: colors.actions.location } },
-        sentWhen: { text: 'WHEN', style: { color: colors.actions.time } },
       };
       return actionMap[turnType];
     };
@@ -155,13 +106,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
     const renderLine = (turn: TradeTurn, index: number) => {
         const template = TRADE_LINES.activeTrades[turn.type];
         if (!template) {
-          // Handle new action types that might not have templates yet
-          return (
-            <View key={index} style={styles.turnRow}>
-              <FontAwesome6 name={getArrowForTurn(turn)} size={18} color="#E0E0E0" style={styles.arrow} />
-              <Text style={styles.tradeText}>You played {turn.type}</Text>
-            </View>
-          );
+          return null;
         }
         
         let line = template;
@@ -374,7 +319,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
       </View>
 
       {/* TradeUI — just in the flow, toggled by play */}
-      {isPlaying && <TradeUI onActionSelected={handleActionSelected} />}
+      {isPlaying && <TradeUI />}
     </View>
   );
 }

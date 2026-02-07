@@ -28,6 +28,18 @@ export const TRADE_STYLES = {
       color: colors.actions.decline,
       fontFamily: globalFonts.extrabold
     },
+    location: {
+      color: colors.actions.location,
+      fontFamily: globalFonts.extrabold
+    },
+    time: {
+      color: colors.actions.time,
+      fontFamily: globalFonts.extrabold
+    },
+    stall: {
+      color: colors.actions.time,
+      fontFamily: globalFonts.extrabold
+    },
   },
   text: {
     question: {
@@ -37,6 +49,10 @@ export const TRADE_STYLES = {
     answer: {
       color: colors.actions.query,
       fontFamily: globalFonts.regular
+    },
+    secondary: {
+      color: '#E0E0E0',
+      fontFamily: globalFonts.extrabold
     },
   },
 };

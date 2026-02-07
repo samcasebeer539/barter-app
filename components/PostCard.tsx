@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, Dimensions, StyleSheet, Animated } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
@@ -23,8 +23,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [isDescriptionMode, setIsDescriptionMode] = useState(false);
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
-  const titleScrollViewRef = useRef<ScrollView>(null);
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [titleWidth, setTitleWidth] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const titleScrollX = useRef(new Animated.Value(0)).current;
@@ -32,7 +31,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
 
   const isGood = post.type === 'good';
-  // const borderColor = isGood ? '#000000' : '#000000';
   
   // Animation values
   const descriptionHeight = useRef(new Animated.Value(100)).current;
@@ -123,19 +121,34 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
   const toggleMode = () => setIsDescriptionMode(!isDescriptionMode);
 
+  // Handle tap to cycle through photos with ping-pong behavior
+  const handlePhotoTap = () => {
+    if (post.photos.length <= 1) return;
+
+    if (direction === 'forward') {
+      if (currentPhotoIndex < post.photos.length - 1) {
+        setCurrentPhotoIndex(currentPhotoIndex + 1);
+      } else {
+        // Reached the end, change direction
+        setDirection('backward');
+        setCurrentPhotoIndex(currentPhotoIndex - 1);
+      }
+    } else {
+      if (currentPhotoIndex > 0) {
+        setCurrentPhotoIndex(currentPhotoIndex - 1);
+      } else {
+        // Reached the beginning, change direction
+        setDirection('forward');
+        setCurrentPhotoIndex(currentPhotoIndex + 1);
+      }
+    }
+  };
+
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
   const photoContainerWidth = finalCardWidth - 32;
-
-  const handleScroll = (event: any) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / (photoContainerWidth + 16));
-    if (index >= 0 && index < post.photos.length) setCurrentPhotoIndex(index);
-  };
-
-  
 
   return (
     <Animated.View
@@ -150,8 +163,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               size={24}
               color={post.type === 'good' ? '#FFA600' : '#ff536a'}
             />
-        
-
           </View>
           <View 
             style={styles.titleContainer}
@@ -174,60 +185,62 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
         {/* Photo Section */}
         <Animated.View
-          style={[styles.photoSectionWrapper, { bottom: photoBottom }]} // Animated bottom for smooth transitions
+          style={[styles.photoSectionWrapper, { bottom: photoBottom }]}
           pointerEvents="box-none"
         >
           <View style={styles.photoSection}>
-            <ScrollView
-              ref={scrollViewRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              snapToInterval={photoContainerWidth + 16}
-              decelerationRate="fast"
-              contentContainerStyle={styles.scrollContent}
-            >
-              {post.photos.map((photo, index) => (
+            <View style={styles.photoContainer}>
+              <TouchableOpacity 
+                activeOpacity={0.8} 
+                onPress={handlePhotoTap} 
+                style={styles.photoTouchable}
+              >
                 <View
-                  key={index}
-                  style={[styles.photoContainer, { width: photoContainerWidth, marginRight: index < post.photos.length - 1 ? 16 : 0 }]}
+                  style={[
+                    styles.photoFrame, 
+                    { 
+                      aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, 
+                      maxHeight: '100%', 
+                      maxWidth: '100%' 
+                    }
+                  ]}
                 >
-                  <TouchableOpacity activeOpacity={1} onPress={toggleMode} style={styles.photoTouchable}>
-                    <View
-                      style={[styles.photoFrame, { aspectRatio: photoAspectRatios[index] || 1, maxHeight: '100%', maxWidth: '100%' }]}
-                    >
-                      <Image source={{ uri: photo }} style={styles.photo} resizeMode="cover" />
-                      {/* Inner shadow using LinearGradient overlays */}
-                      <View style={styles.innerShadowContainer} pointerEvents="none">
-                        {/* Top gradient */}
-                        <LinearGradient
-                          colors={['rgba(0,0,0,0.1)', 'transparent']}
-                          style={styles.gradientTop}
-                          pointerEvents="none"
-                        />
-                        {/* Bottom gradient */}
-                        <LinearGradient
-                          colors={['transparent', 'rgba(0,0,0,0.1)']}
-                          style={styles.gradientBottom}
-                          pointerEvents="none"
-                        />
-                        
-                    
-                      </View>
-                    </View>
-                  </TouchableOpacity>
+                  <Image 
+                    source={{ uri: post.photos[currentPhotoIndex] }} 
+                    style={styles.photo} 
+                    resizeMode="cover" 
+                  />
+                  {/* Inner shadow using LinearGradient overlays */}
+                  <View style={styles.innerShadowContainer} pointerEvents="none">
+                    {/* Top gradient */}
+                    <LinearGradient
+                      colors={['rgba(0,0,0,0.1)', 'transparent']}
+                      style={styles.gradientTop}
+                      pointerEvents="none"
+                    />
+                    {/* Bottom gradient */}
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.1)']}
+                      style={styles.gradientBottom}
+                      pointerEvents="none"
+                    />
+                  </View>
                 </View>
-              ))}
-            </ScrollView>
+              </TouchableOpacity>
+            </View>
 
             {post.photos.length > 1 && (
               <View style={styles.dotsContainer} pointerEvents="none">
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
-                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
+                    style={[
+                      styles.dot, 
+                      { 
+                        backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4', 
+                        transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] 
+                      }
+                    ]}
                   />
                 ))}
               </View>
@@ -238,16 +251,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
         {/* Description */}
         <TouchableOpacity activeOpacity={0.9} onPress={toggleMode} style={styles.descriptionTouchable}>
           <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
-            <ScrollView
-              style={styles.descriptionScroll}
-              showsVerticalScrollIndicator={isDescriptionMode}
-              scrollEnabled={isDescriptionMode}
-              nestedScrollEnabled={true}
-            >
+            <View style={styles.descriptionScroll}>
               <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 4}>
                 {post.description}
               </Text>
-            </ScrollView>
+            </View>
           </Animated.View>
         </TouchableOpacity>
       </View>
@@ -260,14 +268,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
-  
   },
   card: {
     backgroundColor: '#fff',
     borderWidth: 0,
     borderRadius: 6,
-    
-    // overflow: 'hidden',
     shadowColor: colors.ui.secondary,
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.4,
@@ -297,11 +302,29 @@ const styles = StyleSheet.create({
     color: '#000',
     fontFamily: globalFonts.bold,
   },
-  photoSectionWrapper: { position: 'absolute', top: 52, left: 16, right: 16 },
-  photoSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { alignItems: 'center' },
-  photoContainer: { justifyContent: 'center', alignItems: 'center', height: '100%' },
-  photoTouchable: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
+  photoSectionWrapper: { 
+    position: 'absolute', 
+    top: 52, 
+    left: 16, 
+    right: 16 
+  },
+  photoSection: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  photoContainer: { 
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  photoTouchable: { 
+    width: '100%', 
+    height: '100%', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
   photoFrame: { 
     shadowColor: '#000', 
     shadowOffset: { width: 0, height: 2 }, 
@@ -335,26 +358,40 @@ const styles = StyleSheet.create({
     right: 0,
     height: 5,
   },
-  gradientLeft: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    width: 10,
+  dotsContainer: { 
+    position: 'absolute', 
+    top: 16, 
+    left: 0, 
+    right: 0, 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    gap: 6 
   },
-  gradientRight: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    width: 5,
-  },
-  dotsContainer: { position: 'absolute', top: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  descriptionTouchable: { position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20 },
-  descriptionSection: { backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20, borderTopWidth: 1, borderTopColor: '#fff', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  descriptionTouchable: { 
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    zIndex: 20 
+  },
+  descriptionSection: { 
+    backgroundColor: '#fff', 
+    paddingHorizontal: 16, 
+    paddingTop: 12, 
+    paddingBottom: 20, 
+    borderTopWidth: 1, 
+    borderTopColor: '#fff', 
+    borderBottomLeftRadius: 8, 
+    borderBottomRightRadius: 8 
+  },
   descriptionScroll: { flex: 1 },
-  descriptionText: { fontSize: 15, lineHeight: 21, color: '#000000', ...defaultTextStyle },
+  descriptionText: { 
+    fontSize: 15, 
+    lineHeight: 21, 
+    color: '#000000', 
+    ...defaultTextStyle 
+  },
 });
 
 export default PostCard;

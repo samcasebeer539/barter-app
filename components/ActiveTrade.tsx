@@ -8,7 +8,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Dimensions,
   Keyboard,
 } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -16,9 +15,7 @@ import React, { useState, useRef } from 'react';
 import PostCard from '@/components/PostCard';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 import TradeUI from '../components/TradeUI';
-
-import { TRADE_LINES } from '../content/tradelines';
-import { TRADE_STYLES } from '../content/tradelinestyles';
+import { TURN_DISPLAY, TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
 interface TradeCardData {
   type: 'good' | 'service';
@@ -28,7 +25,7 @@ interface TradeCardData {
 }
 
 export interface TradeTurn {
-  type: 'sentOffer' | 'receivedTrade' | 'sentCounteroffer' | 'receivedQuestion' | 'youAccepted' | 'theyAccepted';
+  type: TradeTurnType;
   user?: string;
   item?: string;
   question?: string;
@@ -65,13 +62,11 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
 
     const handlePlayButtonPress = () => {
       if (isLastTurnQuestion && !showAnswerInput && !questionAnswered) {
-        // Show answer input and focus
         setShowAnswerInput(true);
         setTimeout(() => {
           inputRef.current?.focus();
         }, 100);
       } else if (isLastTurnQuestion && showAnswerInput && !questionAnswered) {
-        // Submit the answer
         console.log('Submitting answer:', answerText);
         setQuestionAnswered(true);
         setShowAnswerInput(false);
@@ -86,49 +81,29 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
       Keyboard.dismiss();
     };
 
-    const getArrowForTurn = (turn: TradeTurn) => {
-      const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
-      return sentTypes.includes(turn.type) ? 'arrow-right-long' : 'arrow-left-long';
-    };
-
-    const getActionDisplay = (turnType: TradeTurn['type']) => {
-      const actionMap: Record<TradeTurn['type'], { text: string; style: any }> = {
-        sentOffer: { text: 'OFFER', style: TRADE_STYLES.actions.offer },
-        receivedTrade: { text: 'TRADE', style: TRADE_STYLES.actions.trade },
-        sentCounteroffer: { text: 'COUNTEROFFER', style: TRADE_STYLES.actions.counteroffer },
-        receivedQuestion: { text: 'QUESTION', style: TRADE_STYLES.actions.question },
-        youAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-        theyAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-      };
-      return actionMap[turnType];
-    };
-
     const renderLine = (turn: TradeTurn, index: number) => {
-        const template = TRADE_LINES.activeTrades[turn.type];
-        if (!template) {
-          return null;
-        }
+        const config = getTurnConfig(turn.type);
+        if (!config) return null;
         
-        let line = template;
+        let line = config.template;
         if (turn.user) line = line.replace('{user}', turn.user);
         if (turn.item) line = line.replace('{item}', turn.item);
         if (turn.question) line = line.replace('{question}', turn.question);
         
-        const action = getActionDisplay(turn.type);
         const parts = line.split('{action}');
-        const arrowIcon = getArrowForTurn(turn);
+        const arrowIcon = config.isSent ? 'arrow-right-long' : 'arrow-left-long';
 
         return (
           <View style={styles.turnRow}>
             <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
             <Text style={styles.tradeText}>
               {parts[0]}
-              <Text style={action.style}>{action.text}</Text>
+              <Text style={config.colorStyle}>{config.actionText}</Text>
               {parts[1]}
               {turn.type === 'receivedQuestion' && turn.question && (
               <>
                   {'\n'}
-                  <Text style={TRADE_STYLES.text.question}>       {turn.question}</Text>
+                  <Text style={{ color: '#ffffff', fontFamily: globalFonts.regular }}>       {turn.question}</Text>
               </>
               )}
             </Text>
@@ -147,7 +122,6 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
           showText: true 
         };
       } else if (isLastTurnQuestion && showAnswerInput && !questionAnswered) {
-        // After ANSWER is clicked, show just the arrow with query color
         return { 
           icon: 'arrow-right-long', 
           text: '', 

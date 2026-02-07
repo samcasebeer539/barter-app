@@ -1,13 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity } from 'react-native';
-import {globalFonts, colors } from '../styles/globalStyles';
+import { globalFonts, colors } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
-
-//other actions
-//   photo? open camera, no photo imports (react-native-image-picker or expo-image-picker or react-native-image-crop-picture)
+import { TRADE_ACTIONS, TradeActionType } from '../config/tradeConfig';
 
 export interface TradeAction {
-    actionType: 'query' | 'counter' | 'stall' | 'accept' | 'decline' | 'where' | 'when';
+    actionType: TradeActionType;
     subAction?: 'add' | 'remove' | 'write' | 'select';
     data?: any;
 }
@@ -17,66 +15,21 @@ interface TradeUIProps {
 }
 
 const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
-    const ITEM_HEIGHT = 54; // tradeLine height + margin bottom
+    const ITEM_HEIGHT = 54;
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
     
-    const tradeActions = [
-        { 
-            text: 'QUERY', 
-            color: colors.actions.query, 
-            hasButtons: true,
-            actionType: 'query' as const
-        },
-        { 
-            text: 'COUNTER', 
-            color: colors.actions.counter, 
-            hasButtons: true,
-            actionType: 'counter' as const
-        },
-        { 
-            text: 'STALL', 
-            color: colors.actions.time, 
-            hasButtons: false,
-            actionType: 'stall' as const
-        },
-        { 
-            text: 'ACCEPT*', 
-            color: colors.actions.accept, 
-            hasButtons: false,
-            actionType: 'accept' as const
-        },
-        { 
-            text: 'DECLINE', 
-            color: colors.actions.decline, 
-            hasButtons: false,
-            actionType: 'decline' as const
-        },
-        { 
-            text: 'WHERE', 
-            color: colors.actions.location, 
-            hasButtons: true,
-            actionType: 'where' as const
-        },
-        { 
-            text: 'WHEN', 
-            color: colors.actions.time, 
-            hasButtons: true,
-            actionType: 'when' as const
-        },
-    ];
-    
     // Create tripled array for infinite scroll
-    const infiniteActions = [...tradeActions, ...tradeActions, ...tradeActions];
+    const infiniteActions = [...TRADE_ACTIONS, ...TRADE_ACTIONS, ...TRADE_ACTIONS];
     
-    const scrollViewHeight = ITEM_HEIGHT * tradeActions.length - 8;
+    const scrollViewHeight = ITEM_HEIGHT * TRADE_ACTIONS.length - 8;
     
     const PlayAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
         if (!isActionSelected && !subAction) return;
         
-        const action = tradeActions[currentActionIndex];
+        const action = TRADE_ACTIONS[currentActionIndex];
         const tradeAction: TradeAction = {
             actionType: action.actionType,
             subAction: subAction
@@ -87,43 +40,39 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     };
     
     const handleActionTextPress = (index: number) => {
-        const actualIndex = index % tradeActions.length;
+        const actualIndex = index % TRADE_ACTIONS.length;
         if (actualIndex === currentActionIndex) {
             setIsActionSelected((prev) => !prev);
         }
     };
     
     const isActionInTopSpot = (index: number) => {
-        const actualIndex = index % tradeActions.length;
+        const actualIndex = index % TRADE_ACTIONS.length;
         return actualIndex === currentActionIndex;
     };
     
     useEffect(() => {
-        // Start at the middle section (first item of middle section aligned with play button)
         setTimeout(() => {
-            scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * tradeActions.length, animated: false });
+            scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * TRADE_ACTIONS.length, animated: false });
             setCurrentActionIndex(0);
         }, 100);
     }, []);
     
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
-        setIsActionSelected(false); // Reset selection when scrolling
+        setIsActionSelected(false);
     };
     
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const offsetY = event.nativeEvent.contentOffset.y;
+        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % TRADE_ACTIONS.length;
         
-        // Calculate which item is at the top
-        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % tradeActions.length;
-        
-        // Ensure itemIndex is always positive and within bounds
         if (itemIndex < 0) {
-            itemIndex = (itemIndex + tradeActions.length) % tradeActions.length;
+            itemIndex = (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length;
         }
         
         if (itemIndex !== currentActionIndex) {
-            setIsActionSelected(false); // Reset selection when action changes
+            setIsActionSelected(false);
         }
         
         setCurrentActionIndex(itemIndex);
@@ -133,29 +82,25 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
         if (!isScrollingRef.current) return;
         
         const offsetY = event.nativeEvent.contentOffset.y;
-        const contentHeight = ITEM_HEIGHT * tradeActions.length;
+        const contentHeight = ITEM_HEIGHT * TRADE_ACTIONS.length;
         
-        // If scrolled to top section, jump to middle section
         if (offsetY < ITEM_HEIGHT * 2) {
             const newOffset = offsetY + contentHeight;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
             
-            // Update index after jump
-            let itemIndex = Math.round(newOffset / ITEM_HEIGHT) % tradeActions.length;
+            let itemIndex = Math.round(newOffset / ITEM_HEIGHT) % TRADE_ACTIONS.length;
             if (itemIndex < 0) {
-                itemIndex = (itemIndex + tradeActions.length) % tradeActions.length;
+                itemIndex = (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length;
             }
             setCurrentActionIndex(itemIndex);
         }
-        // If scrolled to bottom section, jump to middle section
         else if (offsetY >= contentHeight * 2 - ITEM_HEIGHT * 2) {
             const newOffset = offsetY - contentHeight;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
             
-            // Update index after jump
-            let itemIndex = Math.round(newOffset / ITEM_HEIGHT) % tradeActions.length;
+            let itemIndex = Math.round(newOffset / ITEM_HEIGHT) % TRADE_ACTIONS.length;
             if (itemIndex < 0) {
-                itemIndex = (itemIndex + tradeActions.length) % tradeActions.length;
+                itemIndex = (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length;
             }
             setCurrentActionIndex(itemIndex);
         }
@@ -171,16 +116,19 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                     styles.playButton, 
                     { 
                         backgroundColor: isActionSelected 
-                            ? tradeActions[currentActionIndex]?.color 
+                            ? TRADE_ACTIONS[currentActionIndex]?.color 
                             : colors.ui.background,
-                        borderColor: tradeActions[currentActionIndex]?.color,
-                        opacity: isActionSelected ? 1 : 1
+                        borderColor: TRADE_ACTIONS[currentActionIndex]?.color,
                     }
                 ]}
                 onPress={() => PlayAction()}
                 disabled={!isActionSelected}
             >
-                <FontAwesome6 name={'arrow-right-long'} size={22} color={isActionSelected ? '#000' : tradeActions[currentActionIndex]?.color} />
+                <FontAwesome6 
+                    name={'arrow-right-long'} 
+                    size={22} 
+                    color={isActionSelected ? '#000' : TRADE_ACTIONS[currentActionIndex]?.color} 
+                />
             </TouchableOpacity>
             
             <View style={[styles.scrollViewContainer, { height: scrollViewHeight }]}>
@@ -209,20 +157,14 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                                 {action.hasButtons && action.text === 'COUNTER' && (
                                     <>
                                         <TouchableOpacity 
-                                            style={[
-                                                styles.counterMinusButton,
-                                                { opacity: isInTopSpot ? 1 : 0.3 }
-                                            ]}
+                                            style={[styles.counterMinusButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
                                             onPress={() => PlayAction('remove')}
                                             disabled={!isInTopSpot}
                                         >
                                             <FontAwesome6 name={'minus'} size={22} color={colors.actions.counter} />
                                         </TouchableOpacity>
                                         <TouchableOpacity 
-                                            style={[
-                                                styles.counterPlusButton,
-                                                { opacity: isInTopSpot ? 1 : 0.3 }
-                                            ]}
+                                            style={[styles.counterPlusButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
                                             onPress={() => PlayAction('add')}
                                             disabled={!isInTopSpot}
                                         >
@@ -233,10 +175,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                                 
                                 {action.hasButtons && action.text === 'QUERY' && (
                                     <TouchableOpacity 
-                                        style={[
-                                            styles.queryButton,
-                                            { opacity: isInTopSpot ? 1 : 0.3 }
-                                        ]}
+                                        style={[styles.queryButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
                                         onPress={() => PlayAction('write')}
                                         disabled={!isInTopSpot}
                                     >
@@ -246,10 +185,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
 
                                 {action.hasButtons && action.text === 'WHERE' && (
                                     <TouchableOpacity 
-                                        style={[
-                                            styles.locationButton,
-                                            { opacity: isInTopSpot ? 1 : 0.3 }
-                                        ]}
+                                        style={[styles.locationButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
                                         onPress={() => PlayAction('select')}
                                         disabled={!isInTopSpot}
                                     >
@@ -259,10 +195,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
 
                                 {action.hasButtons && action.text === 'WHEN' && (
                                     <TouchableOpacity 
-                                        style={[
-                                            styles.timeButton,
-                                            { opacity: isInTopSpot ? 1 : 0.3 }
-                                        ]}
+                                        style={[styles.timeButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
                                         onPress={() => PlayAction('select')}
                                         disabled={!isInTopSpot}
                                     >

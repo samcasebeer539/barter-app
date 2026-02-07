@@ -1,12 +1,7 @@
-//model off of active trades
-//header -> outgoing offers
-//turns (all say: You sent offer on "Item")
-//deck (containing all sent offers)
-
-
-//header -> declined/expired 
-//turns ("[user] declined" or "offer expired")
-//no deck
+//Reusable component for displaying offer sections
+//Can be used for:
+//  - Sent Offers (outgoing offers)
+//  - Declined/Expired Offers (rejected or expired)
 
 import {
   View,
@@ -26,13 +21,18 @@ export interface TradeTurn {
   question?: string;
 }
 
-interface TradeHistoryProps {
-  username: string;
+interface OffersSectionProps {
+  title: string;
   turns: TradeTurn[];
+  defaultExpanded?: boolean;
 }
 
-const OffersSection: React.FC<TradeHistoryProps> = ({ username, turns }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+const OffersSection: React.FC<OffersSectionProps> = ({ 
+  title, 
+  turns, 
+  defaultExpanded = true 
+}) => {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const renderLine = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
@@ -64,6 +64,9 @@ const OffersSection: React.FC<TradeHistoryProps> = ({ username, turns }) => {
     );
   };
 
+  // Don't render if no turns
+  if (turns.length === 0) return null;
+
   return (
     <View style={styles.container}>
       <TouchableOpacity 
@@ -71,7 +74,7 @@ const OffersSection: React.FC<TradeHistoryProps> = ({ username, turns }) => {
         onPress={() => setIsExpanded(!isExpanded)}
         activeOpacity={0.7}
       >
-        <Text style={styles.headerTitle}>Sent OFFERS</Text>  
+        <Text style={styles.headerTitle}>{title}</Text>  
         <FontAwesome6 
           name={isExpanded ? "chevron-up" : "chevron-down"} 
           size={22} 

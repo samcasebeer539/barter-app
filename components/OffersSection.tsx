@@ -17,11 +17,10 @@ import {
 import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
-import { TRADE_LINES } from '../content/tradelines';
-import { TRADE_STYLES } from '../content/tradelinestyles';
+import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
 export interface TradeTurn {
-  type: 'sentOffer' | 'receivedTrade' | 'sentCounteroffer' | 'receivedQuestion' | 'youAccepted' | 'theyAccepted';
+  type: TradeTurnType;
   user?: string;
   item?: string;
   question?: string;
@@ -35,42 +34,29 @@ interface TradeHistoryProps {
 const OffersSection: React.FC<TradeHistoryProps> = ({ username, turns }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const getArrowForTurn = (turn: TradeTurn) => {
-    const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted'];
-    return sentTypes.includes(turn.type) ? 'arrow-right-long' : 'arrow-left-long';
-  };
-
   const renderLine = (turn: TradeTurn, index: number) => {
-    const template = TRADE_LINES.activeTrades[turn.type];
-    let line = template;
+    const config = getTurnConfig(turn.type);
+    if (!config) return null;
+    
+    let line = config.template;
     if (turn.user) line = line.replace('{user}', turn.user);
     if (turn.item) line = line.replace('{item}', turn.item);
     if (turn.question) line = line.replace('{question}', turn.question);
     
-    const actionMap = {
-      sentOffer: { text: 'OFFER', style: TRADE_STYLES.actions.offer },
-      receivedTrade: { text: 'TRADE', style: TRADE_STYLES.actions.trade },
-      sentCounteroffer: { text: 'COUNTEROFFER', style: TRADE_STYLES.actions.counteroffer },
-      receivedQuestion: { text: 'QUESTION', style: TRADE_STYLES.actions.question },
-      youAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-      theyAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-    };
-
-    const action = actionMap[turn.type];
     const parts = line.split('{action}');
-    const arrowIcon = getArrowForTurn(turn);
+    const arrowIcon = config.isSent ? 'arrow-right-long' : 'arrow-left-long';
 
     return (
       <View key={index} style={styles.turnRow}>
         <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
         <Text style={styles.tradeText}>
           {parts[0]}
-          <Text style={action.style}>{action.text}</Text>
+          <Text style={config.colorStyle}>{config.actionText}</Text>
           {parts[1]}
           {turn.type === 'receivedQuestion' && turn.question && (
             <>
               {'\n'}
-              <Text style={TRADE_STYLES.text.question}>       {turn.question}</Text>
+              <Text style={{ color: '#ffffff', fontFamily: globalFonts.regular }}>       {turn.question}</Text>
             </>
           )}
         </Text>

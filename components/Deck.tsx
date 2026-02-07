@@ -34,7 +34,7 @@ type DeckItem =
 
 const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
   const screenWidth = Dimensions.get('window').width;
-  const defaultCardWidth = Math.min(screenWidth - 60, 400);
+  const defaultCardWidth = Math.min(screenWidth - 38, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
@@ -49,8 +49,8 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
     third: { x: 19, y: 29 },
   };
 
-  const SWIPE_THRESHOLD = screenWidth * 0.1;
-  const GESTURE_THRESHOLD = 30; // Minimum horizontal movement before capturing gesture
+  const SWIPE_THRESHOLD = screenWidth * 0.06;
+  const GESTURE_THRESHOLD = 10; // Minimum horizontal movement before capturing gesture
 
   //if user only has single item, duplicate usercard and postcard in array
   const shouldRepeat = posts.length < 2;

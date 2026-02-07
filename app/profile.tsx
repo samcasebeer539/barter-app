@@ -66,7 +66,7 @@ export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
 
   // replace this with actual user data from API
-  const profileImageUrl = 'https://picsum.photos/seed/profile/400/400';
+  const profileImageUrl = 'https://picsum.photos/seed/cat/400/400';
 
   const headerTranslateY = revealProgress.interpolate({
     inputRange: [0, 1],
@@ -206,9 +206,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+   
   },
   nameContainer: {
     marginLeft: 16,

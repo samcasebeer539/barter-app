@@ -65,7 +65,7 @@ export default function FeedBar({
             ref={searchInputRef}
             style={styles.searchInput}
             placeholder="Search"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.ui.secondarydisabled}
             value={searchText}
             onChangeText={handleSearchChange}
             returnKeyType="search"

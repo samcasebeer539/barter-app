@@ -37,7 +37,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
 
       Animated.timing(deckTranslateY, {
-        toValue: Dimensions.get('window').height / 7,
+        toValue: Dimensions.get('window').height / 8.1,
         useNativeDriver: true,
         duration: 260,
       }).start();
@@ -192,21 +192,20 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 270,
+    width: 310,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 4,
-    top: 225,
-    left: 0,
+    top: 240,
+    left: -10,
   },
   goodServiceRow: {
-    width: 270,
+    width: 200,
     flexDirection: 'row',
-
     gap: 4,
-    top: -217,
-    left: 0,
+    top: -232,
+    left: 44,
     zIndex: 0,
   },
   upButton: {

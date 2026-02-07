@@ -14,7 +14,7 @@ export const colors = {
   // Trade Action Colors
   actions: {
     offer: '#1686ff',      // Blue - Initial offer
-    trade: '#e01e72',      // Yellow/Orange - Trade/exchange
+    trade: '#5441ff',      // Yellow/Orange - Trade/exchange  e01e72
     counter: '#ff31dd',    // Pink - Counter offer
     query: '#6a50ff',      // Purple - Question
     decline: '#ff3232',    // Red - Decline/reject

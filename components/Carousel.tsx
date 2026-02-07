@@ -25,7 +25,7 @@ interface CarouselProps {
   deckPosts: Post[];
 }
 
-const CARD_SLIDE_DOWN = 300;
+const CARD_SLIDE_DOWN = 310;
 const DECK_SLIDE_UP = 242;
 const SIDE_CARD_SCALE = 0.9; // Scale for non-centered cards
 const SIDE_CARD_OFFSET = 20; // Vertical offset for non-centered cards
@@ -43,7 +43,7 @@ const Carousel: React.FC<CarouselProps> = ({
 
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
-  const cardWidth = Math.min(screenWidth - 100, 400);
+  const cardWidth = Math.min(screenWidth - 40, 400);
   const cardSpacing = -4;
   const sidePadding = (screenWidth - cardWidth) / 2;
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     left: -28,
     right: -32,
     bottom: 0,
-    backgroundColor: colors.ui.background,
+    backgroundColor: 'transparent',
     zIndex: 2,
   },
   cardLayer: {

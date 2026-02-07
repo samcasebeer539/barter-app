@@ -2,7 +2,7 @@
 
 
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
@@ -49,10 +49,11 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
     <View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         {/* Top Row: Profile Picture (left) and Stats (right) */}
-        <View style={styles.topRow}>
-          <ProfilePicture size={120} avatarText={user.avatarText} imageSource={profileImageUrl}/>
-          
-      
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: profileImageUrl }}
+            style={styles.profileImage}
+          />
         </View>
 
         {/* Name and Location - Left Aligned */}
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     
   },
     card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff ',
     borderRadius: 6,
     // overflow: 'hidden',
     shadowColor: colors.ui.secondary,
@@ -112,7 +113,8 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingHorizontal: 30,
     paddingBottom: 16,
-    
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 0,
     // borderColor: colors.ui.background, 
     borderColor: '#c94545'
@@ -172,6 +174,15 @@ const styles = StyleSheet.create({
     
     color: '#000000',
     fontFamily: globalFonts.regular,
+  },
+  profileImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 80,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
 });
 

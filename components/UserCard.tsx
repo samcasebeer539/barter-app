@@ -7,29 +7,29 @@ import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
+interface Tag {
+  text: string;
+  color: string;
+}
+
+interface User {
+  name: string;
+  location: string;
+  bio: string;
+  tags?: Tag[];
+  avatarText?: string;
+  goodsCount?: number;
+  servicesCount?: number;
+  profileImageUrl?: string;
+}
 
 interface UserCardProps {
+  user: User;
   scale?: number;
   cardWidth?: number;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
-  // Hardcoded user info - will eventually come from backend
-  const user = {
-    name: "Jay Wilson",
-    location: "Santa Cruz, CA",
-    bio: "pro smasher",
-    tags: [
-      { text: "Eco-Friendly", color: "purple" },
-      { text: "Pro Smasher", color: "pink" },
-    ],
-    avatarText: "🧑‍💻",
-    goodsCount: 5,
-    servicesCount: 3,
-  };
-  // replace this with actual user data from API
-  const profileImageUrl = 'https://picsum.photos/seed/camera3/600/600';
-
+const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -51,7 +51,7 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
         {/* Top Row: Profile Picture (left) and Stats (right) */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: profileImageUrl }}
+            source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
             style={styles.profileImage}
           />
         </View>

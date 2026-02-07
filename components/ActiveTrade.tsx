@@ -38,32 +38,42 @@ interface ActiveTradeProps {
   playercards: TradeCardData[];
   partnercards: TradeCardData[];
   turns: TradeTurn[];
+  tradePartnerName?: string;
+  onTurnAdded?: (turn: TradeTurn) => void; // Optional callback for parent
 }
 
-const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, turns: initialTurns }) => {
+const ActiveTrade: React.FC<ActiveTradeProps> = ({ 
+  playercards, 
+  partnercards, 
+  turns: initialTurns,
+  tradePartnerName = '[user]',
+  onTurnAdded
+}) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [answerText, setAnswerText] = useState('');
     const [showAnswerInput, setShowAnswerInput] = useState(false);
     const [questionAnswered, setQuestionAnswered] = useState(false);
     const [turns, setTurns] = useState<TradeTurn[]>(initialTurns);
-    const [pendingAction, setPendingAction] = useState<TradeAction | null>(null);
     const inputRef = useRef<TextInput>(null);
     
     const [playerCardIndex, setPlayerCardIndex] = useState(0);
     const [partnerCardIndex, setPartnerCardIndex] = useState(0);
 
+    // Derived state
     const lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
     const isLastTurnQuestion = lastTurn?.type === 'receivedQuestion';
-    
     const isPlayerTurn = turns.length > 0 && 
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
 
-    const handleActionSelected = (action: TradeAction) => {
-      console.log('Action selected in ActiveTrade:', action);
-      setPendingAction(action);
-      
-      // Map action to turn type and add to turns
+    // Helper function to add a turn
+    const addTurn = (newTurn: TradeTurn) => {
+      setTurns(prev => [...prev, newTurn]);
+      onTurnAdded?.(newTurn); // Notify parent if callback exists
+    };
+
+    // Map action type to turn type
+    const mapActionToTurnType = (actionType: string): TradeTurn['type'] | null => {
       const turnTypeMap: Record<string, TradeTurn['type']> = {
         'query': 'sentQuery',
         'counter': 'sentCounter',
@@ -73,23 +83,26 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         'where': 'sentWhere',
         'when': 'sentWhen',
       };
+      return turnTypeMap[actionType] || null;
+    };
+
+    const handleActionSelected = (action: TradeAction) => {
+      console.log('Action selected:', action);
       
-      const turnType = turnTypeMap[action.actionType];
-      if (turnType) {
-        const newTurn: TradeTurn = {
-          type: turnType,
-          // Add additional data based on action type if needed
-        };
-        
-        if (action.actionType === 'query' && action.subAction === 'write') {
-          // For query with write, we'll add the question text later
-          // For now just add a placeholder
-          newTurn.question = 'Question placeholder...';
-        }
-        
-        setTurns(prev => [...prev, newTurn]);
-        setIsPlaying(false); // Close TradeUI after action is selected
+      const turnType = mapActionToTurnType(action.actionType);
+      if (!turnType) return;
+      
+      const newTurn: TradeTurn = {
+        type: turnType,
+      };
+      
+      // Add specific data based on action type
+      if (action.actionType === 'query' && action.subAction === 'write') {
+        newTurn.question = 'Question placeholder...';
       }
+      
+      addTurn(newTurn);
+      setIsPlaying(false); // Close TradeUI after action is selected
     };
 
     const handlePlayButtonPress = () => {
@@ -102,8 +115,6 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
       } else if (isLastTurnQuestion && showAnswerInput && !questionAnswered) {
         // Submit the answer
         console.log('Submitting answer:', answerText);
-        // TODO: Actually submit the answer here
-        // Mark question as answered and reset input state
         setQuestionAnswered(true);
         setShowAnswerInput(false);
         setAnswerText('');
@@ -120,6 +131,25 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     const getArrowForTurn = (turn: TradeTurn) => {
       const sentTypes = ['sentOffer', 'sentCounteroffer', 'youAccepted', 'sentQuery', 'sentCounter', 'sentStall', 'sentAccept', 'sentDecline', 'sentWhere', 'sentWhen'];
       return sentTypes.includes(turn.type) ? 'arrow-right-long' : 'arrow-left-long';
+    };
+
+    const getActionDisplay = (turnType: TradeTurn['type']) => {
+      const actionMap: Record<TradeTurn['type'], { text: string; style: any }> = {
+        sentOffer: { text: 'OFFER', style: TRADE_STYLES.actions.offer },
+        receivedTrade: { text: 'TRADE', style: TRADE_STYLES.actions.trade },
+        sentCounteroffer: { text: 'COUNTEROFFER', style: TRADE_STYLES.actions.counteroffer },
+        receivedQuestion: { text: 'QUESTION', style: TRADE_STYLES.actions.question },
+        youAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
+        theyAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
+        sentQuery: { text: 'QUERY', style: TRADE_STYLES.actions.question },
+        sentCounter: { text: 'COUNTER', style: TRADE_STYLES.actions.counteroffer },
+        sentStall: { text: 'STALL', style: TRADE_STYLES.text.secondary },
+        sentAccept: { text: 'ACCEPT', style: TRADE_STYLES.actions.accepted },
+        sentDecline: { text: 'DECLINE', style: TRADE_STYLES.actions.declined },
+        sentWhere: { text: 'WHERE', style: { color: colors.actions.location } },
+        sentWhen: { text: 'WHEN', style: { color: colors.actions.time } },
+      };
+      return actionMap[turnType];
     };
 
     const renderLine = (turn: TradeTurn, index: number) => {
@@ -139,23 +169,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         if (turn.item) line = line.replace('{item}', turn.item);
         if (turn.question) line = line.replace('{question}', turn.question);
         
-        const actionMap = {
-        sentOffer: { text: 'OFFER', style: TRADE_STYLES.actions.offer },
-        receivedTrade: { text: 'TRADE', style: TRADE_STYLES.actions.trade },
-        sentCounteroffer: { text: 'COUNTEROFFER', style: TRADE_STYLES.actions.counteroffer },
-        receivedQuestion: { text: 'QUESTION', style: TRADE_STYLES.actions.question },
-        youAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-        theyAccepted: { text: 'ACCEPTED', style: TRADE_STYLES.actions.accepted },
-        sentQuery: { text: 'QUERY', style: TRADE_STYLES.actions.question },
-        sentCounter: { text: 'COUNTER', style: TRADE_STYLES.actions.counteroffer },
-        sentStall: { text: 'STALL', style: TRADE_STYLES.text.secondary },
-        sentAccept: { text: 'ACCEPT', style: TRADE_STYLES.actions.accepted },
-        sentDecline: { text: 'DECLINE', style: TRADE_STYLES.actions.declined },
-        sentWhere: { text: 'WHERE', style: { color: colors.actions.location } },
-        sentWhen: { text: 'WHEN', style: { color: colors.actions.time } },
-        };
-
-        const action = actionMap[turn.type];
+        const action = getActionDisplay(turn.type);
         const parts = line.split('{action}');
         const arrowIcon = getArrowForTurn(turn);
 
@@ -228,6 +242,12 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
     };
 
     const playButtonContent = getPlayButtonContent();
+    
+    // Card navigation helpers
+    const isFirstPlayerCard = playerCardIndex === 0;
+    const isLastPlayerCard = playerCardIndex === playercards.length - 1;
+    const isFirstPartnerCard = partnerCardIndex === 0;
+    const isLastPartnerCard = partnerCardIndex === partnercards.length - 1;
 
     return (
     <View style={styles.container}>
@@ -237,8 +257,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
         onPress={() => setIsExpanded(!isExpanded)}
         activeOpacity={0.7}
       >
-        {/* pass text up, should say like Trade with {user} */}
-        <Text style={styles.headerTitle}>TRADE with [user]</Text>  
+        <Text style={styles.headerTitle}>TRADE with {tradePartnerName}</Text>  
         <FontAwesome6 
           name={isExpanded ? "chevron-up" : "chevron-down"} 
           size={22} 
@@ -308,16 +327,16 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
             <View style={styles.leftRightButton}>
               <TouchableOpacity 
                 onPress={() => setPlayerCardIndex(i => i - 1)}
-                disabled={playerCardIndex === 0}
+                disabled={isFirstPlayerCard}
               >
-                <FontAwesome6 name="caret-left" size={30} color={playerCardIndex === 0 ? colors.ui.secondarydisabled : '#fff'} />
+                <FontAwesome6 name="caret-left" size={30} color={isFirstPlayerCard ? colors.ui.secondarydisabled : '#fff'} />
               </TouchableOpacity>
               <Text style={styles.playButtonText}>{playerCardIndex + 1}/{playercards.length}</Text>
               <TouchableOpacity 
                 onPress={() => setPlayerCardIndex(i => i + 1)}
-                disabled={playerCardIndex === playercards.length - 1}
+                disabled={isLastPlayerCard}
               >
-                <FontAwesome6 name="caret-right" size={30} color={playerCardIndex === playercards.length - 1 ? colors.ui.secondarydisabled : '#fff'} />
+                <FontAwesome6 name="caret-right" size={30} color={isLastPlayerCard ? colors.ui.secondarydisabled : '#fff'} />
               </TouchableOpacity>
             </View>
           </View>
@@ -332,20 +351,18 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({ playercards, partnercards, tu
             <View style={styles.leftRightButton}>
               <TouchableOpacity 
                 onPress={() => setPartnerCardIndex(i => i - 1)}
-                disabled={partnerCardIndex === 0}
+                disabled={isFirstPartnerCard}
               >
-                <FontAwesome6 name="caret-left" size={30} color={partnerCardIndex === 0 ? colors.ui.secondarydisabled : '#fff'} />
+                <FontAwesome6 name="caret-left" size={30} color={isFirstPartnerCard ? colors.ui.secondarydisabled : '#fff'} />
               </TouchableOpacity>
               <Text style={styles.playButtonText}>{partnerCardIndex + 1}/{partnercards.length}</Text>
               <TouchableOpacity 
                 onPress={() => setPartnerCardIndex(i => i + 1)}
-                disabled={partnerCardIndex === partnercards.length - 1}
+                disabled={isLastPartnerCard}
               >
-                <FontAwesome6 name="caret-right" size={30} color={partnerCardIndex === partnercards.length - 1 ? colors.ui.secondarydisabled : '#fff'} />
+                <FontAwesome6 name="caret-right" size={30} color={isLastPartnerCard ? colors.ui.secondarydisabled : '#fff'} />
               </TouchableOpacity>
             </View>
-
-            
           </View>
 
           <PostCard 

@@ -72,22 +72,7 @@ const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
           </Text>
         </View>
 
-        {/* Tags */}
-        {/* <View style={styles.tagsContainer}>
-          {user.tags.map((tag, index) => {
-            const colors = getTagColors(tag.color);
-            return (
-              <View
-                key={index}
-                style={[styles.tag, { borderColor: colors.border }]}
-              >
-                <Text style={[styles.tagText, { color: colors.text }]}>
-                  {tag.text}
-                </Text>
-              </View>
-            );
-          })}
-        </View> */}
+       
       </View>
     </View>
   );
@@ -101,7 +86,7 @@ const styles = StyleSheet.create({
     
   },
     card: {
-    backgroundColor: '#fff ',
+    backgroundColor: '#ffffff',
     borderRadius: 6,
     // overflow: 'hidden',
     shadowColor: colors.ui.secondary,
@@ -113,11 +98,12 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingHorizontal: 30,
     paddingBottom: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    
     borderWidth: 0,
     // borderColor: colors.ui.background, 
-    borderColor: '#c94545'
+    borderColor: '#c94545',
+    
+    justifyContent: 'center',
   },
   topRow: {
     flexDirection: 'row',

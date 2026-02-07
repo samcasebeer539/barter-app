@@ -231,7 +231,14 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard scale={1} cardWidth={defaultCardWidth} />
+          <UserCard 
+          user={{
+            name: "Jay Wilson",
+            location: "Santa Cruz, CA",
+            bio: "pro smasher",
+            profileImageUrl: "https://example.com/image.jpg"
+          }}
+          scale={1} cardWidth={defaultCardWidth} />
         ) : (
           <PostCard
             post={card.post}

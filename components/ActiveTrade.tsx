@@ -114,7 +114,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
     const getPlayButtonContent = () => {
       if (isPlaying) {
         return { 
-          icon: 'arrow-left-long', 
+         
           text: 'BACK', 
           disabled: false, 
           backgroundColor: colors.ui.secondary,
@@ -123,7 +123,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         };
       } else if (isLastTurnQuestion && showAnswerInput && !questionAnswered) {
         return { 
-          icon: 'arrow-right-long', 
+     
           text: '', 
           disabled: false, 
           backgroundColor: colors.actions.query,
@@ -132,7 +132,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         };
       } else if (isLastTurnQuestion && !showAnswerInput && !questionAnswered) {
         return { 
-          icon: null, 
+          
           text: 'ANSWER', 
           disabled: false, 
           backgroundColor: colors.actions.query,
@@ -141,7 +141,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         };
       } else if (isPlayerTurn) {
         return { 
-          icon: 'arrow-right-long', 
+          
           text: 'PLAY', 
           disabled: false, 
           backgroundColor: colors.actions.offer,
@@ -150,7 +150,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         };
       } else {
         return { 
-          icon: 'arrow-left-long', 
+          
           text: 'WAIT', 
           disabled: true, 
           backgroundColor: colors.ui.secondary,
@@ -235,9 +235,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
               onPress={handlePlayButtonPress}
               disabled={playButtonContent.disabled}
             >
-              {playButtonContent.showIcon && playButtonContent.icon && (
-                <FontAwesome6 name={playButtonContent.icon} size={22} color='#FFFFFF' />
-              )}
+              
               {playButtonContent.showText && (
                 <Text style={styles.playButtonText}>{playButtonContent.text}</Text>
               )}
@@ -265,6 +263,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         <View style={styles.cardsContainer}>
           <View style={styles.buttonRowContainer}>
             <View style={styles.timeButton}>
+               <FontAwesome6 name="stopwatch" size={20} color='#fff' />
               <Text style={styles.timeButtonText}>11:49</Text>
             </View>
             <View style={styles.leftRightButton}>
@@ -383,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 40,
     paddingVertical: 6,
-    paddingHorizontal: 13,
+    paddingHorizontal: 10,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
     borderTopRightRadius: 25,
@@ -394,7 +393,7 @@ const styles = StyleSheet.create({
   },
   playButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     letterSpacing: 0.5,
     fontFamily: globalFonts.bold
   },
@@ -404,7 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     minHeight: 40,
     paddingVertical: 2,
-    paddingHorizontal: 10,
+    paddingHorizontal: 4,
     backgroundColor: colors.ui.secondary,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -416,13 +415,14 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     height: 40,
     backgroundColor: colors.ui.secondary,
+    
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
   timeButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     
     fontFamily: globalFonts.bold
   },

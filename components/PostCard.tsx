@@ -148,7 +148,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <FontAwesome6
-              name={post.type === 'good' ? 'cube' : 'stopwatch'}
+              name={post.type === 'good' ? 'gifts' : 'hand-sparkles'}
               size={24}
               color={post.type === 'good' ? '#FFA600' : '#ff536a'}
             />

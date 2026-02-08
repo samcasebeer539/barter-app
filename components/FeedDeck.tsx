@@ -88,10 +88,10 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             <View style={styles.goodServiceRow}>
               <View style={styles.goodServiceButton}>
                 <Text style={styles.offerButtonText}>{goodCount}</Text>
-                <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
-                <Text style={styles.offerButtonText}> </Text>
+                <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
+                
                 <Text style={styles.offerButtonText}>{serviceCount}</Text>
-                <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
+                <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
               </View>
               {/* Save button */}
               
@@ -119,7 +119,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 style={styles.playButton}
                 onPress={handleSave}
               >
-                <FontAwesome6 name='arrow-right-long' size={22} color={colors.actions.offer} />
+                <FontAwesome6 name='arrow-right-long' size={26} color={colors.actions.offer} />
               </TouchableOpacity>
 
               {/* Offer button */}
@@ -139,7 +139,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 style={styles.upButton}
                 onPress={handleCloseModal}
               >
-                <FontAwesome6 name="caret-up" size={32} color="#ffffff" />
+                <FontAwesome6 name="chevron-up" size={26} color="#ffffff" />
               </TouchableOpacity>
 
             </View>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   upButton: {
     width: 54,
-    height: 42,
+    height: 44,
     
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     width: 54,
-    height: 42,
+    height: 44,
     
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
@@ -269,13 +269,13 @@ const styles = StyleSheet.create({
   },
   offerButtonText: {
     color: '#ffffff',
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: globalFonts.bold
     
   },
   goodServiceButton: {
     flex: 1,
-    height: 42,
+    height: 44,
     flexDirection: 'row',
     gap: 8,
     borderTopRightRadius: 2,

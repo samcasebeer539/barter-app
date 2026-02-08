@@ -23,6 +23,7 @@ interface Post {
 
 interface User {
   name: string;
+  pronouns: string;
   location: string;
   bio: string;
   tags?: { text: string; color: string }[];
@@ -214,6 +215,7 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
   // Default user data if none provided
   const defaultUser: User = {
     name: "Jay Wilson",
+    pronouns: "(she/he/they)",
     location: "Santa Cruz, CA",
     bio: "pro smasher",
     profileImageUrl: 'https://picsum.photos/seed/cat/400/400'

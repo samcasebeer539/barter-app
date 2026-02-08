@@ -151,7 +151,7 @@ export default function FeedScreen() {
             resizeMode="cover"
           />
           <FontAwesome6 
-            name={item.type === 'service' ? 'cube' : 'stopwatch'} 
+            name={item.type === 'service' ? 'gifts' : 'hand-sparkles'} 
             size={20} 
             color={item.type === 'service' ? '#FFA600' : '#ff536a'}
             style={styles.typeIcon}
@@ -176,7 +176,7 @@ export default function FeedScreen() {
         showLocation={showLocation}
         showSaved={showSaved}
         onLocationPress={handleLocation}
-        onSearchPress={handleSearch}
+        
         onSavePress={handleSave}
         headerTranslateY={headerTranslateY}
       />

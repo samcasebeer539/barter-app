@@ -109,10 +109,10 @@ export default function ProfileDeck({
 
         <View style={styles.goodServiceButton}>
           <Text style={styles.buttonText}>{goodCount}</Text>
-          <FontAwesome6 name="cube" size={22} color={colors.cardTypes.good} />
-          <Text style={styles.buttonText}> </Text>
+          <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
+          
           <Text style={styles.buttonText}>{serviceCount}</Text>
-          <FontAwesome6 name="stopwatch" size={22} color={colors.cardTypes.service} />
+          <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
         </View>
         
         {/* Toggle reveal button */}
@@ -125,8 +125,8 @@ export default function ProfileDeck({
           disabled={!toggleEnabled}
         >
           <FontAwesome6 
-            name={isDeckRevealed ? "caret-down" : "caret-up"} 
-            size={32} 
+            name={isDeckRevealed ? "arrow-down-up-across-line" : "arrow-down-up-across-line"} 
+            size={22} 
             color="#fff" 
           />
         </TouchableOpacity>
@@ -143,6 +143,7 @@ export default function ProfileDeck({
                 posts={secondaryPosts}
                 user={{
                     name: "Jay Wilson",
+                    pronouns: "(she/he/they)",
                     location: "Santa Cruz, CA",
                     bio: "Pro Smasher",
                     profileImageUrl: 'https://picsum.photos/seed/bird/400/400'
@@ -154,7 +155,12 @@ export default function ProfileDeck({
 
             {/* Secondary button row */}
             <View style={styles.secondaryButtonRow}>
-              
+              <TouchableOpacity 
+                style={styles.playButton}
+                onPress={handleSecondaryPlus}
+              >
+                <FontAwesome6 name="arrow-right-long" size={22} color="#000" />
+              </TouchableOpacity>
               <TouchableOpacity onPress={handleSecondaryTrade}>
                 <Text style={styles.tradeText}>TRADE</Text>
               </TouchableOpacity>
@@ -166,12 +172,7 @@ export default function ProfileDeck({
                 <Icon name="circle-o" size={22} color={colors.actions.trade} />
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={styles.playButton}
-                onPress={handleSecondaryPlus}
-              >
-                <FontAwesome6 name="arrow-right-long" size={22} color="#000" />
-              </TouchableOpacity>
+              
 
             </View>
           </View>
@@ -190,6 +191,7 @@ export default function ProfileDeck({
                 posts={posts}
                 user={{
                     name: "Sam Casebeer",
+                    pronouns: "(they/them)",
                     location: "Santa Cruz, CA",
                     bio: "Passionate about sustainable living and building community through sharing. Always looking for unique trades and meaningful connections.",
                     profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
@@ -205,26 +207,26 @@ export default function ProfileDeck({
               style={styles.editButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="sliders" size={22} color="#fff" />
+              <FontAwesome6 name="sliders" size={26} color="#fff" />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.sendForwardButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="square-caret-left" size={22} color="#fff" />
+              <FontAwesome6 name="square-caret-up" size={28} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.sendBackButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="square-caret-right" size={22} color="#fff" />
+              <FontAwesome6 name="square-caret-down" size={28} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.addButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="plus" size={22} color="#fff" />
+              <FontAwesome6 name="square-plus" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -319,10 +321,11 @@ const styles = StyleSheet.create({
     fontSize: 52,
     fontFamily: globalFonts.extrabold,
     top: -3,
+    marginLeft: -3,
   },
   toggleButton: {
     width: 54,
-    height: 42,
+    height: 44,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
@@ -336,7 +339,7 @@ const styles = StyleSheet.create({
   },
   goodServiceButton: {
     
-    height: 42,
+    height: 44,
     width: 142,
     flexDirection: 'row',
     gap: 8,
@@ -352,26 +355,26 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: globalFonts.bold,
   },
   selectButton: {
     width: 54,
     height: 42,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderWidth: 3,
     borderColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 'auto',
+    marginRight: 'auto',
   },
 
   editButton: {
     width: 54,
-    height: 42,
+    height: 44,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
@@ -382,7 +385,7 @@ const styles = StyleSheet.create({
   },
   sendForwardButton: {
     width: 54,
-    height: 42,
+    height: 44,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
@@ -393,7 +396,7 @@ const styles = StyleSheet.create({
   },
   sendBackButton: {
     width: 54,
-    height: 42,
+    height: 44,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
@@ -404,7 +407,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     width: 54,
-    height: 42,
+    height: 44,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
@@ -415,7 +418,7 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     width: 54,
-    height: 42,
+    height: 44,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 25,

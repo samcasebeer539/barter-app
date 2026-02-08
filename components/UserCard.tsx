@@ -14,6 +14,7 @@ interface Tag {
 
 interface User {
   name: string;
+  pronouns?: string;
   location: string;
   bio: string;
   tags?: Tag[];
@@ -58,7 +59,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
 
         {/* Name and Location - Left Aligned */}
         <View style={styles.infoContainer}>
-          <Text style={styles.name} numberOfLines={1}>{user.name}</Text>
+          <Text style={styles.name} numberOfLines={1}>{user.name}<Text style={styles.pronouns}> {user.pronouns}</Text></Text>
           <View style={styles.locationRow}>
             <MaterialIcons name="location-on" size={12} color="#999" />
             <Text style={styles.location}>{user.location}</Text>
@@ -103,25 +104,34 @@ const styles = StyleSheet.create({
     // borderColor: colors.ui.background, 
     borderColor: '#c94545',
     
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start'
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     marginBottom: 12,
   },
   
   infoContainer: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
   name: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '600',
     color: '#000000',
     marginBottom: 4,
     fontFamily: globalFonts.bold,
+  },
+  pronouns: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: colors.ui.secondarydisabled,
+    marginBottom: 4,
+    fontFamily: globalFonts.regular,
+
   },
   locationRow: {
     flexDirection: 'row',

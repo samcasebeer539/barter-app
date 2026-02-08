@@ -21,8 +21,20 @@ interface Post {
   photos: string[];
 }
 
+interface User {
+  name: string;
+  location: string;
+  bio: string;
+  tags?: { text: string; color: string }[];
+  avatarText?: string;
+  goodsCount?: number;
+  servicesCount?: number;
+  profileImageUrl?: string;
+}
+
 interface DeckProps {
   posts: Post[];
+  user?: User;
   cardWidth?: number;
   enabled?: boolean; // Whether the deck is interactive
 }
@@ -32,7 +44,7 @@ type DeckItem =
   | { type: 'post'; post: Post };
 
 
-const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
+const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -199,6 +211,16 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
     }).start();
   };
 
+  // Default user data if none provided
+  const defaultUser: User = {
+    name: "Jay Wilson",
+    location: "Santa Cruz, CA",
+    bio: "pro smasher",
+    profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
+  };
+
+  const userToRender = user ?? defaultUser;
+
   const renderCard = (index: number, isFirst: boolean = false) => {
     const card = cards[index];
     if (!card) return null;
@@ -232,13 +254,10 @@ const Deck: React.FC<DeckProps> = ({ posts, cardWidth, enabled = true }) => {
       >
         {card.type === 'user' ? (
           <UserCard 
-          user={{
-            name: "Jay Wilson",
-            location: "Santa Cruz, CA",
-            bio: "pro smasher",
-            profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
-          }}
-          scale={1} cardWidth={defaultCardWidth} />
+            user={userToRender}
+            scale={1} 
+            cardWidth={defaultCardWidth} 
+          />
         ) : (
           <PostCard
             post={card.post}

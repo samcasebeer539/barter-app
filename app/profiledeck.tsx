@@ -77,7 +77,7 @@ export default function ProfileDeck() {
       <View style={styles.content}>
         <DecksProfile 
           posts={primaryPosts}
-          secondaryPosts={secondaryPosts}
+          secondaryPosts={primaryPosts}
           onToggleReveal={handleToggleReveal}
           toggleEnabled={true}
           isDeckRevealed={isDeckRevealed}
@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    top: 320,
+    top: 700,
   },
 });

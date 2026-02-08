@@ -60,7 +60,7 @@ export default function RootLayout() {
             // Determine button position based on the route
             const href = props.href as string;
             const isFirst = href === '/feed';
-            const isLast = href === '/profile';
+            const isLast = href === '/profiledeck';
             const isMiddle = href === '/barter';
             
             return (
@@ -108,7 +108,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="profile"
+          name="profiledeck"
           options={{
             tabBarIcon: ({ color }) => (
               <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
@@ -123,11 +123,9 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="profiledeck"
+          name="profile"
           options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
-            ),
+            href: null,
           }}
         />
    

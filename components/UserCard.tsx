@@ -67,7 +67,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
 
         {/* Bio */}
         <View style={styles.bioContainer}>
-          <Text style={styles.bio} numberOfLines={3}>
+          <Text style={styles.bio} numberOfLines={5}>
             {user.bio}
           </Text>
         </View>

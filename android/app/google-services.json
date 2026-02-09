@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "22499495595",
+    "project_id": "win-win-180ae",
+    "storage_bucket": "win-win-180ae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:22499495595:android:ec490c8ca6a20dd4ab71ee",
+        "android_client_info": {
+          "package_name": "com.barterapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAcvuFLaQ1XQ_LSGGl2Y80hL_omvktNAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

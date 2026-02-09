@@ -3,7 +3,7 @@
 ## Tech Stack
 
 - Frontend: React Native + Expo
-- Backend: ?
+- Backend: MongoDB + Flask
 - Testing: Expo Go on iPhone
 
 ## Prerequisites

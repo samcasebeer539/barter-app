@@ -1,6 +1,7 @@
+//add verify
 import { colors, globalFonts } from '../styles/globalStyles';
 
-export type TradeActionType = 'query' | 'counter' | 'stall' | 'accept' | 'decline' | 'where' | 'when';
+export type TradeActionType = 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when';
 
 export type TradeTurnType = 
   | 'sentOffer' 
@@ -49,12 +50,20 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     turnType: 'sentCounter',
   },
   {
+    text: 'VERIFY',
+    color: colors.actions.verify,
+    hasButtons: true,
+    actionType: 'verify',
+    turnType: 'sentWhen',
+  },
+  {
     text: 'STALL',
     color: colors.actions.time,
     hasButtons: false,
     actionType: 'stall',
     turnType: 'sentStall',
   },
+  
   {
     text: 'ACCEPT*',
     color: colors.actions.accept,
@@ -83,6 +92,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'when',
     turnType: 'sentWhen',
   },
+
 ];
 
 // Configuration for turn display (used in ActiveTrade)
@@ -100,9 +110,9 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     isSent: false,
   },
   sentCounteroffer: {
-    actionText: 'COUNTEROFFER',
+    actionText: 'COUNTERED',
     colorStyle: { color: colors.actions.counter, fontFamily: globalFonts.extrabold },
-    template: 'You proposed {action}',
+    template: 'You {action}, adding "{item}"',
     isSent: true,
   },
   receivedQuestion: {

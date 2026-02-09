@@ -175,10 +175,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               <TouchableOpacity activeOpacity={0.8} onPress={handlePhotoTap} style={styles.photoTouchable}>
                 <View style={[styles.photoFrame, { aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, maxHeight: '100%', maxWidth: '100%' }]}>
                   <Image source={{ uri: post.photos[currentPhotoIndex] }} style={styles.photo} resizeMode="cover" />
-                  <View style={styles.innerShadowContainer} pointerEvents="none">
-                    <LinearGradient colors={['rgba(0,0,0,0.1)', 'transparent']} style={styles.gradientTop} pointerEvents="none" />
-                    <LinearGradient colors={['transparent', 'rgba(0,0,0,0.1)']} style={styles.gradientBottom} pointerEvents="none" />
-                  </View>
+                  
                 </View>
               </TouchableOpacity>
             </View>
@@ -188,7 +185,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
-                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? '#000' : '#d4d4d4', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
+                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? post.type === 'good' ? '#FFA600' : '#ff536a' : '#fff', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
                   />
                 ))}
               </View>

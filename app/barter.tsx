@@ -7,21 +7,21 @@ import OffersSection from '../components/OffersSection';
 
 const POSTS = [
   {
-    type: 'service' as const,
-    name: 'Bike Repair service',
+    type: 'good' as const,
+    name: 'Fantasy Books',
     description:
-      'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+      'Includes LOTR, ASOIAF, Earthsea, Narnia',
     photos: [
-      'https://picsum.photos/seed/landscape1/800/400',
+      'https://picsum.photos/seed/book/800/400',
       'https://picsum.photos/seed/portrait1/400/600',
       'https://picsum.photos/seed/square1/500/500',
     ],
   },
   {
-    type: 'good' as const,
-    name: 'Vintage Camera Collection',
+    type: 'service' as const,
+    name: 'Bike Repair',
     description:
-      'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition.',
+      'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
     photos: [
       'https://picsum.photos/seed/camera1/600/400',
       'https://picsum.photos/seed/camera2/500/700',
@@ -42,10 +42,10 @@ const POSTS = [
 ];
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'sentOffer', item: 'Vintage Books' },
-  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Pokemon Cards' },
+  { type: 'sentOffer', item: 'Fantasy Books' },
+  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Bike Repair' },
   { type: 'sentCounteroffer' },
-  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Pokemon Cards' },
+  { type: 'theyAccepted', user: 'Jay Wilson' },
 ];
 
 const trade2Turns: TradeTurn[] = [

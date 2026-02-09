@@ -4,6 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ export default function ProfileDeck({
   toggleEnabled = false, 
   isDeckRevealed = false 
 }: ProfileDeckProps) {
+  const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [showSecondary, setShowSecondary] = useState(false);
   
@@ -86,6 +88,9 @@ export default function ProfileDeck({
   const handleSecondaryMinus = () => {
     console.log('Secondary minus button pressed');
   };
+  const handleSettingsPress = () => {
+    router.push('/settings');
+  };
 
   // Calculate slide distance
   const slideDistance = 566;
@@ -102,7 +107,7 @@ export default function ProfileDeck({
       <View style={styles.goodServiceRow}>
         <TouchableOpacity 
             style={styles.settingsButton}
-            onPress={handlePlus}
+            onPress={handleSettingsPress}
         >
             <FontAwesome6 name="gear" size={22} color="#fff" />
         </TouchableOpacity>
@@ -125,8 +130,8 @@ export default function ProfileDeck({
           disabled={!toggleEnabled}
         >
           <FontAwesome6 
-            name={isDeckRevealed ? "arrow-down-up-across-line" : "arrow-down-up-across-line"} 
-            size={22} 
+            name={isDeckRevealed ? "chevron-up" : "chevron-down"} 
+            size={26} 
             color="#fff" 
           />
         </TouchableOpacity>
@@ -193,7 +198,7 @@ export default function ProfileDeck({
                     name: "Sam Casebeer",
                     pronouns: "(they/them)",
                     location: "Santa Cruz, CA",
-                    bio: "Passionate about sustainable living and building community through sharing. Always looking for unique trades and meaningful connections.",
+                    bio: "UCSC 2026 for Computer Science, multimedia visual artist, sci-fi/fantasy reader, cat lover",
                     profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
                 }}
                 cardWidth={cardWidth}
@@ -259,7 +264,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 2,
     elevation: 2,
-
+    paddingTop: 240,
+    paddingBottom: 280,
+    bottom: 240,
+    backgroundColor: colors.ui.background,
   },
   deckWrapper: {
     marginBottom: 20,
@@ -272,6 +280,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
     elevation: 1,
+    
   },
   secondaryDeckWrapper: {
     marginBottom: 20,
@@ -292,7 +301,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 4,
-    top: 247,
+    top: 249,
     left: 0,
   },
   goodServiceRow: {
@@ -306,8 +315,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   playButton: {
-    width: 54,
-    height: 42,
+    width: 50,
+    height: 40,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
@@ -318,9 +327,9 @@ const styles = StyleSheet.create({
   },
   tradeText: {
     color: colors.actions.trade,
-    fontSize: 52,
+    fontSize: 48,
     fontFamily: globalFonts.extrabold,
-    top: -3,
+    top: -2,
     marginLeft: -3,
   },
   toggleButton: {
@@ -360,7 +369,7 @@ const styles = StyleSheet.create({
   },
   selectButton: {
     width: 54,
-    height: 42,
+    height: 40,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,

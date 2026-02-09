@@ -2,7 +2,7 @@
 
 
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
 import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
@@ -28,9 +28,10 @@ interface UserCardProps {
   user: User;
   scale?: number;
   cardWidth?: number;
+  onMenuPress?: () => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
+const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuPress }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -49,6 +50,15 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth }) => {
   return (
     <View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+        {/* Three Dots Menu Icon */}
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={onMenuPress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialIcons name="more-vert" size={24} color="#666" />
+        </TouchableOpacity>
+
         {/* Top Row: Profile Picture (left) and Stats (right) */}
         <View style={styles.imageContainer}>
           <Image
@@ -106,6 +116,13 @@ const styles = StyleSheet.create({
     
     justifyContent: 'flex-start',
     alignItems: 'flex-start'
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+    padding: 4,
   },
   topRow: {
     flexDirection: 'row',

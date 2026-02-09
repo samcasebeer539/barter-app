@@ -13,14 +13,15 @@ export const defaultTextStyle = {
 export const colors = {
   // Trade Action Colors
   actions: {
-    offer: '#1686ff',      // Blue - Initial offer
-    trade: '#c62ce5',      // Yellow/Orange - Trade/exchange  e01e72
-    counter: '#ff31dd',    // Pink - Counter offer
-    query: '#6a50ff',      // Purple - Question
-    decline: '#ff3232',    // Red - Decline/reject
-    accept: '#06f52e',     // Green - Accept
+    offer: '#1686ff',   
+    trade: '#c62ce5',  
+    counter: '#ff31dd',  
+    query: '#6a50ff',    
+    decline: '#ff3232',    
+    accept: '#06f52e',     
     location: '#229bff',
     time: '#fb5c21',
+    verify: '#00f3ef'
   },
 
   // Post Type Colors

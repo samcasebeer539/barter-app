@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { colors } from '../styles/globalStyles';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function SettingsScreen() {
   const [locationEnabled, setLocationEnabled] = React.useState(true);
 
   const handleBackPress = () => {
-    router.push('/profile');
+    router.push('/profiledeck');
   };
 
   return (
@@ -133,7 +134,7 @@ export default function SettingsScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton}>
-          <MaterialIcons name="logout" size={24} color="#FF3B81" />
+          <MaterialIcons name="logout" size={24} color={colors.actions.decline} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
@@ -146,7 +147,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: colors.ui.background,
   },
   header: {
     flexDirection: 'row',
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
-    backgroundColor: '#141414',
+    backgroundColor: colors.ui.background,
   },
   backButton: {
     padding: 8,
@@ -220,12 +221,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#FF3B81',
+    borderColor: colors.actions.decline,
   },
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FF3B81',
+    color: colors.actions.decline,
   },
   bottomSpacer: {
     height: 80,

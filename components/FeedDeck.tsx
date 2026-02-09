@@ -36,10 +36,11 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     if (visible) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
 
-      Animated.timing(deckTranslateY, {
+      Animated.spring(deckTranslateY, {
         toValue: Dimensions.get('window').height / 8.1,
         useNativeDriver: true,
-        duration: 260,
+        tension: 50,
+        friction: 8,
       }).start();
     }
   }, [visible]);
@@ -192,25 +193,25 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 310,
+    width: 330,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 4,
     top: 240,
-    left: -10,
+    left: 0,
   },
   goodServiceRow: {
     width: 200,
     flexDirection: 'row',
     gap: 4,
     top: -232,
-    left: 44,
+    left: 64,
     zIndex: 0,
   },
   upButton: {
     width: 54,
-    height: 44,
+    height: 40,
     
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
@@ -237,8 +238,8 @@ const styles = StyleSheet.create({
   },
   playButton: {
     
-    width: 54,
-    height: 42,
+    width: 50,
+    height: 40,
     
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
@@ -252,9 +253,9 @@ const styles = StyleSheet.create({
   },
   offerText: {
     color: colors.actions.offer,
-    fontSize: 52,
+    fontSize: 48,
     fontFamily: globalFonts.extrabold,
-    top: -3
+    top: -2
     
     
   },

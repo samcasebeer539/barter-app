@@ -65,7 +65,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
   },
   
   {
-    text: 'ACCEPT*',
+    text: '*ACCEPT',
     color: colors.actions.accept,
     hasButtons: false,
     actionType: 'accept',

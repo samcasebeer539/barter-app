@@ -1,11 +1,14 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
 import { colors } from '@/styles/globalStyles';
 import { useState, useEffect } from 'react';
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { ActivityIndicator } from 'react-native';
+
 
 function TabBarBackground() {
     return (
@@ -20,26 +23,52 @@ export default function RootLayout() {
         'YourFontName-ExtraBold': require('../assets/fonts/Oswald-Bold.ttf'),
         // Add other font weights/styles as needed
     });
-    
-    if (!fontsLoaded) {
-        return null;
-    }
 
     const [initializing, setInitializing] = useState(true);
-    const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
-
-    const onAuthStateChangedParam = (user: FirebaseAuthTypes.User | null) => {
-        console.log('onAuthStateChanged', user);
-        setUser(user);
-        if (initializing) setInitializing(false);
-    }
+    const [user, setUser] = useState<User | null>(null);
+    const router = useRouter();
+    const segments = useSegments();
 
     useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(onAuthStateChangedParam);
-        return subscriber;
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log('onAuthStateChanged', user);
+            setUser(user);
+            if (initializing) setInitializing(false);
+        });
+      
+        return unsubscribe;
     }, []);
 
+    useEffect(() => {
+        if (initializing) return;
+
+        const inAuthGroup = segments[0] === 'auth';
+
+        if (user && !inAuthGroup) {
+            router.replace('/auth/home');
+        } 
+        else if (!user && inAuthGroup) {
+            router.replace('/');
+        }
+
+    }, [user, initializing]
+    )
+
+    if (initializing) 
+        return (
+            <View 
+                style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                }} >
+                <ActivityIndicator size="large" />
+            </View>
+    )
     
+    if (!fontsLoaded || initializing) {
+        return null;
+    }
 
     return (
         <SafeAreaProvider>

@@ -1,8 +1,14 @@
 import { Redirect } from 'expo-router';
 import { useState } from 'react';
 import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, Button, ActivityIndicator } from 'react-native'
-import auth from '@react-native-firebase/auth'
-import { FirebaseError } from 'firebase/app'
+import { auth } from '@/lib/firebase';
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    User,
+  } from 'firebase/auth';
+
 export default function Index() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -11,11 +17,10 @@ export default function Index() {
     const signUp = async () => {
         setLoading(true);
         try {
-            await auth().createUserWithEmailAndPassword(email, password);
+            await createUserWithEmailAndPassword(auth, email, password);
             alert('Check your email!');
         } catch(e: any) {
-            const err = e as FirebaseError;
-            alert('Sign Up Failed: ' + err.message)
+            alert('Sign Up Failed: ' + e.message)
         } finally {
             setLoading(false);
         } 
@@ -24,11 +29,10 @@ export default function Index() {
     const signIn = async () => {
         setLoading(true);
         try {
-            await auth().signInWithEmailAndPassword(email, password);
-            alert('Check your email!');
+            await signInWithEmailAndPassword(auth, email, password);
+            // alert('Check your email!');
         } catch(e: any) {
-            const err = e as FirebaseError;
-            alert('Sign In Failed: ' + err.message)
+            alert('Sign In Failed: ' + e.message)
         } finally {
             setLoading(false);
         } 

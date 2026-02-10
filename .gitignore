@@ -18,6 +18,7 @@ ios/
 android/
 GoogleService-Info.plist
 google-services.json
+lib/
 
 # Metro
 .metro-health-check*

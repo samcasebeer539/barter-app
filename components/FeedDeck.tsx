@@ -37,7 +37,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
 
       Animated.spring(deckTranslateY, {
-        toValue: Dimensions.get('window').height / 8.1,
+        toValue: Dimensions.get('window').height / 8.6,
         useNativeDriver: true,
         tension: 50,
         friction: 8,
@@ -87,6 +87,8 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
      
           <View style={styles.column}>
             <View style={styles.goodServiceRow}>
+              
+             
               <View style={styles.goodServiceButton}>
                 <Text style={styles.offerButtonText}>{goodCount}</Text>
                 <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
@@ -95,14 +97,21 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
               </View>
               {/* Save button */}
-              
-
               <TouchableOpacity 
                 style={styles.saveButton}
                 onPress={handleSave}
               >
                 <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
               </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.upButton}
+                onPress={handleCloseModal}
+              >
+                <FontAwesome6 name="chevron-up" size={26} color="#ffffff" />
+              </TouchableOpacity>
+
+              
             </View>
             
             <View style={styles.deckWrapper}>
@@ -113,9 +122,14 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
               />
             </View>
 
-            {/* Button row with up chevron, offer button, and save button */}
+            
             <View style={styles.buttonRow}>
-              {/* play button */}
+              
+
+              <TouchableOpacity onPress={handleOffer} >
+                  <Text style={styles.offerText}>OFFER</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity 
                 style={styles.playButton}
                 onPress={handleSave}
@@ -123,26 +137,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 <FontAwesome6 name='arrow-right-long' size={26} color={colors.actions.offer} />
               </TouchableOpacity>
 
-              {/* Offer button */}
-              {/* <TouchableOpacity 
-                style={styles.offerButton}
-                onPress={handleOffer}
-              >
-                <Text style={styles.offerButtonText}>OFFER</Text>
-              </TouchableOpacity> */}
-              <TouchableOpacity onPress={handleOffer} >
-                  <Text style={styles.offerText}>OFFER</Text>
-              </TouchableOpacity>
-
               
-              {/* Up/Close button */}
-              <TouchableOpacity 
-                style={styles.upButton}
-                onPress={handleCloseModal}
-              >
-                <FontAwesome6 name="chevron-up" size={26} color="#ffffff" />
-              </TouchableOpacity>
-
             </View>
           </View>
         </Animated.View>
@@ -193,41 +188,42 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 330,
+    width: 320,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     gap: 4,
     top: 240,
     left: 0,
   },
   goodServiceRow: {
-    width: 200,
+    width: 320,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: 4,
     top: -232,
-    left: 64,
+    left: 0,
     zIndex: 0,
   },
   upButton: {
     width: 54,
-    height: 40,
+    height: 44,
     
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 'auto',
+    
    
   },
   saveButton: {
     width: 54,
     height: 44,
     
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
@@ -241,33 +237,34 @@ const styles = StyleSheet.create({
     width: 50,
     height: 40,
     
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderWidth: 3,
     borderColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.actions.offer,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.9,
+    shadowRadius: 3,
+    
     
   },
   offerText: {
     color: colors.actions.offer,
     fontSize: 48,
     fontFamily: globalFonts.extrabold,
-    top: -2
-    
-    
-  },
-  offerButton: {
-    backgroundColor: colors.actions.offer,
-    height: 50,
-    paddingHorizontal: 26,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
+    top: -2,
+    shadowColor: colors.actions.offer,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.8,
+    shadowRadius: 3,
+    marginRight: 'auto'
     
   },
+
   offerButtonText: {
     color: '#ffffff',
     fontSize: 20,
@@ -275,8 +272,9 @@ const styles = StyleSheet.create({
     
   },
   goodServiceButton: {
-    flex: 1,
+    
     height: 44,
+    width: 142,
     flexDirection: 'row',
     gap: 8,
     borderTopRightRadius: 2,
@@ -287,6 +285,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 14,
+    marginLeft: 'auto',
     
   },
   

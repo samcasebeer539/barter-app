@@ -9,12 +9,12 @@ import { defaultTextStyle, globalFonts, colors, uiColors } from '../styles/globa
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
 const BARTER_ITEMS = [
-  { id: '1', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 150 },
-  { id: '2', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'service', height: 200 },
-  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 240 },
-  { id: '4', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 },
-  { id: '5', title: 'Photography Session', image: 'https://picsum.photos/seed/photo1/400/520', type: 'service', height: 260 },
-  { id: '6', title: 'Handmade Pottery Set For Sale Now', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'good', height: 250 },
+  { id: '1', title: 'sci-fi books', image: 'https://picsum.photos/seed/camera1/400/500', type: 'good', height: 150 },
+  { id: '2', title: 'iPad 5th Generation 2017', image: 'https://picsum.photos/seed/guitar1/400/320', type: 'good', height: 200 },
+  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', type: 'service', height: 210 },
+  { id: '4', title: 'HP Laptop', image: 'https://picsum.photos/seed/records1/400/340', type: 'good', height: 170 },
+  { id: '5', title: 'DVD collection', image: 'https://picsum.photos/seed/photo1/400/520', type: 'good', height: 260 },
+  { id: '6', title: 'Handmade Pottery Set For Sale Now', image: 'https://picsum.photos/seed/pottery1/400/500', type: 'service', height: 250 },
   { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/310', type: 'service', height: 155 },
   { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/460', type: 'good', height: 230 },
   { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/530', type: 'service', height: 265 },
@@ -42,8 +42,8 @@ const DECK_POSTS = [
   },
   {
     type: 'good' as const,
-    name: 'Vintage Camera Collection',
-    description: 'Beautiful vintage cameras from the 1960s-1980s. Perfect working condition, includes lenses and cases.',
+    name: 'DVD collection',
+    description: '',
     photos: [
       'https://picsum.photos/seed/camera1/600/400',
       'https://picsum.photos/seed/camera2/500/700',
@@ -51,13 +51,12 @@ const DECK_POSTS = [
     ],
   },
   {
-    type: 'service' as const,
-    name: 'Guitar Lessons',
-    description: 'Experienced guitar teacher offering beginner to intermediate lessons. All ages welcome!',
+    type: 'good' as const,
+    name: 'iPad 5th Generation 2017',
+    description: '128 GB storage, factory reset, battery capacity at 82%. Case if you want it!',
     photos: [
-      'https://picsum.photos/seed/guitar1/700/500',
-      'https://picsum.photos/seed/guitar2/400/600',
-      'https://picsum.photos/seed/guitar3/500/500',
+       Image.resolveAssetSource(require('@/assets/photos/ipad.jpeg')).uri,
+      'https://picsum.photos/seed/camera3/600/600',
     ],
   },
   {
@@ -151,9 +150,9 @@ export default function FeedScreen() {
             resizeMode="cover"
           />
           <FontAwesome6 
-            name={item.type === 'service' ? 'gifts' : 'hand-sparkles'} 
+            name={item.type === 'good' ? 'gifts' : 'hand-sparkles'} 
             size={20} 
-            color={item.type === 'service' ? '#FFA600' : '#ff536a'}
+            color={item.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             style={styles.typeIcon}
           />
         </View>
@@ -227,7 +226,7 @@ const styles = StyleSheet.create({
   },
   columnsContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 4,
   },
   column: {
     flex: 1,

@@ -150,7 +150,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
             <FontAwesome6
               name={post.type === 'good' ? 'gifts' : 'hand-sparkles'}
               size={24}
-              color={post.type === 'good' ? '#FFA600' : '#ff536a'}
+              color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             />
           </View>
           <View 
@@ -185,7 +185,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
-                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? post.type === 'good' ? '#FFA600' : '#ff536a' : '#fff', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
+                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service : '#fff', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
                   />
                 ))}
               </View>
@@ -231,7 +231,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  iconContainer: { flexShrink: 0, paddingBottom: 12 },
+  iconContainer: { 
+    flexShrink: 0, 
+    paddingBottom: 12,
+ 
+   },
   titleContainer: { 
     flex: 1,
     overflow: 'hidden',
@@ -333,7 +337,7 @@ const styles = StyleSheet.create({
   descriptionText: { 
     fontSize: 15, 
     lineHeight: 21, 
-    color: '#000000', 
+    color: colors.ui.background, 
     ...defaultTextStyle 
   },
 });

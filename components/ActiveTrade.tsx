@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     marginHorizontal: 1,
     marginTop: 12,
-    marginBottom: 6,
+    marginBottom: 0,
   },
   headerTitle: {
     fontSize: 20,
@@ -327,7 +327,8 @@ const styles = StyleSheet.create({
   expandedContent: {
     padding: 12,
     marginTop: -12,
-    marginBottom: -6
+    marginBottom: -6,
+    
   },
   tradeSection: {
     gap: -4,
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
   tradeText: {
     flex: 1,
     fontSize: 16,
-    color: '#E0E0E0',
+    color: '#ffffff',
     lineHeight: 22,
     ...defaultTextStyle
   },

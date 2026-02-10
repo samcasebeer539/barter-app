@@ -122,17 +122,14 @@ export default function ProfileDeck({
         
         {/* Toggle reveal button */}
         <TouchableOpacity 
-          style={[
-            styles.toggleButton, 
-            (!toggleEnabled || isDeckRevealed) && styles.toggleButtonDisabled
-          ]}
+          style={styles.toggleButton}
           onPress={handleToggleReveal}
           disabled={!toggleEnabled}
         >
           <FontAwesome6 
             name={isDeckRevealed ? "chevron-up" : "chevron-down"} 
             size={26} 
-            color="#fff" 
+            color={isDeckRevealed ? '#fff' : colors.actions.trade} 
           />
         </TouchableOpacity>
       </View>
@@ -161,21 +158,23 @@ export default function ProfileDeck({
             {/* Secondary button row */}
             <View style={styles.secondaryButtonRow}>
               <TouchableOpacity 
-                style={styles.playButton}
-                onPress={handleSecondaryPlus}
-              >
-                <FontAwesome6 name="arrow-right-long" size={22} color="#000" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSecondaryTrade}>
-                <Text style={styles.tradeText}>TRADE</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
                 style={styles.selectButton}
                 onPress={handleSecondaryMinus}
               >
                 <Icon name="circle-o" size={22} color={colors.actions.trade} />
               </TouchableOpacity>
+              
+              <TouchableOpacity onPress={handleSecondaryTrade}>
+                <Text style={styles.tradeText}>TRADE</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.playButton}
+                onPress={handleSecondaryPlus}
+              >
+                <FontAwesome6 name="arrow-right-long" size={26} color="#000" />
+              </TouchableOpacity>
+
 
               
 
@@ -212,26 +211,26 @@ export default function ProfileDeck({
               style={styles.editButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="sliders" size={26} color="#fff" />
+              <FontAwesome6 name="sliders" size={22} color="#fff" />
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.sendForwardButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="square-caret-up" size={28} color="#fff" />
+              <FontAwesome6 name="square-caret-up" size={24} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.sendBackButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="square-caret-down" size={28} color="#fff" />
+              <FontAwesome6 name="square-caret-down" size={24} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.addButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="square-plus" size={28} color="#fff" />
+              <FontAwesome6 name="plus" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -287,7 +286,7 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 330,
+    width: 320,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -296,16 +295,21 @@ const styles = StyleSheet.create({
     left: 0,
   },
   secondaryButtonRow: {
-    width: 330,
+    width: 320,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     gap: 4,
     top: 249,
     left: 0,
+    shadowColor: colors.actions.trade,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.9,
+    shadowRadius: 3,
+    elevation: 10,
   },
   goodServiceRow: {
-    width: 330,
+    width: 320,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
@@ -317,10 +321,10 @@ const styles = StyleSheet.create({
   playButton: {
     width: 50,
     height: 40,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     backgroundColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
@@ -330,7 +334,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontFamily: globalFonts.extrabold,
     top: -2,
-    marginLeft: -3,
+    
   },
   toggleButton: {
     width: 54,
@@ -339,13 +343,11 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    backgroundColor: colors.actions.trade,
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  toggleButtonDisabled: {
-    backgroundColor: colors.ui.secondary,
-  },
+  
   goodServiceButton: {
     
     height: 44,
@@ -371,14 +373,14 @@ const styles = StyleSheet.create({
     width: 54,
     height: 40,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 'auto',
+    marginLeft: 'auto',
   },
 
   editButton: {

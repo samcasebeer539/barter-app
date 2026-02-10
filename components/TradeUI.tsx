@@ -111,7 +111,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     return (
     <View style={styles.container}>
         <View style={styles.row}>
-            <TouchableOpacity 
+            {/* <TouchableOpacity 
                 style={[
                     styles.playButton, 
                     { 
@@ -129,7 +129,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                     size={22} 
                     color={isActionSelected ? '#000' : TRADE_ACTIONS[currentActionIndex]?.color} 
                 />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             
             <View style={[styles.scrollViewContainer, { height: scrollViewHeight }]}>
                 <ScrollView 
@@ -149,13 +149,12 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                         const isInTopSpot = isActionInTopSpot(index);
                         
                         return (
-                            <View key={index} style={styles.tradeLine}>
-                                <TouchableOpacity onPress={() => handleActionTextPress(index)} >
-                                    <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
-                                </TouchableOpacity>
+                            <View key={index} style={[styles.tradeLine, {shadowColor: action.color}]}>
+                                
                                 
                                 {action.hasButtons && action.text === 'COUNTER' && (
                                     <>
+                                        
                                         <TouchableOpacity 
                                             style={[styles.counterMinusButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
                                             onPress={() => PlayAction('remove')}
@@ -202,20 +201,25 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                                         <FontAwesome6 name={'clock'} size={22} color={colors.actions.time} />
                                     </TouchableOpacity>
                                 )}
+                                
+                                <TouchableOpacity onPress={() => handleActionTextPress(index)} >
+                                    <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
+                                </TouchableOpacity>
                             </View>
                         );
                     })}
                 </ScrollView>
             </View>
 
-             {/* <TouchableOpacity 
+             <TouchableOpacity 
                 style={[
                     styles.playButton, 
                     { 
                         backgroundColor: isActionSelected 
                             ? TRADE_ACTIONS[currentActionIndex]?.color 
-                            : colors.ui.background,
+                            : 'transparent',
                         borderColor: TRADE_ACTIONS[currentActionIndex]?.color,
+                        shadowColor: TRADE_ACTIONS[currentActionIndex]?.color,
                     }
                 ]}
                 onPress={() => PlayAction()}
@@ -223,10 +227,10 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
             >
                 <FontAwesome6 
                     name={'arrow-right-long'} 
-                    size={22} 
+                    size={26} 
                     color={isActionSelected ? '#000' : TRADE_ACTIONS[currentActionIndex]?.color} 
                 />
-            </TouchableOpacity> */}
+            </TouchableOpacity>
         </View>
     </View>
     );
@@ -259,7 +263,11 @@ const styles = StyleSheet.create({
         height: 64,
         alignItems: 'center',
         marginBottom: -10,
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-end',
+        // shadowColor: colors.ui.secondary,
+        shadowOffset: { width: 1, height: 1 },
+        shadowOpacity: 0.9,
+        shadowRadius: 3,
     },
     tradeLineText: {
         fontSize: 48,
@@ -271,11 +279,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: 40,
         width: 50,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 2,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 25,
         borderWidth: 3,
+        shadowOffset: { width: 1, height: 1 },
+        shadowOpacity: 0.9,
+        shadowRadius: 3,
     },
     counterMinusButton: {
         justifyContent: 'center',
@@ -283,7 +294,7 @@ const styles = StyleSheet.create({
         height: 40,
         width: 48,
         borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         bottom: 12,
@@ -298,7 +309,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
         borderTopRightRadius: 2,
-        borderBottomRightRadius: 25,
+        borderBottomRightRadius: 2,
         bottom: 12,
         borderWidth: 3,
         borderColor: colors.actions.counter
@@ -309,9 +320,9 @@ const styles = StyleSheet.create({
         height: 40,
         width: 50,
         borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderTopRightRadius: 2,
-        borderBottomRightRadius: 25,
+        borderBottomRightRadius: 2,
         bottom: 12,
         borderWidth: 3,
         borderColor: colors.actions.query
@@ -322,9 +333,9 @@ const styles = StyleSheet.create({
         height: 40,
         width: 50,
         borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderTopRightRadius: 2,
-        borderBottomRightRadius: 25,
+        borderBottomRightRadius: 2,
         bottom: 12,
         borderWidth: 3,
         borderColor: colors.actions.location
@@ -335,9 +346,9 @@ const styles = StyleSheet.create({
         height: 40,
         width: 50,
         borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderTopRightRadius: 2,
-        borderBottomRightRadius: 25,
+        borderBottomRightRadius: 2,
         bottom: 12,
         borderWidth: 3,
         borderColor: colors.actions.time

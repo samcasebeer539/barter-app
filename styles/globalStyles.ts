@@ -13,28 +13,28 @@ export const defaultTextStyle = {
 export const colors = {
   // Trade Action Colors
   actions: {
-    offer: '#1686ff',   
-    trade: '#c62ce5',  
+    offer: '#1686ff',  
+    trade: '#ab57ff',  
     counter: '#ff31dd',  
     query: '#6a50ff',    
     decline: '#ff3232',    
     accept: '#06f52e',     
     location: '#229bff',
-    time: '#fb5c21',
+    time: '#fb4921',
     verify: '#00f3ef'
   },
 
   // Post Type Colors
   cardTypes: {
-    service: '#ff536a',    // Yellow/Orange - Service icon
+    service: '#ff3a86',    // Yellow/Orange - Service icon
     good: '#FFA600',       // Coral/Red - Good icon
   },
 
 
   // UI Element Colors
   ui: {
-    secondary: '#4a4468',     // Secondary button color (purple-grey) 5c5579
-    secondarydisabled: '#908aa7',
+    secondary: '#372788',     // Secondary button color (purple-grey) 5c5579  4a4468
+    secondarydisabled: '#6b5bbe',
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
     background: '#000000',    // Main app background
   },

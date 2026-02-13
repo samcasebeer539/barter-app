@@ -4,6 +4,8 @@ import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../styles/globalStyles';
 import OffersSection from '../components/OffersSection';
+import TradeDeck from '../components/TradeDeck';
+
 
 const POSTS = [
   {
@@ -108,6 +110,8 @@ export default function ActiveTradesTestScreen() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
+
+      
       {activeTrades.map((trade) => (
         <ActiveTrade
           key={trade.id}
@@ -116,7 +120,8 @@ export default function ActiveTradesTestScreen() {
           turns={trade.turns}
         />
       ))}
-      
+
+
       {/* Sent Offers Section */}
       <OffersSection
         title="Sent OFFERS"
@@ -129,6 +134,11 @@ export default function ActiveTradesTestScreen() {
         title="DECLINED / EXPIRED"
         turns={declinedExpiredTurns}
         defaultExpanded={false}
+      />
+      <View style={styles.middleSpacer} />
+      <TradeDeck
+        posts={POSTS}
+     
       />
       
       <View style={styles.bottomSpacer} />
@@ -145,6 +155,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   bottomSpacer: {
-    height: 100,
+    height: 500,
   },
+  middleSpacer: {
+    height: 900, 
+  }
 });

@@ -24,7 +24,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     // Create tripled array for infinite scroll
     const infiniteActions = [...TRADE_ACTIONS, ...TRADE_ACTIONS, ...TRADE_ACTIONS];
     
-    const scrollViewHeight = ITEM_HEIGHT * TRADE_ACTIONS.length - 8;
+    const scrollViewHeight = ITEM_HEIGHT; //ITEM_HEIGHT * TRADE_ACTIONS.length - 8;
     
     const PlayAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
         if (!isActionSelected && !subAction) return;

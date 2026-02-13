@@ -113,6 +113,8 @@ export default function ProfileDeck({
         </TouchableOpacity>
 
         <View style={styles.goodServiceButton}>
+          <Text style={styles.buttonText}>{serviceCount}</Text>
+          <FontAwesome6 name="user-astronaut" size={22} color={colors.cardTypes.user} />
           <Text style={styles.buttonText}>{goodCount}</Text>
           <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
           
@@ -351,7 +353,7 @@ const styles = StyleSheet.create({
   goodServiceButton: {
     
     height: 44,
-    width: 142,
+    width: 180,
     flexDirection: 'row',
     gap: 8,
     borderTopRightRadius: 2,

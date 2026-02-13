@@ -4,7 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
-
+import TradeUI from '../components/TradeUI';
 
 const { width } = Dimensions.get('window');
 
@@ -17,13 +17,12 @@ interface Post {
 
 interface FeedDeckProps {
   posts: Post[];
-  visible: boolean;
-  onClose: () => void;
+
 }
 
-export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
-  const deckTranslateY = useRef(new Animated.Value(-Dimensions.get('window').height)).current;
-  const [showSaved, setShowSaved] = useState(false);
+export default function FeedDeck({ posts}: FeedDeckProps) {
+  
+  
 
   // Count good and service posts
   const { goodCount, serviceCount } = useMemo(() => {
@@ -32,58 +31,29 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     return { goodCount, serviceCount };
   }, [posts]);
 
-  useEffect(() => {
-    if (visible) {
-      deckTranslateY.setValue(-Dimensions.get('window').height);
 
-      Animated.spring(deckTranslateY, {
-        toValue: Dimensions.get('window').height / 8.6,
-        useNativeDriver: true,
-        tension: 50,
-        friction: 8,
-      }).start();
-    }
-  }, [visible]);
 
-  const handleCloseModal = () => {
-    Animated.timing(deckTranslateY, {
-      toValue: -Dimensions.get('window').height,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose();
-    });
-  };
+
 
   const handleOffer = () => {
     console.log('Offer button pressed');
     // Add your offer logic here
   };
-
-  const handleSave = () => {
-    console.log('Save button', showSaved);
-    setShowSaved(prev => !prev);
+  const handleCollapseTurns = () => {
+    console.log('Collapse turn button pressed');
+    // Add your offer logic here
+  };
+  const handlePlayAction = () => {
+    console.log('Collapse turn button pressed');
+    // Add your offer logic here
   };
 
-  if (!visible) return null;
 
   return (
-    <View style={styles.modalOverlay} pointerEvents="box-none">
-      <TouchableOpacity 
-        style={styles.modalBackground} 
-        activeOpacity={1} 
-        onPress={handleCloseModal}
-      />
+ 
+
       <View style={styles.modalContent} pointerEvents="box-none">
-        <Animated.View
-          pointerEvents="auto"
-          style={[
-            styles.animatedContainer,
-            {
-              transform: [{ translateY: deckTranslateY }],
-            },
-          ]}
-        >
+
      
           <View style={styles.column}>
             <View style={styles.goodServiceRow}>
@@ -92,23 +62,18 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
               <View style={styles.goodServiceButton}>
                 <Text style={styles.offerButtonText}>{serviceCount}</Text>
                 <FontAwesome6 name="user-astronaut" size={22} color={colors.cardTypes.user} />
+
                 <Text style={styles.offerButtonText}>{goodCount}</Text>
                 <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
                 
                 <Text style={styles.offerButtonText}>{serviceCount}</Text>
                 <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
               </View>
-              {/* Save button */}
-              <TouchableOpacity 
-                style={styles.saveButton}
-                onPress={handleSave}
-              >
-                <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
-              </TouchableOpacity>
+             
 
               <TouchableOpacity 
                 style={styles.upButton}
-                onPress={handleCloseModal}
+                onPress={handleCollapseTurns}
               >
                 <FontAwesome6 name="chevron-up" size={26} color="#ffffff" />
               </TouchableOpacity>
@@ -125,7 +90,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             </View>
 
             
-            <View style={styles.buttonRow}>
+            {/* <View style={styles.buttonRow}>
               
 
               <TouchableOpacity onPress={handleOffer} >
@@ -134,16 +99,16 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
               <TouchableOpacity 
                 style={styles.playButton}
-                onPress={handleSave}
+                onPress={handlePlayAction}
               >
-                <FontAwesome6 name='arrow-right-long' size={26} color={colors.actions.offer} />
-              </TouchableOpacity>
+                <FontAwesome6 name='arrow-left-long' size={26} color={colors.actions.offer} />
+              </TouchableOpacity>        
+            </View> */}
+            <View style={styles.buttonRow}><TradeUI /></View>
+            
 
-              
-            </View>
           </View>
-        </Animated.View>
-      </View>
+
     </View>
   );
 }
@@ -190,12 +155,12 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 320,
+    width: 370,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: 4,
-    top: 240,
+    top: 244,
     left: 0,
   },
   goodServiceRow: {

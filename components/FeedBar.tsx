@@ -38,7 +38,7 @@ export default function FeedBar({
       <View style={styles.topGradientContainer}>
         <LinearGradient
           colors={['#000000', 'rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0)']}
-          locations={[0, 0.5, 1]}
+          locations={[0, 1, 1]}
           style={styles.topGradient}
         />
       </View>
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     zIndex: 10,
     paddingBottom: 10,
-    paddingTop: 58,
+    paddingTop: 48,
   },
 
   topGradientContainer: {
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 80,
+    height: 40,
     zIndex: 5,
     pointerEvents: 'none',
   },

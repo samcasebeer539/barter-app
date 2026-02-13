@@ -28,6 +28,9 @@ export const colors = {
   cardTypes: {
     service: '#ff3a86',    // Yellow/Orange - Service icon
     good: '#FFA600',       // Coral/Red - Good icon
+    user: '#1686ff', 
+    times: '#FFA600', 
+    locations:'#FFA600', 
   },
 
 

@@ -1,10 +1,11 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useCallback, useState } from 'react';
-import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
+// import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../styles/globalStyles';
 import OffersSection from '../components/OffersSection';
 import TradeDeck from '../components/TradeDeck';
+import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
 
 
 const POSTS = [
@@ -112,14 +113,14 @@ export default function ActiveTradesTestScreen() {
     >
 
       
-      {activeTrades.map((trade) => (
+      {/* {activeTrades.map((trade) => (
         <ActiveTrade
           key={trade.id}
           playercards={trade.playercards}
           partnercards={trade.partnercards}
           turns={trade.turns}
         />
-      ))}
+      ))} */}
 
 
       {/* Sent Offers Section */}

@@ -2,14 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
-import { TURN_DISPLAY, TradeTurnType, getTurnConfig } from '../config/tradeConfig';
+import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
+// Export the TradeTurn interface so other components can import it from here
 export interface TradeTurn {
   type: TradeTurnType;
   user?: string;
   item?: string;
   question?: string;
 }
+
+// Re-export TradeTurnType for convenience
+export type { TradeTurnType };
 
 interface TradeTurnsProps {
   turns: TradeTurn[];
@@ -30,6 +34,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
 }) => {
   const renderLine = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
+    console.log('Turn:', turn.type, 'Config:', config);
     if (!config) return null;
     
     let line = config.template;
@@ -41,7 +46,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
     const arrowIcon = config.isSent ? 'arrow-right-long' : 'arrow-left-long';
 
     return (
-      <View style={styles.turnRow} key={index}>
+      <View style={[styles.turnRow, styles.wireframe]} key={index}>
         <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
         <Text style={styles.tradeText}>
           {parts[0]}
@@ -59,7 +64,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
   };
 
   return (
-    <View style={styles.tradeSection}>
+    <View style={[styles.tradeSection, styles.wireframe]}>
       {turns.map((turn, index) => (
         <React.Fragment key={index}>
           {renderLine(turn, index)}
@@ -68,7 +73,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
       
       {/* Show answer input line when answering */}
       {showAnswerInput && (
-        <View style={styles.turnRow}>
+        <View style={[styles.turnRow, styles.wireframe]}>
           <FontAwesome6 name="arrow-right-long" size={18} color="#E0E0E0" style={styles.arrow} />
           <TextInput
             ref={inputRef}
@@ -114,6 +119,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     ...defaultTextStyle,
     minHeight: 24,
+  },
+  wireframe: {
+    borderWidth: 2,
+    borderColor: '#FF0000',
+    borderStyle: 'solid',
   },
 });
 

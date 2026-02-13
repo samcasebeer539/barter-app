@@ -5,8 +5,16 @@ import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
 import TradeUI from '../components/TradeUI';
+import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
 
 const { width } = Dimensions.get('window');
+
+const trade1Turns: TradeTurn[] = [
+  { type: 'sentOffer', item: 'Fantasy Books' },
+  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Bike Repair' },
+  { type: 'sentCounteroffer' },
+  { type: 'theyAccepted', user: 'Jay Wilson' },
+];
 
 interface Post {
   type: 'good' | 'service';
@@ -47,6 +55,7 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
     console.log('Collapse turn button pressed');
     // Add your offer logic here
   };
+  
 
 
   return (
@@ -105,6 +114,7 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
               </TouchableOpacity>        
             </View> */}
             <View style={styles.buttonRow}><TradeUI /></View>
+            <View style={styles.turns}><TradeTurns turns={trade1Turns} /></View>
             
 
           </View>
@@ -162,6 +172,17 @@ const styles = StyleSheet.create({
     gap: 4,
     top: 244,
     left: 0,
+  },
+  turns: {
+     width: 370,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Changed from flex-end
+    gap: 4,
+    top: 244,
+    left: 0, // Changed from -200
+    zIndex: 10,
+    backgroundColor: 'rgba(255,0,0,0.3)',
   },
   goodServiceRow: {
     width: 320,

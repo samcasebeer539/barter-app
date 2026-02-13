@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
-import { getTurnConfig } from '../config/tradeConfig';
+import { TURN_DISPLAY, TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
 export interface TradeTurn {
-  type: string;
+  type: TradeTurnType;
   user?: string;
   item?: string;
   question?: string;

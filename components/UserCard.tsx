@@ -6,6 +6,8 @@ import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'rea
 import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import ProfilePicture from './ProfilePicture';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
+import { useRouter } from 'expo-router';
+import { processColorsInProps } from 'react-native-reanimated/lib/typescript/Colors';
 
 interface Tag {
   text: string;
@@ -32,10 +34,15 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuPress }) => {
+  const router = useRouter();
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
+
+  const handleSettingsPress = () => {
+    router.push('/settings');
+  };
 
   // Tag color mapping
   const getTagColors = (color: string) => {
@@ -50,14 +57,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
   return (
     <View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-        {/* Three Dots Menu Icon */}
-        <TouchableOpacity 
-          style={styles.menuButton}
-          onPress={onMenuPress}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <MaterialIcons name="more-vert" size={24} color="#666" />
-        </TouchableOpacity>
+        
 
         {/* Top Row: Profile Picture (left) and Stats (right) */}
         <View style={styles.imageContainer}>
@@ -71,7 +71,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
         <View style={styles.infoContainer}>
           <Text style={styles.name} numberOfLines={1}>{user.name}<Text style={styles.pronouns}> {user.pronouns}</Text></Text>
           <View style={styles.locationRow}>
-            <MaterialIcons name="location-on" size={12} color="#999" />
+            <FontAwesome6 name="location-dot" size={14} color={colors.ui.secondarydisabled}/>
             <Text style={styles.location}>{user.location}</Text>
           </View>
         </View>
@@ -82,6 +82,25 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
             {user.bio}
           </Text>
         </View>
+
+        <TouchableOpacity 
+            style={styles.settingsButton}
+            onPress={handleSettingsPress}
+        >
+            <FontAwesome6 name="gear" size={28} color={colors.ui.background} />
+        </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.blockButton}
+            onPress={handleSettingsPress}
+        >
+            <FontAwesome6 name="ban" size={28} color={colors.ui.background} />
+        </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.reportButton}
+            onPress={handleSettingsPress}
+        >
+            <FontAwesome6 name="circle-exclamation" size={28} color={colors.ui.background} />
+        </TouchableOpacity>
 
        
       </View>
@@ -107,7 +126,7 @@ const styles = StyleSheet.create({
     elevation: 10,
     position: 'relative',
     paddingTop: 30,
-    paddingHorizontal: 30,
+    paddingHorizontal: 16,
     paddingBottom: 16,
     
     borderWidth: 0,
@@ -117,13 +136,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'flex-start'
   },
-  menuButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    zIndex: 10,
-    padding: 4,
-  },
+
   topRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
@@ -156,8 +169,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   location: {
-    fontSize: 14,
-    color: '#000000',
+    fontSize: 16,
+    color: colors.ui.secondarydisabled,
     fontFamily: globalFonts.regular,
   },
   bioContainer: {
@@ -196,6 +209,30 @@ const styles = StyleSheet.create({
   imageContainer: {
     alignItems: 'center',
     marginBottom: 16,
+  },
+  settingsButton: {
+   
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    zIndex: 10,
+    padding: 4,
+  },
+  blockButton: {
+   
+    position: 'absolute',
+    bottom: 8,
+    left: 40,
+    zIndex: 10,
+    padding: 4,
+  },
+  reportButton: {
+   
+    position: 'absolute',
+    bottom: 8,
+    left: 72,
+    zIndex: 10,
+    padding: 4,
   },
 });
 

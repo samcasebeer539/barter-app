@@ -91,26 +91,31 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
              
               <View style={styles.goodServiceButton}>
                 <Text style={styles.offerButtonText}>{serviceCount}</Text>
-                <FontAwesome6 name="user-astronaut" size={22} color={colors.cardTypes.user} />
-                <Text style={styles.offerButtonText}>{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
+                <FontAwesome6 name="user-astronaut" size={18} color={colors.cardTypes.user} />
+                <Text style={styles.offerButtonText}> {goodCount}</Text>
+                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
                 
-                <Text style={styles.offerButtonText}>{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
+                <Text style={styles.offerButtonText}> {serviceCount}</Text>
+                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
               </View>
               {/* Save button */}
               <TouchableOpacity 
-                style={styles.saveButton}
+                
+                style={[
+                  styles.saveButton, 
+                  {backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
+                ]} 
                 onPress={handleSave}
               >
-                <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
+                <Icon name='bookmark' size={22} color={showSaved ? colors.actions.offer : '#000'} />
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.upButton}
+                
                 onPress={handleCloseModal}
               >
-                <FontAwesome6 name="chevron-up" size={26} color="#ffffff" />
+                <FontAwesome6 name="angle-up" size={26} color={colors.actions.offer} />
               </TouchableOpacity>
 
               
@@ -136,7 +141,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 style={styles.playButton}
                 onPress={handleSave}
               >
-                <FontAwesome6 name='arrow-right-long' size={26} color={colors.actions.offer} />
+                <FontAwesome6 name='arrow-left-long' size={26} color={colors.actions.offer} />
               </TouchableOpacity>
 
               
@@ -190,7 +195,7 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 320,
+    width: 334,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -199,7 +204,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   goodServiceRow: {
-    width: 320,
+    width: 334,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
@@ -208,31 +213,39 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   upButton: {
-    width: 54,
+    width: 50,
     height: 44,
     
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
+    borderWidth: 3,
+    borderColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.actions.offer,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.9,
+    shadowRadius: 3,
     
    
   },
   saveButton: {
-    width: 54,
+    width: 50,
     height: 44,
     
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
+    borderRadius: 2,
+    borderWidth: 3,
+    borderColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.actions.offer,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.9,
+    shadowRadius: 3,
     
+   
   },
   playButton: {
     
@@ -276,9 +289,9 @@ const styles = StyleSheet.create({
   goodServiceButton: {
     
     height: 44,
-    width: 180,
+    width: 160,
     flexDirection: 'row',
-    gap: 8,
+    gap: 4,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 25,
@@ -286,7 +299,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     marginLeft: 'auto',
     
   },

@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
-import Icon from 'react-native-vector-icons/FontAwesome';
+
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
 import TradeUI from '../components/TradeUI';
 import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
@@ -10,10 +10,11 @@ import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
 const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'sentOffer', item: 'Fantasy Books' },
-  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Bike Repair' },
-  { type: 'sentCounteroffer' },
-  { type: 'theyAccepted', user: 'Jay Wilson' },
+  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
+  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
+  { type: 'turnCounter', isUser: true  },
+  { type: 'turnAccept', user: 'Jay Wilson', isUser: false  },
+  
 ];
 
 interface Post {
@@ -31,7 +32,7 @@ interface FeedDeckProps {
 export default function FeedDeck({ posts}: FeedDeckProps) {
   
   
-
+  const [isExpanded, setIsExpanded] = useState(true);
   // Count good and service posts
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
@@ -70,21 +71,24 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
              
               <View style={styles.goodServiceButton}>
                 <Text style={styles.offerButtonText}>{serviceCount}</Text>
-                <FontAwesome6 name="user-astronaut" size={22} color={colors.cardTypes.user} />
+                <FontAwesome6 name="user-astronaut" size={18} color={colors.cardTypes.user} />
 
-                <Text style={styles.offerButtonText}>{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
+                <Text style={styles.offerButtonText}> {goodCount}</Text>
+                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
                 
-                <Text style={styles.offerButtonText}>{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
+                <Text style={styles.offerButtonText}> {serviceCount}</Text>
+                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
               </View>
              
 
               <TouchableOpacity 
-                style={styles.upButton}
-                onPress={handleCollapseTurns}
+                style={[
+                  styles.upButton, 
+                  {backgroundColor: isExpanded ? 'transparent' : colors.actions.accept }
+                ]}
+                onPress={() => setIsExpanded(!isExpanded)}
               >
-                <FontAwesome6 name="chevron-up" size={26} color="#ffffff" />
+              <FontAwesome6 name={isExpanded ? "angle-up" : "angle-down"} size={26} color={isExpanded ? colors.actions.accept : '#000' } />
               </TouchableOpacity>
 
               
@@ -97,25 +101,14 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
                 enabled={true}
               />
             </View>
-
             
-            {/* <View style={styles.buttonRow}>
-              
-
-              <TouchableOpacity onPress={handleOffer} >
-                  <Text style={styles.offerText}>OFFER</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.playButton}
-                onPress={handlePlayAction}
-              >
-                <FontAwesome6 name='arrow-left-long' size={26} color={colors.actions.offer} />
-              </TouchableOpacity>        
-            </View> */}
-            <View style={styles.buttonRow}><TradeUI /></View>
-            <View style={styles.turns}><TradeTurns turns={trade1Turns} /></View>
-            
+          
+            <View style={styles.turnsAndButtonRow}>
+              {isExpanded && (
+                <TradeTurns turns={trade1Turns} />
+              )}
+                <TradeUI />
+            </View>
 
           </View>
 
@@ -164,28 +157,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     left: -12,
   },
-  buttonRow: {
-    width: 370,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 4,
-    top: 244,
-    left: 0,
-  },
-  turns: {
-     width: 370,
-    flexDirection: 'row',
+
+  turnsAndButtonRow: {
+    width: 338,
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from flex-end
-    gap: 4,
-    top: 244,
+    
+    top: 252,
     left: 0, // Changed from -200
     zIndex: 10,
-    backgroundColor: 'rgba(255,0,0,0.3)',
+    
   },
   goodServiceRow: {
-    width: 320,
+    width: 338,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
@@ -194,18 +179,21 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   upButton: {
-    width: 54,
+    width: 50,
     height: 44,
-    
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
+    
     justifyContent: 'center',
     alignItems: 'center',
-    
-   
+    shadowColor: colors.actions.accept,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.9,
+    shadowRadius: 3,
+    borderWidth: 3,
+    borderColor: colors.actions.accept
   },
   saveButton: {
     width: 54,
@@ -262,9 +250,9 @@ const styles = StyleSheet.create({
   goodServiceButton: {
     
     height: 44,
-    width: 180,
+    width: 160,
     flexDirection: 'row',
-    gap: 8,
+    gap: 4,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 25,
@@ -272,7 +260,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     marginLeft: 'auto',
     
   },

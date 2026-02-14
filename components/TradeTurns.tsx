@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ImageBackgroundComponent } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
@@ -10,6 +10,7 @@ export interface TradeTurn {
   user?: string;
   item?: string;
   question?: string;
+  isUser?: boolean;
 }
 
 // Re-export TradeTurnType for convenience
@@ -34,51 +35,96 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
 }) => {
   const renderLine = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
-    console.log('Turn:', turn.type, 'Config:', config);
-    if (!config) return null;
     
-    let line = config.template;
-    if (turn.user) line = line.replace('{user}', turn.user);
-    if (turn.item) line = line.replace('{item}', turn.item);
-    if (turn.question) line = line.replace('{question}', turn.question);
+    if (!config) {
+      console.error('No config found for turn type:', turn.type);
+      return null; // Return null instead of error message for cleaner UI
+    }
     
-    const parts = line.split('{action}');
-    const arrowIcon = config.isSent ? 'arrow-right-long' : 'arrow-left-long';
-
+    // Choose the correct template based on whether it's the user's turn or partner's
+    let line = turn.isUser ? config.templateUser : config.templatePartner;
+    
+    // Only replace placeholders if they exist in the template
+    if (turn.user && line.includes('{user}')) {
+      line = line.replace('{user}', turn.user);
+    }
+    if (turn.item && line.includes('{item}')) {
+      line = line.replace('{item}', turn.item);
+    }
+    if (turn.question && line.includes('{question}')) {
+      line = line.replace('{question}', turn.question);
+    }
+    
+    const arrowIcon = turn.isUser ? 'arrow-left-long' : 'arrow-right-long';
+    const hasActionPlaceholder = line.includes('{action}');
+    const turnRowStyle = turn.isUser ? styles.turnRowUser : styles.turnRowPartner;
+    
+    const textContent = (
+      <Text style={[styles.tradeText, turn.isUser && styles.textAlignRight]}>
+        {hasActionPlaceholder ? (
+          (() => {
+            const parts = line.split('{action}');
+            return (
+              <>
+                {parts[0]}
+                <Text style={config.colorStyle}>{config.actionText}</Text>
+                {parts[1] || ''}
+              </>
+            );
+          })()
+        ) : (
+          line
+        )}
+        {turn.type === 'turnQuery' && turn.question && (
+          <>
+            {'\n'}
+            <Text style={styles.questionText}>       {turn.question}</Text>
+          </>
+        )}
+      </Text>
+    );
+    
+    const arrowElement = (
+      <FontAwesome6 name={arrowIcon} size={26} color="#000" style={styles.arrow} />
+    );
+    
     return (
-      <View style={[styles.turnRow, styles.wireframe]} key={index}>
-        <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
-        <Text style={styles.tradeText}>
-          {parts[0]}
-          <Text style={config.colorStyle}>{config.actionText}</Text>
-          {parts[1]}
-          {turn.type === 'receivedQuestion' && turn.question && (
-            <>
-              {'\n'}
-              <Text style={{ color: '#ffffff', fontFamily: globalFonts.regular }}>       {turn.question}</Text>
-            </>
-          )}
-        </Text>
+      <View 
+        style={[
+          turnRowStyle,
+          { 
+            borderColor: config.colorStyle.color,
+            shadowColor: config.colorStyle.color,
+            backgroundColor: config.colorStyle.color,
+          }
+        ]} 
+        key={index}
+      >
+        {turn.isUser ? (
+          <>
+            {textContent}
+            {arrowElement}
+          </>
+        ) : (
+          <>
+            {arrowElement}
+            {textContent}
+          </>
+        )}
       </View>
     );
   };
 
   return (
-    <View style={[styles.tradeSection, styles.wireframe]}>
-      {turns.map((turn, index) => (
-        <React.Fragment key={index}>
-          {renderLine(turn, index)}
-        </React.Fragment>
-      ))}
+    <View style={styles.tradeSection}>
+      {turns.map((turn, index) => renderLine(turn, index))}
       
-      {/* Show answer input line when answering */}
       {showAnswerInput && (
-        <View style={[styles.turnRow, styles.wireframe]}>
-          <FontAwesome6 name="arrow-right-long" size={18} color="#E0E0E0" style={styles.arrow} />
+        <View style={styles.turnRowUser}>
           <TextInput
             ref={inputRef}
             style={styles.answerTextInput}
-            placeholder="A: Type your answer here..."
+            placeholder="Type your answer..."
             placeholderTextColor="#888"
             value={answerText}
             onChangeText={onAnswerTextChange}
@@ -87,6 +133,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             onSubmitEditing={onSubmitEditing}
             blurOnSubmit={true}
           />
+          <FontAwesome6 name="arrow-left-long" size={18} color="#E0E0E0" style={styles.arrow} />
         </View>
       )}
     </View>
@@ -96,21 +143,62 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
 const styles = StyleSheet.create({
   tradeSection: {
     gap: -4,
+    width: '100%',
   },
-  turnRow: {
+  turnRowUser: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: 6,
+    width: '100%',
+    paddingHorizontal: 8,
+    minHeight: 30, // Changed to minHeight for multiline support
+    paddingVertical: 0,
+    marginTop: 4,
+    borderWidth: 3,
+    borderTopLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 2,
+    shadowOffset: { width: 1, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 2,
+    
+  },
+  turnRowPartner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    width: '100%',
+    paddingHorizontal: 8,
+    minHeight: 30, // Changed to minHeight for multiline support
+    paddingVertical: 0,
+    marginTop: 4,
+    borderWidth: 3,
+    borderTopLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 25,
+    shadowOffset: { width: 1, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 2,
   },
   arrow: {
-    marginTop: 4,
+    marginTop: -2
+  
   },
   tradeText: {
     flex: 1,
     fontSize: 16,
-    color: '#ffffff',
+    color: '#000',
     lineHeight: 22,
-    ...defaultTextStyle
+    fontFamily: globalFonts.bold,
+  },
+  textAlignRight: {
+    textAlign: 'right',
+  },
+  questionText: {
+    color: '#ffffff',
+    fontFamily: globalFonts.regular,
   },
   answerTextInput: {
     flex: 1,
@@ -119,11 +207,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     ...defaultTextStyle,
     minHeight: 24,
-  },
-  wireframe: {
-    borderWidth: 2,
-    borderColor: '#FF0000',
-    borderStyle: 'solid',
+    textAlign: 'right', // Align answer input right like user messages
   },
 });
 

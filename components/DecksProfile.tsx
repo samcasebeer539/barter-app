@@ -6,6 +6,15 @@ import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 
+import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
+
+const trade1Turns: TradeTurn[] = [
+  { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false  },
+
+  
+];
+
+
 const { width } = Dimensions.get('window');
 
 interface Post {
@@ -93,7 +102,7 @@ export default function ProfileDeck({
   };
 
   // Calculate slide distance
-  const slideDistance = 566;
+  const slideDistance = 600;
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, slideDistance],
@@ -105,33 +114,36 @@ export default function ProfileDeck({
     <View style={styles.container} pointerEvents="box-none">
       {/* Top controls row */}
       <View style={styles.goodServiceRow}>
-        <TouchableOpacity 
-            style={styles.settingsButton}
-            onPress={handleSettingsPress}
-        >
-            <FontAwesome6 name="gear" size={22} color="#fff" />
-        </TouchableOpacity>
+        
 
-        <View style={styles.goodServiceButton}>
-          <Text style={styles.buttonText}>{serviceCount}</Text>
-          <FontAwesome6 name="user-astronaut" size={22} color={colors.cardTypes.user} />
-          <Text style={styles.buttonText}>{goodCount}</Text>
-          <FontAwesome6 name="gifts" size={22} color={colors.cardTypes.good} />
+        <View style={[
+          styles.goodServiceButton, 
+            {borderBottomLeftRadius: isDeckRevealed ? 2 : 25 }]}>
+
+          <Text style={styles.buttonText}>1/2</Text>
+          <FontAwesome6 name="user-astronaut" size={18} color={colors.cardTypes.user} />
+          <Text style={styles.buttonText}>:  0{goodCount}</Text>
+          <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
           
-          <Text style={styles.buttonText}>{serviceCount}</Text>
-          <FontAwesome6 name="hand-sparkles" size={22} color={colors.cardTypes.service} />
+          <Text style={styles.buttonText}> 0{serviceCount}</Text>
+          <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+
         </View>
         
         {/* Toggle reveal button */}
         <TouchableOpacity 
-          style={styles.toggleButton}
+          
+          style={[
+            styles.toggleButton, 
+            {backgroundColor: isDeckRevealed ? 'transparent' : colors.actions.trade, borderBottomRightRadius: isDeckRevealed ? 2 : 2 }
+          ]} 
           onPress={handleToggleReveal}
           disabled={!toggleEnabled}
         >
           <FontAwesome6 
-            name={isDeckRevealed ? "chevron-up" : "chevron-down"} 
+            name={isDeckRevealed ? "angle-up" : "angle-down"} 
             size={26} 
-            color={isDeckRevealed ? '#fff' : colors.actions.trade} 
+            color={isDeckRevealed ? colors.actions.trade : '#000'} 
           />
         </TouchableOpacity>
       </View>
@@ -157,29 +169,34 @@ export default function ProfileDeck({
               />
             </View>
 
-            {/* Secondary button row */}
-            <View style={styles.secondaryButtonRow}>
-              <TouchableOpacity 
-                style={styles.selectButton}
-                onPress={handleSecondaryMinus}
-              >
-                <Icon name="circle-o" size={22} color={colors.actions.trade} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity onPress={handleSecondaryTrade}>
-                <Text style={styles.tradeText}>TRADE</Text>
-              </TouchableOpacity>
+            {/* always just one line - offer */}
+            <View style={styles.turnsAndButtonRow}>
+              <TradeTurns turns={trade1Turns} />
+              <View style={styles.secondaryButtonRow}>
+                
 
-              <TouchableOpacity 
-                style={styles.playButton}
-                onPress={handleSecondaryPlus}
-              >
-                <FontAwesome6 name="arrow-right-long" size={26} color="#000" />
-              </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.selectButton}
+                  onPress={handleSecondaryMinus}
+                >
+                  <Icon name="circle-o" size={22} color={colors.actions.trade} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity onPress={handleSecondaryTrade}>
+                  <Text style={styles.tradeText}>TRADE</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.playButton}
+                  onPress={handleSecondaryPlus}
+                >
+                  <FontAwesome6 name="arrow-left-long" size={26} color="#000" />
+                </TouchableOpacity>
 
 
-              
+                
 
+              </View>
             </View>
           </View>
         )}
@@ -209,6 +226,15 @@ export default function ProfileDeck({
 
           {/* Primary button row */}
           <View style={styles.buttonRow}>
+            
+
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handlePlus}
+            >
+              <FontAwesome6 name="plus" size={24} color="#fff" />
+            </TouchableOpacity>
+
             <TouchableOpacity 
               style={styles.editButton}
               onPress={handlePlus}
@@ -220,20 +246,24 @@ export default function ProfileDeck({
               style={styles.sendForwardButton}
               onPress={handlePlus}
             >
-              <FontAwesome6 name="square-caret-up" size={24} color="#fff" />
+              <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
+              
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.sendBackButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="square-caret-down" size={24} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
+
+            
+            
+           
+            
+            
+            <View style={styles.mygoodServiceButton}>
+              <Text style={styles.buttonText}>0{goodCount}</Text>
+              <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
+              
+              <Text style={styles.buttonText}> 0{serviceCount}</Text>
+              <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+            </View>
+
+
           </View>
         </Animated.View>
 
@@ -250,7 +280,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingHorizontal: 0,
     alignItems: 'center',
-    bottom: 400,
+    bottom: 408,
     overflow: 'visible',
   },
   decksContainer: {
@@ -288,7 +318,7 @@ const styles = StyleSheet.create({
     left: -12,
   },
   buttonRow: {
-    width: 320,
+    width: 334,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -297,21 +327,22 @@ const styles = StyleSheet.create({
     left: 0,
   },
   secondaryButtonRow: {
-    width: 320,
+    width: 338,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
     gap: 4,
-    top: 249,
+    top: -12,
     left: 0,
     shadowColor: colors.actions.trade,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.9,
     shadowRadius: 3,
     elevation: 10,
+    zIndex: 10,
   },
   goodServiceRow: {
-    width: 320,
+    width: 334,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
@@ -339,32 +370,66 @@ const styles = StyleSheet.create({
     
   },
   toggleButton: {
-    width: 54,
+    width: 50,
     height: 44,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
+    
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: colors.actions.trade,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.9,
+    shadowRadius: 3,
+    borderWidth: 3,
+    borderColor: colors.actions.trade
+
   },
   
   goodServiceButton: {
     
+      
     height: 44,
-    width: 180,
+    // width: 160,
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 4,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    marginLeft: 'auto'
+    paddingLeft: 18,
+    paddingRight: 10,
+    paddingVertical: 10,
+    marginLeft: 'auto',
+    
+  },
+  mygoodServiceButton: {
+    
+      
+    height: 44,
+    // width: 160,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingLeft: 10,
+    paddingRight: 14,
+    paddingVertical: 10,
+    
+    
   },
   buttonText: {
     color: '#ffffff',
@@ -372,12 +437,12 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold,
   },
   selectButton: {
-    width: 54,
+    width: 50,
     height: 40,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderWidth: 3,
     borderColor: colors.actions.trade,
     justifyContent: 'center',
@@ -386,18 +451,7 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-    width: 54,
-    height: 44,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendForwardButton: {
-    width: 54,
+    width: 50,
     height: 44,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
@@ -406,9 +460,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
+    
+  },
+  sendForwardButton: {
+    width: 50,
+    height: 44,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 0,
   },
   sendBackButton: {
-    width: 54,
+    width: 50,
     height: 44,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
@@ -419,25 +487,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addButton: {
-    width: 54,
+    width: 50,
     height: 44,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   settingsButton: {
-    width: 54,
+    width: 50,
     height: 44,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  turnsAndButtonRow: {
+    width: 338,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Changed from flex-end
+    
+    top: 261,
+    left: 0, // Changed from -200
+    zIndex: 10,
+    
   },
 });

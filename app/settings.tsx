@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { colors } from '../styles/globalStyles';
 
@@ -25,7 +25,7 @@ export default function SettingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
+          <FontAwesome6 name="arrow-left" size={22} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.placeholder} />
@@ -38,26 +38,26 @@ export default function SettingsScreen() {
           
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="person" size={24} color="#fff" />
+              <FontAwesome6 name="user" size={22} color="#fff" />
               <Text style={styles.settingText}>Edit Profile</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <FontAwesome6 name="chevron-right" size={22} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="lock" size={24} color="#fff" />
+              <FontAwesome6 name="lock" size={22} color="#fff" />
               <Text style={styles.settingText}>Privacy</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <FontAwesome6 name="chevron-right" size={22} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="security" size={24} color="#fff" />
+              <FontAwesome6 name="shield-halved" size={22} color="#fff" />
               <Text style={styles.settingText}>Security</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <FontAwesome6 name="chevron-right" size={22} color="#666" />
           </TouchableOpacity>
         </View>
 
@@ -67,7 +67,7 @@ export default function SettingsScreen() {
           
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="notifications" size={24} color="#fff" />
+              <FontAwesome6 name="bell" size={22} color="#fff" />
               <Text style={styles.settingText}>Notifications</Text>
             </View>
             <Switch
@@ -80,7 +80,7 @@ export default function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="location-on" size={24} color="#fff" />
+              <FontAwesome6 name="location-dot" size={22} color="#fff" />
               <Text style={styles.settingText}>Location Services</Text>
             </View>
             <Switch
@@ -93,12 +93,12 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="language" size={24} color="#fff" />
+              <FontAwesome6 name="language" size={22} color="#fff" />
               <Text style={styles.settingText}>Language</Text>
             </View>
             <View style={styles.settingRight}>
               <Text style={styles.settingValue}>English</Text>
-              <MaterialIcons name="chevron-right" size={24} color="#666" />
+              <FontAwesome6 name="chevron-right" size={22} color="#666" />
             </View>
           </TouchableOpacity>
         </View>
@@ -109,32 +109,32 @@ export default function SettingsScreen() {
           
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="help" size={24} color="#fff" />
+              <FontAwesome6 name="circle-question" size={22} color="#fff" />
               <Text style={styles.settingText}>Help Center</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <FontAwesome6 name="chevron-right" size={22} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="info" size={24} color="#fff" />
+              <FontAwesome6 name="circle-info" size={22} color="#fff" />
               <Text style={styles.settingText}>About</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <FontAwesome6 name="chevron-right" size={22} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <MaterialIcons name="gavel" size={24} color="#fff" />
+              <FontAwesome6 name="gavel" size={22} color="#fff" />
               <Text style={styles.settingText}>Terms & Conditions</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <FontAwesome6 name="chevron-right" size={22} color="#666" />
           </TouchableOpacity>
         </View>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton}>
-          <MaterialIcons name="logout" size={24} color={colors.actions.decline} />
+          <FontAwesome6 name="right-from-bracket" size={22} color={colors.actions.decline} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    marginTop: 24,
+    marginTop: 22,
     paddingHorizontal: 20,
   },
   sectionTitle: {
@@ -188,9 +188,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2a2a2a',
+    paddingVertical: 8,
+
   },
   settingLeft: {
     flexDirection: 'row',

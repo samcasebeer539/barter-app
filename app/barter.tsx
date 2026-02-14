@@ -45,35 +45,35 @@ const POSTS = [
 ];
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'sentOffer', item: 'Fantasy Books' },
-  { type: 'receivedTrade', user: 'Jay Wilson', item: 'Bike Repair' },
-  { type: 'sentCounteroffer' },
-  { type: 'theyAccepted', user: 'Jay Wilson' },
+  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
+  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
+  { type: 'turnCounter', isUser: true  },
+  { type: 'turnAccept', user: 'Jay Wilson', isUser: false  },
 ];
 
 const trade2Turns: TradeTurn[] = [
-  { type: 'sentOffer', item: 'Guitar Lessons' },
-  { type: 'receivedTrade', user: 'Sarah', item: 'Bike Repair' },
-  { type: 'youAccepted' },
+  { type: 'turnOffer', item: 'Guitar Lessons', isUser: true  },
+  { type: 'turnTrade', user: 'Sarah', item: 'Bike Repair', isUser: false  },
+  { type: 'turnAccept', isUser: true},
 ];
 
 const trade3Turns: TradeTurn[] = [
-  { type: 'sentOffer', item: 'Camera Equipment' },
-  { type: 'receivedTrade', user: 'Mike', item: 'Photography Course' },
-  { type: 'receivedQuestion', user: 'Jay', question: 'Is the Charizard in good condition?' },
+  { type: 'turnOffer', item: 'Camera Equipment', isUser: true  },
+  { type: 'turnTrade', user: 'Mike', item: 'Photography Course', isUser: false  },
+  { type: 'turnQuery', user: 'Jay', question: 'Is the Charizard in good condition?', isUser: false  },
 ];
 
 // Sent offers data
 const sentOfferTurns: TradeTurn[] = [
-  { type: 'sentOffer', item: 'Vintage Books' },
-  { type: 'sentOffer', item: 'Pokemon Cards' },
-  { type: 'sentOffer', item: 'Rare Stamps' },
+  { type: 'turnOffer', item: 'Vintage Books', isUser: true  },
+  { type: 'turnOffer', item: 'Pokemon Cards', isUser: true  },
+  { type: 'turnOffer', item: 'Rare Stamps', isUser: true  },
 ];
 
 // Declined/Expired offers data
 const declinedExpiredTurns: TradeTurn[] = [
-  { type: 'sentDecline', item: 'Mountain Bike' },
-  { type: 'sentDecline', item: 'Art Supplies' },
+  { type: 'turnDecline', user: 'Jay', item: 'Mountain Bike', isUser: false  },
+  { type: 'turnDecline', user: 'Jay', item: 'Art Supplies', isUser: false  },
 ];
 
 const activeTrades = [
@@ -121,7 +121,13 @@ export default function ActiveTradesTestScreen() {
           turns={trade.turns}
         />
       ))} */}
+      <View style={styles.middleSpacer} />
+      <TradeDeck
+        posts={POSTS}
+     
+      />
 
+      
 
       {/* Sent Offers Section */}
       <OffersSection
@@ -136,11 +142,7 @@ export default function ActiveTradesTestScreen() {
         turns={declinedExpiredTurns}
         defaultExpanded={false}
       />
-      <View style={styles.middleSpacer} />
-      <TradeDeck
-        posts={POSTS}
      
-      />
       
       <View style={styles.bottomSpacer} />
     </ScrollView>
@@ -159,6 +161,6 @@ const styles = StyleSheet.create({
     height: 500,
   },
   middleSpacer: {
-    height: 900, 
+    height: 670, 
   }
 });

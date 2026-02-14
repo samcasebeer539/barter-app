@@ -8,7 +8,7 @@ import { colors } from '@/styles/globalStyles';
 
 function TabBarBackground() {
   return (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', top: 32}]} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', top: 38}]} />
   );
 }
 

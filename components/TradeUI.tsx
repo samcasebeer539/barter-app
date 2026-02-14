@@ -16,6 +16,9 @@ interface TradeUIProps {
 
 const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     const ITEM_HEIGHT = 54;
+    const INITIAL_SCROLL_DELAY = 100;
+    const SCROLL_THRESHOLD = 2; // Items from edge before we loop
+    
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
@@ -23,15 +26,15 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     
     // Create tripled array for infinite scroll
     const infiniteActions = [...TRADE_ACTIONS, ...TRADE_ACTIONS, ...TRADE_ACTIONS];
+    const scrollViewHeight = ITEM_HEIGHT - 8;
     
-    const scrollViewHeight = ITEM_HEIGHT; //ITEM_HEIGHT * TRADE_ACTIONS.length - 8;
+    const currentAction = TRADE_ACTIONS[currentActionIndex];
     
     const PlayAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
         if (!isActionSelected && !subAction) return;
         
-        const action = TRADE_ACTIONS[currentActionIndex];
         const tradeAction: TradeAction = {
-            actionType: action.actionType,
+            actionType: currentAction.actionType,
             subAction: subAction
         };
         
@@ -47,15 +50,22 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     };
     
     const isActionInTopSpot = (index: number) => {
-        const actualIndex = index % TRADE_ACTIONS.length;
-        return actualIndex === currentActionIndex;
+        return index % TRADE_ACTIONS.length === currentActionIndex;
+    };
+    
+    const calculateItemIndex = (offsetY: number): number => {
+        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % TRADE_ACTIONS.length;
+        return itemIndex < 0 ? (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length : itemIndex;
     };
     
     useEffect(() => {
         setTimeout(() => {
-            scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * TRADE_ACTIONS.length, animated: false });
+            scrollViewRef.current?.scrollTo({ 
+                y: ITEM_HEIGHT * TRADE_ACTIONS.length, 
+                animated: false 
+            });
             setCurrentActionIndex(0);
-        }, 100);
+        }, INITIAL_SCROLL_DELAY);
     }, []);
     
     const handleScrollBeginDrag = () => {
@@ -65,17 +75,12 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const offsetY = event.nativeEvent.contentOffset.y;
-        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % TRADE_ACTIONS.length;
-        
-        if (itemIndex < 0) {
-            itemIndex = (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length;
-        }
+        const itemIndex = calculateItemIndex(offsetY);
         
         if (itemIndex !== currentActionIndex) {
             setIsActionSelected(false);
+            setCurrentActionIndex(itemIndex);
         }
-        
-        setCurrentActionIndex(itemIndex);
     };
     
     const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -84,155 +89,142 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
         const offsetY = event.nativeEvent.contentOffset.y;
         const contentHeight = ITEM_HEIGHT * TRADE_ACTIONS.length;
         
-        if (offsetY < ITEM_HEIGHT * 2) {
+        // Near the top - loop to middle section
+        if (offsetY < ITEM_HEIGHT * SCROLL_THRESHOLD) {
             const newOffset = offsetY + contentHeight;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
-            
-            let itemIndex = Math.round(newOffset / ITEM_HEIGHT) % TRADE_ACTIONS.length;
-            if (itemIndex < 0) {
-                itemIndex = (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length;
-            }
-            setCurrentActionIndex(itemIndex);
+            setCurrentActionIndex(calculateItemIndex(newOffset));
         }
-        else if (offsetY >= contentHeight * 2 - ITEM_HEIGHT * 2) {
+        // Near the bottom - loop to middle section
+        else if (offsetY >= contentHeight * 2 - ITEM_HEIGHT * SCROLL_THRESHOLD) {
             const newOffset = offsetY - contentHeight;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
-            
-            let itemIndex = Math.round(newOffset / ITEM_HEIGHT) % TRADE_ACTIONS.length;
-            if (itemIndex < 0) {
-                itemIndex = (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length;
-            }
-            setCurrentActionIndex(itemIndex);
+            setCurrentActionIndex(calculateItemIndex(newOffset));
         }
         
         isScrollingRef.current = false;
     };
     
+    const renderActionButton = (action: typeof TRADE_ACTIONS[0], isInTopSpot: boolean) => {
+        if (!action.hasButtons) return null;
+        
+        const buttonProps = {
+            opacity: isInTopSpot ? 1 : 0.3,
+            disabled: !isInTopSpot,
+        };
+        
+        switch (action.text) {
+            case 'COUNTER':
+                return (
+                    <>
+                        <TouchableOpacity 
+                            style={[styles.actionButton, styles.counterMinusButton, { opacity: buttonProps.opacity }]}
+                            onPress={() => PlayAction('remove')}
+                            disabled={buttonProps.disabled}
+                        >
+                            <FontAwesome6 name="circle-minus" size={24} color={colors.actions.counter} />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={[styles.actionButton, styles.counterPlusButton, { opacity: buttonProps.opacity }]}
+                            onPress={() => PlayAction('add')}
+                            disabled={buttonProps.disabled}
+                        >
+                            <FontAwesome6 name="circle-plus" size={22} color={colors.actions.counter} />
+                        </TouchableOpacity>
+                    </>
+                );
+            case 'QUERY':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.queryButton, { opacity: buttonProps.opacity }]}
+                        onPress={() => PlayAction('write')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <FontAwesome6 name="pen-to-square" size={22} color={colors.actions.query} />
+                    </TouchableOpacity>
+                );
+            case 'WHERE':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.locationButton, { opacity: buttonProps.opacity }]}
+                        onPress={() => PlayAction('select')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <FontAwesome6 name="location-dot" size={22} color={colors.actions.location} />
+                    </TouchableOpacity>
+                );
+            case 'WHEN':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.timeButton, { opacity: buttonProps.opacity }]}
+                        onPress={() => PlayAction('select')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <FontAwesome6 name="clock" size={22} color={colors.actions.time} />
+                    </TouchableOpacity>
+                );
+            default:
+                return null;
+        }
+    };
+    
     return (
-    <View style={styles.container}>
-        <View style={styles.row}>
-            {/* <TouchableOpacity 
-                style={[
-                    styles.playButton, 
-                    { 
-                        backgroundColor: isActionSelected 
-                            ? TRADE_ACTIONS[currentActionIndex]?.color 
-                            : colors.ui.background,
-                        borderColor: TRADE_ACTIONS[currentActionIndex]?.color,
-                    }
-                ]}
-                onPress={() => PlayAction()}
-                disabled={!isActionSelected}
-            >
-                <FontAwesome6 
-                    name={'arrow-right-long'} 
-                    size={22} 
-                    color={isActionSelected ? '#000' : TRADE_ACTIONS[currentActionIndex]?.color} 
-                />
-            </TouchableOpacity> */}
-            
-            <View style={[styles.scrollViewContainer, { height: scrollViewHeight }]}>
-                <ScrollView 
-                    ref={scrollViewRef}
-                    style={styles.scrollView}
-                    snapToInterval={ITEM_HEIGHT}
-                    snapToAlignment="start"
-                    decelerationRate="fast"
-                    showsVerticalScrollIndicator={false}
-                    onScrollBeginDrag={handleScrollBeginDrag}
-                    onScroll={handleScroll}
-                    onMomentumScrollEnd={handleMomentumScrollEnd}
-                    scrollEventThrottle={16}
-                    pagingEnabled={false}
+        <View style={styles.container}>
+            <View style={styles.row}>
+                <View style={[styles.scrollViewContainer, { height: scrollViewHeight }]}>
+                    <ScrollView 
+                        ref={scrollViewRef}
+                        style={styles.scrollView}
+                        snapToInterval={ITEM_HEIGHT}
+                        snapToAlignment="start"
+                        decelerationRate="fast"
+                        showsVerticalScrollIndicator={false}
+                        onScrollBeginDrag={handleScrollBeginDrag}
+                        onScroll={handleScroll}
+                        onMomentumScrollEnd={handleMomentumScrollEnd}
+                        scrollEventThrottle={16}
+                    >
+                        {infiniteActions.map((action, index) => {
+                            const isInTopSpot = isActionInTopSpot(index);
+                            
+                            return (
+                                <View 
+                                    key={index} 
+                                    style={[styles.tradeLine, { shadowColor: action.color }]}
+                                >
+                                    {renderActionButton(action, isInTopSpot)}
+                                    
+                                    <TouchableOpacity onPress={() => handleActionTextPress(index)}>
+                                        <Text style={[styles.tradeLineText, { color: action.color }]}>
+                                            {action.text}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            );
+                        })}
+                    </ScrollView>
+                </View>
+
+                <TouchableOpacity 
+                    style={[
+                        styles.playButton, 
+                        { 
+                            backgroundColor: isActionSelected ? currentAction?.color : 'transparent',
+                            borderColor: currentAction?.color,
+                            shadowColor: currentAction?.color,
+                        }
+                    ]}
+                    onPress={() => PlayAction()}
+                    disabled={!isActionSelected}
                 >
-                    {infiniteActions.map((action, index) => {
-                        const isInTopSpot = isActionInTopSpot(index);
-                        
-                        return (
-                            <View key={index} style={[styles.tradeLine, {shadowColor: action.color}]}>
-                                
-                                
-                                {action.hasButtons && action.text === 'COUNTER' && (
-                                    <>
-                                        
-                                        <TouchableOpacity 
-                                            style={[styles.counterMinusButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
-                                            onPress={() => PlayAction('remove')}
-                                            disabled={!isInTopSpot}
-                                        >
-                                            <FontAwesome6 name={'minus'} size={22} color={colors.actions.counter} />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity 
-                                            style={[styles.counterPlusButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
-                                            onPress={() => PlayAction('add')}
-                                            disabled={!isInTopSpot}
-                                        >
-                                            <FontAwesome6 name={'plus'} size={22} color={colors.actions.counter} />
-                                        </TouchableOpacity>
-                                    </>
-                                )}
-                                
-                                {action.hasButtons && action.text === 'QUERY' && (
-                                    <TouchableOpacity 
-                                        style={[styles.queryButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
-                                        onPress={() => PlayAction('write')}
-                                        disabled={!isInTopSpot}
-                                    >
-                                        <FontAwesome6 name={'pen-to-square'} size={22} color={colors.actions.query} />
-                                    </TouchableOpacity>
-                                )}
-
-                                {action.hasButtons && action.text === 'WHERE' && (
-                                    <TouchableOpacity 
-                                        style={[styles.locationButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
-                                        onPress={() => PlayAction('select')}
-                                        disabled={!isInTopSpot}
-                                    >
-                                        <FontAwesome6 name={'location-dot'} size={22} color={colors.actions.location} />
-                                    </TouchableOpacity>
-                                )}
-
-                                {action.hasButtons && action.text === 'WHEN' && (
-                                    <TouchableOpacity 
-                                        style={[styles.timeButton, { opacity: isInTopSpot ? 1 : 0.3 }]}
-                                        onPress={() => PlayAction('select')}
-                                        disabled={!isInTopSpot}
-                                    >
-                                        <FontAwesome6 name={'clock'} size={22} color={colors.actions.time} />
-                                    </TouchableOpacity>
-                                )}
-                                
-                                <TouchableOpacity onPress={() => handleActionTextPress(index)} >
-                                    <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        );
-                    })}
-                </ScrollView>
+                    <FontAwesome6 
+                        name="arrow-left-long" 
+                        size={26} 
+                        color={isActionSelected ? '#000' : currentAction?.color} 
+                    />
+                </TouchableOpacity>
             </View>
-
-             <TouchableOpacity 
-                style={[
-                    styles.playButton, 
-                    { 
-                        backgroundColor: isActionSelected 
-                            ? TRADE_ACTIONS[currentActionIndex]?.color 
-                            : 'transparent',
-                        borderColor: TRADE_ACTIONS[currentActionIndex]?.color,
-                        shadowColor: TRADE_ACTIONS[currentActionIndex]?.color,
-                    }
-                ]}
-                onPress={() => PlayAction()}
-                disabled={!isActionSelected}
-            >
-                <FontAwesome6 
-                    name={'arrow-right-long'} 
-                    size={26} 
-                    color={isActionSelected ? '#000' : TRADE_ACTIONS[currentActionIndex]?.color} 
-                />
-            </TouchableOpacity>
         </View>
-    </View>
     );
 }
 
@@ -241,8 +233,9 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'flex-start',
         backgroundColor: colors.ui.background,
-        marginVertical: 12,
+        marginVertical: 4,
         marginHorizontal: 12,
+        width: '100%'
     },
     row: {
         flexDirection: 'row',
@@ -264,7 +257,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: -10,
         justifyContent: 'flex-end',
-        // shadowColor: colors.ui.secondary,
         shadowOffset: { width: 1, height: 1 },
         shadowOpacity: 0.9,
         shadowRadius: 3,
@@ -288,70 +280,50 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.9,
         shadowRadius: 3,
     },
-    counterMinusButton: {
+    // Base style for all action buttons
+    actionButton: {
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
-        width: 48,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 2,
-        borderBottomRightRadius: 2,
+        width: 46,
         bottom: 12,
         borderWidth: 3,
-        borderColor: colors.actions.counter
+        borderTopRightRadius: 2,
+    },
+    counterMinusButton: {
+        width: 46,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderBottomRightRadius: 2,
+        borderColor: colors.actions.counter,
     },
     counterPlusButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 40,
-        width: 48,
+        width: 46,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
-        borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
-        bottom: 12,
-        borderWidth: 3,
-        borderColor: colors.actions.counter
+        borderColor: colors.actions.counter,
     },
     queryButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 40,
-        width: 50,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 2,
+        width: 46,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
-        bottom: 12,
-        borderWidth: 3,
-        borderColor: colors.actions.query
+        borderColor: colors.actions.query,
     },
     locationButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 40,
-        width: 50,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 2,
+        width: 46,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
-        bottom: 12,
-        borderWidth: 3,
-        borderColor: colors.actions.location
+        borderColor: colors.actions.location,
     },
     timeButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 40,
-        width: 50,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 2,
+        width: 46,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
-        bottom: 12,
-        borderWidth: 3,
-        borderColor: colors.actions.time
+        borderColor: colors.actions.time,
     },
 });
 

@@ -21,7 +21,8 @@ export const colors = {
     accept: '#06f52e',     
     location: '#229bff',
     time: '#fb4921',
-    verify: '#00f3ef'
+    verify: '#ff8d0a',
+    wait: '#372788'
   },
 
   // Post Type Colors

@@ -13,13 +13,8 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
+import TradeTurns, { TradeTurn } from '../components/TradeTurns';
 
-export interface TradeTurn {
-  type: TradeTurnType;
-  user?: string;
-  item?: string;
-  question?: string;
-}
 
 interface OffersSectionProps {
   title: string;
@@ -34,35 +29,7 @@ const OffersSection: React.FC<OffersSectionProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
-  const renderLine = (turn: TradeTurn, index: number) => {
-    const config = getTurnConfig(turn.type);
-    if (!config) return null;
-    
-    let line = config.template;
-    if (turn.user) line = line.replace('{user}', turn.user);
-    if (turn.item) line = line.replace('{item}', turn.item);
-    if (turn.question) line = line.replace('{question}', turn.question);
-    
-    const parts = line.split('{action}');
-    const arrowIcon = config.isSent ? 'arrow-right-long' : 'arrow-left-long';
-
-    return (
-      <View key={index} style={styles.turnRow}>
-        <FontAwesome6 name={arrowIcon} size={18} color="#E0E0E0" style={styles.arrow} />
-        <Text style={styles.tradeText}>
-          {parts[0]}
-          <Text style={config.colorStyle}>{config.actionText}</Text>
-          {parts[1]}
-          {turn.type === 'receivedQuestion' && turn.question && (
-            <>
-              {'\n'}
-              <Text style={{ color: '#ffffff', fontFamily: globalFonts.regular }}>       {turn.question}</Text>
-            </>
-          )}
-        </Text>
-      </View>
-    );
-  };
+  
 
   // Don't render if no turns
   if (turns.length === 0) return null;
@@ -84,9 +51,7 @@ const OffersSection: React.FC<OffersSectionProps> = ({
 
       {isExpanded && (
         <View style={styles.expandedContent}>
-          <View style={styles.tradeSection}>
-            {turns.map((turn, index) => renderLine(turn, index))}
-          </View>
+          <TradeTurns turns={turns} />
         </View>
       )}
     </View>

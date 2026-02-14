@@ -56,7 +56,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
 
     // Derived state
     const lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
-    const isLastTurnQuestion = lastTurn?.type === 'receivedQuestion';
+    const isLastTurnQuestion = lastTurn?.type === 'turnQuery';
     const isPlayerTurn = turns.length > 0 && 
       ['receivedTrade', 'receivedQuestion', 'theyAccepted'].includes(turns[turns.length - 1].type);
 
@@ -85,7 +85,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
         const config = getTurnConfig(turn.type);
         if (!config) return null;
         
-        let line = config.template;
+        let line = config.templateUser;
         if (turn.user) line = line.replace('{user}', turn.user);
         if (turn.item) line = line.replace('{item}', turn.item);
         if (turn.question) line = line.replace('{question}', turn.question);
@@ -100,7 +100,7 @@ const ActiveTrade: React.FC<ActiveTradeProps> = ({
               {parts[0]}
               <Text style={config.colorStyle}>{config.actionText}</Text>
               {parts[1]}
-              {turn.type === 'receivedQuestion' && turn.question && (
+              {turn.type === 'turnQuery' && turn.question && (
               <>
                   {'\n'}
                   <Text style={{ color: '#ffffff', fontFamily: globalFonts.regular }}>       {turn.question}</Text>

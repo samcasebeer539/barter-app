@@ -1,22 +1,18 @@
 //add verify
 import { colors, globalFonts } from '../styles/globalStyles';
 
-export type TradeActionType = 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when';
+export type TradeActionType = 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait';
 
 export type TradeTurnType = 
-  | 'sentOffer' 
-  | 'receivedTrade' 
-  | 'sentCounteroffer' 
-  | 'receivedQuestion' 
-  | 'youAccepted' 
-  | 'theyAccepted'
-  | 'sentQuery'
-  | 'sentCounter'
-  | 'sentStall'
-  | 'sentAccept'
-  | 'sentDecline'
-  | 'sentWhere'
-  | 'sentWhen';
+  | 'turnOffer' 
+  | 'turnTrade' 
+  | 'turnCounter' 
+  | 'turnQuery' 
+  | 'turnAccept' 
+  | 'turnStall'
+  | 'turnDecline'
+  | 'turnWhere'
+  | 'turnWhen';
 
 export interface TradeActionConfig {
   text: string;
@@ -29,7 +25,8 @@ export interface TradeActionConfig {
 export interface TurnDisplayConfig {
   actionText: string;
   colorStyle: { color: string; fontFamily: string };
-  template: string;
+  templateUser: string;
+  templatePartner: string;
   isSent: boolean;
 }
 
@@ -40,28 +37,28 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     color: colors.actions.query,
     hasButtons: true,
     actionType: 'query',
-    turnType: 'sentQuery',
+    turnType: 'turnQuery',
   },
   {
     text: 'COUNTER',
     color: colors.actions.counter,
     hasButtons: true,
     actionType: 'counter',
-    turnType: 'sentCounter',
+    turnType: 'turnCounter',
   },
   {
     text: 'VERIFY',
     color: colors.actions.verify,
     hasButtons: true,
     actionType: 'verify',
-    turnType: 'sentWhen',
+    turnType: 'turnWhen',
   },
   {
     text: 'STALL',
     color: colors.actions.time,
     hasButtons: false,
     actionType: 'stall',
-    turnType: 'sentStall',
+    turnType: 'turnStall',
   },
   
   {
@@ -69,110 +66,103 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     color: colors.actions.accept,
     hasButtons: false,
     actionType: 'accept',
-    turnType: 'sentAccept',
+    turnType: 'turnAccept',
   },
   {
     text: 'DECLINE',
     color: colors.actions.decline,
     hasButtons: false,
     actionType: 'decline',
-    turnType: 'sentDecline',
+    turnType: 'turnDecline',
   },
   {
     text: 'WHERE',
     color: colors.actions.location,
     hasButtons: true,
     actionType: 'where',
-    turnType: 'sentWhere',
+    turnType: 'turnWhere',
   },
   {
     text: 'WHEN',
     color: colors.actions.time,
     hasButtons: true,
     actionType: 'when',
-    turnType: 'sentWhen',
+    turnType: 'turnWhen',
+  },
+  {
+    text: 'WAIT',
+    color: colors.actions.wait,
+    hasButtons: true,
+    actionType: 'wait',
+    turnType: 'turnWhen',
   },
 
 ];
 
 // Configuration for turn display (used in ActiveTrade)
 export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
-  sentOffer: {
+  turnOffer: {
     actionText: 'OFFER',
     colorStyle: { color: colors.actions.offer, fontFamily: globalFonts.extrabold },
-    template: 'You sent {action} on "{item}"',
+    templateUser: 'You sent offer on "{item}"',
+    templatePartner: '{user} sent offer on "{item}"',
     isSent: true,
   },
-  receivedTrade: {
+  turnTrade: {
     actionText: 'TRADE',
     colorStyle: { color: colors.actions.trade, fontFamily: globalFonts.extrabold },
-    template: '{user} proposed {action} for "{item}"',
+    templateUser: 'You proposed trade for "{item}"',
+    templatePartner: '{user} proposed trade for "{item}"',
     isSent: false,
   },
-  sentCounteroffer: {
+  turnCounter: {
     actionText: 'COUNTERED',
     colorStyle: { color: colors.actions.counter, fontFamily: globalFonts.extrabold },
-    template: 'You {action}, adding "{item}"',
+    templateUser: 'You added "Pokemon Cards"',
+    templatePartner: '{user} proposed {action} for "{item}"',
     isSent: true,
   },
-  receivedQuestion: {
+  turnQuery: {
     actionText: 'QUESTION',
     colorStyle: { color: colors.actions.query, fontFamily: globalFonts.extrabold },
-    template: '{user} asked {action}',
+    templateUser: 'You asked {action}',
+    templatePartner: '{user} asked {action}',
     isSent: false,
   },
-  youAccepted: {
+  turnAccept: {
     actionText: 'ACCEPTED',
     colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    template: 'You {action}',
+    templateUser: 'You {action}',
+    templatePartner: '{user} accepted',
     isSent: true,
   },
-  theyAccepted: {
-    actionText: 'ACCEPTED',
+  turnDecline: {
+    actionText: 'DECLINED',
     colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    template: '{user} {action}',
-    isSent: false,
-  },
-  sentQuery: {
-    actionText: 'QUERY',
-    colorStyle: { color: colors.actions.query, fontFamily: globalFonts.extrabold },
-    template: 'You asked {action}',
+    templateUser: 'You {action}',
+    templatePartner: '{user} {action}',
     isSent: true,
   },
-  sentCounter: {
-    actionText: 'COUNTER',
-    colorStyle: { color: colors.actions.counter, fontFamily: globalFonts.extrabold },
-    template: 'You proposed {action}',
-    isSent: true,
-  },
-  sentStall: {
+  turnStall: {
     actionText: 'STALL',
     colorStyle: { color: colors.actions.time, fontFamily: globalFonts.extrabold },
-    template: 'You {action}',
+    templateUser: 'You {action}',
+    templatePartner: '{user} {action}',
     isSent: true,
   },
-  sentAccept: {
-    actionText: 'ACCEPT',
-    colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    template: 'You {action}',
-    isSent: true,
-  },
-  sentDecline: {
-    actionText: 'DECLINE',
-    colorStyle: { color: colors.actions.decline, fontFamily: globalFonts.extrabold },
-    template: 'You {action}',
-    isSent: true,
-  },
-  sentWhere: {
+
+  turnWhere: {
     actionText: 'WHERE',
     colorStyle: { color: colors.actions.location, fontFamily: globalFonts.extrabold },
-    template: 'You suggested {action}',
+    templateUser: 'You suggested {action}',
+    templatePartner: '{user} suggested {action}',
     isSent: true,
   },
-  sentWhen: {
+  turnWhen: {
     actionText: 'WHEN',
     colorStyle: { color: colors.actions.time, fontFamily: globalFonts.extrabold },
-    template: 'You proposed {action}',
+    templateUser: 'You suggested {action}',
+    templatePartner: '{user} suggested {action}',
     isSent: true,
   },
 };

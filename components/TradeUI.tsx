@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     counterMinusButton: {
         width: 46,
         borderTopLeftRadius: 25,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
         borderColor: colors.actions.counter,
     },
@@ -307,21 +307,21 @@ const styles = StyleSheet.create({
     queryButton: {
         width: 46,
         borderTopLeftRadius: 25,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
         borderColor: colors.actions.query,
     },
     locationButton: {
         width: 46,
         borderTopLeftRadius: 25,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
         borderColor: colors.actions.location,
     },
     timeButton: {
         width: 46,
         borderTopLeftRadius: 25,
-        borderBottomLeftRadius: 2,
+        borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
         borderColor: colors.actions.time,
     },

@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Image } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
@@ -256,7 +256,14 @@ export default function ProfileDeck({
             
             
             <View style={styles.mygoodServiceButton}>
-              <Text style={styles.buttonText}>0{goodCount}</Text>
+              <View style={styles.imageContainer}>
+                        <Image
+                          
+                          source={{ uri: 'https://picsum.photos/seed/cat/80/80' }} 
+                          style={styles.profileImage}
+                        />
+                      </View>
+              <Text style={styles.buttonText}>: 0{goodCount}</Text>
               <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
               
               <Text style={styles.buttonText}> 0{serviceCount}</Text>
@@ -427,7 +434,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: 10,
     paddingRight: 14,
-    paddingVertical: 10,
+    paddingVertical: 2,
     
     
   },
@@ -442,7 +449,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.trade,
     justifyContent: 'center',
@@ -518,5 +525,14 @@ const styles = StyleSheet.create({
     left: 0, // Changed from -200
     zIndex: 10,
     
+  },
+  profileImage: {
+    width: 22,
+    height: 22,
+    borderRadius: 80,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
 });

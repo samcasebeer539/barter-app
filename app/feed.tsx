@@ -32,7 +32,7 @@ const BARTER_ITEMS = [
 const DECK_POSTS = [
   {
     type: 'service' as const,
-    name: 'Bike Repair Service',
+    name: 'Bike Repair Service This Title is Long',
     description: 'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
     photos: [
       'https://picsum.photos/seed/landscape1/800/400',
@@ -151,10 +151,12 @@ export default function FeedScreen() {
           />
           <FontAwesome6 
             name={item.type === 'good' ? 'gifts' : 'hand-sparkles'} 
-            size={20} 
+            size={18} 
             color={item.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             style={styles.typeIcon}
           />
+        
+
         </View>
       </TouchableOpacity>
       

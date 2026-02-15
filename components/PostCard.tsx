@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import TextTicker from 'react-native-text-ticker';
 import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 
 
@@ -24,10 +25,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
-  const [titleWidth, setTitleWidth] = useState(0);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const titleScrollX = useRef(new Animated.Value(0)).current;
-  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const descriptionHeight = useRef(new Animated.Value(100)).current;
   const photoMode4Lines = 100;
@@ -54,44 +51,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
       );
     });
   }, [post.photos]);
-
-  useEffect(() => {
-    if (animationRef.current) {
-      animationRef.current.stop();
-    }
-
-    if (titleWidth > containerWidth && containerWidth > 0) {
-      const scrollDistance = titleWidth - containerWidth + 20;
-      const duration = Math.max(scrollDistance * 30, 2000);
-      
-      animationRef.current = Animated.loop(
-        Animated.sequence([
-          Animated.delay(1500),
-          Animated.timing(titleScrollX, {
-            toValue: -scrollDistance,
-            duration: duration,
-            useNativeDriver: true,
-          }),
-          Animated.delay(1500),
-          Animated.timing(titleScrollX, {
-            toValue: 0,
-            duration: duration,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      
-      animationRef.current.start();
-    } else {
-      titleScrollX.setValue(0);
-    }
-
-    return () => {
-      if (animationRef.current) {
-        animationRef.current.stop();
-      }
-    };
-  }, [titleWidth, containerWidth, titleScrollX]);
 
   useEffect(() => {
     Animated.spring(descriptionHeight, {
@@ -142,6 +101,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
     setDirection(newDirection);
   };
 
+  const handleSelect = () => {
+    console.log('card selected');
+  };
+
   return (
     <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight}]}>
@@ -153,20 +116,28 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             />
           </View>
-          <View 
-            style={styles.titleContainer}
-            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-          >
-            <View style={styles.titleScrollContainer}>
-              <Animated.Text 
-                style={[styles.title, { transform: [{ translateX: titleScrollX }] }]}
-                numberOfLines={1}
-                onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
-              >
-                {post.name}
-              </Animated.Text>
-            </View>
+
+          <View style={styles.titleContainer}>
+            <TextTicker
+              style={styles.title}
+              duration={8000}
+              loop
+              bounce={false}
+              repeatSpacer={50}
+              marqueeDelay={200}
+              ellipsizeMode='tail'
+            >
+              {post.name} <Text style={styles.date}>11/26/24</Text>
+            </TextTicker>
           </View>
+
+          <TouchableOpacity activeOpacity={0.2} onPress={handleSelect} style={styles.iconContainer}>
+            <FontAwesome6
+              name='circle-left'
+              size={24}
+              color={colors.actions.trade}
+            />
+          </TouchableOpacity> 
         </View>
 
         <Animated.View style={[styles.photoSectionWrapper, { bottom: photoBottom }]} pointerEvents="box-none">
@@ -175,7 +146,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               <TouchableOpacity activeOpacity={0.8} onPress={handlePhotoTap} style={styles.photoTouchable}>
                 <View style={[styles.photoFrame, { aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, maxHeight: '100%', maxWidth: '100%' }]}>
                   <Image source={{ uri: post.photos[currentPhotoIndex] }} style={styles.photo} resizeMode="cover" />
-                  
                 </View>
               </TouchableOpacity>
             </View>
@@ -229,19 +199,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: 6,
   },
   iconContainer: { 
     flexShrink: 0, 
     paddingBottom: 12,
- 
-   },
+  },
   titleContainer: { 
     flex: 1,
     overflow: 'hidden',
-  },
-  titleScrollContainer: {
-    flexDirection: 'row',
   },
   title: { 
     fontSize: 18, 
@@ -249,6 +215,13 @@ const styles = StyleSheet.create({
     lineHeight: 24, 
     color: '#000',
     fontFamily: globalFonts.bold,
+  },
+  date: { 
+    fontSize: 18, 
+    fontWeight: '600', 
+    lineHeight: 24, 
+    color: colors.ui.cardsecondary,
+    fontFamily: globalFonts.regular,
   },
   photoSectionWrapper: { 
     position: 'absolute', 
@@ -284,28 +257,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   photo: { width: '100%', height: '100%' },
-  innerShadowContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 4,
-  },
-  gradientTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 10,
-  },
-  gradientBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 5,
-  },
   dotsContainer: { 
     position: 'absolute', 
     bottom: 8,
@@ -326,14 +277,14 @@ const styles = StyleSheet.create({
   descriptionSection: { 
     backgroundColor: '#fff', 
     paddingHorizontal: 16, 
-    paddingTop: 12, 
+    paddingTop: 8, 
     paddingBottom: 20, 
     borderTopWidth: 1, 
     borderTopColor: '#fff', 
     borderBottomLeftRadius: 8, 
     borderBottomRightRadius: 8 
   },
-  descriptionScroll: { flex: 1 },
+  descriptionScroll: { flex: 1, flexDirection: 'row' },
   descriptionText: { 
     fontSize: 15, 
     lineHeight: 21, 

@@ -71,7 +71,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
         <View style={styles.infoContainer}>
           <Text style={styles.name} numberOfLines={1}>{user.name}<Text style={styles.pronouns}> {user.pronouns}</Text></Text>
           <View style={styles.locationRow}>
-            <FontAwesome6 name="location-dot" size={14} color={colors.ui.secondarydisabled}/>
+            <FontAwesome6 name="location-dot" size={14} color={colors.ui.cardsecondary}/>
             <Text style={styles.location}>{user.location}</Text>
           </View>
         </View>
@@ -87,19 +87,19 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
             style={styles.settingsButton}
             onPress={handleSettingsPress}
         >
-            <FontAwesome6 name="gear" size={28} color={colors.ui.background} />
+            <FontAwesome6 name="gear" size={28} color={colors.ui.cardsecondary} />
         </TouchableOpacity>
         <TouchableOpacity 
             style={styles.blockButton}
             onPress={handleSettingsPress}
         >
-            <FontAwesome6 name="ban" size={28} color={colors.ui.background} />
+            <FontAwesome6 name="ban" size={28} color={colors.ui.cardsecondary} />
         </TouchableOpacity>
         <TouchableOpacity 
             style={styles.reportButton}
             onPress={handleSettingsPress}
         >
-            <FontAwesome6 name="circle-exclamation" size={28} color={colors.ui.background} />
+            <FontAwesome6 name="circle-exclamation" size={28} color={colors.ui.cardsecondary} />
         </TouchableOpacity>
 
        
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   pronouns: {
     fontSize: 22,
     fontWeight: '600',
-    color: colors.ui.secondarydisabled,
+    color: colors.ui.cardsecondary,
     marginBottom: 4,
     fontFamily: globalFonts.regular,
 
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 16,
-    color: colors.ui.secondarydisabled,
+    color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
   },
   bioContainer: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
    
     position: 'absolute',
     bottom: 8,
-    left: 8,
+    right: 8,
     zIndex: 10,
     padding: 4,
   },
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
    
     position: 'absolute',
     bottom: 8,
-    left: 72,
+    left: 8,
     zIndex: 10,
     padding: 4,
   },

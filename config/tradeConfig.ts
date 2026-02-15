@@ -1,7 +1,7 @@
 //add verify
 import { colors, globalFonts } from '../styles/globalStyles';
 
-export type TradeActionType = 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait';
+export type TradeActionType = 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait' | 'play' | 'cancel';
 
 export type TradeTurnType = 
   | 'turnOffer' 
@@ -90,10 +90,24 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     turnType: 'turnWhen',
   },
   {
-    text: 'WAIT',
+    text: '11:59:43 WAIT',
     color: colors.actions.wait,
     hasButtons: true,
     actionType: 'wait',
+    turnType: 'turnWhen',
+  },
+  {
+    text: '11:59:43 PLAY',
+    color: colors.actions.wait,
+    hasButtons: true,
+    actionType: 'play',
+    turnType: 'turnWhen',
+  },
+  {
+    text: ':29 CANCEL',
+    color: colors.actions.wait,
+    hasButtons: true,
+    actionType: 'cancel',
     turnType: 'turnWhen',
   },
 

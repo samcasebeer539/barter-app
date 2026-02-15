@@ -98,17 +98,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 <Text style={styles.offerButtonText}> {serviceCount}</Text>
                 <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
               </View>
-              {/* Save button */}
-              <TouchableOpacity 
-                
-                style={[
-                  styles.saveButton, 
-                  {backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
-                ]} 
-                onPress={handleSave}
-              >
-                <Icon name='bookmark' size={22} color={showSaved ? colors.actions.offer : '#000'} />
-              </TouchableOpacity>
+              
 
               <TouchableOpacity 
                 style={styles.upButton}
@@ -131,7 +121,16 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
             
             <View style={styles.buttonRow}>
-              
+              <TouchableOpacity 
+                
+                style={[
+                  styles.saveButton, 
+                  {backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
+                ]} 
+                onPress={handleSave}
+              >
+                <Icon name='bookmark' size={22} color={showSaved ? colors.actions.offer : '#000'} />
+              </TouchableOpacity>
 
               <TouchableOpacity onPress={handleOffer} >
                   <Text style={styles.offerText}>OFFER</Text>
@@ -233,9 +232,12 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     width: 50,
-    height: 44,
+    height: 40,
     
-    borderRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.offer,
     justifyContent: 'center',

@@ -25,6 +25,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
+  const [isSelected, setIsSelected] = useState(false);
 
   const descriptionHeight = useRef(new Animated.Value(100)).current;
   const photoMode4Lines = 100;
@@ -103,6 +104,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
   const handleSelect = () => {
     console.log('card selected');
+    setIsSelected(prev => !prev);
   };
 
   return (
@@ -131,13 +133,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
             </TextTicker>
           </View>
 
-          <TouchableOpacity activeOpacity={0.2} onPress={handleSelect} style={styles.iconContainer}>
-            <FontAwesome6
-              name='circle-left'
-              size={24}
-              color={colors.actions.trade}
-            />
-          </TouchableOpacity> 
+          
         </View>
 
         <Animated.View style={[styles.photoSectionWrapper, { bottom: photoBottom }]} pointerEvents="box-none">
@@ -166,13 +162,23 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
         <TouchableOpacity activeOpacity={0.9} onPress={toggleMode} style={styles.descriptionTouchable}>
           <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
             <View style={styles.descriptionScroll}>
+              
               <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 4}>
+                
                 {post.description}
               </Text>
             </View>
           </Animated.View>
         </TouchableOpacity>
+        <TouchableOpacity activeOpacity={0.2} onPress={handleSelect} style={styles.selectContainer}>
+          <FontAwesome6
+            name={isSelected ? 'circle-check' : 'circle'}
+            size={24}
+            color={colors.actions.trade}
+          />
+        </TouchableOpacity> 
       </View>
+      
     </Animated.View>
   );
 };
@@ -204,6 +210,13 @@ const styles = StyleSheet.create({
   iconContainer: { 
     flexShrink: 0, 
     paddingBottom: 12,
+  },
+  selectContainer: { 
+    position: 'absolute', 
+    bottom: 10, 
+    right: 16, 
+     
+    zIndex: 30,
   },
   titleContainer: { 
     flex: 1,
@@ -287,7 +300,7 @@ const styles = StyleSheet.create({
   descriptionScroll: { flex: 1, flexDirection: 'row' },
   descriptionText: { 
     fontSize: 15, 
-    lineHeight: 21, 
+    lineHeight: 18, 
     color: colors.ui.background, 
     ...defaultTextStyle 
   },

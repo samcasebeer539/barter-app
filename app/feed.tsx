@@ -43,7 +43,7 @@ const DECK_POSTS = [
   {
     type: 'good' as const,
     name: 'DVD collection',
-    description: '',
+    description: 'This has an unusually long description. adsf asdf asdga sfgsd hsdgh sdfg asdg sdg asfgs fga sfg asfgdfjahsdfg asdfgasdf asdf asdf asdf asdf asdf a sdf asdg asgf asdg fas gf asdf sdf asdf as df asdfasd gfas g asdgasf g sagf ADF A S DFASDGASDGASFGASDFASDFASDFAas df  ',
     photos: [
       'https://picsum.photos/seed/camera1/600/400',
       'https://picsum.photos/seed/camera2/500/700',

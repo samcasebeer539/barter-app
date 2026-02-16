@@ -10,15 +10,26 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { colors } from '@/styles/globalStyles';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function SettingsScreen() {
-  const router = useRouter();
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
-  const [locationEnabled, setLocationEnabled] = React.useState(true);
+    const router = useRouter();
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
+    const [locationEnabled, setLocationEnabled] = React.useState(true);
 
-  const handleBackPress = () => {
-    router.push('/profiledeck');
-  };
+    const handleBackPress = () => {
+        router.push('/profiledeck');
+    };
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(auth);
+        }
+        catch (error) {
+            console.log("Sign out error: ", error)
+        }
+    }
 
   return (
     <View style={styles.container}>
@@ -133,9 +144,14 @@ export default function SettingsScreen() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton}>
-          <MaterialIcons name="logout" size={24} color={colors.actions.decline} />
+        <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+            <MaterialIcons 
+                name="logout" 
+                size={24} 
+                color={colors.actions.decline} 
+            />
           <Text style={styles.logoutText}>Log Out</Text>
+
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

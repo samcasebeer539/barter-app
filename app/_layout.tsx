@@ -7,7 +7,7 @@ import { View, ActivityIndicator } from 'react-native';
 export default function RootLayout() {
     const [initializing, setInitializing] = useState(true);
     const [user, setUser] = useState<User | null>(null);
-    
+
     const router = useRouter();
     const segments = useSegments();
 
@@ -24,16 +24,17 @@ export default function RootLayout() {
     useEffect(() => {
         if (initializing) return;
 
-        const inAuthGroup = segments[0] === 'auth';
+        const inAuthGroup = segments[0] === '(auth)';
+        const inTabsGroup = segments[0] === '(tabs)';
 
-        if (user && !inAuthGroup) {
-            router.replace('/auth/home');
+        if (!user && !inAuthGroup) {
+            router.replace('/login');
         } 
-        else if (!user && inAuthGroup) {
-            router.replace('/');
+        else if (user && !inTabsGroup) {
+            router.replace('/feed');
         }
 
-    }, [user, initializing]
+    }, [user, initializing, segments]
     )
 
     if (initializing) 

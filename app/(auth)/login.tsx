@@ -2,12 +2,7 @@ import { Redirect } from 'expo-router';
 import { useState } from 'react';
 import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, Button, ActivityIndicator } from 'react-native'
 import { auth } from '@/lib/firebase';
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged,
-    User,
-  } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User } from 'firebase/auth';
 
 export default function HandleLogin() {
     const [email, setEmail] = useState('');

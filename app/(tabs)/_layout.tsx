@@ -1,13 +1,9 @@
-import { Tabs, useRouter, useSegments } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
 import { colors } from '@/styles/globalStyles';
-import { useState, useEffect } from 'react';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { ActivityIndicator } from 'react-native';
 
 
 function TabBarBackground() {

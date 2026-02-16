@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors } from '../styles/globalStyles';
+import { colors } from '@/styles/globalStyles';
 
 export default function SettingsScreen() {
   const router = useRouter();

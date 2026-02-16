@@ -4,7 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import FeedDeck from '@/components/FeedDeck';
 import FeedBar from '@/components/FeedBar';
-import { defaultTextStyle, globalFonts, colors, uiColors } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors, uiColors } from '@/styles/globalStyles';
 
 
 // Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)

@@ -1,9 +1,9 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useCallback, useState } from 'react';
-import ActiveTrade, { TradeTurn } from '../../components/ActiveTrade';
+import ActiveTrade, { TradeTurn } from '@/components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors } from '../../styles/globalStyles';
-import OffersSection from '../../components/OffersSection';
+import { colors } from '@/styles/globalStyles';
+import OffersSection from '@/components/OffersSection';
 
 const POSTS = [
   {

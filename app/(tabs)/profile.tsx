@@ -18,7 +18,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Carousel from '@/components/Carousel';
-import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
+import { defaultTextStyle, globalFonts, colors } from '@/styles/globalStyles';
 
 
 const POSTS = [

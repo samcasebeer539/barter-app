@@ -18,9 +18,9 @@ function TabBarBackground() {
 
 export default function RootLayout() {
     const [fontsLoaded] = useFonts({
-        'YourFontName-Regular': require('../assets/fonts/RobotoCondensed-Regular.ttf'),
-        'YourFontName-Bold': require('../assets/fonts/RobotoCondensed-SemiBold.ttf'),
-        'YourFontName-ExtraBold': require('../assets/fonts/Oswald-Bold.ttf'),
+        'YourFontName-Regular': require('@/assets/fonts/RobotoCondensed-Regular.ttf'),
+        'YourFontName-Bold': require('@/assets/fonts/RobotoCondensed-SemiBold.ttf'),
+        'YourFontName-ExtraBold': require('@/assets/fonts/Oswald-Bold.ttf'),
         // Add other font weights/styles as needed
     });
 

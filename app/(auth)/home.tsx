@@ -1,9 +1,8 @@
 import { View, Text, Button } from 'react-native'
 import { auth } from '@/lib/firebase';
-import { signOut, getAuth } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 
 const Page = () => {
-    const auth = getAuth()
     const user = auth.currentUser;
     return (
         <View>

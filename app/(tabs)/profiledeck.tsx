@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
-import DecksProfile from '../components/DecksProfile';
-import { colors } from '../styles/globalStyles';
+import DecksProfile from '@/components/DecksProfile';
+import { colors } from '@/styles/globalStyles';
 
 export default function ProfileDeck() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);

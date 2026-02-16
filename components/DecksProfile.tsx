@@ -256,14 +256,8 @@ export default function ProfileDeck({
             
             
             <View style={styles.mygoodServiceButton}>
-              <View style={styles.imageContainer}>
-                        <Image
-                          
-                          source={{ uri: 'https://picsum.photos/seed/cat/80/80' }} 
-                          style={styles.profileImage}
-                        />
-                      </View>
-              <Text style={styles.buttonText}>: 0{goodCount}</Text>
+              
+              <Text style={styles.buttonText}>0{goodCount}</Text>
               <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
               
               <Text style={styles.buttonText}> 0{serviceCount}</Text>
@@ -434,7 +428,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: 10,
     paddingRight: 14,
-    paddingVertical: 2,
+    paddingVertical: 10,
     
     
   },

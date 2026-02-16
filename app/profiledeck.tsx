@@ -106,6 +106,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    top: 700,
+    top: 690,
   },
 });

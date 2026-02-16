@@ -93,17 +93,26 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
 
               
             </View>
-            
-            <View style={styles.deckWrapper}>
+            <View style={styles.deckWrapperPlayer}>
               <Deck 
                 posts={posts}
-                cardWidth={Math.min(width - 40, 400)}
+                cardWidth={Math.min(width - 40, 200)}
+                enabled={true}
+              />
+            </View>
+            <View style={styles.deckWrapperPartner}>
+              <Deck 
+                posts={posts}
+                cardWidth={Math.min(width - 40, 200)}
                 enabled={true}
               />
             </View>
             
+            
           
             <View style={styles.turnsAndButtonRow}>
+              
+              
               {isExpanded && (
                 <TradeTurns turns={trade1Turns} />
               )}
@@ -126,14 +135,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 20,
   },
-  modalBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
+ 
   modalContent: {
     width: '100%',
     
@@ -153,18 +155,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  deckWrapper: {
+  deckWrapperPartner: {
     marginBottom: 20,
-    left: -12,
+    
+    left: -42,
+    top: -72
+  },
+  deckWrapperPlayer: {
+    marginBottom: 20,
+    left: 19,
+    top:10
   },
 
   turnsAndButtonRow: {
-    width: 338,
+    width: 362,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from flex-end
     
-    top: 252,
+    top: 190,
     left: 0, // Changed from -200
     zIndex: 10,
     

@@ -47,7 +47,7 @@ type DeckItem =
 
 const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) => {
   const screenWidth = Dimensions.get('window').width;
-  const defaultCardWidth = Math.min(screenWidth - 38, 400);
+  const defaultCardWidth = Math.min(screenWidth - 38, 290);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 

@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 6,
     // overflow: 'hidden',
-    shadowColor: colors.ui.secondary,
+    shadowColor: colors.ui.background,
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 2,

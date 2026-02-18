@@ -22,7 +22,7 @@ export const colors = {
     location: '#229bff',
     time: '#fb4921',
     verify: '#ff8d0a',
-    wait: '#372788'
+    wait: '#000000'
   },
 
   // Post Type Colors
@@ -30,18 +30,18 @@ export const colors = {
     service: '#ff3a86',    // Yellow/Orange - Service icon
     good: '#FFA600',       // Coral/Red - Good icon
     user: '#1686ff', 
-    times: '#FFA600', 
+    times: '#2fff00', 
     locations:'#FFA600', 
   },
 
 
   // UI Element Colors
   ui: {
-    secondary: '#372788',     // Secondary button color (purple-grey) 5c5579  4a4468
+    secondary: '#000',     // Secondary button color (purple-grey) 5c5579  4a4468
     secondarydisabled: '#6b5bbe',
     cardsecondary: '#ac9ff0',
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
-    background: '#000000',    // Main app background
+    background: '#372788',    // Main app background
   },
 
   // Text Colors

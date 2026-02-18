@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 16,
-    fontWeight: '600',
+
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
     

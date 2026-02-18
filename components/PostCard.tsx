@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 0,
     borderRadius: 6,
-    shadowColor: colors.ui.secondary,
+    shadowColor: colors.ui.background,
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 2,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   descriptionText: { 
     fontSize: 15, 
     lineHeight: 18, 
-    color: colors.ui.background, 
+    color: colors.ui.secondary, 
     ...defaultTextStyle 
   },
 });

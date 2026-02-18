@@ -132,13 +132,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
             <View style={styles.goodServiceRow}>
               
-              <TouchableOpacity 
-                style={styles.upButton}
-                
-                onPress={handleCloseModal}
-              >
-                <FontAwesome6 name="angle-up" size={26} color='#fff' />
-              </TouchableOpacity>
+              
              
               <View style={styles.goodServiceButton}>
                
@@ -148,7 +142,13 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 <Text style={styles.offerButtonText}>0{serviceCount}</Text>
                 <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
               </View>
-              
+              <TouchableOpacity 
+                style={styles.upButton}
+                
+                onPress={handleCloseModal}
+              >
+                <FontAwesome6 name="angle-up" size={26} color='#fff' />
+              </TouchableOpacity>
 
 
               
@@ -179,7 +179,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: colors.ui.background,
+    opacity: .9,
   },
   modalContent: {
     width: '100%',
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: 4,
-    top: -216,
+    top: 346,
     left: 0,
   },
   goodServiceRow: {
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
-    top: 256,
+    top: -310,
     left: 0,
     zIndex: 0,
   },
@@ -226,15 +227,15 @@ const styles = StyleSheet.create({
     width: 50,
     height: 44,
     backgroundColor: colors.ui.secondary,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     
     
     justifyContent: 'center',
     alignItems: 'center',
-  
+    
     
    
   },
@@ -244,8 +245,8 @@ const styles = StyleSheet.create({
     
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.offer,
     justifyContent: 'center',
@@ -262,10 +263,10 @@ const styles = StyleSheet.create({
     width: 50,
     height: 40,
     
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.offer,
     justifyContent: 'center',
@@ -303,14 +304,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 4,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 12,
-    marginRight: 'auto',
+    marginLeft: 'auto',
     
     
   },

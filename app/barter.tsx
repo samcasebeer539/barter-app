@@ -45,10 +45,13 @@ const POSTS = [
 ];
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
-  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
-  { type: 'turnCounter', isUser: true  },
+  
+  
+  
   { type: 'turnAccept', user: 'Jay Wilson', isUser: false  },
+  { type: 'turnCounter', isUser: true  },
+  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
+  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
 ];
 
 const trade2Turns: TradeTurn[] = [

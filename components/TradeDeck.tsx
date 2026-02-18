@@ -10,10 +10,10 @@ import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
 const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
-  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
-  { type: 'turnCounter', isUser: true  },
   { type: 'turnAccept', user: 'Jay Wilson', isUser: false  },
+  { type: 'turnCounter', isUser: true  },
+  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
+  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
   
 ];
 
@@ -96,14 +96,14 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
             <View style={styles.deckWrapperPlayer}>
               <Deck 
                 posts={posts}
-                cardWidth={Math.min(width - 40, 200)}
+                cardWidth={Math.min(width - 40, 290)}
                 enabled={true}
               />
             </View>
             <View style={styles.deckWrapperPartner}>
               <Deck 
                 posts={posts}
-                cardWidth={Math.min(width - 40, 200)}
+                cardWidth={Math.min(width - 40, 290)}
                 enabled={true}
               />
             </View>
@@ -112,11 +112,11 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
           
             <View style={styles.turnsAndButtonRow}>
               
-              
+              <TradeUI />
               {isExpanded && (
-                <TradeTurns turns={trade1Turns} />
+                <View style={styles.turnsRows}><TradeTurns turns={trade1Turns} /></View>
               )}
-                <TradeUI />
+                
             </View>
 
           </View>
@@ -163,8 +163,8 @@ const styles = StyleSheet.create({
   },
   deckWrapperPlayer: {
     marginBottom: 20,
-    left: 19,
-    top:10
+    left: 274,
+    top: -44
   },
 
   turnsAndButtonRow: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from flex-end
     
-    top: 190,
+    top: 138,
     left: 0, // Changed from -200
     zIndex: 10,
     
@@ -202,7 +202,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.9,
     shadowRadius: 3,
     borderWidth: 3,
-    borderColor: colors.actions.accept
+    borderColor: colors.actions.accept,
+    marginRight: 'auto'
   },
   saveButton: {
     width: 54,
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.8,
     shadowRadius: 3,
-    marginRight: 'auto'
+    
     
   },
 
@@ -270,9 +271,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 12,
-    marginLeft: 'auto',
+   
     
   },
+  turnsRows: {
+    top: -8
+  }
   
 
 });

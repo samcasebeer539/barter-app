@@ -171,7 +171,7 @@ export default function ProfileDeck({
 
             {/* always just one line - offer */}
             <View style={styles.turnsAndButtonRow}>
-              <TradeTurns turns={trade1Turns} />
+              
               <View style={styles.secondaryButtonRow}>
                 
 
@@ -197,6 +197,9 @@ export default function ProfileDeck({
                 
 
               </View>
+              
+              
+              <View style={styles.tradeRow}><TradeTurns turns={trade1Turns} /></View>
             </View>
           </View>
         )}
@@ -342,6 +345,18 @@ const styles = StyleSheet.create({
     elevation: 10,
     zIndex: 10,
   },
+  tradeRow: {
+    width: 338,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 4,
+    top: -27,
+    left: 0,
+
+    elevation: 10,
+    zIndex: 10,
+  },
   goodServiceRow: {
     width: 334,
     flexDirection: 'row',
@@ -355,10 +370,10 @@ const styles = StyleSheet.create({
   playButton: {
     width: 50,
     height: 40,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     backgroundColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
@@ -442,7 +457,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.trade,

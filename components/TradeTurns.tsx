@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, ImageBackgroundComponent } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { colors, defaultTextStyle, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
 // Export the TradeTurn interface so other components can import it from here
@@ -60,7 +60,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
     const turnRowStyle = turn.isUser ? styles.turnRowUser : styles.turnRowPartner;
     
     const textContent = (
-      <Text style={[styles.tradeText, turn.isUser && styles.textAlignRight]}>
+      <Text style={[config.colorStyle, styles.tradeText, turn.isUser && styles.textAlignRight]}>
         {hasActionPlaceholder ? (
           (() => {
             const parts = line.split('{action}');
@@ -85,7 +85,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
     );
     
     const arrowElement = (
-      <FontAwesome6 name={arrowIcon} size={26} color="#000" style={styles.arrow} />
+      <FontAwesome6 name={arrowIcon} size={26} color={config.colorStyle.color} style={styles.arrow} />
     );
     
     return (
@@ -95,7 +95,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
           { 
             borderColor: config.colorStyle.color,
             shadowColor: config.colorStyle.color,
-            backgroundColor: config.colorStyle.color,
+            backgroundColor: colors.ui.secondary
           }
         ]} 
         key={index}
@@ -133,7 +133,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             onSubmitEditing={onSubmitEditing}
             blurOnSubmit={true}
           />
-          <FontAwesome6 name="arrow-left-long" size={18} color="#E0E0E0" style={styles.arrow} />
+          <FontAwesome6 name="arrow-left-long" size={18} color='#000' style={styles.arrow} />
         </View>
       )}
     </View>
@@ -150,55 +150,51 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 6,
     width: '100%',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     minHeight: 30, // Changed to minHeight for multiline support
     paddingVertical: 0,
     marginTop: 4,
-    borderWidth: 3,
-    borderTopLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
-    shadowOffset: { width: 1, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 2,
+    borderWidth: 0,
+    borderTopLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 25,
+
     
   },
   turnRowPartner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    justifyContent: 'center',
     gap: 6,
     width: '100%',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     minHeight: 30, // Changed to minHeight for multiline support
     paddingVertical: 0,
     marginTop: 4,
-    borderWidth: 3,
-    borderTopLeftRadius: 2,
-    borderBottomRightRadius: 2,
-    borderBottomLeftRadius: 25,
-    borderTopRightRadius: 25,
-    shadowOffset: { width: 1, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 2,
+
+    borderTopLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 2,
+
   },
   arrow: {
-    marginTop: -2
+    marginTop: 0
   
   },
   tradeText: {
     flex: 1,
     fontSize: 16,
-    color: '#000',
-    lineHeight: 22,
-    fontFamily: globalFonts.bold,
+    top: 5,
+    fontFamily: globalFonts.bold
   },
   textAlignRight: {
     textAlign: 'right',
   },
   questionText: {
     color: '#ffffff',
-    fontFamily: globalFonts.regular,
+    fontFamily: globalFonts.extrabold,
   },
   answerTextInput: {
     flex: 1,

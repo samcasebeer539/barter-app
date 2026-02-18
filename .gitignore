@@ -27,6 +27,8 @@ yarn-error.log*
 .env.local
 .env.*.local
 *.env
+google-services.json
+GoogleService-Info.plist
 
 # IDE
 .vscode/
@@ -42,3 +44,7 @@ yarn-error.log*
 # Logs
 logs/
 *.log
+
+# Prebuild
+ios/
+android/

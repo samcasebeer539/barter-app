@@ -228,27 +228,11 @@ export default function ProfileDeck({
           <View style={styles.buttonRow}>
             
 
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
+           
 
-            <TouchableOpacity 
-              style={styles.editButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="sliders" size={22} color="#fff" />
-            </TouchableOpacity>
+            
 
-            <TouchableOpacity 
-              style={styles.sendForwardButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
-              
-            </TouchableOpacity>
+            
 
             
             
@@ -263,6 +247,28 @@ export default function ProfileDeck({
               <Text style={styles.buttonText}> 0{serviceCount}</Text>
               <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
             </View>
+
+            <TouchableOpacity 
+              style={styles.sendForwardButton}
+              onPress={handlePlus}
+            >
+              <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
+              
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={handlePlus}
+            >
+              <FontAwesome6 name="sliders" size={22} color="#fff" />
+            </TouchableOpacity>
+
+             <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handlePlus}
+            >
+              <FontAwesome6 name="plus" size={24} color="#fff" />
+            </TouchableOpacity>
 
 
           </View>
@@ -432,15 +438,14 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingLeft: 10,
-    paddingRight: 14,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     
     
@@ -509,9 +514,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 44,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',

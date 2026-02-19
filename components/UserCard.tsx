@@ -3,11 +3,10 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
-import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
-import ProfilePicture from './ProfilePicture';
-import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
+import {FontAwesome6 } from '@expo/vector-icons';
+
+import { globalFonts, colors } from '../styles/globalStyles';
 import { useRouter } from 'expo-router';
-import { processColorsInProps } from 'react-native-reanimated/lib/typescript/Colors';
 
 interface Tag {
   text: string;

@@ -114,14 +114,26 @@ export default function ProfileDeck({
     <View style={styles.container} pointerEvents="box-none">
       {/* Top controls row */}
       <View style={styles.goodServiceRow}>
-        
+        {/* Toggle reveal button */}
+        <TouchableOpacity 
+          
+          style={styles.toggleButton} 
+          onPress={handleToggleReveal}
+          disabled={!toggleEnabled}
+        >
+          <FontAwesome6 
+            name={isDeckRevealed ? "angle-up" : "angle-down"} 
+            size={26} 
+            color={colors.actions.offer}
+          />
+        </TouchableOpacity>
 
         <View style={[
           styles.goodServiceButton, 
-            {borderBottomLeftRadius: isDeckRevealed ? 2 : 25 }]}>
-
-          <Text style={styles.buttonText}>1/2</Text>
-          <FontAwesome6 name="user-astronaut" size={18} color={colors.cardTypes.user} />
+            {borderBottomRightRadius: isDeckRevealed ? 2 : 25 }]}>
+          
+          <Text style={styles.offerText}>OFFERS </Text>
+          <Text style={styles.buttonText}>: 1/2</Text>
           <Text style={styles.buttonText}>:  0{goodCount}</Text>
           <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
           
@@ -130,22 +142,7 @@ export default function ProfileDeck({
 
         </View>
         
-        {/* Toggle reveal button */}
-        <TouchableOpacity 
-          
-          style={[
-            styles.toggleButton, 
-            {backgroundColor: isDeckRevealed ? 'transparent' : colors.actions.trade, borderBottomRightRadius: isDeckRevealed ? 2 : 2 }
-          ]} 
-          onPress={handleToggleReveal}
-          disabled={!toggleEnabled}
-        >
-          <FontAwesome6 
-            name={isDeckRevealed ? "angle-up" : "angle-down"} 
-            size={26} 
-            color={isDeckRevealed ? colors.actions.trade : '#000'} 
-          />
-        </TouchableOpacity>
+        
       </View>
       
       {/* Container for both decks */}
@@ -387,41 +384,42 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     width: 50,
-    height: 44,
-    borderTopRightRadius: 25,
+    height: 36,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.actions.trade,
+    shadowColor: colors.actions.offer,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.9,
     shadowRadius: 3,
     borderWidth: 3,
-    borderColor: colors.actions.trade
+    borderColor: colors.actions.offer
 
   },
   
   goodServiceButton: {
     
       
-    height: 44,
+    height: 36,
     // width: 160,
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flex: 1,
     gap: 4,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
     
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingLeft: 18,
+    paddingLeft: 10,
     paddingRight: 10,
-    paddingVertical: 10,
+    paddingVertical: 6,
     marginLeft: 'auto',
     
   },
@@ -431,7 +429,7 @@ const styles = StyleSheet.create({
     height: 44,
     // width: 160,
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flex: 1,
     gap: 4,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
@@ -452,8 +450,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: globalFonts.bold,
   },
+  offerText: {
+    color: colors.actions.offer,
+    fontSize: 20,
+    fontFamily: globalFonts.bold,
+  },
   selectButton: {
-    width: 50,
+    flex: 1,
     height: 40,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,

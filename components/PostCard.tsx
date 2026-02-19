@@ -117,6 +117,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               size={24}
               color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             />
+            
           </View>
 
           <View style={styles.titleContainer}>
@@ -129,7 +130,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               marqueeDelay={200}
               ellipsizeMode='tail'
             >
-              {post.name} <Text style={styles.date}>11/26/24</Text>
+              
+              {post.name}
+              <TouchableOpacity activeOpacity={0.2} onPress={handleSelect} style={styles.selectContainer}>
+              <FontAwesome6
+                name={isSelected ? 'circle-check' : 'circle'}
+                size={24}
+                color={'#fff'}
+              />
+            </TouchableOpacity> 
             </TextTicker>
           </View>
 
@@ -166,17 +175,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 4}>
                 
                 {post.description}
+                {/* <Text style={styles.date}>{"\n"}11/26/24</Text> */}
               </Text>
+              
             </View>
           </Animated.View>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.2} onPress={handleSelect} style={styles.selectContainer}>
-          <FontAwesome6
-            name={isSelected ? 'circle-check' : 'circle'}
-            size={24}
-            color={colors.actions.trade}
-          />
-        </TouchableOpacity> 
+        
+        <View style={styles.dateWrapper}>
+          <Text style={styles.date}>{"\n"}11/26/24</Text>
+        </View>
       </View>
       
     </Animated.View>
@@ -235,6 +243,14 @@ const styles = StyleSheet.create({
     lineHeight: 24, 
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
+    textAlign: 'right',
+    
+  },
+  dateWrapper: {
+    right: 16,
+    top: 374,
+    zIndex: 30,
+  
   },
   photoSectionWrapper: { 
     position: 'absolute', 
@@ -301,7 +317,7 @@ const styles = StyleSheet.create({
   descriptionText: { 
     fontSize: 15, 
     lineHeight: 18, 
-    color: colors.ui.secondary, 
+    color: colors.ui.background, 
     ...defaultTextStyle 
   },
 });

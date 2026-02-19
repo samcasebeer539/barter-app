@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 // import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../styles/globalStyles';
-import OffersSection from '../components/OffersSection';
 import TradeDeck from '../components/TradeDeck';
 import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
 
@@ -115,15 +114,7 @@ export default function ActiveTradesTestScreen() {
       contentContainerStyle={styles.contentContainer}
     >
 
-      
-      {/* {activeTrades.map((trade) => (
-        <ActiveTrade
-          key={trade.id}
-          playercards={trade.playercards}
-          partnercards={trade.partnercards}
-          turns={trade.turns}
-        />
-      ))} */}
+
       <View style={styles.middleSpacer} />
       <TradeDeck
         posts={POSTS}
@@ -132,19 +123,6 @@ export default function ActiveTradesTestScreen() {
 
       
 
-      {/* Sent Offers Section */}
-      <OffersSection
-        title="Sent OFFERS"
-        turns={sentOfferTurns}
-        defaultExpanded={true}
-      />
-      
-      {/* Declined/Expired Section */}
-      <OffersSection
-        title="DECLINED / EXPIRED"
-        turns={declinedExpiredTurns}
-        defaultExpanded={false}
-      />
      
       
       <View style={styles.bottomSpacer} />

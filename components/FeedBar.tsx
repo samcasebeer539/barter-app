@@ -35,13 +35,7 @@ export default function FeedBar({
   return (
     <>
       {/* Top Gradient Overlay */}
-      <View style={styles.topGradientContainer}>
-        <LinearGradient
-          colors={['#372788', 'rgba(37, 27, 88, 0)', 'rgba(37, 27, 88, 1)']}
-          locations={[0, 1, 1]}
-          style={styles.topGradient}
-        />
-      </View>
+
 
       <Animated.View
         style={[

@@ -66,17 +66,17 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
 
      
           <View style={styles.column}>
-            <View style={styles.goodServiceRow}>
+            
+            <View style={styles.deckWrapperPlayer}>
+              <View style={styles.goodServiceRow}>
               
              
               <View style={styles.goodServiceButton}>
-                <Text style={styles.offerButtonText}>{serviceCount}</Text>
-                <FontAwesome6 name="user-astronaut" size={18} color={colors.cardTypes.user} />
-
-                <Text style={styles.offerButtonText}> {goodCount}</Text>
+       
+                <Text style={styles.offerButtonText}> 0{goodCount}</Text>
                 <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
                 
-                <Text style={styles.offerButtonText}> {serviceCount}</Text>
+                <Text style={styles.offerButtonText}> 0{serviceCount}</Text>
                 <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
               </View>
              
@@ -84,16 +84,15 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
               <TouchableOpacity 
                 style={[
                   styles.upButton, 
-                  {backgroundColor: isExpanded ? 'transparent' : colors.actions.accept }
+                
                 ]}
                 onPress={() => setIsExpanded(!isExpanded)}
               >
-              <FontAwesome6 name={isExpanded ? "angle-up" : "angle-down"} size={26} color={isExpanded ? colors.actions.accept : '#000' } />
+              <FontAwesome6 name={isExpanded ? "angle-left" : "angle-right"} size={26} color="#fff" />
               </TouchableOpacity>
 
               
             </View>
-            <View style={styles.deckWrapperPlayer}>
               <Deck 
                 posts={posts}
                 cardWidth={Math.min(width - 40, 290)}
@@ -101,6 +100,32 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
               />
             </View>
             <View style={styles.deckWrapperPartner}>
+
+            <View style={styles.goodServiceRow}>
+              
+             
+              <View style={styles.goodServiceButton}>
+       
+                <Text style={styles.offerButtonText}> 0{goodCount}</Text>
+                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
+                
+                <Text style={styles.offerButtonText}> 0{serviceCount}</Text>
+                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+              </View>
+             
+
+              <TouchableOpacity 
+                style={[
+                  styles.upButton, 
+                
+                ]}
+                onPress={() => setIsExpanded(!isExpanded)}
+              >
+              <FontAwesome6 name={isExpanded ? "angle-right" : "angle-left"} size={26} color="#fff" />
+              </TouchableOpacity>
+
+              
+            </View>
               <Deck 
                 posts={posts}
                 cardWidth={Math.min(width - 40, 290)}
@@ -159,50 +184,46 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     
     left: -42,
-    top: -72
+    top: -108
   },
   deckWrapperPlayer: {
     marginBottom: 20,
-    left: 274,
+    left: 272,
     top: -44
   },
 
   turnsAndButtonRow: {
-    width: 362,
+    width: 334,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from flex-end
     
-    top: 138,
-    left: 0, // Changed from -200
+    top: 100,
+    left: 0, 
     zIndex: 10,
     
   },
   goodServiceRow: {
-    width: 338,
+    width: 280,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
-    top: -232,
-    left: 0,
+    top: -198,
+    left: 12,
     zIndex: 0,
   },
   upButton: {
     width: 50,
-    height: 44,
-    borderTopRightRadius: 25,
+    height: 36,
+    borderTopRightRadius: 22,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.actions.accept,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.9,
-    shadowRadius: 3,
-    borderWidth: 3,
-    borderColor: colors.actions.accept,
+   
+    backgroundColor: colors.ui.secondary, 
     marginRight: 'auto'
   },
   saveButton: {
@@ -259,13 +280,13 @@ const styles = StyleSheet.create({
   },
   goodServiceButton: {
     
-    height: 44,
-    width: 160,
+    height: 36,
+    flex: 1,
     flexDirection: 'row',
     gap: 4,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 22,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',

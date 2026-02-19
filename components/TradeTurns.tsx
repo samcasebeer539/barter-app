@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     ...defaultTextStyle,
     minHeight: 24,
-    textAlign: 'right', // Align answer input right like user messages
+    // textAlign: 'right', // Align answer input right like user messages
   },
 });
 

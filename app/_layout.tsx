@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
@@ -60,7 +60,7 @@ export default function RootLayout() {
             // Determine button position based on the route
             const href = props.href as string;
             const isFirst = href === '/feed';
-            const isLast = href === '/profiledeck';
+            const isLast = href === '/profile';
             const isMiddle = href === '/barter';
             
             return (
@@ -108,7 +108,7 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="profiledeck"
+          name="profile"
           options={{
             tabBarIcon: ({ color }) => (
               <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
@@ -120,12 +120,6 @@ export default function RootLayout() {
           name="settings"
           options={{
             href: null, // Hide from tab bar completely
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            href: null,
           }}
         />
    

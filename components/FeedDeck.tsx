@@ -38,7 +38,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
 
       Animated.spring(deckTranslateY, {
-        toValue: Dimensions.get('window').height / 8.6,
+        toValue: Dimensions.get('window').height / 16,
         useNativeDriver: true,
         tension: 50,
         friction: 8,
@@ -133,16 +133,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             <View style={styles.goodServiceRow}>
               
               
-             
-              <View style={styles.goodServiceButton}>
-               
-                <Text style={styles.offerButtonText}>0{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-                
-                <Text style={styles.offerButtonText}>0{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
-              </View>
-              <TouchableOpacity 
+             <TouchableOpacity 
                 style={styles.upButton}
                 
                 onPress={handleCloseModal}
@@ -150,6 +141,15 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 <FontAwesome6 name="angle-up" size={26} color='#fff' />
               </TouchableOpacity>
 
+              <View style={styles.goodServiceButton}>
+               
+                <Text style={styles.offerButtonText}> 0{goodCount}</Text>
+                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
+                
+                <Text style={styles.offerButtonText}> 0{serviceCount}</Text>
+                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+              </View>
+              
 
               
             </View>
@@ -219,17 +219,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
-    top: -310,
+    top: -304,
     left: 0,
     zIndex: 0,
   },
   upButton: {
     width: 50,
-    height: 44,
+    height: 36,
     backgroundColor: colors.ui.secondary,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 22,
     borderBottomLeftRadius: 2,
     
     
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
    
   },
   saveButton: {
-    width: 50,
+    flex: 1,
     height: 40,
     
     borderTopRightRadius: 2,
@@ -299,18 +299,18 @@ const styles = StyleSheet.create({
   },
   goodServiceButton: {
     
-    height: 44,
-    width: 126,
+    height: 36,
+    flex: 1,
     flexDirection: 'row',
     gap: 4,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 22,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     marginLeft: 'auto',
     
     

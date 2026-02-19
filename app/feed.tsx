@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 12,
-    paddingTop: 96,
+    paddingTop: 101,
   },
   columnsContainer: {
     flexDirection: 'row',
@@ -239,8 +239,8 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#1C1C1E',
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
     overflow: 'hidden',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 24,
+    borderBottomRightRadius: 20,
     borderBottomLeftRadius: 2,
   },
   itemTitle: {

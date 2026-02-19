@@ -305,8 +305,8 @@ const styles = StyleSheet.create({
         borderColor: colors.actions.counter,
     },
     queryButton: {
-        width: 46,
-        borderTopLeftRadius: 25,
+        flex: 1,
+        borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
         borderColor: colors.actions.query,

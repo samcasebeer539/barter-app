@@ -22,7 +22,8 @@ export const colors = {
     location: '#229bff',
     time: '#fb4921',
     verify: '#ff8d0a',
-    wait: '#372788'
+    wait: '#372788',
+    stall: '#fb4921',
   },
 
   // Post Type Colors

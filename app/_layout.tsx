@@ -28,8 +28,8 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: colors.actions.offer,
-          tabBarInactiveTintColor: '#fff',
+          tabBarActiveTintColor: '#fff',
+          tabBarInactiveTintColor: colors.ui.secondarydisabled,
           
           tabBarStyle: {
             backgroundColor: 'transparent',

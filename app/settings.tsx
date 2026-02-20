@@ -17,7 +17,7 @@ export default function SettingsScreen() {
   const [locationEnabled, setLocationEnabled] = React.useState(true);
 
   const handleBackPress = () => {
-    router.push('/profiledeck');
+    router.push('/profile');
   };
 
   return (

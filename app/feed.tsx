@@ -151,7 +151,7 @@ export default function FeedScreen() {
           />
           <FontAwesome6 
             name={item.type === 'good' ? 'gifts' : 'hand-sparkles'} 
-            size={18} 
+            size={16} 
             color={item.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             style={styles.typeIcon}
           />

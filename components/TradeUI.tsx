@@ -119,17 +119,17 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                     <>
                         <TouchableOpacity 
                             style={[styles.actionButton, styles.counterMinusButton, { opacity: buttonProps.opacity }]}
-                            onPress={() => PlayAction('remove')}
-                            disabled={buttonProps.disabled}
-                        >
-                            <FontAwesome6 name="circle-minus" size={24} color={colors.actions.counter} />
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={[styles.actionButton, styles.counterPlusButton, { opacity: buttonProps.opacity }]}
                             onPress={() => PlayAction('add')}
                             disabled={buttonProps.disabled}
                         >
-                            <FontAwesome6 name="circle-plus" size={22} color={colors.actions.counter} />
+                            <FontAwesome6 name="plus" size={22} color={colors.actions.counter} />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={[styles.actionButton, styles.counterPlusButton, { opacity: buttonProps.opacity }]}
+                            onPress={() => PlayAction('remove')}
+                            disabled={buttonProps.disabled}
+                        >
+                            <FontAwesome6 name="minus" size={22} color={colors.actions.counter} />
                         </TouchableOpacity>
                     </>
                 );
@@ -161,6 +161,26 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                         disabled={buttonProps.disabled}
                     >
                         <FontAwesome6 name="clock" size={22} color={colors.actions.time} />
+                    </TouchableOpacity>
+                );
+            case 'VERIFY':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.verifyButton, { opacity: buttonProps.opacity }]}
+                        onPress={() => PlayAction('select')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <FontAwesome6 name="clock" size={22} color={colors.actions.verify} />
+                    </TouchableOpacity>
+                );
+            case 'STALL':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.stallButton, { opacity: buttonProps.opacity }]}
+                        onPress={() => PlayAction('select')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <FontAwesome6 name="clock" size={22} color={colors.actions.stall} />
                     </TouchableOpacity>
                 );
             default:
@@ -265,6 +285,7 @@ const styles = StyleSheet.create({
         fontSize: 48,
         fontFamily: globalFonts.extrabold,
         bottom: 18,
+        letterSpacing: -2
     },
     playButton: {
         justifyContent: 'center',
@@ -285,44 +306,58 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         height: 40,
-        width: 46,
+        flex: 1,
         bottom: 12,
         borderWidth: 3,
         borderTopRightRadius: 2,
     },
     counterMinusButton: {
-        width: 46,
-        borderTopLeftRadius: 25,
+        flex: 1,
+        borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
         borderColor: colors.actions.counter,
     },
     counterPlusButton: {
-        width: 46,
+        flex: 1,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
-        borderBottomRightRadius: 2,
+        borderBottomRightRadius: 25,
         borderColor: colors.actions.counter,
     },
     queryButton: {
         flex: 1,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 2,
+        borderBottomRightRadius: 25,
         borderColor: colors.actions.query,
     },
     locationButton: {
-        width: 46,
-        borderTopLeftRadius: 25,
+        flex: 1,
+        borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 2,
+        borderBottomRightRadius: 25,
         borderColor: colors.actions.location,
     },
-    timeButton: {
-        width: 46,
-        borderTopLeftRadius: 25,
+    verifyButton: {
+        flex: 1,
+        borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 2,
+        borderBottomRightRadius: 25,
+        borderColor: colors.actions.verify,
+    },
+    stallButton: {
+        flex: 1,
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25,
+        borderColor: colors.actions.stall,
+    },
+    timeButton: {
+        flex: 1,
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25,
         borderColor: colors.actions.time,
     },
 });

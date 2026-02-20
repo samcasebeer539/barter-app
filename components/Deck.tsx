@@ -121,7 +121,7 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
         return enabledRef.current && 
                !isAnimatingRef.current && 
                Math.abs(g.dx) > GESTURE_THRESHOLD &&
-               Math.abs(g.dx) > Math.abs(g.dy) * 12; // Require significantly more horizontal than vertical movement
+               Math.abs(g.dx) > Math.abs(g.dy) * 2; // Require significantly more horizontal than vertical movement
       },
 
       onPanResponderGrant: () => {

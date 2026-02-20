@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 25,
     borderTopRightRadius: 25,
-
+    left: 0
     
   },
   turnRowPartner: {
@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 25,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
+    left: 0
 
   },
   arrow: {

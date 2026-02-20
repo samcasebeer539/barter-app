@@ -386,6 +386,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontFamily: globalFonts.extrabold,
     top: -2,
+    letterSpacing: -2
     
   },
   toggleButton: {
@@ -459,12 +460,13 @@ const styles = StyleSheet.create({
     color: colors.actions.offer,
     fontSize: 20,
     fontFamily: globalFonts.bold,
+    
   },
   selectButton: {
     flex: 1,
     height: 40,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
     borderWidth: 3,

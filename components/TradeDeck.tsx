@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
 
   turnsAndButtonRow: {
-    width: 334,
+    width: 338,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from flex-end

@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Modal } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
-
+import { Pressable } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -26,7 +26,6 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const [showSaved, setShowSaved] = useState(false);
   const [showPlay, setShowPlay] = useState(false);
 
-  // Count good and service posts
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
     const serviceCount = posts.filter(post => post.type === 'service').length;
@@ -56,110 +55,90 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     });
   };
 
-  const handleOffer = () => {
-    console.log('Offer button pressed');
-    // Add your offer logic here
-  };
-
-  const handleSave = () => {
-    console.log('Save button', showSaved);
-    setShowSaved(prev => !prev);
-  };
-
-  const handlePlay = () => {
-    console.log('Play button', showPlay);
-    setShowPlay(prev => !prev);
-  };
-
-
-  if (!visible) return null;
+  const handleOffer = () => console.log('Offer button pressed');
+  const handleSave = () => setShowSaved(prev => !prev);
+  const handlePlay = () => setShowPlay(prev => !prev);
 
   return (
-    <View style={styles.modalOverlay} pointerEvents="box-none">
-      <TouchableOpacity 
-        style={styles.modalBackground} 
-        activeOpacity={1} 
-        onPress={handleCloseModal}
-      />
-      <View style={styles.modalContent} pointerEvents="box-none">
-        <Animated.View
-          pointerEvents="auto"
-          style={[
-            styles.animatedContainer,
-            {
-              transform: [{ translateY: deckTranslateY }],
-            },
-          ]}
-        >
-     
-          <View style={styles.column}>
-            
-            <View style={styles.buttonRow}>
-              <TouchableOpacity 
-                
-                style={[
-                  styles.saveButton, 
-                  {backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
-                ]} 
-                onPress={handleSave}
-              >
-                <Icon name='bookmark' size={22} color={showSaved ? colors.actions.offer : '#000'} />
-              </TouchableOpacity>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+    >
+      <View style={styles.modalOverlay} pointerEvents="box-none">
+        <TouchableOpacity 
+          style={styles.modalBackground} 
+          activeOpacity={1} 
+          onPress={handleCloseModal}
+        />
 
-              <TouchableOpacity onPress={handleOffer} >
+        <View style={styles.modalContent} pointerEvents="box-none">
+          <Animated.View
+            pointerEvents="auto"
+            style={[
+              styles.animatedContainer,
+              { transform: [{ translateY: deckTranslateY }] },
+            ]}
+          >
+            <View style={styles.column}>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity 
+                  style={[
+                    styles.saveButton, 
+                    { backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
+                  ]}
+                  onPress={handleSave}
+                >
+                  <Icon name='bookmark' size={22} color={showSaved ? colors.actions.offer : '#000'} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleOffer}>
                   <Text style={styles.offerText}>OFFER</Text>
-              </TouchableOpacity>
+                </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[
-                  styles.playButton, 
-                  {backgroundColor: showPlay ? 'transparent' : colors.actions.offer }
-                ]} 
-                onPress={handlePlay}
-              >
-                <FontAwesome6 name='arrow-left-long' size={26} color={showPlay ? colors.actions.offer : '#000'} />
-              </TouchableOpacity>
-
-              
-            </View>
-            <View style={styles.deckWrapper}>
-              <Deck 
-                posts={posts}
-                cardWidth={Math.min(width - 40, 400)}
-                enabled={true}
-              />
-            </View>
-
-            <View style={styles.goodServiceRow}>
-              
-              
-             <TouchableOpacity 
-                style={styles.upButton}
-                
-                onPress={handleCloseModal}
-              >
-                <FontAwesome6 name="angle-up" size={26} color='#fff' />
-              </TouchableOpacity>
-
-              <View style={styles.goodServiceButton}>
-               
-                <Text style={styles.offerButtonText}> 0{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-                
-                <Text style={styles.offerButtonText}> 0{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+                <TouchableOpacity 
+                  style={[
+                    styles.playButton, 
+                    { backgroundColor: showPlay ? 'transparent' : colors.actions.offer }
+                  ]}
+                  onPress={handlePlay}
+                >
+                  <FontAwesome6 name='arrow-left-long' size={26} color={showPlay ? colors.actions.offer : '#000'} />
+                </TouchableOpacity>
               </View>
-              
 
-              
+              <View style={styles.deckWrapper}>
+                <Deck 
+                  posts={posts}
+                  cardWidth={Math.min(width - 40, 400)}
+                  enabled={true}
+                />
+              </View>
+
+              <View style={styles.goodServiceRow}>
+                <TouchableOpacity 
+                  style={styles.upButton}
+                  onPress={handleCloseModal}
+                >
+                  <FontAwesome6 name="angle-up" size={26} color='#fff' />
+                </TouchableOpacity>
+
+                <View style={styles.goodServiceButton}>
+                  
+                  <FontAwesome6 name="gifts" size={16} color={colors.cardTypes.good} />
+                  <Text style={[styles.offerButtonText, {color: colors.cardTypes.good}]}>0{goodCount}</Text>
+                  
+                  <FontAwesome6 name="hand-sparkles" size={16} color={colors.cardTypes.service} />
+                  <Text style={[styles.offerButtonText, {color: colors.cardTypes.service}]}>0{serviceCount}</Text>
+                </View>
+              </View>
+
             </View>
-
-            
-            
-          </View>
-        </Animated.View>
+          </Animated.View>
+        </View>
       </View>
-    </View>
+    </Modal>
   );
 }
 
@@ -171,16 +150,18 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: 'flex-end',
-    zIndex: 20,
+    zIndex: 10,
+    
   },
   modalBackground: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: colors.ui.background,
-    opacity: .9,
+    opacity: .88,
+    
   },
   modalContent: {
     width: '100%',
@@ -188,11 +169,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     
     alignItems: 'center',
-    bottom: 400,
+   
   },
   animatedContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 480,
     alignItems: 'center',
   },
   column: {
@@ -244,17 +225,18 @@ const styles = StyleSheet.create({
     height: 40,
     
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 25,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.offer,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     shadowColor: colors.actions.offer,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.9,
     shadowRadius: 3,
+    paddingHorizontal: 16
     
    
   },
@@ -287,14 +269,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.8,
     shadowRadius: 3,
-    marginRight: 'auto'
+    marginRight: 'auto',
+    letterSpacing: -2
     
   },
 
   offerButtonText: {
-    color: '#ffffff',
+   
     fontSize: 20,
-    fontFamily: globalFonts.bold
+    fontFamily: globalFonts.bold,
     
   },
   goodServiceButton: {

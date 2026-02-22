@@ -1,23 +1,37 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import Deck from './Deck';
-import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 
-import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
+import Deck from './Deck';
+import TradeTurns, { TradeTurn } from '../components/TradeTurns';
+import { globalFonts, colors } from '../styles/globalStyles';
 
-const trade1Turns: TradeTurn[] = [
-  { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false  },
-
-  
-];
-
-
+const SLIDE_DISTANCE = 600;
 const { width } = Dimensions.get('window');
 
-interface Post {
+const trade1Turns: TradeTurn[] = [
+  { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+];
+
+const PRIMARY_USER = {
+  name: 'Sam Casebeer',
+  pronouns: '(they/them)',
+  location: 'Santa Cruz, CA',
+  bio: 'UCSC 2026 for Computer Science, multimedia visual artist, sci-fi/fantasy reader, cat lover',
+  profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
+};
+
+const SECONDARY_USER = {
+  name: 'Jay Wilson',
+  pronouns: '(she/he/they)',
+  location: 'Santa Cruz, CA',
+  bio: 'Pro Smasher',
+  profileImageUrl: 'https://picsum.photos/seed/bird/400/400',
+};
+
+export interface Post {
   type: 'good' | 'service';
   name: string;
   description: string;
@@ -32,260 +46,151 @@ interface ProfileDeckProps {
   isDeckRevealed?: boolean;
 }
 
-export default function ProfileDeck({ 
-  posts, 
+export default function ProfileDeck({
+  posts,
   secondaryPosts = [],
-  onToggleReveal, 
-  toggleEnabled = false, 
-  isDeckRevealed = false 
+  onToggleReveal,
+  toggleEnabled = false,
+  isDeckRevealed = false,
 }: ProfileDeckProps) {
   const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [showSecondary, setShowSecondary] = useState(false);
-  
-  const { goodCount, serviceCount } = useMemo(() => {
-    const goodCount = posts.filter(post => post.type === 'good').length;
-    const serviceCount = posts.filter(post => post.type === 'service').length;
-    return { goodCount, serviceCount };
-  }, [posts]);
 
-  // Animate when isDeckRevealed changes
+  const { goodCount, serviceCount } = useMemo(() => ({
+    goodCount: posts.filter(p => p.type === 'good').length,
+    serviceCount: posts.filter(p => p.type === 'service').length,
+  }), [posts]);
+
   useEffect(() => {
-    if (isDeckRevealed) {
-      // Show secondary deck immediately when opening
-      setShowSecondary(true);
-    }
-    
+    if (isDeckRevealed) setShowSecondary(true);
+
     Animated.spring(slideAnim, {
       toValue: isDeckRevealed ? 1 : 0,
       useNativeDriver: true,
       tension: 50,
       friction: 8,
     }).start(() => {
-      // Hide secondary deck after animation completes when closing
-      if (!isDeckRevealed) {
-        setShowSecondary(false);
-      }
+      if (!isDeckRevealed) setShowSecondary(false);
     });
-  }, [isDeckRevealed, slideAnim]);
-
-  const handleTrade = () => {
-    console.log('Trade button pressed');
-  };
-
-  const handlePlus = () => {
-    console.log('Plus button pressed');
-  };
-
-  const handleMinus = () => {
-    console.log('Minus button pressed');
-  };
-
-  const handleToggleReveal = () => {
-    console.log('Toggle reveal button pressed');
-    onToggleReveal?.();
-  };
-
-  const handleSecondaryTrade = () => {
-    console.log('Secondary trade button pressed');
-  };
-
-  const handleSecondaryPlus = () => {
-    console.log('Secondary plus button pressed');
-  };
-
-  const handleSecondaryMinus = () => {
-    console.log('Secondary minus button pressed');
-  };
-  const handleSettingsPress = () => {
-    router.push('/settings');
-  };
-
-  // Calculate slide distance
-  const slideDistance = 600;
-  const translateY = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, slideDistance],
-  });
+  }, [isDeckRevealed]);
 
   const cardWidth = Math.min(width - 40, 400);
+  const translateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, SLIDE_DISTANCE],
+  });
 
   return (
     <View style={styles.container} pointerEvents="box-none">
-      {/* Top controls row */}
+      {/* offers bar */}
       <View style={styles.goodServiceRow}>
-        {/* Toggle reveal button */}
-        <TouchableOpacity 
-          
-          style={styles.toggleButton} 
-          onPress={handleToggleReveal}
+        <View style={[styles.goodServiceButton, { borderBottomLeftRadius: isDeckRevealed ? 2 : 25 }, { flex: isDeckRevealed ? 1 : 0 }]}>
+          <Text style={styles.buttonText}>1/2 :  0{goodCount}</Text>
+          <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
+          <Text style={styles.buttonText}> 0{serviceCount}</Text>
+          <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
+        </View>
+
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={onToggleReveal}
           disabled={!toggleEnabled}
         >
-          <FontAwesome6 
-            name={isDeckRevealed ? "angle-up" : "angle-down"} 
-            size={26} 
+          <Text style={styles.offerText}>OFFERS </Text>
+          <FontAwesome6
+            name={isDeckRevealed ? 'angle-up' : 'angle-down'}
+            size={26}
             color={colors.actions.offer}
           />
         </TouchableOpacity>
-
-        <View style={[
-          styles.goodServiceButton, 
-            {borderBottomRightRadius: isDeckRevealed ? 2 : 25 }]}>
-          
-          <Text style={styles.offerText}>OFFERS </Text>
-          <Text style={styles.buttonText}>: 1/2</Text>
-          <Text style={styles.buttonText}>:  0{goodCount}</Text>
-          <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-          
-          <Text style={styles.buttonText}> 0{serviceCount}</Text>
-          <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
-
-        </View>
-        
-        
       </View>
-      
-      {/* Container for both decks */}
+
+      {/* Decks */}
       <View style={styles.decksContainer}>
 
-        {/* Secondary deck (revealed when drawer opens) */}
+        {/* Secondary deck */}
         {showSecondary && secondaryPosts.length > 0 && (
           <View style={styles.secondaryDeckContainer}>
-            <View style={styles.secondaryDeckWrapper}>
-              <Deck 
-                posts={secondaryPosts}
-                user={{
-                    name: "Jay Wilson",
-                    pronouns: "(she/he/they)",
-                    location: "Santa Cruz, CA",
-                    bio: "Pro Smasher",
-                    profileImageUrl: 'https://picsum.photos/seed/bird/400/400'
-                }}
-                cardWidth={cardWidth}
-                enabled={true}
-              />
+            <View style={styles.deckWrapper}>
+              <Deck posts={secondaryPosts} user={SECONDARY_USER} cardWidth={cardWidth} enabled />
             </View>
 
-            {/* always just one line - offer */}
             <View style={styles.turnsAndButtonRow}>
-              
               <View style={styles.secondaryButtonRow}>
-                
-
-                <TouchableOpacity 
-                  style={styles.selectButton}
-                  onPress={handleSecondaryMinus}
-                >
+                <TouchableOpacity style={styles.selectButton} onPress={() => {}}>
                   <Icon name="circle-o" size={22} color={colors.actions.trade} />
                 </TouchableOpacity>
-                
-                <TouchableOpacity onPress={handleSecondaryTrade}>
+
+                <TouchableOpacity onPress={() => {}}>
                   <Text style={styles.tradeText}>TRADE</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={styles.playButton}
-                  onPress={handleSecondaryPlus}
-                >
+                <TouchableOpacity style={styles.playButton} onPress={() => {}}>
                   <FontAwesome6 name="arrow-left-long" size={26} color="#000" />
                 </TouchableOpacity>
-
-
-                
-
               </View>
-              
-              
-              <View style={styles.tradeRow}><TradeTurns turns={trade1Turns} /></View>
+
+              <View style={styles.tradeRow}>
+                <TradeTurns turns={trade1Turns} />
+              </View>
             </View>
           </View>
         )}
 
-        {/* Animated container wrapping primary deck and buttons (the drawer) */}
-        <Animated.View 
-          style={[
-            styles.deckAndButtonsContainer,
-            { transform: [{ translateY }] }
-          ]}
-        >
-          {/* Primary Deck */}
+        {/* Primary deck (animated drawer) */}
+        <Animated.View style={[styles.deckAndButtonsContainer, { transform: [{ translateY }] }]}>
           <View style={styles.deckWrapper}>
-            <Deck 
-                posts={posts}
-                user={{
-                    name: "Sam Casebeer",
-                    pronouns: "(they/them)",
-                    location: "Santa Cruz, CA",
-                    bio: "UCSC 2026 for Computer Science, multimedia visual artist, sci-fi/fantasy reader, cat lover",
-                    profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
-                }}
-                cardWidth={cardWidth}
-                enabled={true}
-            />
+            <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
           </View>
 
-          {/* Primary button row */}
           <View style={styles.buttonRow}>
-            
+            <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => router.push('/settings')}>
+              <FontAwesome6 name="plus" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+              <FontAwesome6 name="sliders" size={22} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+              <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
+            </TouchableOpacity>
 
            
-
-            
-
-            
-
-            
-            
-           
-            
-            
             <View style={styles.mygoodServiceButton}>
-              
               <Text style={styles.buttonText}>0{goodCount}</Text>
               <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-              
               <Text style={styles.buttonText}> 0{serviceCount}</Text>
               <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
             </View>
 
-            <TouchableOpacity 
-              style={styles.sendForwardButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
-              
-            </TouchableOpacity>
+          
 
-            <TouchableOpacity 
-              style={styles.editButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="sliders" size={22} color="#fff" />
-            </TouchableOpacity>
-
-             <TouchableOpacity 
-              style={styles.addButton}
-              onPress={handlePlus}
-            >
-              <FontAwesome6 name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
-
-
+            
           </View>
         </Animated.View>
 
-    
       </View>
     </View>
   );
 }
+
+const roundedButton = {
+  justifyContent: 'center' as const,
+  alignItems: 'center' as const,
+  borderTopRightRadius: 2,
+  borderBottomRightRadius: 2,
+  borderTopLeftRadius: 2,
+  borderBottomLeftRadius: 2,
+  backgroundColor: colors.ui.secondary,
+};
 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
     maxWidth: 400,
     position: 'relative',
-    paddingHorizontal: 0,
     alignItems: 'center',
     bottom: 408,
     overflow: 'visible',
@@ -318,11 +223,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
     elevation: 1,
-    
-  },
-  secondaryDeckWrapper: {
-    marginBottom: 20,
-    left: -12,
   },
   buttonRow: {
     width: 334,
@@ -331,7 +231,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 4,
     top: 266,
-    left: 0,
   },
   secondaryButtonRow: {
     width: 338,
@@ -340,11 +239,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 4,
     top: -12,
-    left: 0,
-    shadowColor: colors.actions.trade,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.9,
-    shadowRadius: 3,
     elevation: 10,
     zIndex: 10,
   },
@@ -355,8 +249,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 4,
     top: -27,
-    left: 0,
-
     elevation: 10,
     zIndex: 10,
   },
@@ -366,9 +258,61 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 4,
     top: -240,
-    left: 0,
     zIndex: 3,
     elevation: 3,
+
+  },
+  turnsAndButtonRow: {
+    width: 338,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    top: 261,
+    zIndex: 10,
+  },
+  goodServiceButton: {
+    height: 36,
+    flexDirection: 'row',
+    flex: 1,
+    gap: 4,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 25,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingLeft: 18,
+    paddingRight: 10, 
+    paddingVertical: 6,
+    marginLeft: 'auto'
+  },
+  mygoodServiceButton: {
+    height: 44,
+    flexDirection: 'row',
+    flex: 1,
+    gap: 4,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  toggleButton: {
+    width: 120,
+    height: 36,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: colors.actions.offer,
   },
   playButton: {
     width: 50,
@@ -381,87 +325,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  tradeText: {
-    color: colors.actions.trade,
-    fontSize: 48,
-    fontFamily: globalFonts.extrabold,
-    top: -2,
-    letterSpacing: -2
-    
-  },
-  toggleButton: {
-    width: 50,
-    height: 36,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
-    
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.actions.offer,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.9,
-    shadowRadius: 3,
-    borderWidth: 3,
-    borderColor: colors.actions.offer
-
-  },
-  
-  goodServiceButton: {
-    
-      
-    height: 36,
-    // width: 160,
-    flexDirection: 'row',
-    flex: 1,
-    gap: 4,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingVertical: 6,
-    marginLeft: 'auto',
-    
-  },
-  mygoodServiceButton: {
-    
-      
-    height: 44,
-    // width: 160,
-    flexDirection: 'row',
-    flex: 1,
-    gap: 4,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
-    
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    
-    
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  offerText: {
-    color: colors.actions.offer,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-    
-  },
   selectButton: {
     flex: 1,
     height: 40,
@@ -473,85 +336,30 @@ const styles = StyleSheet.create({
     borderColor: colors.actions.trade,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 'auto',
   },
-
-  editButton: {
+  iconButton: {
+    ...roundedButton,
     width: 50,
     height: 44,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    
-  },
-  sendForwardButton: {
-    width: 50,
-    height: 44,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 0,
-  },
-  sendBackButton: {
-    width: 50,
-    height: 44,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   addButton: {
-    width: 50,
-    height: 44,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  settingsButton: {
-    width: 50,
-    height: 44,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 25,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  turnsAndButtonRow: {
-    width: 338,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start', // Changed from flex-end
-    
-    top: 261,
-    left: 0, // Changed from -200
-    zIndex: 10,
-    
+  buttonText: {
+    color: colors.ui.secondarydisabled,
+    fontSize: 20,
+    fontFamily: globalFonts.bold,
   },
-  profileImage: {
-    width: 22,
-    height: 22,
-    borderRadius: 80,
+  offerText: {
+    color: colors.actions.offer,
+    fontSize: 20,
+    fontFamily: globalFonts.bold,
   },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
+  tradeText: {
+    color: colors.actions.trade,
+    fontSize: 48,
+    fontFamily: globalFonts.extrabold,
+    top: -2,
+    letterSpacing: -2,
   },
 });

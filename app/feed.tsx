@@ -149,18 +149,19 @@ export default function FeedScreen() {
             style={styles.image}
             resizeMode="cover"
           />
-          <FontAwesome6 
-            name={item.type === 'good' ? 'gifts' : 'hand-sparkles'} 
-            size={16} 
-            color={item.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
-            style={styles.typeIcon}
-          />
+     
         
 
         </View>
       </TouchableOpacity>
       
       <View style={styles.itemTitleWrapper}>
+          <FontAwesome6 
+            name={item.type === 'good' ? 'gifts' : 'hand-sparkles'} 
+            size={16} 
+            color={item.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
+            style={styles.typeIcon}
+          />
         <Text style={styles.itemTitle}>{item.title}</Text>
       </View>
      
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardWrapper: {
-    marginBottom: 2,
+    marginBottom: 0,
   },
   card: {
     backgroundColor: '#1C1C1E',
@@ -255,18 +256,20 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   typeIcon: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
+  
+    
   },
   itemTitleWrapper: {
     backgroundColor: colors.ui.secondary,
     marginTop: 4,
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingLeft: 8,
+    paddingRight: 16,
     
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 4,
+   
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 20,
@@ -274,9 +277,10 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 16,
-
+    
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
+    
     
   },
 });

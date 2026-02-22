@@ -85,12 +85,13 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
               <View style={styles.buttonRow}>
                 <TouchableOpacity 
                   style={[
-                    styles.saveButton, 
+                    styles.selectButton, 
                     { backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
                   ]}
                   onPress={handleSave}
                 >
-                  <Icon name='bookmark' size={22} color={showSaved ? colors.actions.offer : '#000'} />
+                  <Text style={[styles.offerButtonText, {color: showSaved ? colors.actions.offer : '#000'}]}>00</Text>
+                  <Icon name='check-square' size={22} color={showSaved ? colors.actions.offer : '#000'} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleOffer}>
@@ -117,21 +118,29 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
               </View>
 
               <View style={styles.goodServiceRow}>
+                
+
+                <View style={styles.goodServiceButton}>
+                  
+                  <FontAwesome6 name="gifts" size={16} color={colors.ui.secondarydisabled} />
+                  <Text style={[styles.offerButtonText, {color: colors.ui.secondarydisabled}]}>0{goodCount}</Text>
+                  
+                  <FontAwesome6 name="hand-sparkles" size={16} color={colors.ui.secondarydisabled} />
+                  <Text style={[styles.offerButtonText, {color: colors.ui.secondarydisabled}]}>0{serviceCount}</Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.saveButton}
+                  onPress={handleSave}
+                >
+                  <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
+                </TouchableOpacity>
+
                 <TouchableOpacity 
                   style={styles.upButton}
                   onPress={handleCloseModal}
                 >
                   <FontAwesome6 name="angle-up" size={26} color='#fff' />
                 </TouchableOpacity>
-
-                <View style={styles.goodServiceButton}>
-                  
-                  <FontAwesome6 name="gifts" size={16} color={colors.cardTypes.good} />
-                  <Text style={[styles.offerButtonText, {color: colors.cardTypes.good}]}>0{goodCount}</Text>
-                  
-                  <FontAwesome6 name="hand-sparkles" size={16} color={colors.cardTypes.service} />
-                  <Text style={[styles.offerButtonText, {color: colors.cardTypes.service}]}>0{serviceCount}</Text>
-                </View>
               </View>
 
             </View>
@@ -208,19 +217,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 36,
     backgroundColor: colors.ui.secondary,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 22,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 22,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     
     
     justifyContent: 'center',
     alignItems: 'center',
-    
-    
    
   },
-  saveButton: {
+  selectButton: {
     flex: 1,
     height: 40,
     
@@ -230,15 +237,29 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.offer,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    shadowColor: colors.actions.offer,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.9,
-    shadowRadius: 3,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+    // shadowColor: colors.actions.offer,
+    // shadowOffset: { width: 1, height: 1 },
+    // shadowOpacity: 0.9,
+    // shadowRadius: 3,
     paddingHorizontal: 16
+
+  },
+  saveButton: {
+    width: 50,
+    height: 36,
+    backgroundColor: colors.ui.secondary,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
     
-   
+    
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   playButton: {
     
@@ -253,10 +274,10 @@ const styles = StyleSheet.create({
     borderColor: colors.actions.offer,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.actions.offer,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.9,
-    shadowRadius: 3,
+    // shadowColor: colors.actions.offer,
+    // shadowOffset: { width: 1, height: 1 },
+    // shadowOpacity: 0.9,
+    // shadowRadius: 3,
     
     
   },
@@ -265,10 +286,10 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontFamily: globalFonts.extrabold,
     top: -2,
-    shadowColor: colors.actions.offer,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.8,
-    shadowRadius: 3,
+    // shadowColor: colors.actions.offer,
+    // shadowOffset: { width: 1, height: 1 },
+    // shadowOpacity: 0.8,
+    // shadowRadius: 3,
     marginRight: 'auto',
     letterSpacing: -2
     
@@ -286,12 +307,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 4,
-    borderTopRightRadius: 22,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 22,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 10,
     marginLeft: 'auto',

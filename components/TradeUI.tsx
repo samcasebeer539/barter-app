@@ -277,9 +277,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: -10,
         justifyContent: 'flex-end',
-        shadowOffset: { width: 1, height: 1 },
-        shadowOpacity: 0.9,
-        shadowRadius: 3,
+        // shadowOffset: { width: 1, height: 1 },
+        // shadowOpacity: 0.9,
+        // shadowRadius: 3,
     },
     tradeLineText: {
         fontSize: 48,
@@ -297,9 +297,9 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 25,
         borderBottomRightRadius: 2,
         borderWidth: 3,
-        shadowOffset: { width: 1, height: 1 },
-        shadowOpacity: 0.9,
-        shadowRadius: 3,
+        // shadowOffset: { width: 1, height: 1 },
+        // shadowOpacity: 0.9,
+        // shadowRadius: 3,
     },
     // Base style for all action buttons
     actionButton: {

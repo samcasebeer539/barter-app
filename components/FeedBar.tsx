@@ -44,12 +44,11 @@ export default function FeedBar({
         ]}
       >
         <TouchableOpacity
-          style={styles.locationButton}
-          onPress={onLocationPress}
+          style={styles.saveButton}
+          onPress={onSavePress}
         >
-          <FontAwesome6 name='location-dot' size={22} color={showLocation ? '#fff' : colors.actions.offer} />
+          <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.searchBar}
           onPress={handleSearchBarPress}
@@ -67,12 +66,7 @@ export default function FeedBar({
           <FontAwesome6 name='magnifying-glass' size={22} color='#FFFFFF' />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={onSavePress}
-        >
-          <Icon name='bookmark' size={24} color={showSaved ? '#fff' : colors.actions.offer} />
-        </TouchableOpacity>
+        
       </Animated.View>
     </>
   );
@@ -88,7 +82,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 4,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     zIndex: 10,
     paddingBottom: 4,
     paddingTop: 48,
@@ -117,9 +111,9 @@ const styles = StyleSheet.create({
   saveButton: {
     width: 50,
     height: 44,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
@@ -137,11 +131,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchBar: {
-    width: 258,
+    flex: 1,
     height: 44,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     backgroundColor: colors.ui.secondary,
     flexDirection: 'row',

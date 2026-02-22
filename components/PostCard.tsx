@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   descriptionScroll: { flex: 1, flexDirection: 'row' },
   descriptionText: { 
     fontSize: 15, 
-    lineHeight: 18, 
+    lineHeight: 20, 
     color: colors.ui.background, 
     ...defaultTextStyle 
   },

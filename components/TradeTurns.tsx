@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, ImageBackgroundComponent } from 'react-native';
+import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { colors, defaultTextStyle, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
-// Export the TradeTurn interface so other components can import it from here
 export interface TradeTurn {
   type: TradeTurnType;
   user?: string;
@@ -13,7 +12,6 @@ export interface TradeTurn {
   isUser?: boolean;
 }
 
-// Re-export TradeTurnType for convenience
 export type { TradeTurnType };
 
 interface TradeTurnsProps {
@@ -33,97 +31,51 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
   onSubmitEditing,
   inputRef,
 }) => {
-  const renderLine = (turn: TradeTurn, index: number) => {
+  const renderTurn = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
-    
-    if (!config) {
-      console.error('No config found for turn type:', turn.type);
-      return null; // Return null instead of error message for cleaner UI
-    }
-    
-    // Choose the correct template based on whether it's the user's turn or partner's
-    let line = turn.isUser ? config.templateUser : config.templatePartner;
-    
-    // Only replace placeholders if they exist in the template
-    if (turn.user && line.includes('{user}')) {
-      line = line.replace('{user}', turn.user);
-    }
-    if (turn.item && line.includes('{item}')) {
-      line = line.replace('{item}', turn.item);
-    }
-    if (turn.question && line.includes('{question}')) {
-      line = line.replace('{question}', turn.question);
-    }
-    
-    const arrowIcon = turn.isUser ? 'arrow-left-long' : 'arrow-right-long';
-    const hasActionPlaceholder = line.includes('{action}');
-    const turnRowStyle = turn.isUser ? styles.turnRowUser : styles.turnRowPartner;
-    
-    const textContent = (
-      <Text style={[config.colorStyle, styles.tradeText, turn.isUser && styles.textAlignRight]}>
-        {hasActionPlaceholder ? (
-          (() => {
-            const parts = line.split('{action}');
-            return (
-              <>
-                {parts[0]}
-                <Text style={config.colorStyle}>{config.actionText}</Text>
-                {parts[1] || ''}
-              </>
-            );
-          })()
-        ) : (
-          line
-        )}
-        {turn.type === 'turnQuery' && turn.question && (
-          <>
-            {'\n'}
-            <Text style={styles.questionText}>       {turn.question}</Text>
-          </>
-        )}
-      </Text>
-    );
-    
-    const arrowElement = (
-      <FontAwesome6 name={arrowIcon} size={26} color={config.colorStyle.color} style={styles.arrow} />
-    );
-    
+    if (!config) return null;
+
+    let line = (turn.isUser ? config.templateUser : config.templatePartner)
+      .replace('{user}', turn.user ?? '{user}')
+      .replace('{item}', turn.item ?? '{item}')
+      .replace('{question}', turn.question ?? '{question}');
+
+    const parts = line.split('{action}');
+    const hasAction = parts.length > 1;
+
     return (
-      <View 
-        style={[
-          turnRowStyle,
-          { 
-            borderColor: config.colorStyle.color,
-            shadowColor: config.colorStyle.color,
-            backgroundColor: colors.ui.secondary
-          }
-        ]} 
+      <View
         key={index}
+        style={[
+          turn.isUser ? styles.rowUser : styles.rowPartner,
+          { backgroundColor: config.colorStyle.color, borderColor: config.colorStyle.color, shadowColor: config.colorStyle.color },
+        ]}
       >
-        {turn.isUser ? (
-          <>
-            {textContent}
-            {arrowElement}
-          </>
-        ) : (
-          <>
-            {arrowElement}
-            {textContent}
-          </>
-        )}
+        <Text style={styles.text}>
+          {hasAction ? (
+            <>
+              {parts[0]}
+              <Text style={config.colorStyle}>{config.actionText}</Text>
+              {parts[1]}
+            </>
+          ) : line}
+          {turn.type === 'turnQuery' && turn.question && (
+            <>{'\n'}<Text style={styles.questionText}>       {turn.question}</Text></>
+          )}
+        </Text>
       </View>
     );
   };
 
   return (
-    <View style={styles.tradeSection}>
-      {turns.map((turn, index) => renderLine(turn, index))}
-      
+    <View style={styles.container}>
+      {turns.map(renderTurn)}
+
       {showAnswerInput && (
-        <View style={styles.turnRowUser}>
+        <View style={styles.rowUser}>
           <TextInput
             ref={inputRef}
-            style={styles.answerTextInput}
+            style={styles.input}
             placeholder="Type your answer..."
             placeholderTextColor="#888"
             value={answerText}
@@ -131,81 +83,64 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             multiline
             returnKeyType="done"
             onSubmitEditing={onSubmitEditing}
-            blurOnSubmit={true}
+            blurOnSubmit
           />
-          <FontAwesome6 name="arrow-left-long" size={18} color='#000' style={styles.arrow} />
+          <FontAwesome6 name="arrow-left-long" size={18} color="#000" style={styles.arrow} />
         </View>
       )}
     </View>
   );
 };
 
+const rowBase: object = {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  gap: 6,
+  width: '100%',
+  paddingHorizontal: 10,
+  minHeight: 30,
+  marginTop: 4,
+};
+
 const styles = StyleSheet.create({
-  tradeSection: {
+  container: {
     gap: -4,
     width: '100%',
   },
-  turnRowUser: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-    width: '100%',
-    paddingHorizontal: 10,
-    minHeight: 30, // Changed to minHeight for multiline support
-    paddingVertical: 0,
-    marginTop: 4,
-    borderWidth: 0,
+  rowUser: {
+    ...rowBase,
     borderTopLeftRadius: 2,
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 25,
     borderTopRightRadius: 25,
-    left: 0
-    
   },
-  turnRowPartner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  rowPartner: {
+    ...rowBase,
     justifyContent: 'center',
-    gap: 6,
-    width: '100%',
-    paddingHorizontal: 10,
-    minHeight: 30, // Changed to minHeight for multiline support
-    paddingVertical: 0,
-    marginTop: 4,
-
     borderTopLeftRadius: 25,
     borderBottomRightRadius: 25,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
-    left: 0
-
   },
-  arrow: {
-    marginTop: 0
-  
-  },
-  tradeText: {
+  text: {
     flex: 1,
     fontSize: 16,
     top: 5,
-    fontFamily: globalFonts.bold
-  },
-  textAlignRight: {
-    textAlign: 'right',
+    fontFamily: globalFonts.bold,
   },
   questionText: {
     color: '#ffffff',
     fontFamily: globalFonts.extrabold,
   },
-  answerTextInput: {
+  input: {
     flex: 1,
     fontSize: 16,
     color: '#FFFFFF',
     lineHeight: 22,
-    ...defaultTextStyle,
     minHeight: 24,
-    // textAlign: 'right', // Align answer input right like user messages
+    ...defaultTextStyle,
   },
+  arrow: {},
 });
 
 export default TradeTurns;

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     borderColor: '#c94545',
     
     justifyContent: 'flex-start',
-    alignItems: 'flex-start'
+    alignItems: 'center'
   },
 
   topRow: {
@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.regular,
   },
   profileImage: {
-    width: 140,
-    height: 140,
+    width: 160,
+    height: 160,
     borderRadius: 80,
   },
   imageContainer: {

@@ -88,6 +88,9 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
           <FontAwesome6 name="arrow-left-long" size={18} color="#000" style={styles.arrow} />
         </View>
       )}
+      <View style={styles.toggleButton}>
+
+      </View>
     </View>
   );
 };
@@ -121,6 +124,20 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 25,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
+  },
+  toggleButton: {
+    width: 50,
+    height: 36,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.ui.secondary,
+    marginLeft: 'auto',
+    marginTop: 8,
   },
   text: {
     flex: 1,

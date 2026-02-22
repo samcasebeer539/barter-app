@@ -62,89 +62,67 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
   return (
  
 
-      <View style={styles.modalContent} pointerEvents="box-none">
+    <View style={styles.modalContent} pointerEvents="box-none">
 
-     
-          <View style={styles.column}>
+        
+      <View style={styles.column}>
+
+        {/* ONE shared good/service row */}
+        <View style={styles.goodServiceRow}>
+          <View style={styles.goodServiceButton}>
+            <Text style={styles.goodText}> 0{goodCount}</Text>
+            <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
+
+            <Text style={styles.serviceText}> 0{serviceCount}</Text>
+            <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
             
-            <View style={styles.deckWrapperPlayer}>
-              <View style={styles.goodServiceRow}>
-              
-             
-              <View style={styles.goodServiceButton}>
-       
-                <Text style={styles.offerButtonText}> 0{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-                
-                <Text style={styles.offerButtonText}> 0{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
-              </View>
-             
+            <Text style={styles.secondaryText}>: 0{goodCount}</Text>
+            <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
 
-              <TouchableOpacity 
-                style={[
-                  styles.upButton, 
-                
-                ]}
-                onPress={() => setIsExpanded(!isExpanded)}
-              >
-              <FontAwesome6 name={isExpanded ? "angle-left" : "angle-right"} size={26} color="#fff" />
-              </TouchableOpacity>
-
-              
-            </View>
-              <Deck 
-                posts={posts}
-                cardWidth={Math.min(width - 40, 290)}
-                enabled={true}
-              />
-            </View>
-            <View style={styles.deckWrapperPartner}>
-
-            <View style={styles.goodServiceRow}>
-              
-             
-              <View style={styles.goodServiceButton}>
-       
-                <Text style={styles.offerButtonText}> 0{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-                
-                <Text style={styles.offerButtonText}> 0{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
-              </View>
-             
-
-              <TouchableOpacity 
-                style={[
-                  styles.upButton, 
-                
-                ]}
-                onPress={() => setIsExpanded(!isExpanded)}
-              >
-              <FontAwesome6 name={isExpanded ? "angle-right" : "angle-left"} size={26} color="#fff" />
-              </TouchableOpacity>
-
-              
-            </View>
-              <Deck 
-                posts={posts}
-                cardWidth={Math.min(width - 40, 290)}
-                enabled={true}
-              />
-            </View>
-            
-            
-          
-            <View style={styles.turnsAndButtonRow}>
-              
-              <TradeUI />
-              {isExpanded && (
-                <View style={styles.turnsRows}><TradeTurns turns={trade1Turns} /></View>
-              )}
-                
-            </View>
-
+            <Text style={styles.secondaryText}> 0{serviceCount}</Text>
+            <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
           </View>
+
+          <TouchableOpacity 
+            style={styles.upButton}
+            onPress={() => setIsExpanded(!isExpanded)}
+          >
+            <FontAwesome6 name={isExpanded ? "angle-right" : "angle-left"} size={26} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* BOTH decks in ONE row wrapper */}
+        <View style={styles.decksRow}>
+
+          <View style={styles.deckWrapperPlayer}>
+            <Deck 
+              posts={posts}
+              cardWidth={Math.min(width - 40, 280)}
+              enabled={true}
+            />
+          </View>
+
+          <View style={styles.deckWrapperPartner}>
+            <Deck 
+              posts={posts}
+              cardWidth={Math.min(width - 40, 280)}
+              enabled={true}
+            />
+          </View>
+
+        </View>
+
+
+        <View style={styles.turnsAndButtonRow}>
+          <TradeUI />
+          {isExpanded && (
+            <View style={styles.turnsRows}>
+              <TradeTurns turns={trade1Turns} />
+            </View>
+          )}
+        </View>
+
+      </View>
 
     </View>
   );
@@ -181,15 +159,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deckWrapperPartner: {
-    marginBottom: 20,
     
-    left: -42,
-    top: -108
+    
+    left: -48,
+    bottom: 16 
   },
   deckWrapperPlayer: {
-    marginBottom: 20,
-    left: 272,
-    top: -44
+    
+    left: 24,
+    bottom: 16
   },
 
   turnsAndButtonRow: {
@@ -198,18 +176,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from flex-end
     
-    top: 100,
+    top: 206,
     left: 0, 
     zIndex: 10,
     
   },
   goodServiceRow: {
-    width: 280,
+    width: 334,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
     top: -198,
-    left: 12,
+    left: 0,
     zIndex: 0,
   },
   upButton: {
@@ -297,7 +275,28 @@ const styles = StyleSheet.create({
   },
   turnsRows: {
     top: -8
-  }
+  },
+  decksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    
+  },
+  secondaryText: {
+      color: colors.ui.secondarydisabled,
+      fontSize: 20,
+      fontFamily: globalFonts.bold,
+    },
+    goodText: {
+      color: colors.cardTypes.good,
+      fontSize: 20,
+      fontFamily: globalFonts.bold,
+    },
+    serviceText: {
+      color: colors.cardTypes.service,
+      fontSize: 20,
+      fontFamily: globalFonts.bold,
+    },
   
 
 });

@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#1C1C1E',
-    borderTopLeftRadius: 20,
+    borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,

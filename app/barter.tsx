@@ -1,18 +1,17 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useCallback, useState } from 'react';
-// import ActiveTrade, { TradeTurn } from '../components/ActiveTrade';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../styles/globalStyles';
 import TradeDeck from '../components/TradeDeck';
-import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
+import TradeTurns, { TradeTurn } from '../components/TradeTurns';
+import OffersTradesDealsBar from '../components/OffersTradesDealsBar';
 
-
+// ---- MOCK DATA (unchanged) ----
 const POSTS = [
   {
     type: 'good' as const,
     name: 'Fantasy Books',
-    description:
-      'Includes LOTR, ASOIAF, Earthsea, Narnia',
+    description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
     photos: [
       'https://picsum.photos/seed/book/800/400',
       'https://picsum.photos/seed/portrait1/400/600',
@@ -33,8 +32,7 @@ const POSTS = [
   {
     type: 'service' as const,
     name: 'Guitar Lessons',
-    description:
-      'Experienced guitar teacher offering beginner to intermediate lessons. ',
+    description: 'Experienced guitar teacher offering beginner to intermediate lessons.',
     photos: [
       'https://picsum.photos/seed/guitar1/700/500',
       'https://picsum.photos/seed/guitar2/400/600',
@@ -43,64 +41,10 @@ const POSTS = [
   },
 ];
 
-const trade1Turns: TradeTurn[] = [
-  
-  
-  
-  { type: 'turnAccept', user: 'Jay Wilson', isUser: false  },
-  { type: 'turnCounter', isUser: true  },
-  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
-  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
-];
-
-const trade2Turns: TradeTurn[] = [
-  { type: 'turnOffer', item: 'Guitar Lessons', isUser: true  },
-  { type: 'turnTrade', user: 'Sarah', item: 'Bike Repair', isUser: false  },
-  { type: 'turnAccept', isUser: true},
-];
-
-const trade3Turns: TradeTurn[] = [
-  { type: 'turnOffer', item: 'Camera Equipment', isUser: true  },
-  { type: 'turnTrade', user: 'Mike', item: 'Photography Course', isUser: false  },
-  { type: 'turnQuery', user: 'Jay', question: 'Is the Charizard in good condition?', isUser: false  },
-];
-
-// Sent offers data
-const sentOfferTurns: TradeTurn[] = [
-  { type: 'turnOffer', item: 'Vintage Books', isUser: true  },
-  { type: 'turnOffer', item: 'Pokemon Cards', isUser: true  },
-  { type: 'turnOffer', item: 'Rare Stamps', isUser: true  },
-];
-
-// Declined/Expired offers data
-const declinedExpiredTurns: TradeTurn[] = [
-  { type: 'turnDecline', user: 'Jay', item: 'Mountain Bike', isUser: false  },
-  { type: 'turnDecline', user: 'Jay', item: 'Art Supplies', isUser: false  },
-];
-
-const activeTrades = [
-  {
-    id: 1,
-    playercards: POSTS.slice(0, 2),
-    partnercards: POSTS.slice(1, 3),
-    turns: trade1Turns,
-  },
-  {
-    id: 2,
-    playercards: POSTS.slice(0, 3),
-    partnercards: POSTS.slice(0, 1),
-    turns: trade2Turns,
-  },
-  {
-    id: 3,
-    playercards: POSTS.slice(1, 2),
-    partnercards: POSTS.slice(2, 3),
-    turns: trade3Turns,
-  },
-];
-
+// ---- SCREEN ----
 export default function ActiveTradesTestScreen() {
   const [resetKey, setResetKey] = useState(0);
+  const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('trades'); // default to trades
 
   useFocusEffect(
     useCallback(() => {
@@ -109,24 +53,51 @@ export default function ActiveTradesTestScreen() {
   );
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
-
-
-      <View style={styles.middleSpacer} />
-      <TradeDeck
-        posts={POSTS}
-     
+    <View style={styles.container}>
+      {/* TOP BAR */}
+      <OffersTradesDealsBar
+        onOffersPress={() => setTab('offers')}
+        onTradesPress={() => setTab('trades')}
+        onDealsPress={() => setTab('deals')}
       />
 
-      
+      {/* CONTENT */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.contentContainer}
+      >
+        {/* spacer for absolute top bar */}
+        <View style={styles.topSpacer} />
 
-     
-      
-      <View style={styles.bottomSpacer} />
-    </ScrollView>
+        {/* OFFERS PAGE */}
+        {tab === 'offers' && (
+          <View>
+            {/* TODO: OffersDeck */}
+            <View style={{ height: 600 }} />
+          </View>
+        )}
+
+        {/* TRADES PAGE (TradeDeck lives here) */}
+        {tab === 'trades' && (
+          <View>
+            {/* TODO: DealsDeck */}
+            <View style={{ height: 590 }} />
+            <TradeDeck posts={POSTS} />
+          </View>
+          
+        )}
+
+        {/* DEALS PAGE */}
+        {tab === 'deals' && (
+          <View>
+            {/* TODO: DealsDeck */}
+            <View style={{ height: 600 }} />
+          </View>
+        )}
+
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </View>
   );
 }
 
@@ -135,13 +106,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.ui.background,
   },
+
+  scroll: {
+    flex: 1,
+  },
+
   contentContainer: {
-    marginTop: 20,
+    paddingTop: 0,
   },
+
+  // space for absolute top bar
+  topSpacer: {
+    height: 110,
+  },
+
   bottomSpacer: {
-    height: 500,
+    height: 0,
   },
-  middleSpacer: {
-    height: 670, 
-  }
 });

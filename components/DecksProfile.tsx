@@ -86,8 +86,8 @@
         {/* offers bar */}
         <View style={styles.goodServiceRow}>
           <View style={[styles.goodServiceButton, { borderBottomLeftRadius: isDeckRevealed ? 2 : 25 }]}>
-            <Text style={styles.offerText}>OFFERS: </Text>
-            <Text style={styles.secondaryText}>1/2 :  0{goodCount}</Text>
+            <Text style={styles.offerText}>1/2 OFFERS :</Text>
+            <Text style={styles.secondaryText}>0{goodCount}</Text>
             <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
             <Text style={styles.secondaryText}> 0{serviceCount}</Text>
             <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />

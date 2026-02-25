@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   Switch,
 } from 'react-native';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors } from '../styles/globalStyles';
+import { colors } from '@/styles/globalStyles';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -25,7 +27,7 @@ export default function SettingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-          <FontAwesome6 name="arrow-left" size={22} color="#fff" />
+          <MaterialIcons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.placeholder} />
@@ -38,26 +40,26 @@ export default function SettingsScreen() {
           
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="user" size={22} color="#fff" />
+              <MaterialIcons name="person" size={24} color="#fff" />
               <Text style={styles.settingText}>Edit Profile</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={22} color="#666" />
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="lock" size={22} color="#fff" />
+              <MaterialIcons name="lock" size={24} color="#fff" />
               <Text style={styles.settingText}>Privacy</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={22} color="#666" />
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="shield-halved" size={22} color="#fff" />
+              <MaterialIcons name="security" size={24} color="#fff" />
               <Text style={styles.settingText}>Security</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={22} color="#666" />
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
           </TouchableOpacity>
         </View>
 
@@ -67,7 +69,7 @@ export default function SettingsScreen() {
           
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="bell" size={22} color="#fff" />
+              <MaterialIcons name="notifications" size={24} color="#fff" />
               <Text style={styles.settingText}>Notifications</Text>
             </View>
             <Switch
@@ -80,7 +82,7 @@ export default function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="location-dot" size={22} color="#fff" />
+              <MaterialIcons name="location-on" size={24} color="#fff" />
               <Text style={styles.settingText}>Location Services</Text>
             </View>
             <Switch
@@ -93,12 +95,12 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="language" size={22} color="#fff" />
+              <MaterialIcons name="language" size={24} color="#fff" />
               <Text style={styles.settingText}>Language</Text>
             </View>
             <View style={styles.settingRight}>
               <Text style={styles.settingValue}>English</Text>
-              <FontAwesome6 name="chevron-right" size={22} color="#666" />
+              <MaterialIcons name="chevron-right" size={24} color="#666" />
             </View>
           </TouchableOpacity>
         </View>
@@ -109,33 +111,40 @@ export default function SettingsScreen() {
           
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="circle-question" size={22} color="#fff" />
+              <MaterialIcons name="help" size={24} color="#fff" />
               <Text style={styles.settingText}>Help Center</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={22} color="#666" />
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="circle-info" size={22} color="#fff" />
+              <MaterialIcons name="info" size={24} color="#fff" />
               <Text style={styles.settingText}>About</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={22} color="#666" />
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="gavel" size={22} color="#fff" />
+              <MaterialIcons name="gavel" size={24} color="#fff" />
               <Text style={styles.settingText}>Terms & Conditions</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={22} color="#666" />
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
           </TouchableOpacity>
         </View>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton}>
-          <FontAwesome6 name="right-from-bracket" size={22} color={colors.actions.decline} />
+            <MaterialIcons 
+                name="logout" 
+                size={24} 
+                color={colors.actions.decline} 
+                onPress={() => signOut(auth)}
+                
+            />
           <Text style={styles.logoutText}>Log Out</Text>
+
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
@@ -173,7 +182,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    marginTop: 22,
+    marginTop: 24,
     paddingHorizontal: 20,
   },
   sectionTitle: {
@@ -188,8 +197,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
   },
   settingLeft: {
     flexDirection: 'row',

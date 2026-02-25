@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'flex-start',
-<<<<<<< HEAD
     gap: 6,
   },
   iconContainer: { 
@@ -227,21 +226,10 @@ const styles = StyleSheet.create({
      
     zIndex: 30,
   },
-=======
-    gap: 8,
-  },
-  iconContainer: { flexShrink: 0, paddingBottom: 12 },
->>>>>>> origin/auth
   titleContainer: { 
     flex: 1,
     overflow: 'hidden',
   },
-<<<<<<< HEAD
-=======
-  titleScrollContainer: {
-    flexDirection: 'row',
-  },
->>>>>>> origin/auth
   title: { 
     fontSize: 18, 
     fontWeight: '600', 

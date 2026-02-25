@@ -33,22 +33,16 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuPress }) => {
-<<<<<<< HEAD
   const router = useRouter();
-=======
->>>>>>> origin/auth
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-<<<<<<< HEAD
   const handleSettingsPress = () => {
     router.push('/settings');
   };
 
-=======
->>>>>>> origin/auth
   // Tag color mapping
   const getTagColors = (color: string) => {
     const colorMap: { [key: string]: { border: string; text: string } } = {

@@ -22,6 +22,15 @@ export default function SettingsScreen() {
     router.push('/profile');
   };
 
+  const handleSignOut = async () => {
+    try {
+        await signOut(auth);
+    }
+    catch (error) {
+        console.log("Sign out error: ", error)
+    }
+}
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -135,13 +144,12 @@ export default function SettingsScreen() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton}>
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
             <MaterialIcons 
                 name="logout" 
                 size={24} 
                 color={colors.actions.decline} 
-                onPress={() => signOut(auth)}
-                
             />
           <Text style={styles.logoutText}>Log Out</Text>
 

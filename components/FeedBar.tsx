@@ -36,7 +36,6 @@ export default function FeedBar({
     <>
       {/* Top Gradient Overlay */}
 
-
       <Animated.View
         style={[
           styles.topIconsContainer,

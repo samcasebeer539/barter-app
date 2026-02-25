@@ -1,164 +1,53 @@
-import { Tabs } from 'expo-router';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useFonts } from 'expo-font';
-import { colors } from '@/styles/globalStyles';
-
-function TabBarBackground() {
-  return (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.ui.background, top: 38}]} />
-  );
-}
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { View, ActivityIndicator } from 'react-native';
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    'YourFontName-Regular': require('../assets/fonts/RobotoCondensed-Regular.ttf'),
-    'YourFontName-Bold': require('../assets/fonts/RobotoCondensed-SemiBold.ttf'),
-    'YourFontName-ExtraBold': require('../assets/fonts/Oswald-Bold.ttf'),
-    // Add other font weights/styles as needed
-  });
- 
-  if (!fontsLoaded) {
-    return null;
-  }
+    const [initializing, setInitializing] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
 
-  return (
-    <SafeAreaProvider>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: '#fff',
-          tabBarInactiveTintColor: colors.ui.secondarydisabled,
-          
-          tabBarStyle: {
-            backgroundColor: 'transparent',
-            borderTopWidth: 0,
-            height: 110,
-            paddingBottom: 42,
-            paddingTop: 20,
-            position: 'absolute',
-            
-          },
-          
-          tabBarBackground: () => <TabBarBackground />,
-          tabBarShowLabel: false,
-          headerShown: false,
-          tabBarButton: (props) => {
-            const { 
-              children, 
-              onPress, 
-              onLongPress,
-              testID,
-              accessibilityLabel,
-              accessibilityRole,
-              accessibilityState,
-              style,
-              ...rest 
-            } = props as any;
-            
-            // Determine button position based on the route
-            const href = props.href as string;
-            const isFirst = href === '/feed';
-            const isLast = href === '/profile';
-            const isMiddle = href === '/barter';
-            
-            return (
-              <TouchableOpacity
-                onPress={onPress}
-                onLongPress={onLongPress}
-                testID={testID}
-                accessibilityLabel={accessibilityLabel}
-                accessibilityRole={accessibilityRole}
-                accessibilityState={accessibilityState}
-                style={[
-                  styles.tabButton,
-                  isFirst && styles.leftButton,
-                  isLast && styles.rightButton,
-                  isMiddle && styles.middleButton,
-                ]}
-              >
-                {children}
-              </TouchableOpacity>
-            );
-          },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            href: null, // Hide from tab bar completely
-          }}
-        />
-        <Tabs.Screen
-          name="feed"
-          options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="square" size={24} color={color} style={{ marginTop: 0 }}/>
-              
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="barter"
-          options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} style={{ marginTop: 0 }}/>
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
-            ),
-          }}
-        />
-  
-        <Tabs.Screen
-          name="settings"
-          options={{
-            href: null, // Hide from tab bar completely
-          }}
-        />
-   
-        
-      </Tabs>
-    </SafeAreaProvider>
-  );
+    const router = useRouter();
+    const segments = useSegments();
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log('onAuthStateChanged', user);
+            setUser(user);
+            if (initializing) setInitializing(false);
+        });
+      
+        return unsubscribe;
+    }, []);
+
+    useEffect(() => {
+        if (initializing) return;
+
+        const inAuthGroup = segments[0] === '(auth)';
+        const inTabsGroup = segments[0] === '(tabs)';
+
+        if (!user && !inAuthGroup) {
+            router.replace('/login');
+        } 
+        else if (user && !inTabsGroup) {
+            router.replace('/feed');
+        }
+
+    }, [user, initializing, segments]
+    )
+
+    if (initializing) 
+        return (
+            <View 
+                style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                }} >
+                <ActivityIndicator size="large" />
+            </View>
+    )
+    
+    return <Stack screenOptions={{ headerShown: false }} />;
 }
-
-const styles = StyleSheet.create({
-  tabButton: {
-    flex: 1,
-    backgroundColor: colors.ui.secondary,
-    marginHorizontal: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 40,
-  },
-  leftButton: {
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 36,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    marginLeft: 12,
-    top: 22,
-  },
-  middleButton: {
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    top: 22,
-  },
-  rightButton: {
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 36,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    marginRight: 12,
-    top: 22,
-  },
-});

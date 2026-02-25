@@ -13,6 +13,12 @@ web-build/
 *.ipa
 *.apk
 
+# Firebase
+ios/
+android/
+GoogleService-Info.plist
+google-services.json
+
 # Metro
 .metro-health-check*
 
@@ -27,8 +33,6 @@ yarn-error.log*
 .env.local
 .env.*.local
 *.env
-google-services.json
-GoogleService-Info.plist
 
 # IDE
 .vscode/
@@ -45,6 +49,3 @@ GoogleService-Info.plist
 logs/
 *.log
 
-# Prebuild
-ios/
-android/

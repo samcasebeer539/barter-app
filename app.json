@@ -11,16 +11,27 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.barterapp"
+      "bundleIdentifier": "com.barterapp",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.barterapp"
+      "package": "com.barterapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {},
     "scheme": "barterapp",
-    "plugins": []
+    "plugins": [
+      [
+        "expo-build-properties", 
+        {
+            "ios":{
+                "useFrameworks": "static"
+            }
+        }
+    ]
+    ]
   }
 }

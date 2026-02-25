@@ -1,10 +1,10 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors } from '../styles/globalStyles';
-import TradeDeck from '../components/TradeDeck';
-import TradeTurns, { TradeTurn } from '../components/TradeTurns';
-import OffersTradesDealsBar from '../components/OffersTradesDealsBar';
+import { colors } from '../../styles/globalStyles';
+import TradeDeck from '../../components/TradeDeck';
+import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
+import OffersTradesDealsBar from '../../components/OffersTradesDealsBar';
 
 // ---- MOCK DATA (unchanged) ----
 const POSTS = [

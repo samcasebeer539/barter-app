@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, Button, ActivityIndicator } from 'react-native'
 import { auth } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User } from 'firebase/auth';
+import { colors } from '../../styles/globalStyles';
 
 export default function HandleLogin() {
     const [email, setEmail] = useState('');
@@ -46,12 +47,13 @@ export default function HandleLogin() {
                     keyboardType='email-address'
                     placeholder='Email'
                 />
-                <Text>Password</Text>
+                
                 <TextInput 
                     style={styles.input}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
+                    placeholder='Password'
                 />
                 {loading ? (
                     <ActivityIndicator size={"small"} style={{ margin: 28 }} />
@@ -69,15 +71,17 @@ export default function HandleLogin() {
 
 const styles = StyleSheet.create({
     container: {
-        marginHorizontal: 20, 
+        marginHorizontal: 0, 
         flex: 1,
         justifyContent: "center",
+        backgroundColor: colors.ui.secondary,
     },
     input: {
         marginVertical: 4,
+        marginHorizontal: 12,
         height: 50,
-        borderWidth: 1,
-        borderRadius: 4,
+        
+        borderRadius: 2,
         padding: 10,
         backgroundColor: '#fff',
     }

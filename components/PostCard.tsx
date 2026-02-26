@@ -175,7 +175,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
               <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 4}>
                 
                 {post.description}
-                {/* <Text style={styles.date}>{"\n"}11/26/24</Text> */}
+                
               </Text>
               
             </View>
@@ -183,7 +183,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
         </TouchableOpacity>
         
         <View style={styles.dateWrapper}>
-          <Text style={styles.date}>{"\n"}11/26/24</Text>
+          <Text style={[styles.date, {color: post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}]}>{"\n"}11/26/24</Text>
         </View>
       </View>
       

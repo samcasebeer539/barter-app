@@ -23,6 +23,8 @@ interface User {
   goodsCount?: number;
   servicesCount?: number;
   profileImageUrl?: string;
+  rating?: number;          // 0–5
+  reviewCount?: number;
 }
 
 interface UserCardProps {
@@ -53,28 +55,65 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
     return colorMap[color] || { border: '#999', text: '#999' };
   };
 
+  const StarRating = ({ rating = 0 }: { rating?: number }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating % 1 >= 0.5;
+
+    return (
+      <View style={styles.ratingRow}>
+        {[...Array(5)].map((_, i) => {
+          if (i < fullStars) {
+            return (
+              <FontAwesome6 key={i} name="star" size={14} color="#F5B301" solid />
+            );
+          }
+          if (i === fullStars && hasHalf) {
+            return (
+              <FontAwesome6 key={i} name="star-half-stroke" size={14} color="#F5B301" solid />
+            );
+          }
+          return (
+            <FontAwesome6 key={i} name="star" size={14} color="#DDD" />
+          );
+        })}
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         
 
-        {/* Top Row: Profile Picture (left) and Stats (right) */}
-        <View style={styles.imageContainer}>
+        <View style={styles.headerColumn}>
           <Image
             source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
             style={styles.profileImage}
           />
-        </View>
 
-        {/* Name and Location - Left Aligned */}
-        <View style={styles.infoContainer}>
-          <Text style={styles.name} numberOfLines={1}>{user.name}<Text style={styles.pronouns}> {user.pronouns}</Text></Text>
-          <View style={styles.locationRow}>
-            <FontAwesome6 name="location-dot" size={14} color={colors.ui.cardsecondary}/>
-            <Text style={styles.location}>{user.location}</Text>
+          <View style={styles.headerInfo}>
+            <Text style={styles.name} numberOfLines={1}>
+              {user.name}
+              {user.pronouns && (
+                <Text style={styles.pronouns}> {user.pronouns}</Text>
+              )}
+            </Text>
+
+            <View style={styles.locationRow}>
+              <FontAwesome6 name="location-dot" size={14} color={colors.ui.cardsecondary}/>
+              <Text style={styles.location}>{user.location}</Text>
+            </View>
+
+            <View style={styles.ratingContainer}>
+              <StarRating rating={user.rating} />
+              <Text style={styles.ratingText}>
+                {user.rating?.toFixed(1)} ({user.reviewCount ?? 0})
+              </Text>
+            </View>
           </View>
         </View>
 
+      
         {/* Bio */}
         <View style={styles.bioContainer}>
           <Text style={styles.bio} numberOfLines={5}>
@@ -82,24 +121,20 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
           </Text>
         </View>
 
-        <TouchableOpacity 
-            style={styles.settingsButton}
-            onPress={handleSettingsPress}
-        >
-            <FontAwesome6 name="gear" size={28} color={colors.ui.cardsecondary} />
-        </TouchableOpacity>
-        <TouchableOpacity 
-            style={styles.blockButton}
-            onPress={handleSettingsPress}
-        >
-            <FontAwesome6 name="ban" size={28} color={colors.ui.cardsecondary} />
-        </TouchableOpacity>
-        <TouchableOpacity 
-            style={styles.reportButton}
-            onPress={handleSettingsPress}
-        >
-            <FontAwesome6 name="circle-exclamation" size={28} color={colors.ui.cardsecondary} />
-        </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleSettingsPress}>
+            
+            <FontAwesome6 name="gear" size={20} color={colors.ui.cardsecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton}>
+            <FontAwesome6 name="ban" size={20} color={colors.ui.cardsecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton}>
+            <FontAwesome6 name="circle-exclamation" size={20} color={colors.ui.cardsecondary} />
+          </TouchableOpacity>
+        </View>
 
        
       </View>
@@ -232,6 +267,48 @@ const styles = StyleSheet.create({
     left: 8,
     zIndex: 10,
     padding: 4,
+  },
+
+  headerColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 16,
+  },
+
+  headerInfo: {
+    width: '100%',
+    alignItems: 'center',
+  },
+
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+
+  ratingRow: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+
+  ratingText: {
+    fontSize: 14,
+    color: colors.ui.cardsecondary,
+    fontFamily: globalFonts.regular,
+  },
+
+
+
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 16,
+  },
+
+  actionButton: {
+    padding: 8,
   },
 });
 

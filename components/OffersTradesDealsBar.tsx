@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 20,
-        fontWeight: '600',
         color: colors.actions.offer,
         fontFamily: globalFonts.bold,
     },

@@ -41,19 +41,8 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  const handleSettingsPress = () => {
-    router.push('/settings');
-  };
 
-  // Tag color mapping
-  const getTagColors = (color: string) => {
-    const colorMap: { [key: string]: { border: string; text: string } } = {
-      pink: { border: '#FF3B81', text: '#FF3B81' },
-      green: { border: '#34C759', text: '#34C759' },
-      purple: { border: '#9747FF', text: '#9747FF' },
-    };
-    return colorMap[color] || { border: '#999', text: '#999' };
-  };
+
 
   const StarRating = ({ rating = 0 }: { rating?: number }) => {
   const fullStars = Math.floor(rating);
@@ -122,10 +111,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
         </View>
 
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleSettingsPress}>
-            
-            <FontAwesome6 name="gear" size={20} color={colors.ui.cardsecondary} />
-          </TouchableOpacity>
+   
 
           <TouchableOpacity style={styles.actionButton}>
             <FontAwesome6 name="ban" size={20} color={colors.ui.cardsecondary} />
@@ -145,7 +131,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: 'transparent',
     
   },
@@ -244,14 +230,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  settingsButton: {
-   
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    zIndex: 10,
-    padding: 4,
-  },
+
   blockButton: {
    
     position: 'absolute',
@@ -271,14 +250,15 @@ const styles = StyleSheet.create({
 
   headerColumn: {
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
     gap: 16,
     marginBottom: 16,
   },
 
   headerInfo: {
     width: '100%',
-    alignItems: 'center',
+  
   },
 
   ratingContainer: {

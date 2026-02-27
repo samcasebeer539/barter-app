@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
@@ -15,6 +15,7 @@ const trade1Turns: TradeTurn[] = [
   { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
   { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
   
+  
 ];
 
 interface Post {
@@ -24,15 +25,19 @@ interface Post {
   photos: string[];
 }
 
-interface FeedDeckProps {
+interface TradeDeckProps {
   posts: Post[];
 
 }
 
-export default function FeedDeck({ posts}: FeedDeckProps) {
-  
+const DECK_WIDTH = Math.min(width - 40, 600);
+
+export default function TradeDeck({ posts}: TradeDeckProps) {
   
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showingPlayer, setShowingPlayer] = useState(false);
+  const slideAnim = useRef(new Animated.Value(DECK_WIDTH/2 + 2)).current;
+
   // Count good and service posts
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
@@ -40,77 +45,82 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
     return { goodCount, serviceCount };
   }, [posts]);
 
-
-
-
+  const handleSwitchDecks = () => {
+    const toValue = showingPlayer ? DECK_WIDTH/2 + 2: -DECK_WIDTH/2 - 28;
+    Animated.spring(slideAnim, {
+      toValue,
+      useNativeDriver: true,
+      tension: 60,
+      friction: 10,
+    }).start();
+    setShowingPlayer(!showingPlayer);
+  };
 
   const handleOffer = () => {
     console.log('Offer button pressed');
-    // Add your offer logic here
   };
   const handleCollapseTurns = () => {
     console.log('Collapse turn button pressed');
-    // Add your offer logic here
   };
   const handlePlayAction = () => {
     console.log('Collapse turn button pressed');
-    // Add your offer logic here
   };
   
 
 
   return (
- 
-
     <View style={styles.modalContent} pointerEvents="box-none">
 
-        
       <View style={styles.column}>
 
         {/* ONE shared good/service row */}
         <View style={styles.goodServiceRow}>
-          <View style={styles.goodServiceButton}>
-            <Text style={styles.goodText}> 0{goodCount}</Text>
-            <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
+          <View style={styles.goodServiceButtonParter}>
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.good }]}>0{goodCount}</Text>
+            <FontAwesome6 name="gifts" size={18} color={showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.good} />
 
-            <Text style={styles.serviceText}> 0{serviceCount}</Text>
-            <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
-            
-            <Text style={styles.secondaryText}>: 0{goodCount}</Text>
-            <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
-
-            <Text style={styles.secondaryText}> 0{serviceCount}</Text>
-            <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
-          </View>
-
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.service }]}> 0{serviceCount}</Text>
+            <FontAwesome6 name="hand-sparkles" size={18} color={showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.service} />
+          </View>  
           <TouchableOpacity 
-            style={styles.upButton}
-            onPress={() => setIsExpanded(!isExpanded)}
+            style={styles.switchDecksButton}
+            onPress={handleSwitchDecks}
           >
-            <FontAwesome6 name={isExpanded ? "angle-right" : "angle-left"} size={26} color="#fff" />
+            <FontAwesome6 name={showingPlayer ? "angle-right" : "angle-left"} size={26} color="#fff" />
           </TouchableOpacity>
+          <View style={styles.goodServiceButtonPlayer}>
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled }]}>0{goodCount}</Text>
+            <FontAwesome6 name="gifts" size={18} color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled} />
+
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.service : colors.ui.secondarydisabled }]}> 0{serviceCount}</Text>
+            <FontAwesome6 name="hand-sparkles" size={18} color={showingPlayer ? colors.cardTypes.service : colors.ui.secondarydisabled} />
+          </View>
+
         </View>
 
-        {/* BOTH decks in ONE row wrapper */}
-        <View style={styles.decksRow}>
-
-          <View style={styles.deckWrapperPlayer}>
+        {/* BOTH decks in ONE row wrapper, sliding animated */}
+        <Animated.View
+          style={[
+            styles.decksRow,
+            { transform: [{ translateX: slideAnim }] }
+          ]}
+        >
+          <View style={{ width: DECK_WIDTH }}>
             <Deck 
               posts={posts}
-              cardWidth={Math.min(width - 40, 280)}
+              cardWidth={DECK_WIDTH}
               enabled={true}
             />
           </View>
 
-          <View style={styles.deckWrapperPartner}>
+          <View style={{ width: DECK_WIDTH }}>
             <Deck 
               posts={posts}
-              cardWidth={Math.min(width - 40, 280)}
+              cardWidth={DECK_WIDTH}
               enabled={true}
             />
           </View>
-
-        </View>
+        </Animated.View>
 
 
         <View style={styles.turnsAndButtonRow}>
@@ -122,6 +132,15 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
           )}
         </View>
 
+        
+        <TouchableOpacity 
+          style={styles.collapseBar}
+          onPress={() => setIsExpanded(!isExpanded)}
+        >
+          <FontAwesome6 name={isExpanded ? "angle-up" : "angle-down"} size={26} color="#fff" />
+        </TouchableOpacity>
+          
+
       </View>
 
     </View>
@@ -129,16 +148,7 @@ export default function FeedDeck({ posts}: FeedDeckProps) {
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'flex-end',
-    zIndex: 20,
-  },
- 
+
   modalContent: {
     width: '100%',
     
@@ -159,24 +169,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deckWrapperPartner: {
-    
-    
-    left: -48,
-    bottom: 16 
+    left: -12,
+    bottom: -32,
+    width: DECK_WIDTH,
   },
   deckWrapperPlayer: {
-    
-    left: 24,
-    bottom: 16
+    left: -12,
+    bottom: -32,
+    width: DECK_WIDTH,
   },
 
   turnsAndButtonRow: {
-    width: 338,
+    width: 334,
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'flex-start', // Changed from flex-end
+    justifyContent: 'flex-start',
     
-    top: 206,
+    top: 302,
     left: 0, 
     zIndex: 10,
     
@@ -190,10 +199,10 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 0,
   },
-  upButton: {
+  switchDecksButton: {
     width: 50,
     height: 36,
-    borderTopRightRadius: 22,
+    borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
@@ -202,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
    
     backgroundColor: colors.ui.secondary, 
-    marginRight: 'auto'
+    
   },
   saveButton: {
     width: 54,
@@ -217,46 +226,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     
   },
-  playButton: {
-    
-    width: 50,
-    height: 40,
-    
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
-    borderWidth: 3,
-    borderColor: colors.actions.offer,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.actions.offer,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.9,
-    shadowRadius: 3,
-    
-    
-  },
-  offerText: {
-    color: colors.actions.offer,
-    fontSize: 48,
-    fontFamily: globalFonts.extrabold,
-    top: -2,
-    shadowColor: colors.actions.offer,
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.8,
-    shadowRadius: 3,
-    
-    
-  },
 
-  offerButtonText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontFamily: globalFonts.bold
-    
-  },
-  goodServiceButton: {
+
+  goodServiceButtonParter: {
     
     height: 36,
     flex: 1,
@@ -273,14 +245,33 @@ const styles = StyleSheet.create({
    
     
   },
+  goodServiceButtonPlayer: {
+    
+    height: 36,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 4,
+    borderTopRightRadius: 22,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+   
+    
+  },
   turnsRows: {
     top: -8
   },
   decksRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
-    
+    left: 0,
+    bottom: -32,
+    gap: 30,
   },
   secondaryText: {
       color: colors.ui.secondarydisabled,
@@ -297,6 +288,21 @@ const styles = StyleSheet.create({
       fontSize: 20,
       fontFamily: globalFonts.bold,
     },
+
+collapseBar: {
+  top: 290,
+    width: 334,
+    height: 36,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
+    backgroundColor: colors.ui.secondary,
+    
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+},
   
 
 });

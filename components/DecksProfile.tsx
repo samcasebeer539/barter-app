@@ -65,11 +65,10 @@
     useEffect(() => {
       if (isDeckRevealed) setShowSecondary(true);
 
-      Animated.spring(slideAnim, {
+      Animated.timing(slideAnim, {
         toValue: isDeckRevealed ? 1 : 0,
         useNativeDriver: true,
-        tension: 50,
-        friction: 8,
+        duration: 300,
       }).start(() => {
         if (!isDeckRevealed) setShowSecondary(false);
       });
@@ -85,26 +84,27 @@
       <View style={styles.container} pointerEvents="box-none">
         {/* offers bar */}
         <View style={styles.goodServiceRow}>
-          <View style={[styles.goodServiceButton, { borderBottomLeftRadius: isDeckRevealed ? 2 : 25 }]}>
-            <Text style={styles.offerText}>1/2 OFFERS :</Text>
+          <TouchableOpacity
+            style={styles.toggleButton}
+            onPress={onToggleReveal}
+            disabled={!toggleEnabled}
+          >
+            <Text style={styles.offerText}>2 OFFERS</Text>
+            {/* <FontAwesome6
+              name={isDeckRevealed ? 'angle-up' : 'angle-down'}
+              size={26}
+              color={isDeckRevealed ? colors.ui.secondarydisabled : '#fff'}
+            /> */}
+          </TouchableOpacity>
+          <View style={styles.goodServiceButton}>
+            
             <Text style={styles.secondaryText}>0{goodCount}</Text>
             <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
             <Text style={styles.secondaryText}> 0{serviceCount}</Text>
             <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
           </View>
 
-          <TouchableOpacity
-            style={styles.toggleButton}
-            onPress={onToggleReveal}
-            disabled={!toggleEnabled}
-          >
-            
-            <FontAwesome6
-              name={isDeckRevealed ? 'angle-up' : 'angle-down'}
-              size={26}
-              color={colors.actions.offer}
-            />
-          </TouchableOpacity>
+          
         </View>
 
         {/* Decks */}
@@ -161,14 +161,19 @@
             
               <View style={styles.mygoodServiceButton}>
                 <Text style={[styles.goodText, ]}>0{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={20} color={colors.cardTypes.good} />
+                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
                 <Text style={styles.serviceText}> 0{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={20} color={colors.cardTypes.service} />
+                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
               </View>
 
             
 
               
+            </View>
+            <View style={styles.settingsButtonRow}>
+              <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/settings')}>
+                <FontAwesome6 name="gear" size={22} color={colors.ui.secondarydisabled} />
+              </TouchableOpacity>
             </View>
           </Animated.View>
 
@@ -231,7 +236,7 @@
       alignItems: 'center',
       justifyContent: 'flex-start',
       gap: 4,
-      top: 266,
+      top: 264,
     },
     secondaryButtonRow: {
       width: 338,
@@ -276,14 +281,15 @@
       flexDirection: 'row',
       flex: 1,
       gap: 4,
-      borderTopRightRadius: 2,
+      borderTopRightRadius: 25,
       borderBottomRightRadius: 2,
-      borderTopLeftRadius: 25,
+      borderTopLeftRadius: 2,
+      borderBottomLeftRadius: 2,
+      
       backgroundColor: colors.ui.secondary,
       justifyContent: 'flex-start',
       alignItems: 'center',
-      paddingLeft: 18,
-      paddingRight: 10, 
+      paddingHorizontal: 10,
       paddingVertical: 6,
       marginLeft: 'auto'
     },
@@ -303,17 +309,19 @@
       paddingVertical: 10,
     },
     toggleButton: {
-      width: 50,
+      flexShrink: 0,
+      paddingLeft: 16,
+      paddingRight: 12,
       height: 36,
-      borderTopRightRadius: 25,
+      borderTopRightRadius: 2,
       borderBottomRightRadius: 2,
-      borderTopLeftRadius: 2,
+      borderTopLeftRadius: 25,
       borderBottomLeftRadius: 2,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      borderWidth: 3,
-      borderColor: colors.actions.offer,
+     
+      backgroundColor: colors.ui.secondary,
     },
     playButton: {
       width: 50,
@@ -372,5 +380,27 @@
       fontFamily: globalFonts.extrabold,
       top: -2,
       letterSpacing: -2,
+    },
+    settingsButtonRow: {
+      
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      position: 'absolute',
+      width: '100%',
+      bottom: -84,
+      paddingHorizontal: 12,
+    },
+    settingsButton: {
+      width: 116,
+      height: 48,
+      borderTopRightRadius: 2,
+      borderBottomRightRadius: 2,
+      borderTopLeftRadius: 36,
+      borderBottomLeftRadius: 2,
+      backgroundColor: colors.ui.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      
     },
   });

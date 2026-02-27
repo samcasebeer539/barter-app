@@ -88,9 +88,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
           <FontAwesome6 name="arrow-left-long" size={18} color="#000" style={styles.arrow} />
         </View>
       )}
-      <View style={styles.toggleButton}>
-
-      </View>
+     
     </View>
   );
 };
@@ -114,14 +112,14 @@ const styles = StyleSheet.create({
     ...rowBase,
     borderTopLeftRadius: 2,
     borderBottomRightRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderTopRightRadius: 25,
   },
   rowPartner: {
     ...rowBase,
     justifyContent: 'center',
     borderTopLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
   },

@@ -163,6 +163,8 @@ export default function FeedScreen() {
             style={styles.typeIcon}
           />
         <Text style={styles.itemTitle}>{item.title}</Text>
+        <Text style={styles.itemDistance}>3 mi</Text>
+        
       </View>
      
     </View>
@@ -280,6 +282,14 @@ const styles = StyleSheet.create({
     
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
+    
+    
+  },
+  itemDistance: {
+    fontSize: 16,
+    
+    color: colors.ui.secondarydisabled,
+    fontFamily: globalFonts.regular,
     
     
   },

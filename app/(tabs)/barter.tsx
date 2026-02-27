@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/TradeDeck';
+import OfferDeck from '../../components/OfferDeck';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import OffersTradesDealsBar from '../../components/OffersTradesDealsBar';
 
@@ -44,7 +45,7 @@ const POSTS = [
 // ---- SCREEN ----
 export default function ActiveTradesTestScreen() {
   const [resetKey, setResetKey] = useState(0);
-  const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('trades'); // default to trades
+  const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('offers'); // default to offers
 
   useFocusEffect(
     useCallback(() => {
@@ -73,25 +74,30 @@ export default function ActiveTradesTestScreen() {
         {tab === 'offers' && (
           <View>
             {/* TODO: OffersDeck */}
-            <View style={{ height: 600 }} />
+                      <View>
+            <View style={{ height: 590 }} />
+              <OfferDeck posts={POSTS} />
+            </View>
           </View>
         )}
 
         {/* TRADES PAGE (TradeDeck lives here) */}
         {tab === 'trades' && (
           <View>
-            {/* TODO: DealsDeck */}
+            <View style={{ height: 590 }} />
+            <TradeDeck posts={POSTS} />
             <View style={{ height: 590 }} />
             <TradeDeck posts={POSTS} />
           </View>
+          
           
         )}
 
         {/* DEALS PAGE */}
         {tab === 'deals' && (
           <View>
-            {/* TODO: DealsDeck */}
-            <View style={{ height: 600 }} />
+            <View style={{ height: 590 }} />
+            <TradeDeck posts={POSTS} />
           </View>
         )}
 

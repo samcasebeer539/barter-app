@@ -1,9 +1,11 @@
 // Global Fonts
 export const globalFonts = {
-  regular: 'YourFontName-Regular',
+  regular:'YourFontName-Regular',
+
   bold: 'YourFontName-Bold',
   extrabold: 'YourFontName-ExtraBold'
 };
+
 
 export const defaultTextStyle = {
   fontFamily: globalFonts.regular,

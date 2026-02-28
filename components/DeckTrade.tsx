@@ -4,8 +4,8 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
-import TradeUI from '../components/TradeUI';
-import TradeTurns, { TradeTurn, TradeTurnType } from '../components/TradeTurns';
+import TradeUI from './TradeActions';
+import TradeTurns, { TradeTurn, TradeTurnType } from './TradeTurns';
 import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tradeConfig';
 
 const { width } = Dimensions.get('window');
@@ -27,13 +27,15 @@ interface Post {
 interface TradeDeckProps {
   posts: Post[];
   actions: TradeActionConfig[];
+  onHorizontalGestureStart?: () => void; 
+  onGestureEnd?: () => void;  
 }
 
 
 
 const DECK_WIDTH = width - 40; // 12px on each side
 
-export default function TradeDeck({ posts, actions }: TradeDeckProps) {
+export default function TradeDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showingPlayer, setShowingPlayer] = useState(false);
 
@@ -85,10 +87,20 @@ export default function TradeDeck({ posts, actions }: TradeDeckProps) {
         <View style={styles.deckClipWindow}>
           <Animated.View style={[styles.decksRow, { transform: [{ translateX: slideAnim }] }]}>
             <View style={{ width: DECK_WIDTH }}>
-              <Deck posts={posts} cardWidth={DECK_WIDTH} enabled={true} />
+              <Deck posts={posts} 
+                cardWidth={DECK_WIDTH} 
+                enabled={true} 
+                onHorizontalGestureStart={onHorizontalGestureStart}  // ADD
+                onGestureEnd={onGestureEnd}  
+              />
             </View>
             <View style={{ width: DECK_WIDTH }}>
-              <Deck posts={posts} cardWidth={DECK_WIDTH} enabled={true} />
+              <Deck posts={posts} 
+              cardWidth={DECK_WIDTH} 
+              enabled={true} 
+              onHorizontalGestureStart={onHorizontalGestureStart}  // ADD
+              onGestureEnd={onGestureEnd}         
+              />
             </View>
           </Animated.View>
         </View>
@@ -137,12 +149,17 @@ const styles = StyleSheet.create({
   deckClipWindow: {
     width: width,
     overflow: 'hidden',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    paddingTop: 20,      
+    marginTop: -20,    
+    paddingBottom: 20,  
+    marginBottom: -20,    
   },
   decksRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 27,
+    zIndex: 30,
   },
   switchDecksButton: {
     width: 50,

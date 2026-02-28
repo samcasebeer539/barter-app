@@ -26,8 +26,13 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
+    
+    const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
+        const handleScrollUpdate = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        currentOffsetRef.current = event.nativeEvent.contentOffset.y;
+    };
 
-    const infiniteActions = [...actions, ...actions, ...actions];
+    const infiniteActions = Array(10).fill(actions).flat();
     const currentAction = actions[currentActionIndex];
 
     const getButtonProps = (isInTopSpot: boolean) => ({
@@ -35,7 +40,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
         disabled: !isInTopSpot,
     });
 
-    const playAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
+    const playAction = (subAction?: 'add' | 'remove' | 'write' | 'select', index: number = currentActionIndex) => {
         if (!isActionSelected && !subAction) return;
 
         const tradeAction: TradeAction = {
@@ -45,6 +50,10 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
 
         console.log('Playing action:', tradeAction);
         onActionSelected?.(tradeAction);
+        const actualIndex = index % actions.length;
+        if (actualIndex === currentActionIndex) {
+            setIsActionSelected((prev) => !prev);
+        }
     };
 
     const handleActionSelect = (index: number) => {
@@ -52,6 +61,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
         if (actualIndex === currentActionIndex) {
             setIsActionSelected((prev) => !prev);
         }
+    };
+    const handleActionTextPress = () => {
+        const snappedOffset = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
+        const nextOffset = snappedOffset + ITEM_HEIGHT;
+        scrollViewRef.current?.scrollTo({ y: nextOffset, animated: true });
     };
 
     const isActionInTopSpot = (index: number) => {
@@ -80,9 +94,9 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        currentOffsetRef.current = event.nativeEvent.contentOffset.y;  // ADD
         const offsetY = event.nativeEvent.contentOffset.y;
         const itemIndex = calculateItemIndex(offsetY);
-
         if (itemIndex !== currentActionIndex) {
             setIsActionSelected(false);
             setCurrentActionIndex(itemIndex);
@@ -95,12 +109,12 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
         const offsetY = event.nativeEvent.contentOffset.y;
         const contentHeight = ITEM_HEIGHT * actions.length;
 
-        if (offsetY < ITEM_HEIGHT * SCROLL_THRESHOLD) {
-            const newOffset = offsetY + contentHeight;
+        if (offsetY < contentHeight * 2) {
+            const newOffset = offsetY + contentHeight * 5;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
             setCurrentActionIndex(calculateItemIndex(newOffset));
-        } else if (offsetY >= contentHeight * 2 - ITEM_HEIGHT * SCROLL_THRESHOLD) {
-            const newOffset = offsetY - contentHeight;
+        } else if (offsetY >= contentHeight * 8) {
+            const newOffset = offsetY - contentHeight * 5;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
             setCurrentActionIndex(calculateItemIndex(newOffset));
         }
@@ -118,93 +132,84 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                 return (
                     <>
                         <TouchableOpacity
-                            style={[styles.actionButton, styles.counterMinusButton, { opacity }]}
+                            style={[styles.counterMinusButton, { opacity, borderColor: currentAction?.color }]}
                             onPress={() => playAction('add')}
                             disabled={disabled}
                         >
-                            <FontAwesome6 name="plus" size={22} color={colors.actions.counter} />
+                            <FontAwesome6 name="plus" size={22} color={currentAction?.color} />
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.actionButton, styles.counterPlusButton, { opacity }]}
+                            style={[styles.counterPlusButton, { opacity, borderColor: currentAction?.color }]}
                             onPress={() => playAction('remove')}
                             disabled={disabled}
                         >
-                            <FontAwesome6 name="minus" size={22} color={colors.actions.counter} />
+                            <FontAwesome6 name="minus" size={22} color={currentAction?.color} />
                         </TouchableOpacity>
                     </>
                 );
             case 'query':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.queryButton, { opacity }]}
+                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="pen-to-square" size={22} color={colors.actions.query} />
+                        <FontAwesome6 name="pen-to-square" size={22} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'offer':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, { opacity, borderColor: colors.actions.offer }]}
+                        style={[styles.actionButton, styles.selectButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
                         <Text style={[styles.buttonText, { color: colors.actions.offer }]}>00</Text>
-                        <Icon name="check-square" size={22} color={colors.actions.offer} />
+                        <FontAwesome6 name="check" size={26} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'trade':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, { opacity, borderColor: colors.actions.trade }]}
+                        style={[styles.actionButton, styles.selectButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: colors.actions.trade }]}>00</Text>
-                        <Icon name="check-square" size={22} color={colors.actions.trade} />
+                        <Text style={[styles.buttonText, { color: currentAction?.color }]}>00</Text>
+                        <FontAwesome6 name="check" size={26} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'where':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.locationButton, { opacity }]}
+                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="location-dot" size={22} color={colors.actions.location} />
+                        <FontAwesome6 name="location-dot" size={22} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'when':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.timeButton, { opacity }]}
+                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="clock" size={22} color={colors.actions.time} />
+                        <FontAwesome6 name="clock" size={22} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'verify':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.verifyButton, { opacity }]}
+                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="camera" size={22} color={colors.actions.verify} />
+                        <FontAwesome6 name="camera" size={22} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
-            case 'stall':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.stallButton, { opacity }]}
-                        onPress={() => playAction('select')}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6 name="clock" size={22} color={colors.actions.stall} />
-                    </TouchableOpacity>
-                );
+     
             case 'play':
                 return null;
             case 'wait':
@@ -214,11 +219,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             default:
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.locationButton, { opacity }]}
+                        style={[styles.actionButton,  { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="location-dot" size={22} color={colors.actions.location} />
+                        <FontAwesome6 name="check" size={26} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
         }
@@ -250,7 +255,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                                 >
                                     {renderActionButton(action, isInTopSpot)}
 
-                                    <TouchableOpacity onPress={() => handleActionSelect(index)}>
+                                    <TouchableOpacity onPress={handleActionTextPress}>
                                         <Text style={[styles.tradeLineText, { color: action.color }]}>
                                             {action.text}
                                         </Text>
@@ -329,26 +334,43 @@ const styles = StyleSheet.create({
         borderWidth: 3,
     },
     actionButton: {
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         alignItems: 'center',
+        flexDirection: 'row',
+        paddingHorizontal: 16,
         height: 40,
         flex: 1,
         bottom: 12,
         borderWidth: 3,
         borderTopRightRadius: 2,
+        borderBottomRightRadius: 25,
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 25,
     },
     counterMinusButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
         flex: 1,
+        height: 40,
+        bottom: 12,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 2,
+        borderTopRightRadius: 2,
+        borderWidth: 3,
         borderColor: colors.actions.counter,
     },
     counterPlusButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
         flex: 1,
+        height: 40,
+        bottom: 12,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 25,
+        borderTopRightRadius: 2,
+        borderWidth: 3,
         borderColor: colors.actions.counter,
     },
     queryButton: {

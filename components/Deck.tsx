@@ -11,9 +11,9 @@ import {
   Animated,
   PanResponder,
 } from 'react-native';
-import PostCard from './PostCard';
-import UserCard from './UserCard';
-import BlankCard from './BlankCard';
+import PostCard from './CardItem';
+import UserCard from './CardUser';
+import BlankCard from './CardBlank';
 
 interface Post {
   type: 'good' | 'service';
@@ -38,7 +38,9 @@ interface DeckProps {
   posts: Post[];
   user?: User;
   cardWidth?: number;
-  enabled?: boolean; // Whether the deck is interactive
+  enabled?: boolean;
+  onHorizontalGestureStart?: () => void;  
+  onGestureEnd?: () => void;               
 }
 
 type DeckItem =
@@ -46,7 +48,8 @@ type DeckItem =
   | { type: 'post'; post: Post };
 
 
-const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) => {
+const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onHorizontalGestureStart,   // ADD
+  onGestureEnd,      }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -67,8 +70,8 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
   const deckContainerWidth  = finalCardWidth  + POSITIONS.third.x;
   const deckContainerHeight = cardHeight + POSITIONS.third.y;
 
-  const SWIPE_THRESHOLD = screenWidth * 0.06;
-  const GESTURE_THRESHOLD = 10; // Minimum horizontal movement before capturing gesture
+  const SWIPE_THRESHOLD = screenWidth * 0.03;
+  const GESTURE_THRESHOLD = 5; // Minimum horizontal movement before capturing gesture
 
   //if user only has single item, duplicate usercard and postcard in array
   const shouldRepeat = posts.length < 2;
@@ -115,46 +118,59 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
   enabledRef.current = enabled;
 
   const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false, // Don't capture on touch start
-      onMoveShouldSetPanResponder: (_, g) => {
-        // Only capture if:
-        // 1. Deck is enabled
-        // 2. Not currently animating
-        // 3. Horizontal movement is dominant AND exceeds threshold
-        // This prevents interfering with photo ScrollView
-        return enabledRef.current && 
-               !isAnimatingRef.current && 
-               Math.abs(g.dx) > GESTURE_THRESHOLD &&
-               Math.abs(g.dx) > Math.abs(g.dy) * 2; // Require significantly more horizontal than vertical movement
-      },
+  PanResponder.create({
+    onStartShouldSetPanResponder: (_, g) => false,
+    onStartShouldSetPanResponderCapture: () => false,
+    onMoveShouldSetPanResponder: (_, g) => {
+      return (
+        enabledRef.current &&
+        !isAnimatingRef.current &&
+        Math.abs(g.dx) > GESTURE_THRESHOLD &&
+        Math.abs(g.dx) > Math.abs(g.dy) * 2
+      );
+    },
 
-      onPanResponderGrant: () => {
-        if (!enabledRef.current) return;
-        // Ensure the front card's swipeX is at 0 when we start touching
-        const firstCardIndex = visibleIndicesRef.current.first;
-        cardAnimations[firstCardIndex].swipeX.setOffset(0);
-        cardAnimations[firstCardIndex].swipeX.setValue(0);
-      },
+    onMoveShouldSetPanResponderCapture: (_, g) => {
+      return (
+        enabledRef.current &&
+        !isAnimatingRef.current &&
+        Math.abs(g.dx) > GESTURE_THRESHOLD &&
+        Math.abs(g.dx) > Math.abs(g.dy) * 2
+      );
+    },
 
-      onPanResponderMove: (_, gesture) => {
-        if (!enabledRef.current) return;
-        const firstCardIndex = visibleIndicesRef.current.first;
-        cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
-      },
+    onPanResponderGrant: () => {
+      if (!enabledRef.current) return;
+      onHorizontalGestureStart?.();
+      const firstCardIndex = visibleIndicesRef.current.first;
+      cardAnimations[firstCardIndex].swipeX.setOffset(0);
+      cardAnimations[firstCardIndex].swipeX.setValue(0);
+    },
 
-      onPanResponderRelease: (_, gesture) => {
-        if (!enabledRef.current) return;
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          swipeOut(1);
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          swipeOut(-1);
-        } else {
-          resetPosition();
-        }
-      },
-    })
-  ).current;
+    onPanResponderMove: (_, gesture) => {
+      if (!enabledRef.current) return;
+      const firstCardIndex = visibleIndicesRef.current.first;
+      cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
+    },
+
+    onPanResponderRelease: (_, gesture) => {
+      if (!enabledRef.current) return;
+      onGestureEnd?.();
+      if (gesture.dx > SWIPE_THRESHOLD) {
+        swipeOut(1);
+      } else if (gesture.dx < -SWIPE_THRESHOLD) {
+        swipeOut(-1);
+      } else {
+        resetPosition();
+      }
+    },
+
+    onPanResponderTerminate: () => {
+      onGestureEnd?.();
+      resetPosition();
+    },
+  })
+).current;
 
   const swipeOut = (direction: number) => {
     isAnimatingRef.current = true;

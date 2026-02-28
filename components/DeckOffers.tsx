@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 
 import {globalFonts, colors} from '../styles/globalStyles';
-import TradeUI from '../components/TradeUI';
+import TradeUI from './TradeActions';
+import { TradeActionConfig } from '@/config/tradeConfig';
 
 
 const { width } = Dimensions.get('window');
@@ -20,12 +21,15 @@ interface Post {
 
 interface OfferDeckProps {
     posts: Post[];
+    actions: TradeActionConfig[];
+    onHorizontalGestureStart?: () => void; 
+    onGestureEnd?: () => void;              
 
 }
 
 const DECK_WIDTH = Math.min(width - 40, 600);
 
-export default function OfferDeck({ posts}: OfferDeckProps) {
+export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd}: OfferDeckProps) {
 
 
     // Count good and service posts
@@ -42,26 +46,27 @@ export default function OfferDeck({ posts}: OfferDeckProps) {
 
                 <View style={styles.goodServiceRow}>
                     <View style={styles.goodServiceButton}>
-                        <Text style={styles.secondaryText}>0{goodCount}</Text>
+                        <Text style={styles.secondaryText}>00{goodCount}</Text>
                         <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
 
-                        <Text style={styles.secondaryText}> 0{serviceCount}</Text>
+                        <Text style={styles.secondaryText}> 00{serviceCount}</Text>
                         <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
                     </View>  
                 </View>
 
-                {/* BOTH decks in ONE row wrapper, sliding animated */}
         
                 <View style={styles.deckWrapper}>
                     <Deck 
                     posts={posts}
                     cardWidth={DECK_WIDTH}
                     enabled={true}
+                    onHorizontalGestureStart={onHorizontalGestureStart}  // ADD
+                    onGestureEnd={onGestureEnd}         
                     />
                 </View>
 
                 <View style={styles.actionRow}>
-                    <TradeUI />
+                    <TradeUI actions={actions}/>
                 </View>
 
             </View>
@@ -110,7 +115,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 22,
         borderBottomLeftRadius: 2,
         backgroundColor: colors.ui.secondary,
-        justifyContent: 'flex-end',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         paddingHorizontal: 16,
     },

@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image }
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
-import FeedDeck from '@/components/FeedDeck';
-import FeedBar from '@/components/FeedBar';
+import FeedDeck from '@/components/DeckFeed';
+import FeedBar from '@/components/BarFeed';
 import { defaultTextStyle, globalFonts, colors, uiColors } from '../../styles/globalStyles';
 
 

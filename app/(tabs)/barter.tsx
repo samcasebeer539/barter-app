@@ -2,10 +2,10 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../../styles/globalStyles';
-import TradeDeck from '../../components/TradeDeck';
-import OfferDeck from '../../components/OfferDeck';
+import TradeDeck from '../../components/DeckTrade';
+import OfferDeck from '../../components/DeckOffers';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import OffersTradesDealsBar from '../../components/OffersTradesDealsBar';
+import OffersTradesDealsBar from '../../components/BarOffersTradesDeals';
 import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../../config/tradeConfig';
 
 // ---- MOCK DATA (unchanged) ----
@@ -47,6 +47,7 @@ const POSTS = [
 export default function ActiveTradesTestScreen() {
   const [resetKey, setResetKey] = useState(0);
   const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('offers'); // default to offers
+  const [scrollEnabled, setScrollEnabled] = useState(true); //to capture deck c
 
   useFocusEffect(
     useCallback(() => {
@@ -77,7 +78,13 @@ export default function ActiveTradesTestScreen() {
             {/* TODO: OffersDeck */}
                       <View>
             <View style={{ height: 598 }} />
-              <OfferDeck posts={POSTS} />
+              <OfferDeck 
+                posts={POSTS} 
+                onHorizontalGestureStart={() => setScrollEnabled(false)}
+                onGestureEnd={() => setScrollEnabled(true)}
+                actions={TRADE_ACTIONS.filter(a => ['rescind'].includes(a.actionType))}
+              />
+             
             </View>
           </View>
         )}

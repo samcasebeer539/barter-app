@@ -26,6 +26,7 @@ export const colors = {
     verify: '#ff8d0a',
     wait: '#372788',
     stall: '#fb4921',
+    rescind: '#ff3232',
   },
 
   // Post Type Colors

@@ -1,7 +1,7 @@
 //add verify
 import { colors, globalFonts } from '../styles/globalStyles';
 
-export type TradeActionType = 'offer' | 'trade' | 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait' | 'play' | 'cancel';
+export type TradeActionType = 'offer' | 'trade' | 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait' | 'play' | 'cancel' | 'rescind';
 
 export type TradeTurnType = 
   | 'turnOffer' 
@@ -12,7 +12,8 @@ export type TradeTurnType =
   | 'turnStall'
   | 'turnDecline'
   | 'turnWhere'
-  | 'turnWhen';
+  | 'turnWhen'
+  | 'turnRescind';
 
 export interface TradeActionConfig {
   text: string;
@@ -70,7 +71,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
   {
     text: 'STALL',
     color: colors.actions.time,
-    hasButtons: false,
+    hasButtons: true,
     actionType: 'stall',
     turnType: 'turnStall',
   },
@@ -78,14 +79,14 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
   {
     text: '*ACCEPT',
     color: colors.actions.accept,
-    hasButtons: false,
+    hasButtons: true,
     actionType: 'accept',
     turnType: 'turnAccept',
   },
   {
     text: 'DECLINE',
     color: colors.actions.decline,
-    hasButtons: false,
+    hasButtons: true,
     actionType: 'decline',
     turnType: 'turnDecline',
   },
@@ -123,6 +124,13 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     hasButtons: true,
     actionType: 'cancel',
     turnType: 'turnWhen',
+  },
+  {
+    text: 'RESCIND',
+    color: colors.actions.rescind,
+    hasButtons: true,
+    actionType: 'rescind',
+    turnType: 'turnRescind',
   },
 
 ];
@@ -191,6 +199,13 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     colorStyle: { color: colors.actions.time, fontFamily: globalFonts.extrabold },
     templateUser: 'You suggested {action}',
     templatePartner: '{user} suggested {action}',
+    isSent: true,
+  },
+  turnRescind: {
+    actionText: 'RESCIND',
+    colorStyle: { color: colors.actions.rescind, fontFamily: globalFonts.extrabold },
+    templateUser: 'You rescinded',
+    templatePartner: '{user} rescinded',
     isSent: true,
   },
 };

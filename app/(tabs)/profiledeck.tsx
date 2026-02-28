@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
-import DecksProfile from '@/components/DecksProfile';
+import DecksProfile from '@/components/DeckProfile';
 import { colors } from '@/styles/globalStyles';
 
 export default function ProfileDeck() {

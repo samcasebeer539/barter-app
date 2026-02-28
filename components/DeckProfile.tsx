@@ -5,9 +5,9 @@
   import { useRouter } from 'expo-router';
 
   import Deck from './Deck';
-  import TradeTurns, { TradeTurn } from '../components/TradeTurns';
+  import TradeTurns, { TradeTurn } from './TradeTurns';
   import { globalFonts, colors } from '../styles/globalStyles';
-import TradeUI from './TradeUI';
+import TradeUI from './TradeActions';
 import { TRADE_ACTIONS } from '../config/tradeConfig';
 
 
@@ -251,7 +251,7 @@ import { TRADE_ACTIONS } from '../config/tradeConfig';
       gap: 4,
       top: -10,
       elevation: 10,
-      zIndex: 10,
+      zIndex: 0,
     },
     goodServiceRow: {
       width: 334,
@@ -259,8 +259,8 @@ import { TRADE_ACTIONS } from '../config/tradeConfig';
       justifyContent: 'space-between',
       gap: 4,
       top: 0,
-      zIndex: 3,
-      elevation: 3,
+      zIndex: 0,
+      elevation: 0,
 
     },
     turnsAndButtonRow: {
@@ -382,9 +382,8 @@ import { TRADE_ACTIONS } from '../config/tradeConfig';
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      position: 'absolute',
       width: '100%',
-      bottom: -109,
+      marginTop: 61,
       paddingHorizontal: 12,
     },
     settingsButton: {

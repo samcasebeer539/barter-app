@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity } from 'react-native';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { TRADE_ACTIONS, TradeActionType } from '../config/tradeConfig';
+import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tradeConfig';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export interface TradeAction {
     actionType: TradeActionType;
@@ -12,23 +13,23 @@ export interface TradeAction {
 
 interface TradeUIProps {
     onActionSelected?: (action: TradeAction) => void;
+    actions?: TradeActionConfig[];
 }
 
-const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
+const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACTIONS }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
-    const SCROLL_THRESHOLD = 2; // Items from edge before we loop
+    const SCROLL_THRESHOLD = 2;
     
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
     
-    // Create tripled array for infinite scroll
-    const infiniteActions = [...TRADE_ACTIONS, ...TRADE_ACTIONS, ...TRADE_ACTIONS];
+    const infiniteActions = [...actions, ...actions, ...actions];
     const scrollViewHeight = ITEM_HEIGHT - 8;
     
-    const currentAction = TRADE_ACTIONS[currentActionIndex];
+    const currentAction = actions[currentActionIndex];
     
     const PlayAction = (subAction?: 'add' | 'remove' | 'write' | 'select') => {
         if (!isActionSelected && !subAction) return;
@@ -43,30 +44,30 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
     };
     
     const handleActionTextPress = (index: number) => {
-        const actualIndex = index % TRADE_ACTIONS.length;
+        const actualIndex = index % actions.length;
         if (actualIndex === currentActionIndex) {
             setIsActionSelected((prev) => !prev);
         }
     };
     
     const isActionInTopSpot = (index: number) => {
-        return index % TRADE_ACTIONS.length === currentActionIndex;
+        return index % actions.length === currentActionIndex;
     };
     
     const calculateItemIndex = (offsetY: number): number => {
-        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % TRADE_ACTIONS.length;
-        return itemIndex < 0 ? (itemIndex + TRADE_ACTIONS.length) % TRADE_ACTIONS.length : itemIndex;
+        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % actions.length;
+        return itemIndex < 0 ? (itemIndex + actions.length) % actions.length : itemIndex;
     };
     
     useEffect(() => {
+        setCurrentActionIndex(0);
         setTimeout(() => {
             scrollViewRef.current?.scrollTo({ 
-                y: ITEM_HEIGHT * TRADE_ACTIONS.length, 
+                y: ITEM_HEIGHT * actions.length, 
                 animated: false 
             });
-            setCurrentActionIndex(0);
         }, INITIAL_SCROLL_DELAY);
-    }, []);
+    }, [actions]);
     
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
@@ -87,15 +88,13 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
         if (!isScrollingRef.current) return;
         
         const offsetY = event.nativeEvent.contentOffset.y;
-        const contentHeight = ITEM_HEIGHT * TRADE_ACTIONS.length;
+        const contentHeight = ITEM_HEIGHT * actions.length;
         
-        // Near the top - loop to middle section
         if (offsetY < ITEM_HEIGHT * SCROLL_THRESHOLD) {
             const newOffset = offsetY + contentHeight;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
             setCurrentActionIndex(calculateItemIndex(newOffset));
         }
-        // Near the bottom - loop to middle section
         else if (offsetY >= contentHeight * 2 - ITEM_HEIGHT * SCROLL_THRESHOLD) {
             const newOffset = offsetY - contentHeight;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
@@ -105,7 +104,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
         isScrollingRef.current = false;
     };
     
-    const renderActionButton = (action: typeof TRADE_ACTIONS[0], isInTopSpot: boolean) => {
+    const renderActionButton = (action: TradeActionConfig, isInTopSpot: boolean) => {
         if (!action.hasButtons) return null;
         
         const buttonProps = {
@@ -141,6 +140,28 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected }) => {
                         disabled={buttonProps.disabled}
                     >
                         <FontAwesome6 name="pen-to-square" size={22} color={colors.actions.query} />
+                    </TouchableOpacity>
+                );
+            case 'OFFER':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.selectButton, { opacity: buttonProps.opacity, borderColor: colors.actions.offer }]}
+                        onPress={() => PlayAction('write')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <Text style={[styles.buttonText, {color:colors.actions.offer}]}>00</Text>
+                        <Icon name='check-square' size={22} color={colors.actions.offer} />
+                    </TouchableOpacity>
+                );
+            case 'TRADE':
+                return (
+                    <TouchableOpacity 
+                        style={[styles.actionButton, styles.selectButton, { opacity: buttonProps.opacity, borderColor: colors.actions.trade }]}
+                        onPress={() => PlayAction('write')}
+                        disabled={buttonProps.disabled}
+                    >
+                        <Text style={[styles.buttonText, {color:colors.actions.trade}]}>00</Text>
+                        <Icon name='check-square' size={22} color={colors.actions.trade} />
                     </TouchableOpacity>
                 );
             case 'WHERE':
@@ -252,9 +273,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'flex-start',
-        backgroundColor: colors.ui.background,
-        marginVertical: 4,
-        marginHorizontal: 12,
+        
         width: '100%'
     },
     row: {
@@ -277,9 +296,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: -10,
         justifyContent: 'flex-end',
-        // shadowOffset: { width: 1, height: 1 },
-        // shadowOpacity: 0.9,
-        // shadowRadius: 3,
     },
     tradeLineText: {
         fontSize: 48,
@@ -297,11 +313,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 25,
         borderBottomRightRadius: 2,
         borderWidth: 3,
-        // shadowOffset: { width: 1, height: 1 },
-        // shadowOpacity: 0.9,
-        // shadowRadius: 3,
     },
-    // Base style for all action buttons
     actionButton: {
         justifyContent: 'center',
         alignItems: 'center',
@@ -359,6 +371,24 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 25,
         borderColor: colors.actions.time,
+    },
+    selectButton: {
+        flex: 1,
+        height: 40,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 25,
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 25,
+        borderWidth: 3,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 4,
+        paddingHorizontal: 16
+    },
+    buttonText: {
+        fontSize: 20,
+        fontFamily: globalFonts.bold,
     },
 });
 

@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         
         alignItems: 'center',
-        bottom: 400,
+        bottom: 600,
     },
 
     column: {
@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
     },
     deckWrapper: {
         left: -12,
-        bottom: -32,
     },
 
     goodServiceRow: {
@@ -98,8 +97,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 4,
-        top: -198,
-        left: 0,
         zIndex: 0,
     },
 
@@ -116,25 +113,16 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         paddingHorizontal: 16,
-       
-
     },
     
     actionRow: {
         width: 334,
-        top: 302,
+        top: 0,
         justifyContent: 'center',
         alignItems: 'center',
 
     },
-    decksRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start',
-        left: 0,
-        bottom: -32,
-        gap: 30,
-    },
+ 
     secondaryText: {
         color: colors.ui.secondarydisabled,
         fontSize: 20,

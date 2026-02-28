@@ -6,6 +6,7 @@ import TradeDeck from '../../components/TradeDeck';
 import OfferDeck from '../../components/OfferDeck';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import OffersTradesDealsBar from '../../components/OffersTradesDealsBar';
+import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../../config/tradeConfig';
 
 // ---- MOCK DATA (unchanged) ----
 const POSTS = [
@@ -75,7 +76,7 @@ export default function ActiveTradesTestScreen() {
           <View>
             {/* TODO: OffersDeck */}
                       <View>
-            <View style={{ height: 590 }} />
+            <View style={{ height: 598 }} />
               <OfferDeck posts={POSTS} />
             </View>
           </View>
@@ -84,10 +85,10 @@ export default function ActiveTradesTestScreen() {
         {/* TRADES PAGE (TradeDeck lives here) */}
         {tab === 'trades' && (
           <View>
-            <View style={{ height: 590 }} />
-            <TradeDeck posts={POSTS} />
-            <View style={{ height: 590 }} />
-            <TradeDeck posts={POSTS} />
+            <View style={{ height: 398 }} />
+            <TradeDeck posts={POSTS} actions={TRADE_ACTIONS.filter(a => ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType))} />
+            <View style={{ height: 6 }} />
+            <TradeDeck posts={POSTS} actions={TRADE_ACTIONS.filter(a => ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType))} />
           </View>
           
           
@@ -96,8 +97,8 @@ export default function ActiveTradesTestScreen() {
         {/* DEALS PAGE */}
         {tab === 'deals' && (
           <View>
-            <View style={{ height: 590 }} />
-            <TradeDeck posts={POSTS} />
+            <View style={{ height: 398 }} />
+            <TradeDeck posts={POSTS} actions={TRADE_ACTIONS.filter(a => [ 'accept', 'decline', 'where', 'when', 'wait', 'play', 'cancel'].includes(a.actionType))} />
           </View>
         )}
 

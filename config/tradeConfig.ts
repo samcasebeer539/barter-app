@@ -1,7 +1,7 @@
 //add verify
 import { colors, globalFonts } from '../styles/globalStyles';
 
-export type TradeActionType = 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait' | 'play' | 'cancel';
+export type TradeActionType = 'offer' | 'trade' | 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait' | 'play' | 'cancel';
 
 export type TradeTurnType = 
   | 'turnOffer' 
@@ -32,6 +32,20 @@ export interface TurnDisplayConfig {
 
 // Configuration for UI actions (used in TradeUI)
 export const TRADE_ACTIONS: TradeActionConfig[] = [
+  {
+    text: 'OFFER',
+    color: colors.actions.offer,
+    hasButtons: true,
+    actionType: 'offer',
+    turnType: 'turnOffer',
+  },
+  {
+    text: 'TRADE',
+    color: colors.actions.trade,
+    hasButtons: true,
+    actionType: 'trade',
+    turnType: 'turnTrade',
+  },
   {
     text: 'QUERY',
     color: colors.actions.query,

@@ -55,12 +55,16 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
   const scaledHeight = cardHeight * 0.85;
   const offset = 6;
 
+  
   // Card position definitions
   const POSITIONS = {
-    first: { x: 5, y: 15 },
-    second: { x: 12, y: 22 },
-    third: { x: 19, y: 29 },
+    first: { x: 0, y: 0 },
+    second: { x: 7, y: 7 },
+    third: { x: 14, y: 14 },
   };
+
+  const deckContainerWidth  = finalCardWidth  + POSITIONS.third.x;
+  const deckContainerHeight = cardHeight + POSITIONS.third.y;
 
   const SWIPE_THRESHOLD = screenWidth * 0.06;
   const GESTURE_THRESHOLD = 10; // Minimum horizontal movement before capturing gesture
@@ -273,7 +277,7 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
 
   return (
     <View 
-      style={styles.deckContainer} 
+      style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
       {...(enabled ? panResponder.panHandlers : {})}
     >
       {/* Render all cards, but only visible ones will be seen */}
@@ -287,8 +291,10 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
 const styles = StyleSheet.create({
   deckContainer: {
     position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
+  alignItems: 'flex-start',   // change from center
+  justifyContent: 'flex-start', // change from center
+ 
+  marginLeft: 24,
   
   },
   backingCard: {
@@ -302,6 +308,8 @@ const styles = StyleSheet.create({
   position: 'absolute',
   zIndex: 10,
   elevation: 8, // Android shadow
+  top: 0,
+  left: 0,
 },
 });
 

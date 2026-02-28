@@ -5,6 +5,8 @@ import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
 import { Pressable } from 'react-native';
+import TradeUI from './TradeUI';
+import { TRADE_ACTIONS } from '@/config/tradeConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -37,7 +39,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       deckTranslateY.setValue(-Dimensions.get('window').height);
 
       Animated.spring(deckTranslateY, {
-        toValue: Dimensions.get('window').height / 16,
+        toValue: Dimensions.get('window').height / 2.5,
         useNativeDriver: true,
         tension: 50,
         friction: 8,
@@ -82,51 +84,14 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             ]}
           >
             <View style={styles.column}>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity 
-                  style={[
-                    styles.selectButton, 
-                    { backgroundColor: showSaved ? 'transparent' : colors.actions.offer }
-                  ]}
-                  onPress={handleSave}
-                >
-                  <Text style={[styles.offerButtonText, {color: showSaved ? colors.actions.offer : '#000'}]}>00</Text>
-                  <Icon name='check-square' size={22} color={showSaved ? colors.actions.offer : '#000'} />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={handleOffer}>
-                  <Text style={styles.offerText}>OFFER</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={[
-                    styles.playButton, 
-                    { backgroundColor: showPlay ? 'transparent' : colors.actions.offer }
-                  ]}
-                  onPress={handlePlay}
-                >
-                  <FontAwesome6 name='arrow-left-long' size={26} color={showPlay ? colors.actions.offer : '#000'} />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.deckWrapper}>
-                <Deck 
-                  posts={posts}
-                  cardWidth={Math.min(width - 40, 400)}
-                  enabled={true}
-                />
-              </View>
-
               <View style={styles.goodServiceRow}>
-                
-
                 <View style={styles.goodServiceButton}>
                   
                   <FontAwesome6 name="gifts" size={16} color={colors.ui.secondarydisabled} />
-                  <Text style={[styles.offerButtonText, {color: colors.ui.secondarydisabled}]}>0{goodCount}</Text>
+                  <Text style={[styles.buttonText, {color: colors.ui.secondarydisabled}]}>0{goodCount}</Text>
                   
                   <FontAwesome6 name="hand-sparkles" size={16} color={colors.ui.secondarydisabled} />
-                  <Text style={[styles.offerButtonText, {color: colors.ui.secondarydisabled}]}>0{serviceCount}</Text>
+                  <Text style={[styles.buttonText, {color: colors.ui.secondarydisabled}]}>0{serviceCount}</Text>
                 </View>
                 <TouchableOpacity 
                   style={styles.saveButton}
@@ -142,6 +107,18 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                   <FontAwesome6 name="angle-up" size={26} color='#fff' />
                 </TouchableOpacity>
               </View>
+              <View style={styles.deckWrapper}>
+                <Deck 
+                  posts={posts}
+                  cardWidth={Math.min(width - 40, 400)}
+                  enabled={true}
+                />
+              </View>
+              <View style={styles.actionRow}>
+                    <TradeUI 
+                    actions={TRADE_ACTIONS.filter(a => ['offer'].includes(a.actionType))}
+                    />
+                </View>
 
             </View>
           </Animated.View>
@@ -192,8 +169,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deckWrapper: {
-    marginBottom: 20,
+  
     left: -12,
+    
   },
   buttonRow: {
     width: 334,
@@ -201,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: 4,
-    top: 346,
+    top: 0,
     left: 0,
   },
   goodServiceRow: {
@@ -209,7 +187,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
-    top: -304,
+    top: 0,
     left: 0,
     zIndex: 0,
   },
@@ -295,7 +273,7 @@ const styles = StyleSheet.create({
     
   },
 
-  offerButtonText: {
+  buttonText: {
    
     fontSize: 20,
     fontFamily: globalFonts.bold,
@@ -315,10 +293,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginLeft: 'auto',
+    
     
     
   },
+  actionRow: {
+        width: 334,
+        top: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+    },
   
 
 });

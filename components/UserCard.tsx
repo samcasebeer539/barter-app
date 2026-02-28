@@ -195,32 +195,21 @@ const styles = StyleSheet.create({
   },
   bioContainer: {
     marginBottom: 12,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   bio: {
     fontSize: 16,
     lineHeight: 16,
     color: '#000000',
     fontFamily: globalFonts.regular,
+    textAlign: 'left',
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    backgroundColor: 'transparent',
-  },
-  tagText: {
-    fontSize: 14,
-    
-    color: '#000000',
-    fontFamily: globalFonts.regular,
-  },
+  
   profileImage: {
     width: 160,
     height: 160,

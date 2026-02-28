@@ -7,8 +7,11 @@
   import Deck from './Deck';
   import TradeTurns, { TradeTurn } from '../components/TradeTurns';
   import { globalFonts, colors } from '../styles/globalStyles';
+import TradeUI from './TradeUI';
+import { TRADE_ACTIONS } from '../config/tradeConfig';
 
-  const SLIDE_DISTANCE = 600;
+
+  const SLIDE_DISTANCE = 594;
   const { width } = Dimensions.get('window');
 
   const trade1Turns: TradeTurn[] = [
@@ -118,18 +121,12 @@
               </View>
 
               <View style={styles.turnsAndButtonRow}>
-                <View style={styles.secondaryButtonRow}>
-                  <TouchableOpacity style={styles.selectButton} onPress={() => {}}>
-                    <Icon name="circle-o" size={22} color={colors.actions.trade} />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity onPress={() => {}}>
-                    <Text style={styles.tradeText}>TRADE</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.playButton} onPress={() => {}}>
-                    <FontAwesome6 name="arrow-left-long" size={26} color="#000" />
-                  </TouchableOpacity>
+             
+                <View style={styles.actionRow}>
+                    <TradeUI 
+                      actions={TRADE_ACTIONS.filter(a => ['trade', 'decline'].includes(a.actionType))}
+                    />
+                    
                 </View>
 
                 <View style={styles.tradeRow}>
@@ -146,7 +143,7 @@
             </View>
 
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => router.push('/settings')}>
+              <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => {}}>
                 <FontAwesome6 name="plus" size={24} color="#fff" />
               </TouchableOpacity>
 
@@ -198,7 +195,7 @@
       maxWidth: 400,
       position: 'relative',
       alignItems: 'center',
-      bottom: 408,
+      bottom: 652,
       overflow: 'visible',
     },
     decksContainer: {
@@ -213,13 +210,11 @@
       alignItems: 'center',
       zIndex: 2,
       elevation: 2,
-      paddingTop: 240,
-      paddingBottom: 280,
-      bottom: 240,
+   
       backgroundColor: colors.ui.background,
     },
     deckWrapper: {
-      marginBottom: 20,
+      marginVertical: 8,
       left: -12,
     },
     secondaryDeckContainer: {
@@ -236,7 +231,7 @@
       alignItems: 'center',
       justifyContent: 'flex-start',
       gap: 4,
-      top: 264,
+      
     },
     secondaryButtonRow: {
       width: 338,
@@ -249,12 +244,12 @@
       zIndex: 10,
     },
     tradeRow: {
-      width: 338,
+      width: 334,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'flex-start',
       gap: 4,
-      top: -27,
+      top: -10,
       elevation: 10,
       zIndex: 10,
     },
@@ -263,19 +258,20 @@
       flexDirection: 'row',
       justifyContent: 'space-between',
       gap: 4,
-      top: -240,
+      top: 0,
       zIndex: 3,
       elevation: 3,
 
     },
     turnsAndButtonRow: {
-      width: 338,
+      width: 334,
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      top: 261,
+      top: 0,
       zIndex: 10,
     },
+
     goodServiceButton: {
       height: 36,
       flexDirection: 'row',
@@ -388,7 +384,7 @@
       justifyContent: 'flex-end',
       position: 'absolute',
       width: '100%',
-      bottom: -84,
+      bottom: -109,
       paddingHorizontal: 12,
     },
     settingsButton: {
@@ -402,5 +398,12 @@
       justifyContent: 'center',
       alignItems: 'center',
       
+    },
+    actionRow: {
+        width: 334,
+        marginBottom: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+
     },
   });

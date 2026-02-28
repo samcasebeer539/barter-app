@@ -1,88 +1,204 @@
-import { Redirect } from 'expo-router';
 import { useState } from 'react';
-import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, Button, ActivityIndicator } from 'react-native'
+import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, ActivityIndicator, TouchableOpacity } from 'react-native'
 import { auth } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User } from 'firebase/auth';
-import { colors } from '../../styles/globalStyles';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { colors, globalFonts } from '../../styles/globalStyles';
 
 export default function HandleLogin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isSigningUp, setIsSigningUp] = useState(false);
 
     const signUp = async () => {
+        if (!firstName.trim() || !lastName.trim()) {
+            alert('Please enter your first and last name.');
+            return;
+        }
         setLoading(true);
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const { user } = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(user, { displayName: `${firstName.trim()} ${lastName.trim()}` });
             alert('Check your email!');
         } catch(e: any) {
-            alert('Sign Up Failed: ' + e.message)
+            alert('Sign Up Failed: ' + e.message);
         } finally {
             setLoading(false);
-        } 
-    }
+        }
+    };
 
     const signIn = async () => {
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // alert('Check your email!');
         } catch(e: any) {
-            alert('Sign In Failed: ' + e.message)
+            alert('Sign In Failed: ' + e.message);
         } finally {
             setLoading(false);
-        } 
-    }
+        }
+    };
+
+    const handleSignInPress = () => {
+        if (!isSigningUp) {
+            // already selected — submit
+            signIn();
+        } else {
+            // switch to sign in mode
+            setIsSigningUp(false);
+        }
+    };
+
+    const handleSignUpPress = () => {
+        if (isSigningUp) {
+            // already selected — submit
+            signUp();
+        } else {
+            // switch to sign up mode
+            setIsSigningUp(true);
+        }
+    };
 
     return (
-        <View 
-          style={styles.container}
-        >
+        <View style={styles.container}>
             <KeyboardAvoidingView behavior="padding">
-                <TextInput 
+
+                {!isSigningUp && (
+                    <View style={styles.headerBanner}>
+                        <Text style={styles.buttonText}>Welcome Back!</Text>
+                    </View>
+                )}
+                {isSigningUp && (
+                    <View style={styles.headerBanner}>
+                        <Text style={styles.buttonText}>Welcome to Win-Win!</Text>
+                    </View>
+                )}
+
+                {isSigningUp && (
+                    <TextInput
+                        style={styles.input}
+                        value={firstName}
+                        onChangeText={setFirstName}
+                        placeholder='First Name'
+                        placeholderTextColor={colors.ui.cardsecondary}
+                    />
+                )}
+                {isSigningUp && (
+                    <TextInput
+                        style={styles.input}
+                        value={lastName}
+                        onChangeText={setLastName}
+                        placeholder='Last Name'
+                        placeholderTextColor={colors.ui.cardsecondary}
+                    />
+                )}
+                <TextInput
                     style={styles.input}
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
                     keyboardType='email-address'
                     placeholder='Email'
+                    placeholderTextColor={colors.ui.cardsecondary}
                 />
-                
-                <TextInput 
+                <TextInput
                     style={styles.input}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
                     placeholder='Password'
+                    placeholderTextColor={colors.ui.cardsecondary}
                 />
+
                 {loading ? (
                     <ActivityIndicator size={"small"} style={{ margin: 28 }} />
                 ) : (
-                    <>
-                        <Button onPress={signUp} title="Sign Up" />
-                        <Button onPress={signIn} title="Sign In" />
-                    </>
-                )
-                } 
+                    <View style={styles.signButtonRow}>
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            style={[styles.signInButton, { backgroundColor: !isSigningUp ? colors.actions.offer : colors.ui.secondary }]}
+                            onPress={handleSignInPress}
+                        >
+                            <Text style={styles.buttonText}>Sign In</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            style={[styles.signUpButton, { backgroundColor: isSigningUp ? colors.actions.offer : colors.ui.secondary }]}
+                            onPress={handleSignUpPress}
+                        >
+                            <Text style={styles.buttonText}>Sign Up</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </KeyboardAvoidingView>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
-        marginHorizontal: 0, 
+        marginHorizontal: 0,
         flex: 1,
         justifyContent: "center",
-        backgroundColor: colors.ui.secondary,
+        backgroundColor: colors.ui.background,
     },
     input: {
         marginVertical: 4,
         marginHorizontal: 12,
         height: 50,
-        
+        fontFamily: globalFonts.regular,
         borderRadius: 2,
         padding: 10,
         backgroundColor: '#fff',
-    }
-})
+    },
+    signButtonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 4,
+        marginHorizontal: 12,
+        marginVertical: 4,
+    },
+    signInButton: {
+        flex: 1,
+        height: 44,
+        borderTopLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    signUpButton: {
+        flex: 1,
+        height: 44,
+        borderTopLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomLeftRadius: 2,
+        borderBottomRightRadius: 25,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#fff',
+        fontFamily: globalFonts.bold,
+        fontSize: 16,
+    },
+    buttonActive: {
+        backgroundColor: colors.actions.offer,
+    },
+    headerBanner: {
+        marginHorizontal: 12,
+        marginVertical: 4,
+        height: 44,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+});

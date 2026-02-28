@@ -162,9 +162,13 @@ export default function FeedScreen() {
             color={item.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
             style={styles.typeIcon}
           />
-        <Text style={styles.itemTitle}>{item.title}</Text>
-        <Text style={styles.itemDistance}>3 mi</Text>
-        
+          
+            <Text style={styles.itemTitle}>
+              {item.title}
+              <Text style={styles.itemDistance}> 12{'\u00A0'}mi</Text>
+            </Text>
+            
+          
       </View>
      
     </View>
@@ -276,12 +280,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 2,
     borderBottomRightRadius: 20,
     borderBottomLeftRadius: 2,
+    flexWrap: 'wrap',
   },
   itemTitle: {
     fontSize: 16,
     
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
+    flex: 1,
+    minWidth: 0,
     
     
   },
@@ -290,6 +297,8 @@ const styles = StyleSheet.create({
     
     color: colors.ui.secondarydisabled,
     fontFamily: globalFonts.regular,
+    flexShrink: 0,
+    letterSpacing: -0.3,
     
     
   },

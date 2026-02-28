@@ -149,9 +149,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
     
-    borderWidth: 0,
-    // borderColor: colors.ui.background, 
-    borderColor: '#c94545',
+ 
     
     justifyContent: 'flex-start',
     alignItems: 'center'
@@ -181,6 +179,7 @@ const styles = StyleSheet.create({
     color: colors.ui.cardsecondary,
     marginBottom: 4,
     fontFamily: globalFonts.regular,
+    letterSpacing: -0.3,
 
   },
   locationRow: {
@@ -192,6 +191,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
+    letterSpacing: -0.1,
   },
   bioContainer: {
     marginBottom: 12,
@@ -199,10 +199,11 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 16,
-    lineHeight: 16,
+    lineHeight: 20,
     color: '#000000',
     fontFamily: globalFonts.regular,
     textAlign: 'left',
+    letterSpacing: -0.1,
   },
   tagsContainer: {
     flexDirection: 'row',

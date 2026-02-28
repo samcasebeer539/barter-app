@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import PostCard from './PostCard';
 import UserCard from './UserCard';
+import BlankCard from './BlankCard';
 
 interface Post {
   type: 'good' | 'service';
@@ -280,6 +281,11 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
       style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
       {...(enabled ? panResponder.panHandlers : {})}
     >
+      {/* Static blank card always at third position */}
+    <View style={[styles.frontCard, { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] }]}>
+      <BlankCard cardWidth={finalCardWidth} />
+    </View>
+
       {/* Render all cards, but only visible ones will be seen */}
       {renderCard(visibleIndices.third)}
       {renderCard(visibleIndices.second)}
@@ -291,11 +297,11 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true }) =
 const styles = StyleSheet.create({
   deckContainer: {
     position: 'relative',
-  alignItems: 'flex-start',   // change from center
-  justifyContent: 'flex-start', // change from center
+  alignItems: 'flex-start',   
+  justifyContent: 'flex-start', 
  
   marginLeft: 24,
-  
+
   },
   backingCard: {
     position: 'absolute',

@@ -318,7 +318,8 @@ const styles = StyleSheet.create({
     fontSize: 15, 
     lineHeight: 20, 
     color: colors.ui.background, 
-    ...defaultTextStyle 
+    fontFamily: globalFonts.regular,
+    letterSpacing: -0.1,
   },
 });
 

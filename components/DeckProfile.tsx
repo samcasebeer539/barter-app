@@ -1,7 +1,6 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 
 import Deck from './Deck';
@@ -15,6 +14,10 @@ const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
   { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+];
+
+const queryTurns: TradeTurn[] = [
+  { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
 ];
 
 const PRIMARY_USER = {
@@ -58,8 +61,8 @@ export default function ProfileDeck({
   const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [showSecondary, setShowSecondary] = useState(false);
+  const [isQueryDrawerOpen, setIsQueryDrawerOpen] = useState(false);
 
-  // Trade select mode state (for secondary deck)
   const [isTradeSelectMode, setIsTradeSelectMode] = useState(false);
   const [selectedSecondaryPosts, setSelectedSecondaryPosts] = useState<number[]>([]);
   const [topSecondaryPostIndex, setTopSecondaryPostIndex] = useState<number | null>(null);
@@ -90,10 +93,9 @@ export default function ProfileDeck({
       if (!isTradeSelectMode) {
         setIsTradeSelectMode(true);
         if (topSecondaryPostIndex !== null) {
-            setSelectedSecondaryPosts([topSecondaryPostIndex]);
+          setSelectedSecondaryPosts([topSecondaryPostIndex]);
         }
       } else {
-        // toggle selection of current top card
         if (topSecondaryPostIndex !== null) {
           setSelectedSecondaryPosts(prev =>
             prev.includes(topSecondaryPostIndex)
@@ -123,18 +125,26 @@ export default function ProfileDeck({
       {/* offers bar */}
       <View style={styles.goodServiceRow}>
         <TouchableOpacity
-          style={styles.toggleButton}
+          style={styles.queryButton}
+          onPress={() => setIsQueryDrawerOpen(prev => !prev)}
+        >
+          <Text style={[styles.actionButtonText, {
+            color: isQueryDrawerOpen ? colors.actions.query : colors.ui.secondarydisabled
+          }]}>
+            1 QUERY
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.offerButton}
           onPress={onToggleReveal}
           disabled={!toggleEnabled}
         >
-          <Text style={styles.offerText}>2 OFFERS</Text>
-        </TouchableOpacity>
-        <View style={styles.goodServiceButton}>
-          <Text style={styles.secondaryText}>0{goodCount}</Text>
+          <Text style={[styles.actionButtonText, { color: colors.actions.offer }]}>2 OFFERS</Text>
+          <Text style={styles.secondaryText}> : 0{goodCount}</Text>
           <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
           <Text style={styles.secondaryText}> 0{serviceCount}</Text>
           <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* Decks */}
@@ -143,7 +153,7 @@ export default function ProfileDeck({
         {/* Secondary deck */}
         {showSecondary && secondaryPosts.length > 0 && (
           <View style={styles.secondaryDeckContainer}>
-            <View style={styles.deckWrapper}>
+            <View style={styles.secondaryDeckWrapper}>
               <Deck
                 posts={secondaryPosts}
                 user={SECONDARY_USER}
@@ -166,7 +176,6 @@ export default function ProfileDeck({
                   topCardIsSelected={topSecondaryCardIsSelected}
                 />
               </View>
-
               <View style={styles.tradeRow}>
                 <TradeTurns turns={trade1Turns} />
               </View>
@@ -175,39 +184,45 @@ export default function ProfileDeck({
         )}
 
         {/* Primary deck (animated drawer) */}
-        <Animated.View style={[styles.deckAndButtonsContainer, { transform: [{ translateY }] }]}>
-          <View style={styles.deckWrapper}>
-            <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
-          </View>
-
-          <View style={styles.buttonRow}>
-            <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => {}}>
-              <FontAwesome6 name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-              <FontAwesome6 name="sliders" size={22} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-              <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
-            </TouchableOpacity>
-
-            <View style={styles.mygoodServiceButton}>
-              <Text style={[styles.goodText]}>0{goodCount}</Text>
-              <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-              <Text style={styles.serviceText}> 0{serviceCount}</Text>
-              <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+        <Animated.View style={[styles.primaryDeckandButtonsWrapper, { transform: [{ translateY }] }]}>
+          <View style={styles.primaryDeckColumn}>
+            <View style={styles.primaryDeckWrapper}>
+              <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
             </View>
-          </View>
 
-          <View style={styles.settingsButtonRow}>
-            <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/settings')}>
-              <FontAwesome6 name="gear" size={22} color={colors.ui.secondarydisabled} />
-            </TouchableOpacity>
-          </View>
+            {/* Query drawer */}
+            {isQueryDrawerOpen && (
+              <View style={styles.queryDrawer}>
+                <TradeTurns turns={queryTurns} />
+              </View>
+            )}
+
+            <View style={styles.buttonRow}>
+       
+
+              <View style={styles.mygoodServiceButton}>
+                <Text style={[styles.goodText]}>0{goodCount}</Text>
+                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
+                <Text style={styles.serviceText}> 0{serviceCount}</Text>
+                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+              </View>
+              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+                <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+                <FontAwesome6 name="sliders" size={22} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => {}}>
+                <FontAwesome6 name="plus" size={24} color="#fff" />
+              </TouchableOpacity>
+              
+              
+            </View>
+
+            </View>
         </Animated.View>
-
+        
       </View>
     </View>
   );
@@ -229,7 +244,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     position: 'relative',
     alignItems: 'center',
-    bottom: 652,
+    // bottom: 652,
     overflow: 'visible',
   },
   decksContainer: {
@@ -239,24 +254,38 @@ const styles = StyleSheet.create({
     overflow: 'visible',
     minHeight: 800,
   },
-  deckAndButtonsContainer: {
+  primaryDeckandButtonsWrapper: {
     width: '100%',
     alignItems: 'center',
+    flexDirection: 'column',
+    
     zIndex: 2,
     elevation: 2,
     backgroundColor: colors.ui.background,
   },
-  deckWrapper: {
-    marginVertical: 8,
+  primaryDeckColumn: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  primaryDeckWrapper: {
+    left: -12,
+  },
+  secondaryDeckWrapper: {
+    marginBottom: 8,
     left: -12,
   },
   secondaryDeckContainer: {
     position: 'absolute',
-    top: 0,
     width: '100%',
     alignItems: 'center',
     zIndex: 1,
     elevation: 1,
+  },
+  queryDrawer: {
+    width: 334,
+    
   },
   buttonRow: {
     width: 334,
@@ -264,6 +293,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     gap: 4,
+    
   },
   tradeRow: {
     width: 334,
@@ -283,6 +313,7 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 0,
     elevation: 0,
+    marginBottom: 8,
   },
   turnsAndButtonRow: {
     width: 334,
@@ -291,22 +322,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     top: 0,
     zIndex: 10,
-  },
-  goodServiceButton: {
-    height: 36,
-    flexDirection: 'row',
-    flex: 1,
     gap: 4,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginLeft: 'auto',
   },
   mygoodServiceButton: {
     height: 44,
@@ -314,16 +330,30 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
-  toggleButton: {
+  offerButton: {
+    flex: 1,
+    paddingLeft: 16,
+    paddingRight: 12,
+    height: 36,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: colors.ui.secondary,
+  },
+  queryButton: {
     flexShrink: 0,
     paddingLeft: 16,
     paddingRight: 12,
@@ -343,7 +373,7 @@ const styles = StyleSheet.create({
     height: 44,
   },
   addButton: {
-    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
   },
   secondaryText: {
     color: colors.ui.secondarydisabled,
@@ -360,45 +390,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: globalFonts.bold,
   },
-  offerText: {
-    color: colors.actions.offer,
+  actionButtonText: {
     fontSize: 20,
     fontFamily: globalFonts.bold,
   },
-  settingsButtonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: '100%',
-    marginTop: 61,
-    paddingHorizontal: 12,
-  },
-  settingsButton: {
-    width: 116,
-    height: 48,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 36,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+ 
   actionRow: {
     width: 334,
     marginBottom: 4,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  secondaryButtonRow: {
-    width: 338,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 4,
-    top: -12,
-    elevation: 10,
-    zIndex: 10,
   },
   playButton: {
     width: 50,

@@ -11,10 +11,11 @@ import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tra
 const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'turnAccept', user: 'Jay Wilson', isUser: false  },
+  { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
   { type: 'turnCounter', isUser: true  },
   { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
   { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
+  
 ];
 
 interface Post {
@@ -203,6 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     zIndex: 10,
+    gap: 4,
   },
   turnsRows: {
     top: -6,

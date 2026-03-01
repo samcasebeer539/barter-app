@@ -173,11 +173,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             case 'query':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
+                        style={[styles.queryButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="pen-to-square" size={22} color={currentAction?.color} />
+                        <FontAwesome6 name="question" size={26} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'offer':
@@ -493,19 +493,23 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 25,
-        borderTopRightRadius: 2,
+        borderTopRightRadius: 25,
         borderWidth: 3,
         borderColor: colors.actions.counter,
     },
     queryButton: {
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        height: 40,
         flex: 1,
+        bottom: 12,
+        borderWidth: 3,
+        borderTopRightRadius: 25,
+        borderBottomRightRadius: 25,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25,
-        borderColor: colors.actions.query,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        paddingHorizontal: 16,
     },
     locationButton: {
         flex: 1,

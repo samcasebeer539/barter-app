@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { colors, defaultTextStyle, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
@@ -16,21 +16,12 @@ export type { TradeTurnType };
 
 interface TradeTurnsProps {
   turns: TradeTurn[];
-  showAnswerInput?: boolean;
-  answerText?: string;
-  onAnswerTextChange?: (text: string) => void;
-  onSubmitEditing?: () => void;
-  inputRef?: React.RefObject<TextInput>;
 }
 
-const TradeTurns: React.FC<TradeTurnsProps> = ({
-  turns,
-  showAnswerInput = false,
-  answerText = '',
-  onAnswerTextChange,
-  onSubmitEditing,
-  inputRef,
-}) => {
+const TradeTurns: React.FC<TradeTurnsProps> = ({ turns }) => {
+  const [queryAnswers, setQueryAnswers] = React.useState<Record<number, string>>({});
+  const internalInputRefs = useRef<Record<number, TextInput | null>>({});
+
   const renderTurn = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
     if (!config) return null;
@@ -42,27 +33,54 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
 
     const parts = line.split('{action}');
     const hasAction = parts.length > 1;
+    const isQuery = turn.type === 'turnQuery';
+    const answerValue = queryAnswers[index] ?? '';
 
     return (
-      <View
-        key={index}
-        style={[
-          turn.isUser ? styles.rowUser : styles.rowPartner,
-          { backgroundColor: config.colorStyle.color, borderColor: config.colorStyle.color, shadowColor: config.colorStyle.color },
-        ]}
-      >
-        <Text style={styles.text}>
-          {hasAction ? (
-            <>
-              {parts[0]}
-              <Text style={config.colorStyle}>{config.actionText}</Text>
-              {parts[1]}
-            </>
-          ) : line}
-          {turn.type === 'turnQuery' && turn.question && (
-            <>{'\n'}<Text style={styles.questionText}>       {turn.question}</Text></>
-          )}
-        </Text>
+      <View key={index} style={styles.turnWrapper}>
+        <View
+          style={[
+            turn.isUser ? styles.rowUser : styles.rowPartner,
+            {
+              backgroundColor: config.colorStyle.color,
+              borderColor: config.colorStyle.color,
+              shadowColor: config.colorStyle.color,
+            },
+          ]}
+        >
+          <Text style={styles.text}>
+            {hasAction ? (
+              <>
+                {parts[0]}
+                <Text style={config.colorStyle}>{config.actionText}</Text>
+                {parts[1]}
+              </>
+            ) : line}
+            {isQuery && turn.question && (
+              <>{'\n'}<Text style={styles.questionText}>       {turn.question}</Text></>
+            )}
+          </Text>
+        </View>
+
+        {isQuery && (
+          <View style={styles.answerRow}>
+            <TextInput
+              ref={el => { internalInputRefs.current[index] = el; }}
+              style={styles.answerInput}
+              placeholder="Answer"
+              placeholderTextColor={colors.actions.query}
+              value={answerValue}
+              onChangeText={text => setQueryAnswers(prev => ({ ...prev, [index]: text }))}
+              multiline
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+              blurOnSubmit
+            />
+            <TouchableOpacity onPress={() => Keyboard.dismiss()}>
+              <FontAwesome6 name="arrow-right-to-bracket" size={26} color={colors.actions.query} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -70,25 +88,6 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
   return (
     <View style={styles.container}>
       {turns.map(renderTurn)}
-
-      {showAnswerInput && (
-        <View style={styles.rowUser}>
-          <TextInput
-            ref={inputRef}
-            style={styles.input}
-            placeholder="Type your answer..."
-            placeholderTextColor="#888"
-            value={answerText}
-            onChangeText={onAnswerTextChange}
-            multiline
-            returnKeyType="done"
-            onSubmitEditing={onSubmitEditing}
-            blurOnSubmit
-          />
-          <FontAwesome6 name="arrow-left-long" size={18} color="#000" style={styles.arrow} />
-        </View>
-      )}
-     
     </View>
   );
 };
@@ -99,14 +98,19 @@ const rowBase: object = {
   gap: 6,
   width: '100%',
   paddingHorizontal: 10,
+  paddingBottom: 10,
   minHeight: 30,
-  marginTop: 4,
 };
 
 const styles = StyleSheet.create({
   container: {
-    gap: -4,
     width: '100%',
+    gap: 4,
+  },
+  turnWrapper: {
+    width: '100%',
+    flexDirection: 'column',
+    gap: 4,
   },
   rowUser: {
     ...rowBase,
@@ -123,19 +127,26 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
   },
-  toggleButton: {
-    width: 50,
-    height: 36,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+  answerRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.ui.secondary,
-    marginLeft: 'auto',
-    marginTop: 8,
+    alignItems: 'flex-end',
+    gap: 8,
+    borderWidth: 3,
+    borderColor: colors.actions.query,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopRightRadius: 2,
+    paddingHorizontal: 12,
+    paddingBottom: 2,
+  },
+  answerInput: {
+    flex: 1,
+    fontSize: 16,
+    bottom: 3,
+    color: colors.actions.query,
+    lineHeight: 20,
+    fontFamily: globalFonts.bold,
   },
   text: {
     flex: 1,
@@ -147,15 +158,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontFamily: globalFonts.extrabold,
   },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#FFFFFF',
-    lineHeight: 22,
-    minHeight: 24,
-    ...defaultTextStyle,
-  },
-  arrow: {},
 });
 
 export default TradeTurns;

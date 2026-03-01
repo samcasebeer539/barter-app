@@ -177,7 +177,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
             <View style={styles.actionRow}>
               <TradeUI
-                actions={TRADE_ACTIONS.filter(a => ['offer'].includes(a.actionType))}
+                actions={TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType))}
                 onActionSelected={handleActionSelected}
                 isSelectMode={isSelectMode}
                 selectedCount={selectedPosts.length}

@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, TouchableOpacity} from 'react-native';
 import DecksProfile from '@/components/DeckProfile';
 import { colors } from '@/styles/globalStyles';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { router, useRouter } from 'expo-router';
 
 export default function ProfileDeck() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
+  const router = useRouter();
 
   // Primary deck posts (user's posts)
   const primaryPosts = [
@@ -83,17 +87,29 @@ export default function ProfileDeck() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <DecksProfile 
-          posts={primaryPosts}
-          secondaryPosts={primaryPosts}
-          onToggleReveal={handleToggleReveal}
-          toggleEnabled={true}
-          isDeckRevealed={isDeckRevealed}
-        />
-      </View>
+        <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={400}
+            style={{ flex: 1 }}
+        >
+            <View style={styles.content}>
+                <DecksProfile
+                    posts={primaryPosts}
+                    secondaryPosts={secondaryPosts}
+                    onToggleReveal={handleToggleReveal}
+                    toggleEnabled={true}
+                    isDeckRevealed={isDeckRevealed}
+                />
+            </View>
+        </KeyboardAvoidingView>
+        <View style={styles.settingsButtonRow}>
+          <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/settings')}>
+            <FontAwesome6 name="gear" size={22} color={colors.ui.secondarydisabled} />
+          </TouchableOpacity>
+        </View>
     </SafeAreaView>
+
   );
 }
 
@@ -106,6 +122,26 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    top: 700,
+    top: 94,
+  },
+  settingsButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    width: '100%',
+    marginBottom: 42,
+    paddingHorizontal: 12,
+  },
+  settingsButton: {
+    width: 116,
+    height: 48,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 36,
+    borderBottomLeftRadius: 2,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
   },
 });

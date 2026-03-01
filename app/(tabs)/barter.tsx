@@ -1,14 +1,12 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { useCallback, useState } from 'react';
+import { View, StyleSheet, ScrollView, Keyboard, KeyboardEvent } from 'react-native';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
-import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import OffersTradesDealsBar from '../../components/BarOffersTradesDeals';
-import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../../config/tradeConfig';
+import { TRADE_ACTIONS } from '../../config/tradeConfig';
 
-// ---- MOCK DATA (unchanged) ----
 const POSTS = [
   {
     type: 'good' as const,
@@ -43,11 +41,30 @@ const POSTS = [
   },
 ];
 
-// ---- SCREEN ----
 export default function ActiveTradesTestScreen() {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollY = useRef(0);
   const [resetKey, setResetKey] = useState(0);
-  const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('offers'); // default to offers
-  const [scrollEnabled, setScrollEnabled] = useState(true); //to capture deck c
+  const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('offers');
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
+      setKeyboardHeight(e.endCoordinates.height);
+      scrollViewRef.current?.scrollTo({
+        y: scrollY.current + e.endCoordinates.height * 0.8,
+        animated: true,
+      });
+    });
+    const hide = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -57,55 +74,66 @@ export default function ActiveTradesTestScreen() {
 
   return (
     <View style={styles.container}>
-      {/* TOP BAR */}
       <OffersTradesDealsBar
         onOffersPress={() => setTab('offers')}
         onTradesPress={() => setTab('trades')}
         onDealsPress={() => setTab('deals')}
       />
 
-      {/* CONTENT */}
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scroll}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: keyboardHeight },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        scrollEnabled={scrollEnabled}
+        onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
+        scrollEventThrottle={16}
       >
-        {/* spacer for absolute top bar */}
         <View style={styles.topSpacer} />
 
-        {/* OFFERS PAGE */}
         {tab === 'offers' && (
           <View>
-            {/* TODO: OffersDeck */}
-                      <View>
             <View style={{ height: 598 }} />
-              <OfferDeck 
-                posts={POSTS} 
-                onHorizontalGestureStart={() => setScrollEnabled(false)}
-                onGestureEnd={() => setScrollEnabled(true)}
-                actions={TRADE_ACTIONS.filter(a => ['rescind'].includes(a.actionType))}
-              />
-             
-            </View>
+            <OfferDeck
+              posts={POSTS}
+              onHorizontalGestureStart={() => setScrollEnabled(false)}
+              onGestureEnd={() => setScrollEnabled(true)}
+              actions={TRADE_ACTIONS.filter(a => ['rescind'].includes(a.actionType))}
+            />
           </View>
         )}
 
-        {/* TRADES PAGE (TradeDeck lives here) */}
         {tab === 'trades' && (
           <View>
             <View style={{ height: 398 }} />
-            <TradeDeck posts={POSTS} actions={TRADE_ACTIONS.filter(a => ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType))} />
+            <TradeDeck
+              posts={POSTS}
+              actions={TRADE_ACTIONS.filter(a =>
+                ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
+              )}
+            />
             <View style={{ height: 6 }} />
-            <TradeDeck posts={POSTS} actions={TRADE_ACTIONS.filter(a => ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType))} />
+            <TradeDeck
+              posts={POSTS}
+              actions={TRADE_ACTIONS.filter(a =>
+                ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
+              )}
+            />
           </View>
-          
-          
         )}
 
-        {/* DEALS PAGE */}
         {tab === 'deals' && (
           <View>
             <View style={{ height: 398 }} />
-            <TradeDeck posts={POSTS} actions={TRADE_ACTIONS.filter(a => [ 'accept', 'decline', 'where', 'when', 'wait', 'play', 'cancel'].includes(a.actionType))} />
+            <TradeDeck
+              posts={POSTS}
+              actions={TRADE_ACTIONS.filter(a =>
+                ['accept', 'decline', 'where', 'when', 'wait', 'play', 'cancel'].includes(a.actionType)
+              )}
+            />
           </View>
         )}
 
@@ -120,20 +148,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.ui.background,
   },
-
   scroll: {
     flex: 1,
   },
-
   contentContainer: {
     paddingTop: 0,
   },
-
-  // space for absolute top bar
   topSpacer: {
     height: 110,
   },
-
   bottomSpacer: {
     height: 0,
   },

@@ -129,7 +129,7 @@ export default function ProfileDeck({
           onPress={() => setIsQueryDrawerOpen(prev => !prev)}
         >
           <Text style={[styles.actionButtonText, {
-            color: isQueryDrawerOpen ? colors.actions.query : colors.ui.secondarydisabled
+            color: colors.actions.query,
           }]}>
             1 QUERY
           </Text>
@@ -352,6 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: colors.ui.secondary,
+    gap: 2,
   },
   queryButton: {
     flexShrink: 0,

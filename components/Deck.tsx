@@ -1,9 +1,4 @@
-//todo: modify order of deck based on where its called
-//     profile (implemented): usercard on top
-//     feed (todo): clicked on post on top, usercard 2nd
-//todo: handle multiple user's cards and usercards in profile
-
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,6 +9,7 @@ import {
 import PostCard from './CardItem';
 import UserCard from './CardUser';
 import BlankCard from './CardBlank';
+import { colors } from '@/styles/globalStyles';
 
 interface Post {
   type: 'good' | 'service';
@@ -39,180 +35,171 @@ interface DeckProps {
   user?: User;
   cardWidth?: number;
   enabled?: boolean;
-  onHorizontalGestureStart?: () => void;  
-  onGestureEnd?: () => void;               
+  onHorizontalGestureStart?: () => void;
+  onGestureEnd?: () => void;
+  isSelectMode?: boolean;
+  selectedPosts?: number[];
+  onTopCardChange?: (postIndex: number | null) => void;
+  selectColor?: string;
 }
 
 type DeckItem =
   | { type: 'user' }
-  | { type: 'post'; post: Post };
+  | { type: 'post'; post: Post; postIndex: number };
 
-
-const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onHorizontalGestureStart,   // ADD
-  onGestureEnd,      }) => {
+const Deck: React.FC<DeckProps> = ({
+  posts,
+  user,
+  cardWidth,
+  enabled = true,
+  onHorizontalGestureStart,
+  onGestureEnd,
+  isSelectMode = false,
+  selectedPosts = [],
+  onTopCardChange,
+  selectColor = colors.actions.offer,
+}) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  const scaledWidth = finalCardWidth * 0.85;
-  const scaledHeight = cardHeight * 0.85;
-  const offset = 6;
-
-  
-  // Card position definitions
   const POSITIONS = {
     first: { x: 0, y: 0 },
     second: { x: 7, y: 7 },
     third: { x: 14, y: 14 },
   };
 
-  const deckContainerWidth  = finalCardWidth  + POSITIONS.third.x;
+  const deckContainerWidth = finalCardWidth + POSITIONS.third.x;
   const deckContainerHeight = cardHeight + POSITIONS.third.y;
 
   const SWIPE_THRESHOLD = screenWidth * 0.03;
-  const GESTURE_THRESHOLD = 5; // Minimum horizontal movement before capturing gesture
+  const GESTURE_THRESHOLD = 5;
 
-  //if user only has single item, duplicate usercard and postcard in array
   const shouldRepeat = posts.length < 2;
   const baseItems: DeckItem[] = [
     { type: 'user' },
-    ...posts.map((post): DeckItem => ({ type: 'post', post })),
+    ...posts.map((post, i): DeckItem => ({ type: 'post', post, postIndex: i })),
   ];
-  const [cards, setCards] = useState<DeckItem[]>(
-    shouldRepeat
-      ? [...baseItems, ...baseItems] // add both elements again
-      : baseItems
+  const [cards] = useState<DeckItem[]>(
+    shouldRepeat ? [...baseItems, ...baseItems] : baseItems
   );
 
-
-  // Create animated values for each card in the deck
   const cardAnimations = useRef(
     cards.map((_, index) => ({
       position: new Animated.ValueXY(
         index === 0 ? POSITIONS.first :
         index === 1 ? POSITIONS.second :
         index === 2 ? POSITIONS.third :
-        { x: -22, y: -32 } // Cards beyond third start at third position
+        { x: -22, y: -32 }
       ),
       swipeX: new Animated.Value(0),
     }))
   ).current;
 
-  // Track which card indices are currently visible
   const [visibleIndices, setVisibleIndices] = useState({
     first: 0,
     second: 1,
     third: 2,
   });
 
-  // Use a ref to track the current visible indices immediately
   const visibleIndicesRef = useRef(visibleIndices);
   visibleIndicesRef.current = visibleIndices;
-
-  // Track if we're currently animating a swipe
   const isAnimatingRef = useRef(false);
-  
-  // Track enabled state in a ref so PanResponder can access current value
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 
+  // Notify parent of top card whenever visibleIndices changes
+  useEffect(() => {
+    const topCard = cards[visibleIndices.first];
+    if (topCard?.type === 'post') {
+      onTopCardChange?.(topCard.postIndex);
+    } else {
+      onTopCardChange?.(null); // user card on top
+    }
+  }, [visibleIndices]);
+
   const panResponder = useRef(
-  PanResponder.create({
-    onStartShouldSetPanResponder: (_, g) => false,
-    onStartShouldSetPanResponderCapture: () => false,
-    onMoveShouldSetPanResponder: (_, g) => {
-      return (
-        enabledRef.current &&
-        !isAnimatingRef.current &&
-        Math.abs(g.dx) > GESTURE_THRESHOLD &&
-        Math.abs(g.dx) > Math.abs(g.dy) * 2
-      );
-    },
-
-    onMoveShouldSetPanResponderCapture: (_, g) => {
-      return (
-        enabledRef.current &&
-        !isAnimatingRef.current &&
-        Math.abs(g.dx) > GESTURE_THRESHOLD &&
-        Math.abs(g.dx) > Math.abs(g.dy) * 2
-      );
-    },
-
-    onPanResponderGrant: () => {
-      if (!enabledRef.current) return;
-      onHorizontalGestureStart?.();
-      const firstCardIndex = visibleIndicesRef.current.first;
-      cardAnimations[firstCardIndex].swipeX.setOffset(0);
-      cardAnimations[firstCardIndex].swipeX.setValue(0);
-    },
-
-    onPanResponderMove: (_, gesture) => {
-      if (!enabledRef.current) return;
-      const firstCardIndex = visibleIndicesRef.current.first;
-      cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
-    },
-
-    onPanResponderRelease: (_, gesture) => {
-      if (!enabledRef.current) return;
-      onGestureEnd?.();
-      if (gesture.dx > SWIPE_THRESHOLD) {
-        swipeOut(1);
-      } else if (gesture.dx < -SWIPE_THRESHOLD) {
-        swipeOut(-1);
-      } else {
+    PanResponder.create({
+      onStartShouldSetPanResponder: (_, g) => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, g) => {
+        return (
+          enabledRef.current &&
+          !isAnimatingRef.current &&
+          Math.abs(g.dx) > GESTURE_THRESHOLD &&
+          Math.abs(g.dx) > Math.abs(g.dy) * 2
+        );
+      },
+      onMoveShouldSetPanResponderCapture: (_, g) => {
+        return (
+          enabledRef.current &&
+          !isAnimatingRef.current &&
+          Math.abs(g.dx) > GESTURE_THRESHOLD &&
+          Math.abs(g.dx) > Math.abs(g.dy) * 2
+        );
+      },
+      onPanResponderGrant: () => {
+        if (!enabledRef.current) return;
+        onHorizontalGestureStart?.();
+        const firstCardIndex = visibleIndicesRef.current.first;
+        cardAnimations[firstCardIndex].swipeX.setOffset(0);
+        cardAnimations[firstCardIndex].swipeX.setValue(0);
+      },
+      onPanResponderMove: (_, gesture) => {
+        if (!enabledRef.current) return;
+        const firstCardIndex = visibleIndicesRef.current.first;
+        cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (!enabledRef.current) return;
+        onGestureEnd?.();
+        if (gesture.dx > SWIPE_THRESHOLD) {
+          swipeOut(1);
+        } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          swipeOut(-1);
+        } else {
+          resetPosition();
+        }
+      },
+      onPanResponderTerminate: () => {
+        onGestureEnd?.();
         resetPosition();
-      }
-    },
-
-    onPanResponderTerminate: () => {
-      onGestureEnd?.();
-      resetPosition();
-    },
-  })
-).current;
+      },
+    })
+  ).current;
 
   const swipeOut = (direction: number) => {
     isAnimatingRef.current = true;
-    
     const firstIndex = visibleIndicesRef.current.first;
     const secondIndex = visibleIndicesRef.current.second;
     const thirdIndex = visibleIndicesRef.current.third;
-    
-    // Calculate next card index (wrap around)
     const nextIndex = (thirdIndex + 1) % cards.length;
 
     Animated.parallel([
-      // Swipe out the old first card
       Animated.timing(cardAnimations[firstIndex].swipeX, {
-        toValue: direction * screenWidth,
+        toValue: direction * screenWidth * 1.1,
         duration: 250,
         useNativeDriver: true,
       }),
-      // Move second card to first position
       Animated.timing(cardAnimations[secondIndex].position, {
         toValue: POSITIONS.first,
         duration: 250,
         useNativeDriver: true,
       }),
-      // Move third card to second position
       Animated.timing(cardAnimations[thirdIndex].position, {
         toValue: POSITIONS.second,
         duration: 250,
         useNativeDriver: true,
       }),
-      // Move next card to third position
       Animated.timing(cardAnimations[nextIndex].position, {
         toValue: POSITIONS.third,
         duration: 250,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Reset the swipeX for the new front card (which is secondIndex)
       cardAnimations[secondIndex].swipeX.flattenOffset();
       cardAnimations[secondIndex].swipeX.setValue(0);
-      
-      // Update visible indices after reset
       const newIndices = {
         first: secondIndex,
         second: thirdIndex,
@@ -220,7 +207,6 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onH
       };
       setVisibleIndices(newIndices);
       visibleIndicesRef.current = newIndices;
-      
       isAnimatingRef.current = false;
     });
   };
@@ -233,7 +219,6 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onH
     }).start();
   };
 
-  // Default user data if none provided
   const defaultUser: User = {
     name: "Jay Wilson",
     pronouns: "(she/he/they)",
@@ -250,14 +235,12 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onH
 
     const cardAnim = cardAnimations[index];
 
-    // Create rotation interpolation for this specific card
     const rotate = cardAnim.swipeX.interpolate({
       inputRange: [-screenWidth, 0, screenWidth],
       outputRange: ['-10deg', '0deg', '10deg'],
     });
 
-    // For the first card, we need to add swipeX to position.x
-    const translateX = isFirst 
+    const translateX = isFirst
       ? Animated.add(cardAnim.position.x, cardAnim.swipeX)
       : cardAnim.position.x;
 
@@ -276,16 +259,19 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onH
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard 
+          <UserCard
             user={userToRender}
-            scale={1} 
-            cardWidth={finalCardWidth} 
+            scale={1}
+            cardWidth={finalCardWidth}
           />
         ) : (
           <PostCard
             post={card.post}
             scale={1}
             cardWidth={finalCardWidth}
+            isSelectMode={isFirst && isSelectMode}
+            isSelected={selectedPosts.includes(card.postIndex)}
+            selectColor={selectColor}
           />
         )}
       </Animated.View>
@@ -293,16 +279,13 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onH
   };
 
   return (
-    <View 
+    <View
       style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
       {...(enabled ? panResponder.panHandlers : {})}
     >
-      {/* Static blank card always at third position */}
-    <View style={[styles.frontCard, { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] }]}>
-      <BlankCard cardWidth={finalCardWidth} />
-    </View>
-
-      {/* Render all cards, but only visible ones will be seen */}
+      <View style={[styles.frontCard, { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] }]}>
+        <BlankCard cardWidth={finalCardWidth} />
+      </View>
       {renderCard(visibleIndices.third)}
       {renderCard(visibleIndices.second)}
       {renderCard(visibleIndices.first, true)}
@@ -313,11 +296,9 @@ const Deck: React.FC<DeckProps> = ({ posts, user, cardWidth, enabled = true, onH
 const styles = StyleSheet.create({
   deckContainer: {
     position: 'relative',
-  alignItems: 'flex-start',   
-  justifyContent: 'flex-start', 
- 
-  marginLeft: 24,
-
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    marginLeft: 24,
   },
   backingCard: {
     position: 'absolute',
@@ -327,12 +308,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   frontCard: {
-  position: 'absolute',
-  zIndex: 10,
-  elevation: 8, // Android shadow
-  top: 0,
-  left: 0,
-},
+    position: 'absolute',
+    zIndex: 10,
+    elevation: 8,
+    top: 0,
+    left: 0,
+    shadowColor: colors.ui.secondary,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    
+  },
 });
 
 export default Deck;

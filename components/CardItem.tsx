@@ -3,8 +3,7 @@ import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated }
 import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import TextTicker from 'react-native-text-ticker';
-import { defaultTextStyle, globalFonts, colors } from '../styles/globalStyles';
-
+import { globalFonts, colors } from '../styles/globalStyles';
 
 interface Post {
   type: 'good' | 'service';
@@ -17,15 +16,26 @@ interface PostCardProps {
   post: Post;
   scale?: number;
   cardWidth?: number;
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: () => void;
+  selectColor?: string;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
-  
+const PostCard: React.FC<PostCardProps> = ({
+  post,
+  scale = 1,
+  cardWidth,
+  isSelectMode = false,
+  isSelected = false,
+  onSelect,
+  selectColor = colors.actions.offer,
+}) => {
+  console.log('PostCard render - isSelectMode:', isSelectMode, 'isSelected:', isSelected); // ADD HERE
   const [isDescriptionMode, setIsDescriptionMode] = useState(false);
   const [photoAspectRatios, setPhotoAspectRatios] = useState<number[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
-  const [isSelected, setIsSelected] = useState(false);
 
   const descriptionHeight = useRef(new Animated.Value(100)).current;
   const photoMode4Lines = 100;
@@ -35,7 +45,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
   useEffect(() => {
     const ratios: number[] = [];
     let loadedCount = 0;
-
     post.photos.forEach((photo, index) => {
       Image.getSize(
         photo,
@@ -60,7 +69,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
       damping: 20,
       stiffness: 200,
     }).start();
-
     Animated.spring(photoBottom, {
       toValue: isDescriptionMode ? descriptionModeHeight : photoMode4Lines,
       useNativeDriver: false,
@@ -78,10 +86,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
 
   const handlePhotoTap = () => {
     if (post.photos.length <= 1) return;
-
     let newIndex = currentPhotoIndex;
     let newDirection = direction;
-
     if (direction === 'forward') {
       if (currentPhotoIndex < post.photos.length - 1) {
         newIndex = currentPhotoIndex + 1;
@@ -97,60 +103,73 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
         newIndex = currentPhotoIndex + 1;
       }
     }
-
     setCurrentPhotoIndex(newIndex);
     setDirection(newDirection);
   };
 
-  const handleSelect = () => {
-    console.log('card selected');
-    setIsSelected(prev => !prev);
-  };
-
   return (
     <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight}]}>
+      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <FontAwesome6
-              name={post.type === 'good' ? 'gifts' : 'hand-sparkles'}
-              size={24}
-              color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
-            />
-            
-          </View>
+            <View style={styles.iconContainer}>
+                <FontAwesome6
+                    name={post.type === 'good' ? 'gifts' : 'hand-sparkles'}
+                    size={24}
+                    color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
+                />
+            </View>
 
-          <View style={styles.titleContainer}>
-            <TextTicker
-              style={styles.title}
-              duration={8000}
-              loop
-              bounce={false}
-              repeatSpacer={50}
-              marqueeDelay={200}
-              ellipsizeMode='tail'
-            >
-              
-              {post.name}
-              <TouchableOpacity activeOpacity={0.2} onPress={handleSelect} style={styles.selectContainer}>
-              <FontAwesome6
-                name={isSelected ? 'circle-check' : 'circle'}
-                size={24}
-                color={'#fff'}
-              />
-            </TouchableOpacity> 
-            </TextTicker>
-          </View>
+            <View style={styles.titleContainer}>
+                <TextTicker
+                    key={isSelectMode ? 'select' : 'normal'}
+                    style={styles.title}
+                    duration={8000}
+                    loop
+                    bounce={false}
+                    repeatSpacer={50}
+                    marqueeDelay={200}
+                    ellipsizeMode='tail'
+                >
+                    {post.name}
+                </TextTicker>
+            </View>
 
-          
+            {isSelectMode && (
+                <TouchableOpacity
+                    activeOpacity={0.2}
+                    onPress={onSelect}
+                    style={[styles.selectContainer, {backgroundColor: isSelected ? '#fff' : 'transparent'}]}
+                >
+                    <FontAwesome6
+                        name={isSelected ? 'circle-check' : 'circle'}
+                        size={24}
+                        color={isSelected ? selectColor : 'transparent'}
+                    />
+                </TouchableOpacity>
+            )}
         </View>
 
-        <Animated.View style={[styles.photoSectionWrapper, { bottom: photoBottom }]} pointerEvents="box-none">
+        <Animated.View
+          style={[styles.photoSectionWrapper, { bottom: photoBottom }]}
+          pointerEvents="box-none"
+        >
           <View style={styles.photoSection}>
             <View style={styles.photoContainer}>
-              <TouchableOpacity activeOpacity={0.8} onPress={handlePhotoTap} style={styles.photoTouchable}>
-                <View style={[styles.photoFrame, { aspectRatio: photoAspectRatios[currentPhotoIndex] || 1, maxHeight: '100%', maxWidth: '100%' }]}>
-                  <Image source={{ uri: post.photos[currentPhotoIndex] }} style={styles.photo} resizeMode="cover" />
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handlePhotoTap}
+                style={styles.photoTouchable}
+              >
+                <View style={[styles.photoFrame, {
+                  aspectRatio: photoAspectRatios[currentPhotoIndex] || 1,
+                  maxHeight: '100%',
+                  maxWidth: '100%'
+                }]}>
+                  <Image
+                    source={{ uri: post.photos[currentPhotoIndex] }}
+                    style={styles.photo}
+                    resizeMode="cover"
+                  />
                 </View>
               </TouchableOpacity>
             </View>
@@ -160,7 +179,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
                 {post.photos.map((_, index) => (
                   <View
                     key={index}
-                    style={[styles.dot, { backgroundColor: index === currentPhotoIndex ? post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service : '#fff', transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }] }]}
+                    style={[styles.dot, {
+                      backgroundColor: index === currentPhotoIndex
+                        ? post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service
+                        : '#fff',
+                      transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
+                    }]}
                   />
                 ))}
               </View>
@@ -168,25 +192,45 @@ const PostCard: React.FC<PostCardProps> = ({ post, scale = 1, cardWidth }) => {
           </View>
         </Animated.View>
 
-        <TouchableOpacity activeOpacity={0.9} onPress={toggleMode} style={styles.descriptionTouchable}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={toggleMode}
+          style={styles.descriptionTouchable}
+        >
           <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
             <View style={styles.descriptionScroll}>
-              
-              <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 4}>
-                
+              <Text
+                style={styles.descriptionText}
+                numberOfLines={isDescriptionMode ? undefined : 4}
+              >
                 {post.description}
-                
               </Text>
-              
             </View>
           </Animated.View>
         </TouchableOpacity>
-        
+
         <View style={styles.dateWrapper}>
-          <Text style={[styles.date, {color: colors.ui.cardsecondary}]}>{"\n"}11/26/24</Text>
+          <Text style={[styles.date, { color: colors.ui.cardsecondary }]}>{"\n"}11/26/24</Text>
         </View>
+
+       {isSelectMode && (
+          <>
+              <View style={[
+                  styles.selectBackground2,
+                  { borderColor: isSelected ? selectColor + '66' : '#ffffff22' }
+              ]} />
+              <View style={[
+                  styles.selectBackground,
+                  { borderColor: isSelected ? selectColor + '66' : '#ffffff22' }
+              ]} />
+              <View style={[
+                  styles.selectBorder,
+                  { borderColor: isSelected ? selectColor : '#fff' }
+              ]} />
+          </>
+      )}
+
       </View>
-      
     </Animated.View>
   );
 };
@@ -197,6 +241,57 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
+  selectBorder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 3,
+    borderColor: colors.actions.trade,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    zIndex: 99,
+    pointerEvents: 'none',
+    marginHorizontal: 6,
+    marginVertical: 6,
+  },
+  selectBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 7,
+    borderColor: colors.actions.trade,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    zIndex: 99,
+    pointerEvents: 'none',
+
+},
+selectBackground2: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 10,
+    borderColor: colors.actions.trade,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 34,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    zIndex: 99,
+    pointerEvents: 'none',
+    marginHorizontal: -10,
+    marginVertical: -10,
+
+},
   card: {
     backgroundColor: '#fff',
     borderWidth: 0,
@@ -207,6 +302,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 10,
     position: 'relative',
+    overflow: 'hidden',
   },
   header: {
     padding: 14,
@@ -215,109 +311,107 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 6,
   },
-  iconContainer: { 
-    flexShrink: 0, 
+  iconContainer: {
+    flexShrink: 0,
     paddingBottom: 12,
   },
-  selectContainer: { 
-    position: 'absolute', 
-    bottom: 10, 
-    right: 16, 
-     
-    zIndex: 30,
-  },
-  titleContainer: { 
+  selectContainer: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    zIndex: 50,
+    paddingLeft: 6,
+},
+  titleContainer: {
     flex: 1,
     overflow: 'hidden',
   },
-  title: { 
-    fontSize: 18, 
-    fontWeight: '600', 
-    lineHeight: 24, 
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 24,
     color: '#000',
     fontFamily: globalFonts.bold,
   },
-  date: { 
-    fontSize: 18, 
-    fontWeight: '600', 
-    lineHeight: 24, 
+  date: {
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 24,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
     textAlign: 'right',
-    
   },
   dateWrapper: {
     right: 16,
     top: 374,
     zIndex: 30,
-  
   },
-  photoSectionWrapper: { 
-    position: 'absolute', 
-    top: 52, 
-    left: 16, 
-    right: 16 
+  photoSectionWrapper: {
+    position: 'absolute',
+    top: 52,
+    left: 16,
+    right: 16,
   },
-  photoSection: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  photoSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  photoContainer: { 
+  photoContainer: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center', 
-    alignItems: 'center' 
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  photoTouchable: { 
-    width: '100%', 
-    height: '100%', 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  photoTouchable: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  photoFrame: { 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.15, 
-    shadowRadius: 8, 
-    elevation: 3, 
-    overflow: 'hidden', 
+  photoFrame: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+    overflow: 'hidden',
     borderRadius: 4,
     position: 'relative',
   },
   photo: { width: '100%', height: '100%' },
-  dotsContainer: { 
-    position: 'absolute', 
+  dotsContainer: {
+    position: 'absolute',
     bottom: 8,
-    left: 0, 
-    right: 0, 
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    gap: 6 
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  descriptionTouchable: { 
-    position: 'absolute', 
-    bottom: 0, 
-    left: 0, 
-    right: 0, 
-    zIndex: 20 
+  descriptionTouchable: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
-  descriptionSection: { 
-    backgroundColor: '#fff', 
-    paddingHorizontal: 16, 
-    paddingTop: 8, 
-    paddingBottom: 20, 
-    borderTopWidth: 1, 
-    borderTopColor: '#fff', 
-    borderBottomLeftRadius: 8, 
-    borderBottomRightRadius: 8 
+  descriptionSection: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#fff',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
   descriptionScroll: { flex: 1, flexDirection: 'row' },
-  descriptionText: { 
-    fontSize: 15, 
-    lineHeight: 20, 
-    color: colors.ui.background, 
+  descriptionText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: colors.ui.background,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
   },

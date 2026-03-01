@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity, Animated } from 'react-native';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tradeConfig';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export interface TradeAction {
     actionType: TradeActionType;
@@ -14,23 +14,54 @@ export interface TradeAction {
 interface TradeUIProps {
     onActionSelected?: (action: TradeAction) => void;
     actions?: TradeActionConfig[];
+    isSelectMode?: boolean;
+    selectedCount?: number;
+    topCardIsSelected?: boolean;
 }
 
-const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACTIONS }) => {
+const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACTIONS, isSelectMode = false, selectedCount = 0, topCardIsSelected = false }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
-    const SCROLL_THRESHOLD = 2;
-    const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8; // clips next item to hint scrollability
+    const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
 
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
-    
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
-        const handleScrollUpdate = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        currentOffsetRef.current = event.nativeEvent.contentOffset.y;
-    };
+
+    const shimmerAnim1 = useRef(new Animated.Value(0)).current;
+    const shimmerAnim2 = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        const runShimmer = (anim: Animated.Value, delay: number) => {
+            anim.setValue(0);
+            Animated.sequence([
+                Animated.delay(delay),
+                Animated.timing(anim, {
+                    toValue: 1,
+                    duration: 3000,
+                    useNativeDriver: true,
+                }),
+            ]).start(() => {
+                anim.setValue(0);
+                runShimmer(anim, 0); // no delay after first run — it loops immediately
+            });
+        };
+
+        runShimmer(shimmerAnim1, 0);
+        runShimmer(shimmerAnim2, 1500);
+    }, []);
+
+    const shimmerTranslate1 = shimmerAnim1.interpolate({
+        inputRange: [0, 1],
+        outputRange: [400, -400],
+    });
+
+    const shimmerTranslate2 = shimmerAnim2.interpolate({
+        inputRange: [0, 1],
+        outputRange: [400, -400],
+    });
 
     const infiniteActions = Array(10).fill(actions).flat();
     const currentAction = actions[currentActionIndex];
@@ -48,29 +79,25 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             subAction,
         };
 
-        console.log('Playing action:', tradeAction);
         onActionSelected?.(tradeAction);
-        const actualIndex = index % actions.length;
-        if (actualIndex === currentActionIndex) {
-            setIsActionSelected((prev) => !prev);
+
+        if (currentAction.actionType !== 'offer' &&
+            currentAction.actionType !== 'trade' &&
+            currentAction.actionType !== 'rescind') {
+            const actualIndex = index % actions.length;
+            if (actualIndex === currentActionIndex) {
+                setIsActionSelected((prev) => !prev);
+            }
         }
     };
 
-    const handleActionSelect = (index: number) => {
-        const actualIndex = index % actions.length;
-        if (actualIndex === currentActionIndex) {
-            setIsActionSelected((prev) => !prev);
-        }
-    };
     const handleActionTextPress = () => {
         const snappedOffset = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
         const nextOffset = snappedOffset + ITEM_HEIGHT;
         scrollViewRef.current?.scrollTo({ y: nextOffset, animated: true });
     };
 
-    const isActionInTopSpot = (index: number) => {
-        return index % actions.length === currentActionIndex;
-    };
+    const isActionInTopSpot = (index: number) => index % actions.length === currentActionIndex;
 
     const calculateItemIndex = (offsetY: number): number => {
         let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % actions.length;
@@ -94,7 +121,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        currentOffsetRef.current = event.nativeEvent.contentOffset.y;  // ADD
+        currentOffsetRef.current = event.nativeEvent.contentOffset.y;
         const offsetY = event.nativeEvent.contentOffset.y;
         const itemIndex = calculateItemIndex(offsetY);
         if (itemIndex !== currentActionIndex) {
@@ -105,10 +132,8 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
 
     const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (!isScrollingRef.current) return;
-
         const offsetY = event.nativeEvent.contentOffset.y;
         const contentHeight = ITEM_HEIGHT * actions.length;
-
         if (offsetY < contentHeight * 2) {
             const newOffset = offsetY + contentHeight * 5;
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
@@ -118,13 +143,11 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
             setCurrentActionIndex(calculateItemIndex(newOffset));
         }
-
         isScrollingRef.current = false;
     };
 
     const renderActionButton = (action: TradeActionConfig, isInTopSpot: boolean) => {
         if (!action.hasButtons) return null;
-
         const { opacity, disabled } = getButtonProps(isInTopSpot);
 
         switch (action.actionType) {
@@ -160,23 +183,43 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             case 'offer':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, { opacity, borderColor: currentAction?.color }]}
+                        style={[styles.actionButton, styles.selectButton, {
+                            opacity,
+                            borderColor: currentAction?.color,
+                            backgroundColor: topCardIsSelected ? currentAction?.color + '50' : 'transparent',
+                        }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: colors.actions.offer }]}>00</Text>
-                        <FontAwesome6 name="check" size={26} color={currentAction?.color} />
+                        <Text style={[styles.buttonText, { color: colors.actions.offer }]}>
+                            {String(selectedCount).padStart(2, '0')}
+                        </Text>
+                        <FontAwesome6
+                            name={topCardIsSelected ? 'circle-check' : 'circle-dot'}
+                            size={26}
+                            color={currentAction?.color}
+                        />
                     </TouchableOpacity>
                 );
             case 'trade':
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, { opacity, borderColor: currentAction?.color }]}
+                        style={[styles.actionButton, styles.selectButton, {
+                            opacity,
+                            borderColor: currentAction?.color,
+                            backgroundColor: topCardIsSelected ? currentAction?.color + '50' : 'transparent',
+                        }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: currentAction?.color }]}>00</Text>
-                        <FontAwesome6 name="check" size={26} color={currentAction?.color} />
+                        <Text style={[styles.buttonText, { color: currentAction?.color }]}>
+                            {String(selectedCount).padStart(2, '0')}
+                        </Text>
+                        <FontAwesome6
+                            name={topCardIsSelected ? 'circle-check' : 'circle-dot'}
+                            size={26}
+                            color={currentAction?.color}
+                        />
                     </TouchableOpacity>
                 );
             case 'where':
@@ -209,7 +252,27 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                         <FontAwesome6 name="camera" size={22} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
-     
+            case 'rescind':
+                return (
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.selectButton, {
+                            opacity,
+                            borderColor: currentAction?.color,
+                            backgroundColor: topCardIsSelected ? currentAction?.color + '50' : 'transparent',
+                        }]}
+                        onPress={() => playAction('write')}
+                        disabled={disabled}
+                    >
+                        <Text style={[styles.buttonText, { color: currentAction?.color }]}>
+                            {String(selectedCount).padStart(2, '0')}
+                        </Text>
+                        <FontAwesome6
+                            name={topCardIsSelected ? 'circle-check' : 'circle-dot'}
+                            size={26}
+                            color={currentAction?.color}
+                        />
+                    </TouchableOpacity>
+                );
             case 'play':
                 return null;
             case 'wait':
@@ -219,7 +282,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             default:
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton,  { opacity, borderColor: currentAction?.color }]}
+                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
@@ -247,14 +310,9 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                     >
                         {infiniteActions.map((action, index) => {
                             const isInTopSpot = isActionInTopSpot(index);
-
                             return (
-                                <View
-                                    key={index}
-                                    style={[styles.tradeLine, { shadowColor: action.color }]}
-                                >
+                                <View key={index} style={styles.tradeLine}>
                                     {renderActionButton(action, isInTopSpot)}
-
                                     <TouchableOpacity onPress={handleActionTextPress}>
                                         <Text style={[styles.tradeLineText, { color: action.color }]}>
                                             {action.text}
@@ -285,6 +343,58 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                     />
                 </TouchableOpacity>
             </View>
+
+            {/* shimmer overlay */}
+            {/* shimmer overlay */}
+            <View pointerEvents="none" style={styles.shimmerOverlay}>
+                <Animated.View
+                    style={[
+                        StyleSheet.absoluteFill,
+                        {
+                            transform: [
+                                { translateX: shimmerTranslate1 },
+                                { skewX: '45deg' },
+                            ],
+                        },
+                    ]}
+                >
+                    <LinearGradient
+                        colors={[
+                            currentAction?.color + '00',
+                            currentAction?.color + '66',
+                            currentAction?.color + '00',
+                        ]}
+                        locations={[0, 0.3, 1]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={StyleSheet.absoluteFill}
+                    />
+                </Animated.View>
+
+                <Animated.View
+                    style={[
+                        StyleSheet.absoluteFill,
+                        {
+                            transform: [
+                                { translateX: shimmerTranslate2 },
+                                { skewX: '45deg' },
+                            ],
+                        },
+                    ]}
+                >
+                    <LinearGradient
+                        colors={[
+                            currentAction?.color + '00',
+                            currentAction?.color + '66',
+                            currentAction?.color + '00',
+                        ]}
+                        locations={[0, 0.3, 1]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={StyleSheet.absoluteFill}
+                    />
+                </Animated.View>
+            </View>
         </View>
     );
 };
@@ -294,6 +404,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'flex-start',
         width: '100%',
+        overflow: 'hidden',
     },
     row: {
         flexDirection: 'row',
@@ -310,7 +421,7 @@ const styles = StyleSheet.create({
     },
     tradeLine: {
         flexDirection: 'row',
-        gap: 4,
+        gap: 2,
         height: 64,
         alignItems: 'center',
         marginBottom: -10,
@@ -333,16 +444,29 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 2,
         borderWidth: 3,
     },
+    shimmerOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 40,
+        borderTopLeftRadius: 2,
+        borderBottomLeftRadius: 25,
+        borderTopRightRadius: 25,
+        borderBottomRightRadius: 2,
+        overflow: 'hidden',
+        zIndex: 10,
+    },
     actionButton: {
         justifyContent: 'flex-end',
         alignItems: 'center',
         flexDirection: 'row',
-        paddingHorizontal: 16,
+        paddingHorizontal: 8,
         height: 40,
         flex: 1,
         bottom: 12,
         borderWidth: 3,
-        borderTopRightRadius: 2,
+        borderTopRightRadius: 25,
         borderBottomRightRadius: 25,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
@@ -424,7 +548,7 @@ const styles = StyleSheet.create({
     selectButton: {
         flex: 1,
         height: 40,
-        borderTopRightRadius: 2,
+        borderTopRightRadius: 25,
         borderBottomRightRadius: 25,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 25,
@@ -433,7 +557,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         gap: 4,
-        paddingHorizontal: 16,
+        paddingHorizontal: 4,
     },
     buttonText: {
         fontSize: 20,

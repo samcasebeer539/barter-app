@@ -4,7 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { globalFonts, colors} from '../styles/globalStyles';
-import TradeUI from './TradeActions';
+import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 
 const { width, height } = Dimensions.get('window');
@@ -27,6 +27,9 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const [isRendered, setIsRendered] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+  const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
 
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
@@ -43,11 +46,11 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         Animated.timing(deckTranslateY, {
           toValue: 0,
           useNativeDriver: true,
-          duration: 300,
+          duration: 350,
         }),
         Animated.timing(backdropOpacity, {
           toValue: 0.88,
-          duration: 300,
+          duration: 400,
           useNativeDriver: true,
         }),
       ]).start();
@@ -60,7 +63,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         }),
         Animated.timing(backdropOpacity, {
           toValue: 0,
-          duration: 80,
+          duration: 200,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -86,7 +89,38 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     });
   };
 
+  const handleActionSelected = (action: TradeAction) => {
+    if (action.actionType === 'offer' && action.subAction === 'write') {
+        if (!isSelectMode) {
+            // enter select mode AND select top card in one press
+            setIsSelectMode(true);
+            if (topPostIndex !== null) {
+                setSelectedPosts([topPostIndex]);
+            }
+        } else {
+            // already in select mode — toggle top card
+            if (topPostIndex !== null) {
+                setSelectedPosts(prev =>
+                    prev.includes(topPostIndex)
+                        ? prev.filter(i => i !== topPostIndex)
+                        : [...prev, topPostIndex]
+                );
+            }
+        }
+    }
+    if (action.actionType === 'offer' && action.subAction === 'select') {
+        setIsSelectMode(false);
+        setSelectedPosts([]);
+    }
+  };
+
+  const handleTopCardChange = (postIndex: number | null) => {
+    setTopPostIndex(postIndex);
+  };
+
   const handleSave = () => setShowSaved(prev => !prev);
+
+  const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 
   return (
     <Modal
@@ -96,18 +130,16 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       statusBarTranslucent
     >
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-        {/* Background dismiss layer */}
-        <Animated.View 
-            style={[styles.modalBackground, { opacity: backdropOpacity }]} 
-            pointerEvents="none"
+        <Animated.View
+          style={[styles.modalBackground, { opacity: backdropOpacity }]}
+          pointerEvents="none"
         />
         <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            activeOpacity={1}
-            onPress={handleCloseModal}
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={handleCloseModal}
         />
 
-        {/* Animated content slides up from bottom */}
         <Animated.View
           pointerEvents="auto"
           style={[
@@ -136,12 +168,20 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 posts={posts}
                 cardWidth={Math.min(width - 40, 400)}
                 enabled={true}
+                isSelectMode={isSelectMode}
+                selectedPosts={selectedPosts}
+                onTopCardChange={handleTopCardChange}
+                selectColor={colors.actions.offer}
               />
             </View>
 
             <View style={styles.actionRow}>
               <TradeUI
                 actions={TRADE_ACTIONS.filter(a => ['offer'].includes(a.actionType))}
+                onActionSelected={handleActionSelected}
+                isSelectMode={isSelectMode}
+                selectedCount={selectedPosts.length}
+                topCardIsSelected={topCardIsSelected}
               />
             </View>
           </View>
@@ -159,7 +199,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: colors.ui.background,
- 
   },
   animatedContainer: {
     position: 'absolute',

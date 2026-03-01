@@ -15,7 +15,7 @@ export const defaultTextStyle = {
 export const colors = {
   // Trade Action Colors
   actions: {
-    offer: '#1686ff',  
+    offer: '#1f8bff',  
     trade: '#ab57ff',  
     counter: '#ff31dd',  
     query: '#6a50ff',    
@@ -26,7 +26,7 @@ export const colors = {
     verify: '#ff8d0a',
     wait: '#372788',
     stall: '#fb4921',
-    rescind: '#ff3232',
+    rescind: '#ff630f',
   },
 
   // Post Type Colors

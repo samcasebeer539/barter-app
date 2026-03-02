@@ -16,11 +16,23 @@ export type { TradeTurnType };
 
 interface TradeTurnsProps {
   turns: TradeTurn[];
+  isQueryOpen?: boolean;
 }
 
-const TradeTurns: React.FC<TradeTurnsProps> = ({ turns }) => {
+const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false }) => {
   const [queryAnswers, setQueryAnswers] = React.useState<Record<number, string>>({});
+  const [activeQueryText, setActiveQueryText] = React.useState('');
   const internalInputRefs = useRef<Record<number, TextInput | null>>({});
+  const activeQueryInputRef = useRef<TextInput | null>(null);
+
+  // Auto-focus the top query input when it opens
+  React.useEffect(() => {
+    if (isQueryOpen) {
+      setTimeout(() => activeQueryInputRef.current?.focus(), 100);
+    } else {
+      setActiveQueryText('');
+    }
+  }, [isQueryOpen]);
 
   const renderTurn = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
@@ -62,7 +74,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns }) => {
           </Text>
         </View>
 
-        {isQuery && (
+        {isQuery && !turn.isUser && (
           <View style={styles.answerRow}>
             <TextInput
               ref={el => { internalInputRefs.current[index] = el; }}
@@ -77,7 +89,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns }) => {
               blurOnSubmit
             />
             <TouchableOpacity onPress={() => Keyboard.dismiss()}>
-              <FontAwesome6 name="arrow-right-to-bracket" size={26} color={colors.actions.query} />
+              <FontAwesome6 name="arrow-left-long" size={26} color={colors.actions.query} />
             </TouchableOpacity>
           </View>
         )}
@@ -87,6 +99,25 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns }) => {
 
   return (
     <View style={styles.container}>
+      {isQueryOpen && (
+        <View style={styles.activeQueryRow}>
+          <TextInput
+            ref={activeQueryInputRef}
+            style={styles.answerInput}
+            placeholder="Ask a question…"
+            placeholderTextColor={colors.actions.query}
+            value={activeQueryText}
+            onChangeText={setActiveQueryText}
+            multiline
+            returnKeyType="done"
+            onSubmitEditing={() => Keyboard.dismiss()}
+            blurOnSubmit
+          />
+          <TouchableOpacity onPress={() => Keyboard.dismiss()}>
+            <FontAwesome6 name="arrow-left-long" size={26} color={colors.actions.query} />
+          </TouchableOpacity>
+        </View>
+      )}
       {turns.map(renderTurn)}
     </View>
   );
@@ -127,6 +158,19 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
   },
+  activeQueryRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    borderWidth: 3,
+    borderColor: colors.actions.query,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 25,
+    borderTopRightRadius: 2,
+    paddingHorizontal: 10,
+    paddingBottom: 2,
+  },
   answerRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -137,7 +181,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 2,
     borderBottomRightRadius: 25,
     borderTopRightRadius: 2,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingBottom: 2,
   },
   answerInput: {

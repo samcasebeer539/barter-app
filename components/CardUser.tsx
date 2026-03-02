@@ -172,7 +172,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
           <View style={styles.ratingContainer}>
             <StarRating rating={user.rating} />
             <Text style={styles.ratingText}>
-              ({user.reviewCount ?? 0} ratings)
+              ({user.reviewCount ?? 0} exchange ratings)
             </Text>
           </View>
         </View>
@@ -249,10 +249,12 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    
     gap: 6,
   },
   ratingRow: {
     flexDirection: 'row',
+    
     gap: 2,
   },
   ratingText: {

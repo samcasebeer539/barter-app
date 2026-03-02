@@ -8,7 +8,7 @@ import { colors } from '@/styles/globalStyles';
 
 function TabBarBackground() {
     return (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', top: 34}]} />
+        <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: '#000' }]} />
     );
 }
 
@@ -17,7 +17,6 @@ export default function RootLayout() {
         'YourFontName-Regular': require('@/assets/fonts/Roboto-Regular.ttf'),
         'YourFontName-Bold': require('@/assets/fonts/RobotoCondensed-SemiBold.ttf'),
         'YourFontName-ExtraBold': require('@/assets/fonts/Oswald-Bold.ttf'),
-        // Add other font weights/styles as needed
     });
 
     if (!fontsLoaded) {
@@ -34,11 +33,11 @@ export default function RootLayout() {
             tabBarStyle: {
                 backgroundColor: 'transparent',
                 borderTopWidth: 0,
-                height: 110,
-                paddingBottom: 42,
-                paddingTop: 20,
+                height: 80,
+                paddingBottom: 0,
+                paddingTop: 0,
                 position: 'absolute',
-                
+                bottom: 0,
             },
             
             tabBarBackground: () => <TabBarBackground />,
@@ -57,7 +56,6 @@ export default function RootLayout() {
                 ...rest 
                 } = props as any;
                 
-                // Determine button position based on the route
                 const href = props.href as string;
                 const isFirst = href === '/feed';
                 const isLast = href === '/profiledeck';
@@ -87,7 +85,7 @@ export default function RootLayout() {
             <Tabs.Screen
             name="index"
             options={{
-                href: null, // Hide from tab bar completely
+                href: null,
             }}
             />
             <Tabs.Screen
@@ -95,7 +93,6 @@ export default function RootLayout() {
             options={{
                 tabBarIcon: ({ color }) => (
                 <FontAwesome6 name="square" size={24} color={color} style={{ marginTop: 0 }}/>
-                
                 ),
             }}
             />
@@ -115,16 +112,12 @@ export default function RootLayout() {
                 ),
             }}
             />
-    
             <Tabs.Screen
             name="settings"
             options={{
-                href: null, // Hide from tab bar completely
+                href: null,
             }}
             />
-        
-    
-            
         </Tabs>
         </SafeAreaProvider>
     );
@@ -137,7 +130,9 @@ const styles = StyleSheet.create({
         marginHorizontal: 2,
         justifyContent: 'center',
         alignItems: 'center',
-        height: 40,
+        height: 44,
+        marginTop: 8,
+        marginBottom: 24,
     },
     leftButton: {
         borderTopLeftRadius: 2,
@@ -145,14 +140,12 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         marginLeft: 12,
-        top: 22,
     },
     middleButton: {
         borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
-        top: 22,
     },
     rightButton: {
         borderTopRightRadius: 2,
@@ -160,6 +153,5 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
         marginRight: 12,
-        top: 22,
     },
 });

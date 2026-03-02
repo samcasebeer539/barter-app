@@ -28,12 +28,13 @@ interface TradeDeckProps {
   posts: Post[];
   actions: TradeActionConfig[];
   onHorizontalGestureStart?: () => void; 
-  onGestureEnd?: () => void;  
+  onGestureEnd?: () => void; 
+  showDateTime?: boolean;
 }
 
 const DECK_WIDTH = width - 40;
 
-export default function TradeDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
+export default function TradeDeck({ posts, actions, showDateTime = false, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showingPlayer, setShowingPlayer] = useState(false);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
@@ -88,6 +89,7 @@ export default function TradeDeck({ posts, actions, onHorizontalGestureStart, on
                 enabled={true} 
                 onHorizontalGestureStart={onHorizontalGestureStart}
                 onGestureEnd={onGestureEnd}  
+                showDateTime={showDateTime}
               />
             </View>
             <View style={{ width: DECK_WIDTH }}>
@@ -95,7 +97,8 @@ export default function TradeDeck({ posts, actions, onHorizontalGestureStart, on
                 cardWidth={DECK_WIDTH} 
                 enabled={true} 
                 onHorizontalGestureStart={onHorizontalGestureStart}
-                onGestureEnd={onGestureEnd}         
+                onGestureEnd={onGestureEnd}
+                showDateTime={showDateTime}         
               />
             </View>
           </Animated.View>

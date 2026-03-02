@@ -142,7 +142,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 >
                     <FontAwesome6
                         name={isSelected ? 'circle-check' : 'circle'}
-                        size={24}
+                        size={22}
                         color={isSelected ? selectColor : 'transparent'}
                     />
                 </TouchableOpacity>
@@ -217,15 +217,15 @@ const PostCard: React.FC<PostCardProps> = ({
           <>
               <View style={[
                   styles.selectBackground2,
-                  { borderColor: isSelected ? selectColor + '66' : '#ffffff22' }
+                  { borderColor: isSelected ? selectColor + '75' : '#ffffff22' }
               ]} />
               <View style={[
                   styles.selectBackground,
-                  { borderColor: isSelected ? selectColor + '66' : '#ffffff22' }
+                  { borderColor: isSelected ? selectColor + '75' : '#ffffff22' }
               ]} />
               <View style={[
                   styles.selectBorder,
-                  { borderColor: isSelected ? selectColor : '#fff' }
+                  { borderColor: isSelected ? 'transparent' : 'transparent' }
               ]} />
           </>
       )}
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderWidth: 3,
-    borderColor: colors.actions.trade,
+   
     borderTopLeftRadius: 4,
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 4,
@@ -264,12 +264,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderWidth: 7,
+    borderWidth: 8,
     borderColor: colors.actions.trade,
-    borderTopLeftRadius: 6,
+    borderTopLeftRadius: 12,
     borderTopRightRadius: 24,
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
     zIndex: 99,
     pointerEvents: 'none',
 
@@ -282,10 +282,10 @@ selectBackground2: {
     bottom: 0,
     borderWidth: 10,
     borderColor: colors.actions.trade,
-    borderTopLeftRadius: 6,
+    borderTopLeftRadius: 22,
     borderTopRightRadius: 34,
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
     zIndex: 99,
     pointerEvents: 'none',
     marginHorizontal: -10,
@@ -317,7 +317,7 @@ selectBackground2: {
   },
   selectContainer: {
     position: 'absolute',
-    top: 14,
+    top: 12,
     right: 14,
     zIndex: 50,
     paddingLeft: 6,
@@ -329,7 +329,7 @@ selectBackground2: {
   title: {
     fontSize: 18,
     fontWeight: '600',
-    lineHeight: 24,
+    lineHeight: 22,
     color: '#000',
     fontFamily: globalFonts.bold,
   },
@@ -348,7 +348,7 @@ selectBackground2: {
   },
   photoSectionWrapper: {
     position: 'absolute',
-    top: 46,
+    top: 48,
     left: 16,
     right: 16,
   },

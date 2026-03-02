@@ -9,6 +9,7 @@ import {
 import PostCard from './CardItem';
 import UserCard from './CardUser';
 import BlankCard from './CardBlank';
+import CardDateTime from './CardDateTime'
 import { colors } from '@/styles/globalStyles';
 
 interface Post {
@@ -41,11 +42,14 @@ interface DeckProps {
   selectedPosts?: number[];
   onTopCardChange?: (postIndex: number | null) => void;
   selectColor?: string;
+  showDateTime?: boolean;
 }
 
 type DeckItem =
   | { type: 'user' }
-  | { type: 'post'; post: Post; postIndex: number };
+  | { type: 'post'; post: Post; postIndex: number }
+  | { type: 'datetime' };
+
 
 const Deck: React.FC<DeckProps> = ({
   posts,
@@ -58,6 +62,7 @@ const Deck: React.FC<DeckProps> = ({
   selectedPosts = [],
   onTopCardChange,
   selectColor = colors.actions.offer,
+  showDateTime = false
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
@@ -79,6 +84,7 @@ const Deck: React.FC<DeckProps> = ({
   const shouldRepeat = posts.length < 2;
   const baseItems: DeckItem[] = [
     { type: 'user' },
+    ...(showDateTime ? [{ type: 'datetime' as const }] : []),
     ...posts.map((post, i): DeckItem => ({ type: 'post', post, postIndex: i })),
   ];
   const [cards] = useState<DeckItem[]>(
@@ -264,6 +270,11 @@ const Deck: React.FC<DeckProps> = ({
             scale={1}
             cardWidth={finalCardWidth}
           />
+        ) : card.type === 'datetime' ? (
+          <CardDateTime
+            mode="propose"
+            cardWidth={finalCardWidth}
+          />
         ) : (
           <PostCard
             post={card.post}
@@ -315,7 +326,7 @@ const styles = StyleSheet.create({
     left: 0,
     shadowColor: colors.ui.secondary,
     shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.5,
     shadowRadius: 2,
     
   },

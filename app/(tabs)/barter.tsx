@@ -117,7 +117,7 @@ export default function ActiveTradesTestScreen() {
         <View style={styles.topSpacer} />
         {tab === 'queries' && (
           <View>
-            <View style={{ height: 598 }} />
+            <View style={{ height: 542 }} />
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
@@ -128,7 +128,7 @@ export default function ActiveTradesTestScreen() {
         )}
         {tab === 'offers' && (
           <View>
-            <View style={{ height: 598 }} />
+            <View style={{ height: 542 }} />
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
@@ -140,7 +140,7 @@ export default function ActiveTradesTestScreen() {
 
         {tab === 'trades' && (
           <View>
-            <View style={{ height: 398 }} />
+            <View style={{ height: 342 }} />
             <TradeDeck
               posts={POSTS}
               actions={tradesActions}
@@ -155,10 +155,11 @@ export default function ActiveTradesTestScreen() {
 
         {tab === 'deals' && (
           <View>
-            <View style={{ height: 398 }} />
+            <View style={{ height: 342 }} />
             <TradeDeck
               posts={POSTS}
               actions={dealsActions}
+              showDateTime={true}
             />
           </View>
         )}

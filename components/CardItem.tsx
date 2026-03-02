@@ -114,7 +114,7 @@ const PostCard: React.FC<PostCardProps> = ({
             <View style={styles.iconContainer}>
                 <FontAwesome6
                     name={post.type === 'good' ? 'gifts' : 'hand-sparkles'}
-                    size={24}
+                    size={20}
                     color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
                 />
             </View>
@@ -305,15 +305,15 @@ selectBackground2: {
     overflow: 'hidden',
   },
   header: {
-    padding: 14,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 6,
   },
   iconContainer: {
     flexShrink: 0,
-    paddingBottom: 12,
+    paddingBottom: 16,
   },
   selectContainer: {
     position: 'absolute',
@@ -348,7 +348,7 @@ selectBackground2: {
   },
   photoSectionWrapper: {
     position: 'absolute',
-    top: 52,
+    top: 46,
     left: 16,
     right: 16,
   },

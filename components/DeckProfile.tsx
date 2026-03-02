@@ -9,15 +9,11 @@ import { globalFonts, colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS } from '../config/tradeConfig';
 
-const SLIDE_DISTANCE = 594;
+const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
   { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-];
-
-const queryTurns: TradeTurn[] = [
-  { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
 ];
 
 const PRIMARY_USER = {
@@ -25,7 +21,9 @@ const PRIMARY_USER = {
   pronouns: '(they/them)',
   location: 'Santa Cruz, CA',
   bio: 'UCSC 2026 for Computer Science, multimedia visual artist, sci-fi/fantasy reader, cat lover',
-  profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
+  profileImageUrl: 'https://picsum.photos/seed/tutor1/600/600',
+  rating: 4.2,
+  reviewCount: 12,
 };
 
 const SECONDARY_USER = {
@@ -33,7 +31,7 @@ const SECONDARY_USER = {
   pronouns: '(she/he/they)',
   location: 'Santa Cruz, CA',
   bio: 'Pro Smasher',
-  profileImageUrl: 'https://picsum.photos/seed/bird/400/400',
+  profileImageUrl: 'https://picsum.photos/seed/bird/800/800',
 };
 
 export interface Post {
@@ -61,32 +59,50 @@ export default function ProfileDeck({
   const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [showSecondary, setShowSecondary] = useState(false);
+  const [secondaryHeight, setSecondaryHeight] = useState(0);
   const [isQueryDrawerOpen, setIsQueryDrawerOpen] = useState(false);
 
   const [isTradeSelectMode, setIsTradeSelectMode] = useState(false);
   const [selectedSecondaryPosts, setSelectedSecondaryPosts] = useState<number[]>([]);
   const [topSecondaryPostIndex, setTopSecondaryPostIndex] = useState<number | null>(null);
 
+  // Query input state for the secondary deck's TradeUI
+  const [isTradeQueryOpen, setIsTradeQueryOpen] = useState(false);
+  const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
+
   const { goodCount, serviceCount } = useMemo(() => ({
     goodCount: posts.filter(p => p.type === 'good').length,
     serviceCount: posts.filter(p => p.type === 'service').length,
   }), [posts]);
 
+  const isDeckRevealedRef = useRef(isDeckRevealed);
+
   useEffect(() => {
     if (isDeckRevealed) setShowSecondary(true);
+    isDeckRevealedRef.current = isDeckRevealed;
 
     Animated.timing(slideAnim, {
       toValue: isDeckRevealed ? 1 : 0,
-      useNativeDriver: true,
+      useNativeDriver: false,
       duration: 300,
     }).start(() => {
       if (!isDeckRevealed) {
         setShowSecondary(false);
         setIsTradeSelectMode(false);
         setSelectedSecondaryPosts([]);
+        setIsTradeQueryOpen(false);
       }
     });
   }, [isDeckRevealed]);
+
+  const handleSecondaryLayout = (height: number) => {
+    setSecondaryHeight(height);
+    // If already fully revealed, snap slideAnim to 1 so the new outputRange
+    // takes effect immediately (no re-animation, just a position jump).
+    if (isDeckRevealedRef.current) {
+      slideAnim.setValue(1);
+    }
+  };
 
   const handleTradeActionSelected = (action: TradeAction) => {
     if (action.actionType === 'trade' && action.subAction === 'write') {
@@ -111,13 +127,22 @@ export default function ProfileDeck({
     setTopSecondaryPostIndex(postIndex);
   };
 
+  const handleTradeQueryToggle = (isOpen: boolean) => {
+    setIsTradeQueryOpen(isOpen);
+  };
+
   const topSecondaryCardIsSelected =
     topSecondaryPostIndex !== null && selectedSecondaryPosts.includes(topSecondaryPostIndex);
+
+  const tradeActions = useMemo(
+    () => TRADE_ACTIONS.filter(a => ['trade', 'query', 'decline'].includes(a.actionType)),
+    []
+  );
 
   const cardWidth = Math.min(width - 40, 400);
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, SLIDE_DISTANCE],
+    outputRange: [0, secondaryHeight + SLIDE_MARGIN],
   });
 
   return (
@@ -128,9 +153,7 @@ export default function ProfileDeck({
           style={styles.queryButton}
           onPress={() => setIsQueryDrawerOpen(prev => !prev)}
         >
-          <Text style={[styles.actionButtonText, {
-            color: colors.actions.query,
-          }]}>
+          <Text style={[styles.actionButtonText, { color: colors.actions.query }]}>
             1 QUERY
           </Text>
         </TouchableOpacity>
@@ -152,7 +175,10 @@ export default function ProfileDeck({
 
         {/* Secondary deck */}
         {showSecondary && secondaryPosts.length > 0 && (
-          <View style={styles.secondaryDeckContainer}>
+          <View
+            style={styles.secondaryDeckContainer}
+            onLayout={e => handleSecondaryLayout(e.nativeEvent.layout.height)}
+          >
             <View style={styles.secondaryDeckWrapper}>
               <Deck
                 posts={secondaryPosts}
@@ -169,15 +195,19 @@ export default function ProfileDeck({
             <View style={styles.turnsAndButtonRow}>
               <View style={styles.actionRow}>
                 <TradeUI
-                  actions={TRADE_ACTIONS.filter(a => ['trade', 'decline'].includes(a.actionType))}
+                  actions={tradeActions}
                   onActionSelected={handleTradeActionSelected}
+                  onQueryToggle={handleTradeQueryToggle}
                   isSelectMode={isTradeSelectMode}
                   selectedCount={selectedSecondaryPosts.length}
                   topCardIsSelected={topSecondaryCardIsSelected}
                 />
               </View>
               <View style={styles.tradeRow}>
-                <TradeTurns turns={trade1Turns} />
+                <TradeTurns
+                  turns={tradeTurns}
+                  isQueryOpen={isTradeQueryOpen}
+                />
               </View>
             </View>
           </View>
@@ -193,13 +223,11 @@ export default function ProfileDeck({
             {/* Query drawer */}
             {isQueryDrawerOpen && (
               <View style={styles.queryDrawer}>
-                <TradeTurns turns={queryTurns} />
+                <TradeTurns turns={[{ type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false }]} />
               </View>
             )}
 
             <View style={styles.buttonRow}>
-       
-
               <View style={styles.mygoodServiceButton}>
                 <Text style={[styles.goodText]}>0{goodCount}</Text>
                 <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
@@ -212,17 +240,14 @@ export default function ProfileDeck({
               <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
                 <FontAwesome6 name="sliders" size={22} color="#fff" />
               </TouchableOpacity>
-
               <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => {}}>
                 <FontAwesome6 name="plus" size={24} color="#fff" />
               </TouchableOpacity>
-              
-              
             </View>
 
-            </View>
+          </View>
         </Animated.View>
-        
+
       </View>
     </View>
   );
@@ -244,7 +269,6 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     position: 'relative',
     alignItems: 'center',
-    // bottom: 652,
     overflow: 'visible',
   },
   decksContainer: {
@@ -258,7 +282,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     flexDirection: 'column',
-    
     zIndex: 2,
     elevation: 2,
     backgroundColor: colors.ui.background,
@@ -268,6 +291,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    backgroundColor: colors.ui.background,
+    paddingBottom: 50,
+    
+    
   },
   primaryDeckWrapper: {
     left: -12,
@@ -282,10 +309,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
     elevation: 1,
+    backgroundColor: colors.ui.background,
   },
   queryDrawer: {
     width: 334,
-    
   },
   buttonRow: {
     width: 334,
@@ -293,7 +320,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     gap: 4,
-    
   },
   tradeRow: {
     width: 334,
@@ -395,7 +421,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: globalFonts.bold,
   },
- 
   actionRow: {
     width: 334,
     marginBottom: 4,

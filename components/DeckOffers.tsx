@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { globalFonts, colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
+import TradeTurns, { TradeTurn }from './TradeTurns';
 import { TradeActionConfig } from '@/config/tradeConfig';
 
 const { width } = Dimensions.get('window');
@@ -22,12 +23,17 @@ interface OfferDeckProps {
     onGestureEnd?: () => void;
 }
 
+const trade1Turns: TradeTurn[] = [
+  { type: 'turnQuery', isUser: true },
+];
+
 const DECK_WIDTH = Math.min(width - 40, 600);
 
 export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd }: OfferDeckProps) {
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
     const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
+    const [isQueryOpen, setIsQueryOpen] = useState(false);
 
     const { goodCount, serviceCount } = useMemo(() => {
         const goodCount = posts.filter(post => post.type === 'good').length;
@@ -35,8 +41,13 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
         return { goodCount, serviceCount };
     }, [posts]);
 
+    // Use the color of the first action that has buttons as the select color
+    const selectColor = useMemo(() => {
+        return actions.find(a => a.hasButtons)?.color ?? colors.actions.offer;
+    }, [actions]);
+
     const handleActionSelected = (action: TradeAction) => {
-        if (action.actionType === 'rescind' && action.subAction === 'write') {
+        if (action.subAction === 'write') {
             if (!isSelectMode) {
                 setIsSelectMode(true);
                 if (topPostIndex !== null) {
@@ -52,7 +63,7 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
                 }
             }
         }
-        if (action.actionType === 'rescind' && action.subAction === 'select') {
+        if (action.subAction === 'select') {
             setIsSelectMode(false);
             setSelectedPosts([]);
         }
@@ -86,7 +97,7 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
                         isSelectMode={isSelectMode}
                         selectedPosts={selectedPosts}
                         onTopCardChange={handleTopCardChange}
-                        selectColor={colors.actions.rescind}
+                        selectColor={selectColor}
                     />
                 </View>
 
@@ -94,9 +105,17 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
                     <TradeUI
                         actions={actions}
                         onActionSelected={handleActionSelected}
+                        onQueryToggle={setIsQueryOpen}
                         isSelectMode={isSelectMode}
                         selectedCount={selectedPosts.length}
                         topCardIsSelected={topCardIsSelected}
+                    />
+                </View>
+
+                <View style={styles.turnsRow}>
+                    <TradeTurns
+                        turns={trade1Turns}
+                        isQueryOpen={isQueryOpen}
                     />
                 </View>
             </View>
@@ -146,6 +165,10 @@ const styles = StyleSheet.create({
         top: 0,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    turnsRow: {
+        width: 334,
+        marginTop: -10,
     },
     secondaryText: {
         color: colors.ui.secondarydisabled,

@@ -13,13 +13,14 @@ export interface TradeAction {
 
 interface TradeUIProps {
     onActionSelected?: (action: TradeAction) => void;
+    onQueryToggle?: (isOpen: boolean) => void;
     actions?: TradeActionConfig[];
     isSelectMode?: boolean;
     selectedCount?: number;
     topCardIsSelected?: boolean;
 }
 
-const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACTIONS, isSelectMode = false, selectedCount = 0, topCardIsSelected = false }) => {
+const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, actions = TRADE_ACTIONS, isSelectMode = false, selectedCount = 0, topCardIsSelected = false }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
     const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
@@ -28,6 +29,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const [isActionSelected, setIsActionSelected] = useState(false);
+    const [isQueryOpen, setIsQueryOpen] = useState(false);
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
 
     const shimmerAnim1 = useRef(new Animated.Value(0)).current;
@@ -45,7 +47,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                 }),
             ]).start(() => {
                 anim.setValue(0);
-                runShimmer(anim, 0); // no delay after first run — it loops immediately
+                runShimmer(anim, 0);
             });
         };
 
@@ -91,10 +93,28 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
         }
     };
 
+    const handleQueryPress = (isInTopSpot: boolean) => {
+        if (!isInTopSpot) return;
+        const next = !isQueryOpen;
+        setIsQueryOpen(next);
+        onQueryToggle?.(next);
+
+        // also fire the action so parent knows
+        const tradeAction: TradeAction = {
+            actionType: 'query',
+            subAction: 'write',
+        };
+        onActionSelected?.(tradeAction);
+    };
+
     const handleActionTextPress = () => {
         const snappedOffset = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
         const nextOffset = snappedOffset + ITEM_HEIGHT;
         scrollViewRef.current?.scrollTo({ y: nextOffset, animated: true });
+        if (isQueryOpen) {
+            setIsQueryOpen(false);
+            onQueryToggle?.(false);
+        }
     };
 
     const isActionInTopSpot = (index: number) => index % actions.length === currentActionIndex;
@@ -118,6 +138,10 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
         setIsActionSelected(false);
+        if (isQueryOpen) {
+            setIsQueryOpen(false);
+            onQueryToggle?.(false);
+        }
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -173,8 +197,17 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
             case 'query':
                 return (
                     <TouchableOpacity
-                        style={[styles.queryButton, { opacity, borderColor: currentAction?.color }]}
-                        onPress={() => playAction('write')}
+                        style={[
+                            styles.queryButton,
+                            {
+                                opacity,
+                                borderColor: currentAction?.color,
+                                backgroundColor: isQueryOpen && isInTopSpot
+                                    ? currentAction?.color + '50'
+                                    : 'transparent',
+                            },
+                        ]}
+                        onPress={() => handleQueryPress(isInTopSpot)}
                         disabled={disabled}
                     >
                         <FontAwesome6 name="question" size={26} color={currentAction?.color} />
@@ -344,7 +377,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, actions = TRADE_ACT
                 </TouchableOpacity>
             </View>
 
-            {/* shimmer overlay */}
             {/* shimmer overlay */}
             <View pointerEvents="none" style={styles.shimmerOverlay}>
                 <Animated.View

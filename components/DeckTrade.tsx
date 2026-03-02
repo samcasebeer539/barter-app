@@ -15,7 +15,6 @@ const trade1Turns: TradeTurn[] = [
   { type: 'turnCounter', isUser: true  },
   { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
   { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
-  
 ];
 
 interface Post {
@@ -32,15 +31,14 @@ interface TradeDeckProps {
   onGestureEnd?: () => void;  
 }
 
-
-
-const DECK_WIDTH = width - 40; // 12px on each side
+const DECK_WIDTH = width - 40;
 
 export default function TradeDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showingPlayer, setShowingPlayer] = useState(false);
+  const [isQueryOpen, setIsQueryOpen] = useState(false);
+  const [turns, setTurns] = useState<TradeTurn[]>(trade1Turns);
 
-  // Partner deck starts at MARGIN from left
   const slideAnim = useRef(new Animated.Value(-11)).current;
 
   const { goodCount, serviceCount } = useMemo(() => {
@@ -50,9 +48,7 @@ export default function TradeDeck({ posts, actions, onHorizontalGestureStart, on
   }, [posts]);
 
   const handleSwitchDecks = () => {
-    // Slide left by DECK_WIDTH + GAP so player deck lands at same MARGIN position
-    const toValue = showingPlayer ? -11 : -(DECK_WIDTH) -38;
-
+    const toValue = showingPlayer ? -11 : -(DECK_WIDTH) - 38;
     Animated.spring(slideAnim, {
       toValue,
       useNativeDriver: true,
@@ -84,33 +80,38 @@ export default function TradeDeck({ posts, actions, onHorizontalGestureStart, on
           </View>
         </View>
 
-        {/* Clip window — full screen width, hides the off-screen deck */}
         <View style={styles.deckClipWindow}>
           <Animated.View style={[styles.decksRow, { transform: [{ translateX: slideAnim }] }]}>
             <View style={{ width: DECK_WIDTH }}>
               <Deck posts={posts} 
                 cardWidth={DECK_WIDTH} 
                 enabled={true} 
-                onHorizontalGestureStart={onHorizontalGestureStart}  // ADD
+                onHorizontalGestureStart={onHorizontalGestureStart}
                 onGestureEnd={onGestureEnd}  
               />
             </View>
             <View style={{ width: DECK_WIDTH }}>
               <Deck posts={posts} 
-              cardWidth={DECK_WIDTH} 
-              enabled={true} 
-              onHorizontalGestureStart={onHorizontalGestureStart}  // ADD
-              onGestureEnd={onGestureEnd}         
+                cardWidth={DECK_WIDTH} 
+                enabled={true} 
+                onHorizontalGestureStart={onHorizontalGestureStart}
+                onGestureEnd={onGestureEnd}         
               />
             </View>
           </Animated.View>
         </View>
 
         <View style={styles.turnsAndButtonRow}>
-          <TradeUI actions={actions} />
+          <TradeUI
+            actions={actions}
+            onQueryToggle={setIsQueryOpen}
+          />
           {isExpanded && (
             <View style={styles.turnsRows}>
-              <TradeTurns turns={trade1Turns} />
+              <TradeTurns
+                turns={turns}
+                isQueryOpen={isQueryOpen}
+              />
             </View>
           )}
         </View>

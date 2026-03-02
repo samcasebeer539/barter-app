@@ -3,18 +3,24 @@ import { globalFonts, colors } from '../styles/globalStyles';
 import { useState } from 'react';
 
 interface OffersTradesDealsBarProps {
+    onQueriesPress?: () => void;
     onOffersPress?: () => void;
     onTradesPress?: () => void;
     onDealsPress?: () => void;
 }
 
 export default function OffersTradesDealsBar({
+    onQueriesPress,
     onOffersPress,
     onTradesPress,
     onDealsPress,
 }: OffersTradesDealsBarProps) {
 
-    const [active, setActive] = useState<'offers' | 'trades' | 'deals'>('offers');
+    const [active, setActive] = useState<'offers' | 'trades' | 'deals' | 'queries'>('offers');
+    const handleQueries = () => {
+        setActive('queries');
+        onQueriesPress?.();
+    };
 
     const handleOffers = () => {
         setActive('offers');
@@ -33,6 +39,17 @@ export default function OffersTradesDealsBar({
 
     return (
         <View style={styles.topBarContainer}>
+            <TouchableOpacity style={styles.queriesButton} onPress={handleQueries}>
+                <Text
+                    style={[
+                        styles.buttonText,
+                        { color: active === 'queries' ? colors.actions.query : colors.ui.secondarydisabled }
+                    ]}
+                >
+                    QUERIES
+                </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.offersButton} onPress={handleOffers}>
                 <Text
                     style={[
@@ -40,7 +57,7 @@ export default function OffersTradesDealsBar({
                         { color: active === 'offers' ? colors.actions.offer : colors.ui.secondarydisabled }
                     ]}
                 >
-                    42 OFFERS
+                    OFFERS
                 </Text>
             </TouchableOpacity>
 
@@ -51,7 +68,7 @@ export default function OffersTradesDealsBar({
                         { color: active === 'trades' ? colors.actions.trade : colors.ui.secondarydisabled }
                     ]}
                 >
-                    3 TRADES
+                    TRADES
                 </Text>
             </TouchableOpacity>
 
@@ -62,7 +79,7 @@ export default function OffersTradesDealsBar({
                         { color: active === 'deals' ? colors.actions.accept : colors.ui.secondarydisabled }
                     ]}
                 >
-                    0 DEALS
+                    DEALS
                 </Text>
             </TouchableOpacity>
         </View>
@@ -84,10 +101,21 @@ const styles = StyleSheet.create({
         paddingTop: 48,
         gap: 4,
     },
-    offersButton: {
+    queriesButton: {
         flex: 1,
         height: 44,
         borderTopLeftRadius: 25,
+        borderTopRightRadius: 2,
+        borderBottomLeftRadius: 2,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    offersButton: {
+        flex: 1,
+        height: 44,
+        borderTopLeftRadius: 2,
         borderTopRightRadius: 2,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,

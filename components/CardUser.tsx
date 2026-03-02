@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { globalFonts, colors } from '../styles/globalStyles';
-import { useRouter } from 'expo-router';
 
 interface Tag {
   text: string;
@@ -21,6 +20,8 @@ interface User {
   profileImageUrl?: string;
   rating?: number;
   reviewCount?: number;
+  email?: string;
+  phone?: string;
 }
 
 interface UserCardProps {
@@ -31,83 +32,149 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuPress }) => {
-  const router = useRouter();
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
+  const photoExpanded = finalCardWidth - 96;
+  const photoCollapsed = 80;
+
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+  const [locationVisible, setLocationVisible] = useState(false);
+  const [contactsVisible, setContactsVisible] = useState(false);
+  const photoHeight = useRef(new Animated.Value(photoExpanded)).current;
+
+  useEffect(() => {
+    Animated.spring(photoHeight, {
+      toValue: isInfoExpanded ? photoCollapsed : photoExpanded,
+      useNativeDriver: false,
+      damping: 20,
+      stiffness: 200,
+    }).start();
+  }, [isInfoExpanded]);
+
   const StarRating = ({ rating = 0 }: { rating?: number }) => {
     const fullStars = Math.floor(rating);
     const hasHalf = rating % 1 >= 0.5;
-
     return (
       <View style={styles.ratingRow}>
         {[...Array(5)].map((_, i) => {
-          if (i < fullStars) {
-            return <FontAwesome6 key={i} name="star" size={14} color="#F5B301" solid />;
-          }
-          if (i === fullStars && hasHalf) {
-            return <FontAwesome6 key={i} name="star-half-stroke" size={14} color="#F5B301" solid />;
-          }
-          return <FontAwesome6 key={i} name="star" size={14} color="#DDD" />;
+          if (i < fullStars) return <FontAwesome6 key={i} name="star" size={20} color="#F5B301" solid />;
+          if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={20} color="#F5B301" solid />;
+          return <FontAwesome6 key={i} name="star" size={20} color={colors.ui.cardsecondary} />;
         })}
       </View>
     );
   };
 
+  const contactString = [user.email, user.phone].filter(Boolean).join(' · ') || 'None';
+
   return (
     <View style={[styles.container, { transform: [{ scale }] }]} pointerEvents="box-none">
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
 
-        {/* Gesture passthrough overlay — lets PanResponder in Deck capture swipes */}
+        {/* Gesture passthrough overlay */}
         <View
           style={[StyleSheet.absoluteFill, styles.gestureOverlay]}
           onStartShouldSetResponder={() => false}
           onMoveShouldSetResponder={() => false}
         />
 
-        <View style={styles.headerColumn}>
-          <Image
-            source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
-            style={styles.profileImage}
-          />
+        {/* Photo */}
+        <TouchableOpacity
+          activeOpacity={isInfoExpanded ? 0.8 : 1}
+          onPress={() => isInfoExpanded && setIsInfoExpanded(false)}
+          style={styles.photoTouchable}
+        >
+          <Animated.View style={[styles.photoSection, { height: photoHeight }]}>
+            <Image
+              source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
+              style={styles.photo}
+              resizeMode="cover"
+            />
+          </Animated.View>
+        </TouchableOpacity>
 
-          <View style={styles.headerInfo}>
+        {/* Info section */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => setIsInfoExpanded(true)}
+          style={styles.infoSection}
+        >
+          {/* Name + actions */}
+          <View style={[styles.headerRow, { marginBottom: 8 }]}>
             <Text style={styles.name} numberOfLines={1}>
               {user.name}
               {user.pronouns && (
                 <Text style={styles.pronouns}> {user.pronouns}</Text>
               )}
             </Text>
-
-            <View style={styles.locationRow}>
-              <FontAwesome6 name="location-dot" size={14} color={colors.ui.cardsecondary} />
-              <Text style={styles.location}>{user.location}</Text>
-            </View>
-
-            <View style={styles.ratingContainer}>
-              <StarRating rating={user.rating} />
-              <Text style={styles.ratingText}>
-                {user.rating?.toFixed(1)} ({user.reviewCount ?? 0})
-              </Text>
-            </View>
+            <TouchableOpacity style={styles.actionButton}>
+              <FontAwesome6 name="ban" size={20} color={colors.ui.cardsecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <FontAwesome6 name="circle-exclamation" size={20} color={colors.ui.cardsecondary} />
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <View style={styles.bioContainer}>
-          <Text style={styles.bio} numberOfLines={5}>
+          {/* Bio */}
+          <Text style={styles.bio} numberOfLines={isInfoExpanded ? undefined : 2}>
             {user.bio}
           </Text>
-        </View>
 
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionButton}>
-            <FontAwesome6 name="ban" size={20} color={colors.ui.cardsecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <FontAwesome6 name="circle-exclamation" size={20} color={colors.ui.cardsecondary} />
-          </TouchableOpacity>
+          {/* Location */}
+          <View style={styles.headerRow}>
+            <View style={styles.locationRow}>
+              <Text style={styles.location}>
+                Location: {locationVisible ? user.location : 'Hidden'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={e => {
+                e.stopPropagation();
+                setLocationVisible(prev => !prev);
+              }}
+            >
+              <FontAwesome6
+                name={locationVisible ? 'eye' : 'eye-slash'}
+                size={20}
+                color={locationVisible ? colors.ui.cardsecondary : colors.ui.cardsecondary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Contacts */}
+          <View style={styles.headerRow}>
+            <View style={styles.locationRow}>
+              <Text style={styles.location}>
+                Contacts: {contactsVisible ? contactString : 'Hidden'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={e => {
+                e.stopPropagation();
+                setContactsVisible(prev => !prev);
+              }}
+            >
+              <FontAwesome6
+                name={contactsVisible ? 'eye' : 'eye-slash'}
+                size={20}
+                color={colors.ui.cardsecondary}
+              />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+
+        <View style={styles.ratingsRow}>
+          <View style={styles.ratingContainer}>
+            <StarRating rating={user.rating} />
+            <Text style={styles.ratingText}>
+              ({user.reviewCount ?? 0} ratings)
+            </Text>
+          </View>
         </View>
 
       </View>
@@ -124,40 +191,46 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 6,
-    
+    shadowColor: colors.ui.secondary,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 10,
     position: 'relative',
-    paddingTop: 30,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    overflow: 'hidden',
     justifyContent: 'flex-start',
-    alignItems: 'center',
+    padding: 16,
+    gap: 12,
   },
   gestureOverlay: {
     zIndex: 0,
     backgroundColor: 'transparent',
   },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: 12,
+  photoTouchable: {
+    width: '100%',
   },
-  infoContainer: {
-    alignItems: 'flex-start',
-    marginBottom: 12,
+  photoSection: {
+    width: '100%',
+    overflow: 'hidden',
+    borderRadius: 4,
+  },
+  photo: {
+    width: '100%',
+    height: '100%',
+  },
+  infoSection: {
+    flex: 1,
+    gap: 2,
   },
   name: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 18,
     color: '#000000',
-    marginBottom: 4,
     fontFamily: globalFonts.bold,
+    marginRight: 'auto',
   },
   pronouns: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 18,
     color: colors.ui.cardsecondary,
-    marginBottom: 4,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.3,
   },
@@ -165,85 +238,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    flex: 1,
   },
   location: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
-  },
-  bioContainer: {
-    marginBottom: 12,
-    alignItems: 'flex-start',
-  },
-  bio: {
-    fontSize: 16,
-    lineHeight: 20,
-    color: '#000000',
-    fontFamily: globalFonts.regular,
-    textAlign: 'left',
-    letterSpacing: -0.1,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  profileImage: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  blockButton: {
-    position: 'absolute',
-    bottom: 8,
-    left: 40,
-    zIndex: 10,
-    padding: 4,
-  },
-  reportButton: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    zIndex: 10,
-    padding: 4,
-  },
-  headerColumn: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    width: '100%',
-    gap: 16,
-    marginBottom: 16,
-  },
-  headerInfo: {
-    width: '100%',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 4,
   },
   ratingRow: {
     flexDirection: 'row',
     gap: 2,
   },
   ratingText: {
-    fontSize: 14,
+    lineHeight: 20,
+    fontSize: 15,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
   },
-  actionsRow: {
+  bio: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#000000',
+    fontFamily: globalFonts.regular,
+    letterSpacing: -0.1,
+  },
+  ratingsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 16,
+    justifyContent: 'flex-start',
+    gap: 8,
+    backgroundColor: '#ffffff',
+    paddingTop: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   actionButton: {
-    padding: 8,
+    marginLeft: 8,
   },
 });
 

@@ -161,7 +161,7 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
   turnQuery: {
     actionText: 'QUESTION',
     colorStyle: { color: colors.actions.query, fontFamily: globalFonts.extrabold },
-    templateUser: 'You asked {action}',
+    templateUser: 'You asked: ',
     templatePartner: '{user} asked: this is a question about this item and its going to go onto the second line at least',
     isSent: false,
   },

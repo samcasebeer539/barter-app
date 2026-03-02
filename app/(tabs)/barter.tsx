@@ -1,5 +1,5 @@
+import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Keyboard, KeyboardEvent } from 'react-native';
-import { useCallback, useState, useEffect, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
@@ -45,9 +45,30 @@ export default function ActiveTradesTestScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
   const [resetKey, setResetKey] = useState(0);
-  const [tab, setTab] = useState<'offers' | 'trades' | 'deals'>('offers');
+  const [tab, setTab] = useState<'offers' | 'trades' | 'deals' | 'queries'>('offers');
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const queriesActions = useMemo(
+    () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
+    []
+  );
+  const offersActions = useMemo(
+    () => TRADE_ACTIONS.filter(a => ['rescind'].includes(a.actionType)),
+    []
+  );
+  const tradesActions = useMemo(
+    () => TRADE_ACTIONS.filter(a =>
+      ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
+    ),
+    []
+  );
+  const dealsActions = useMemo(
+    () => TRADE_ACTIONS.filter(a =>
+      ['accept', 'decline', 'where', 'when', 'wait', 'play', 'cancel'].includes(a.actionType)
+    ),
+    []
+  );
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
@@ -75,6 +96,7 @@ export default function ActiveTradesTestScreen() {
   return (
     <View style={styles.container}>
       <OffersTradesDealsBar
+        onQueriesPress={() => setTab('queries')}
         onOffersPress={() => setTab('offers')}
         onTradesPress={() => setTab('trades')}
         onDealsPress={() => setTab('deals')}
@@ -93,7 +115,17 @@ export default function ActiveTradesTestScreen() {
         scrollEventThrottle={16}
       >
         <View style={styles.topSpacer} />
-
+        {tab === 'queries' && (
+          <View>
+            <View style={{ height: 598 }} />
+            <OfferDeck
+              posts={POSTS}
+              onHorizontalGestureStart={() => setScrollEnabled(false)}
+              onGestureEnd={() => setScrollEnabled(true)}
+              actions={queriesActions}
+            />
+          </View>
+        )}
         {tab === 'offers' && (
           <View>
             <View style={{ height: 598 }} />
@@ -101,7 +133,7 @@ export default function ActiveTradesTestScreen() {
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
-              actions={TRADE_ACTIONS.filter(a => ['rescind'].includes(a.actionType))}
+              actions={offersActions}
             />
           </View>
         )}
@@ -111,16 +143,12 @@ export default function ActiveTradesTestScreen() {
             <View style={{ height: 398 }} />
             <TradeDeck
               posts={POSTS}
-              actions={TRADE_ACTIONS.filter(a =>
-                ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
-              )}
+              actions={tradesActions}
             />
             <View style={{ height: 6 }} />
             <TradeDeck
               posts={POSTS}
-              actions={TRADE_ACTIONS.filter(a =>
-                ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
-              )}
+              actions={tradesActions}
             />
           </View>
         )}
@@ -130,9 +158,7 @@ export default function ActiveTradesTestScreen() {
             <View style={{ height: 398 }} />
             <TradeDeck
               posts={POSTS}
-              actions={TRADE_ACTIONS.filter(a =>
-                ['accept', 'decline', 'where', 'when', 'wait', 'play', 'cancel'].includes(a.actionType)
-              )}
+              actions={dealsActions}
             />
           </View>
         )}

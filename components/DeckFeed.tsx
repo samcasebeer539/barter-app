@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { globalFonts, colors} from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
+import TradeTurns from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 
 const { width, height } = Dimensions.get('window');
@@ -30,6 +31,12 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
+  const [isQueryOpen, setIsQueryOpen] = useState(false);
+
+  const feedActions = useMemo(
+    () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
+    []
+  );
 
   const { goodCount, serviceCount } = useMemo(() => {
     const goodCount = posts.filter(post => post.type === 'good').length;
@@ -68,6 +75,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         }),
       ]).start(() => {
         setIsRendered(false);
+        setIsQueryOpen(false);
       });
     }
   }, [visible]);
@@ -92,13 +100,11 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const handleActionSelected = (action: TradeAction) => {
     if (action.actionType === 'offer' && action.subAction === 'write') {
         if (!isSelectMode) {
-            // enter select mode AND select top card in one press
             setIsSelectMode(true);
             if (topPostIndex !== null) {
                 setSelectedPosts([topPostIndex]);
             }
         } else {
-            // already in select mode — toggle top card
             if (topPostIndex !== null) {
                 setSelectedPosts(prev =>
                     prev.includes(topPostIndex)
@@ -147,7 +153,11 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             { transform: [{ translateY: deckTranslateY }] },
           ]}
         >
-          <View style={styles.column}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'position' : 'height'}
+            keyboardVerticalOffset={120}
+          >
+            <View style={styles.column}>
             <View style={styles.goodServiceRow}>
               <View style={styles.goodServiceButton}>
                 <FontAwesome6 name="gifts" size={16} color={colors.ui.secondarydisabled} />
@@ -177,14 +187,23 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
             <View style={styles.actionRow}>
               <TradeUI
-                actions={TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType))}
+                actions={feedActions}
                 onActionSelected={handleActionSelected}
+                onQueryToggle={setIsQueryOpen}
                 isSelectMode={isSelectMode}
                 selectedCount={selectedPosts.length}
                 topCardIsSelected={topCardIsSelected}
               />
             </View>
-          </View>
+
+            <View style={styles.turnsRow}>
+              <TradeTurns
+                turns={[]}
+                isQueryOpen={isQueryOpen}
+              />
+            </View>
+            </View>
+          </KeyboardAvoidingView>
         </Animated.View>
       </View>
     </Modal>
@@ -263,5 +282,9 @@ const styles = StyleSheet.create({
     width: 334,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  turnsRow: {
+    width: 334,
+    marginTop: -10,
   },
 });

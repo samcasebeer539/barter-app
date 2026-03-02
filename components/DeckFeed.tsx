@@ -159,18 +159,19 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
           >
             <View style={styles.column}>
             <View style={styles.goodServiceRow}>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
+              </TouchableOpacity>
               <View style={styles.goodServiceButton}>
                 <FontAwesome6 name="gifts" size={16} color={colors.ui.secondarydisabled} />
                 <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{goodCount}</Text>
                 <FontAwesome6 name="hand-sparkles" size={16} color={colors.ui.secondarydisabled} />
                 <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{serviceCount}</Text>
               </View>
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.upButton} onPress={handleCloseModal}>
+              
+              {/* <TouchableOpacity style={styles.upButton} onPress={handleCloseModal}>
                 <FontAwesome6 name="angle-down" size={26} color='#fff' />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View style={styles.deckWrapper}>
@@ -246,12 +247,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 4,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 22,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 22,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 10,
   },
@@ -259,7 +260,10 @@ const styles = StyleSheet.create({
     width: 50,
     height: 36,
     backgroundColor: colors.ui.secondary,
-    borderRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopLeftRadius: 22,
+    borderBottomLeftRadius: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },

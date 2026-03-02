@@ -18,7 +18,6 @@ const trade1Turns: TradeTurn[] = [
 ];
 
 interface Post {
-  type: 'good' | 'service';
   name: string;
   description: string;
   photos: string[];
@@ -42,10 +41,9 @@ export default function TradeDeck({ posts, actions, showDateTime = false, onHori
 
   const slideAnim = useRef(new Animated.Value(-11)).current;
 
-  const { goodCount, serviceCount } = useMemo(() => {
-    const goodCount = posts.filter(post => post.type === 'good').length;
-    const serviceCount = posts.filter(post => post.type === 'service').length;
-    return { goodCount, serviceCount };
+  const { itemCount } = useMemo(() => {
+      const itemCount = posts.length;
+      return { itemCount };
   }, [posts]);
 
   const handleSwitchDecks = () => {
@@ -63,21 +61,16 @@ export default function TradeDeck({ posts, actions, showDateTime = false, onHori
     <View style={styles.modalContent} pointerEvents="box-none">
       <View style={styles.column}>
 
-        <View style={styles.goodServiceRow}>
-          <View style={styles.goodServiceButtonParter}>
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.good }]}>0{goodCount}</Text>
-            <FontAwesome6 name="gifts" size={18} color={showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.good} />
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.service }]}> 0{serviceCount}</Text>
-            <FontAwesome6 name="hand-sparkles" size={18} color={showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.service} />
+        <View style={styles.itemCountRow}>
+          <View style={styles.itemCountButtonParter}>
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.good }]}>0{itemCount}</Text>
           </View>
           <TouchableOpacity style={styles.switchDecksButton} onPress={handleSwitchDecks}>
             <FontAwesome6 name={showingPlayer ? "angle-right" : "angle-left"} size={26} color="#fff" />
           </TouchableOpacity>
-          <View style={styles.goodServiceButtonPlayer}>
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled }]}>0{goodCount}</Text>
-            <FontAwesome6 name="gifts" size={18} color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled} />
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.service : colors.ui.secondarydisabled }]}> 0{serviceCount}</Text>
-            <FontAwesome6 name="hand-sparkles" size={18} color={showingPlayer ? colors.cardTypes.service : colors.ui.secondarydisabled} />
+          <View style={styles.itemCountButtonPlayer}>
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+            
           </View>
         </View>
 
@@ -144,7 +137,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  goodServiceRow: {
+  itemCountRow: {
     width: 334,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -174,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.ui.secondary,
   },
-  goodServiceButtonParter: {
+  itemCountButtonParter: {
     height: 36,
     flex: 1,
     flexDirection: 'row',
@@ -188,7 +181,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
   },
-  goodServiceButtonPlayer: {
+  itemCountButtonPlayer: {
     height: 36,
     flex: 1,
     flexDirection: 'row',

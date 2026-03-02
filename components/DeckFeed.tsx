@@ -11,7 +11,6 @@ import { TRADE_ACTIONS } from '@/config/tradeConfig';
 const { width, height } = Dimensions.get('window');
 
 interface Post {
-  type: 'good' | 'service';
   name: string;
   description: string;
   photos: string[];
@@ -38,10 +37,10 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     []
   );
 
-  const { goodCount, serviceCount } = useMemo(() => {
-    const goodCount = posts.filter(post => post.type === 'good').length;
-    const serviceCount = posts.filter(post => post.type === 'service').length;
-    return { goodCount, serviceCount };
+  const { postCount } = useMemo(() => {
+    const postCount = posts.length;
+   
+    return { postCount };
   }, [posts]);
 
   useEffect(() => {
@@ -158,15 +157,13 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             keyboardVerticalOffset={120}
           >
             <View style={styles.column}>
-            <View style={styles.goodServiceRow}>
+            <View style={styles.itemCountRow}>
               <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
               </TouchableOpacity>
-              <View style={styles.goodServiceButton}>
-                <FontAwesome6 name="gifts" size={16} color={colors.ui.secondarydisabled} />
-                <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{goodCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={16} color={colors.ui.secondarydisabled} />
-                <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{serviceCount}</Text>
+              <View style={styles.itemCountButton}>
+                <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{postCount}</Text>
+            
               </View>
               
               {/* <TouchableOpacity style={styles.upButton} onPress={handleCloseModal}>
@@ -236,13 +233,13 @@ const styles = StyleSheet.create({
   deckWrapper: {
     left: -12,
   },
-  goodServiceRow: {
+  itemCountRow: {
     width: 334,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 4,
   },
-  goodServiceButton: {
+  itemCountButton: {
     height: 36,
     flex: 1,
     flexDirection: 'row',

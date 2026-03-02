@@ -15,8 +15,7 @@ interface User {
   bio: string;
   tags?: Tag[];
   avatarText?: string;
-  goodsCount?: number;
-  servicesCount?: number;
+
   profileImageUrl?: string;
   rating?: number;
   reviewCount?: number;

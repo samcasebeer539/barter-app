@@ -9,7 +9,6 @@ import { TRADE_ACTIONS } from '../../config/tradeConfig';
 
 const POSTS = [
   {
-    type: 'good' as const,
     name: 'Fantasy Books',
     description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
     photos: [
@@ -19,7 +18,6 @@ const POSTS = [
     ],
   },
   {
-    type: 'service' as const,
     name: 'Bike Repair',
     description:
       'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
@@ -30,7 +28,6 @@ const POSTS = [
     ],
   },
   {
-    type: 'service' as const,
     name: 'Guitar Lessons',
     description: 'Experienced guitar teacher offering beginner to intermediate lessons.',
     photos: [

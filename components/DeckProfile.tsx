@@ -35,7 +35,6 @@ const SECONDARY_USER = {
 };
 
 export interface Post {
-  type: 'good' | 'service';
   name: string;
   description: string;
   photos: string[];
@@ -70,10 +69,10 @@ export default function ProfileDeck({
   const [isTradeQueryOpen, setIsTradeQueryOpen] = useState(false);
   const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
-  const { goodCount, serviceCount } = useMemo(() => ({
-    goodCount: posts.filter(p => p.type === 'good').length,
-    serviceCount: posts.filter(p => p.type === 'service').length,
-  }), [posts]);
+  const { itemCount } = useMemo(() => {
+          const itemCount = posts.length;
+          return { itemCount };
+  }, [posts]);
 
   const isDeckRevealedRef = useRef(isDeckRevealed);
 
@@ -148,7 +147,7 @@ export default function ProfileDeck({
   return (
     <View style={styles.container} pointerEvents="box-none">
       {/* offers bar */}
-      <View style={styles.goodServiceRow}>
+      <View style={styles.itemCountRow}>
         <TouchableOpacity
           style={styles.queryButton}
           onPress={() => setIsQueryDrawerOpen(prev => !prev)}
@@ -163,10 +162,8 @@ export default function ProfileDeck({
           disabled={!toggleEnabled}
         >
           <Text style={[styles.actionButtonText, { color: colors.actions.offer }]}>2 OFFERS</Text>
-          <Text style={styles.secondaryText}> : 0{goodCount}</Text>
-          <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
-          <Text style={styles.secondaryText}> 0{serviceCount}</Text>
-          <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
+          <Text style={styles.secondaryText}> : 0{itemCount}</Text>
+       
         </TouchableOpacity>
       </View>
 
@@ -228,11 +225,8 @@ export default function ProfileDeck({
             )}
 
             <View style={styles.buttonRow}>
-              <View style={styles.mygoodServiceButton}>
-                <Text style={[styles.goodText]}>0{goodCount}</Text>
-                <FontAwesome6 name="gifts" size={18} color={colors.cardTypes.good} />
-                <Text style={styles.serviceText}> 0{serviceCount}</Text>
-                <FontAwesome6 name="hand-sparkles" size={18} color={colors.cardTypes.service} />
+              <View style={styles.myitemCountButton}>
+                <Text style={[styles.goodText]}>0{itemCount}</Text>
               </View>
               <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
                 <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
@@ -331,7 +325,7 @@ const styles = StyleSheet.create({
     elevation: 10,
     zIndex: 0,
   },
-  goodServiceRow: {
+  itemCountRow: {
     width: 334,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -350,7 +344,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     gap: 4,
   },
-  mygoodServiceButton: {
+  myitemCountButton: {
     height: 44,
     flexDirection: 'row',
     flex: 1,

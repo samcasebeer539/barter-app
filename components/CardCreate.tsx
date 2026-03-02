@@ -1,3 +1,5 @@
+// remove type
+
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -24,7 +26,6 @@ interface CreateCardProps {
   cardWidth?: number;
   /** Called whenever any editable field changes */
   onChange?: (value: {
-    type: 'good' | 'service';
     name: string;
     description: string;
     photos: string[];
@@ -36,7 +37,6 @@ interface CreateCardProps {
 // ---------------------------------------------------------------------------
 const CreateCard: React.FC<CreateCardProps> = ({ scale = 1, cardWidth, onChange }) => {
   // ── editable state ──────────────────────────────────────────────────────
-  const [type, setType] = useState<'good' | 'service'>('good');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
@@ -61,8 +61,8 @@ const CreateCard: React.FC<CreateCardProps> = ({ scale = 1, cardWidth, onChange 
 
   // ── bubble onChange up ──────────────────────────────────────────────────
   useEffect(() => {
-    onChange?.({ type, name, description, photos });
-  }, [type, name, description, photos]);
+    onChange?.({ name, description, photos });
+  }, [name, description, photos]);
 
   // ── load aspect ratios when photos change ──────────────────────────────
   useEffect(() => {
@@ -108,7 +108,6 @@ const CreateCard: React.FC<CreateCardProps> = ({ scale = 1, cardWidth, onChange 
   // ── helpers ─────────────────────────────────────────────────────────────
   const toggleMode = () => setIsDescriptionMode((prev) => !prev);
 
-  const toggleType = () => setType((prev) => (prev === 'good' ? 'service' : 'good'));
 
   const pickPhotos = async () => {
     if (Platform.OS !== 'web') {
@@ -144,17 +143,7 @@ const CreateCard: React.FC<CreateCardProps> = ({ scale = 1, cardWidth, onChange 
         {/* ── Header (icon toggle + title input) ── */}
         <View style={styles.header}>
           {/* Tappable icon toggles good ↔ service */}
-          <TouchableOpacity
-            onPress={toggleType}
-            activeOpacity={0.7}
-            style={styles.iconContainer}
-          >
-            <FontAwesome6
-              name={type === 'good' ? 'cube' : 'stopwatch'}
-              size={24}
-              color={type === 'good' ? '#FFA600' : '#ff536a'}
-            />
-          </TouchableOpacity>
+   
 
           {/* Title input */}
           <TextInput

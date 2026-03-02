@@ -10,7 +10,6 @@ import { TradeActionConfig } from '@/config/tradeConfig';
 const { width } = Dimensions.get('window');
 
 interface Post {
-    type: 'good' | 'service';
     name: string;
     description: string;
     photos: string[];
@@ -35,10 +34,9 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
     const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
     const [isQueryOpen, setIsQueryOpen] = useState(false);
 
-    const { goodCount, serviceCount } = useMemo(() => {
-        const goodCount = posts.filter(post => post.type === 'good').length;
-        const serviceCount = posts.filter(post => post.type === 'service').length;
-        return { goodCount, serviceCount };
+    const { itemCount } = useMemo(() => {
+        const itemCount = posts.length;
+        return { itemCount };
     }, [posts]);
 
     // Use the color of the first action that has buttons as the select color
@@ -78,12 +76,10 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
     return (
         <View style={styles.modalContent} pointerEvents="box-none">
             <View style={styles.column}>
-                <View style={styles.goodServiceRow}>
-                    <View style={styles.goodServiceButton}>
-                        <Text style={styles.secondaryText}>0{goodCount}</Text>
-                        <FontAwesome6 name="gifts" size={18} color={colors.ui.secondarydisabled} />
-                        <Text style={styles.secondaryText}> 0{serviceCount}</Text>
-                        <FontAwesome6 name="hand-sparkles" size={18} color={colors.ui.secondarydisabled} />
+                <View style={styles.itemCountRow}>
+                    <View style={styles.itemCountButton}>
+                        <Text style={styles.secondaryText}>0{itemCount}</Text>
+                        
                     </View>
                 </View>
 
@@ -139,14 +135,14 @@ const styles = StyleSheet.create({
     deckWrapper: {
         left: -12,
     },
-    goodServiceRow: {
+    itemCountRow: {
         width: 334,
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 4,
         zIndex: 0,
     },
-    goodServiceButton: {
+    itemCountButton: {
         height: 36,
         flex: 1,
         flexDirection: 'row',

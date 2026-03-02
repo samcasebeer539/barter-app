@@ -13,7 +13,6 @@ import CardDateTime from './CardDateTime'
 import { colors } from '@/styles/globalStyles';
 
 interface Post {
-  type: 'good' | 'service';
   name: string;
   description: string;
   photos: string[];
@@ -24,10 +23,7 @@ interface User {
   pronouns: string;
   location: string;
   bio: string;
-  tags?: { text: string; color: string }[];
   avatarText?: string;
-  goodsCount?: number;
-  servicesCount?: number;
   profileImageUrl?: string;
 }
 

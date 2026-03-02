@@ -6,7 +6,6 @@ import TextTicker from 'react-native-text-ticker';
 import { globalFonts, colors } from '../styles/globalStyles';
 
 interface Post {
-  type: 'good' | 'service';
   name: string;
   description: string;
   photos: string[];
@@ -111,13 +110,7 @@ const PostCard: React.FC<PostCardProps> = ({
     <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         <View style={styles.header}>
-            <View style={styles.iconContainer}>
-                <FontAwesome6
-                    name={post.type === 'good' ? 'gifts' : 'hand-sparkles'}
-                    size={20}
-                    color={post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service}
-                />
-            </View>
+           
 
             <View style={styles.titleContainer}>
                 <TextTicker
@@ -180,9 +173,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   <View
                     key={index}
                     style={[styles.dot, {
-                      backgroundColor: index === currentPhotoIndex
-                        ? post.type === 'good' ? colors.cardTypes.good : colors.cardTypes.service
-                        : '#fff',
+                      
                       transform: [{ scale: index === currentPhotoIndex ? 1.2 : 1 }]
                     }]}
                   />

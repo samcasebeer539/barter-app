@@ -12,6 +12,8 @@ export default function HandleLogin() {
     const [loading, setLoading] = useState(false);
     const [isSigningUp, setIsSigningUp] = useState(false);
 
+    const API_URL = process.env.EXPO_PUBLIC_API_URL
+
     const signUp = async () => {
         if (!firstName.trim() || !lastName.trim()) {
             alert('Please enter your first and last name.');
@@ -19,9 +21,18 @@ export default function HandleLogin() {
         }
         setLoading(true);
         try {
-            const { user } = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(user, { displayName: `${firstName.trim()} ${lastName.trim()}` });
-            alert('Check your email!');
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const token = await userCredential.user.getIdToken();
+            console.log("TOKEN: ", token)
+        
+            const response  = await fetch(`${API_URL}/dev/create_user`, {
+                method: "POST",
+                headers: {
+                Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            console.log("BACKEND RESPONSE:", data);
         } catch(e: any) {
             alert('Sign Up Failed: ' + e.message);
         } finally {
@@ -32,7 +43,18 @@ export default function HandleLogin() {
     const signIn = async () => {
         setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const token = await userCredential.user.getIdToken();
+            console.log("TOKEN: ", token)
+        
+            const response = await fetch(`${API_URL}/dev/create_user`, {
+                method: "GET",
+                headers: {
+                Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await response.json();
+            console.log("BACKEND RESPONSE:", data);
         } catch(e: any) {
             alert('Sign In Failed: ' + e.message);
         } finally {

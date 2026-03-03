@@ -110,17 +110,17 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
               )}
             </Text>
             <TouchableOpacity style={styles.actionButton}>
-              <FontAwesome6 name="ban" size={20} color={colors.ui.cardsecondary} />
+              <FontAwesome6 name="ban" size={22} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionButton}>
-              <FontAwesome6 name="circle-exclamation" size={20} color={colors.ui.cardsecondary} />
+              <FontAwesome6 name="circle-exclamation" size={22} color={colors.ui.cardsecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <FontAwesome6 name="circle-user" size={22} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
 
-          {/* Bio */}
-          <Text style={styles.bio} numberOfLines={isInfoExpanded ? undefined : 2}>
-            {user.bio}
-          </Text>
+      
 
           {/* Location */}
           <View style={styles.headerRow}>
@@ -165,13 +165,18 @@ const UserCard: React.FC<UserCardProps> = ({ user, scale = 1, cardWidth, onMenuP
               />
             </TouchableOpacity>
           </View>
+          {/* Bio */}
+          
+          <Text style={styles.bio} numberOfLines={isInfoExpanded ? undefined : 2}>
+            {user.bio}
+          </Text>
         </TouchableOpacity>
-
+        
         <View style={styles.ratingsRow}>
           <View style={styles.ratingContainer}>
             <StarRating rating={user.rating} />
             <Text style={styles.ratingText}>
-              ({user.reviewCount ?? 0} exchange ratings)
+              ({user.reviewCount ?? 0}  ratings)
             </Text>
           </View>
         </View>
@@ -211,7 +216,7 @@ const styles = StyleSheet.create({
   photoSection: {
     width: '100%',
     overflow: 'hidden',
-    borderRadius: 4,
+    borderRadius: 2,
   },
   photo: {
     width: '100%',
@@ -268,6 +273,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
+    marginTop: 10,
   },
   ratingsRow: {
     flexDirection: 'row',
@@ -282,7 +288,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButton: {
-    marginLeft: 8,
+    marginLeft: 4,
   },
 });
 

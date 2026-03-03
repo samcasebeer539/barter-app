@@ -162,7 +162,8 @@ export default function ProfileDeck({
           disabled={!toggleEnabled}
         >
           <Text style={[styles.actionButtonText, { color: colors.actions.offer }]}>2 OFFERS</Text>
-          <Text style={styles.secondaryText}> : 0{itemCount}</Text>
+          <Text style={styles.secondaryText}>                 0{itemCount}</Text>
+          <FontAwesome6 name="arrows-rotate" size={22} color={colors.ui.secondarydisabled} />
        
         </TouchableOpacity>
       </View>
@@ -213,29 +214,41 @@ export default function ProfileDeck({
         {/* Primary deck (animated drawer) */}
         <Animated.View style={[styles.primaryDeckandButtonsWrapper, { transform: [{ translateY }] }]}>
           <View style={styles.primaryDeckColumn}>
-            <View style={styles.primaryDeckWrapper}>
-              <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
-            </View>
-
             {/* Query drawer */}
             {isQueryDrawerOpen && (
               <View style={styles.queryDrawer}>
                 <TradeTurns turns={[{ type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false }]} />
               </View>
             )}
+            <View style={styles.primaryDeckWrapper}>
+              <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
+            </View>
+
+            {/* Query drawer
+            {isQueryDrawerOpen && (
+              <View style={styles.queryDrawer}>
+                <TradeTurns turns={[{ type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false }]} />
+              </View>
+            )} */}
 
             <View style={styles.buttonRow}>
+              <TouchableOpacity style={[styles.iconButton, styles.deleteButton]} onPress={() => {}}>
+                <FontAwesome6 name="circle-xmark" size={22} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+                <FontAwesome6 name="sliders" size={21} color="#fff" />
+              </TouchableOpacity>
               <View style={styles.myitemCountButton}>
+                <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
+                
                 <Text style={[styles.goodText]}>0{itemCount}</Text>
+                <FontAwesome6 name="arrows-rotate" size={22} color={colors.actions.trade} />
+                <FontAwesome6 name="circle-dot" size={22} color={colors.ui.secondarydisabled} />
               </View>
-              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-                <FontAwesome6 name="arrow-down-up-across-line" size={22} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-                <FontAwesome6 name="sliders" size={22} color="#fff" />
-              </TouchableOpacity>
+              
+              
               <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => {}}>
-                <FontAwesome6 name="plus" size={24} color="#fff" />
+                <FontAwesome6 name="circle-plus" size={22} color="#fff" />
               </TouchableOpacity>
             </View>
 
@@ -350,11 +363,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -362,14 +375,14 @@ const styles = StyleSheet.create({
   offerButton: {
     flex: 1,
     paddingLeft: 16,
-    paddingRight: 12,
+    paddingRight: 16,
     height: 36,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: colors.ui.secondary,
     gap: 2,
@@ -396,13 +409,16 @@ const styles = StyleSheet.create({
   addButton: {
     borderBottomRightRadius: 25,
   },
+  deleteButton: {
+    borderBottomLeftRadius: 25,
+  },
   secondaryText: {
     color: colors.ui.secondarydisabled,
     fontSize: 20,
     fontFamily: globalFonts.bold,
   },
   goodText: {
-    color: colors.cardTypes.good,
+    color: colors.actions.trade,
     fontSize: 20,
     fontFamily: globalFonts.bold,
   },

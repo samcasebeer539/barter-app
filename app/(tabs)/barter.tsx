@@ -157,6 +157,7 @@ export default function ActiveTradesTestScreen() {
               posts={POSTS}
               actions={dealsActions}
               showDateTime={true}
+              showLocation={true}
             />
           </View>
         )}

@@ -42,7 +42,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 Animated.delay(delay),
                 Animated.timing(anim, {
                     toValue: 1,
-                    duration: 3000,
+                    duration: 4000,
                     useNativeDriver: true,
                 }),
             ]).start(() => {
@@ -52,7 +52,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
         };
 
         runShimmer(shimmerAnim1, 0);
-        runShimmer(shimmerAnim2, 1500);
+        runShimmer(shimmerAnim2, 1800);
     }, []);
 
     const shimmerTranslate1 = shimmerAnim1.interpolate({

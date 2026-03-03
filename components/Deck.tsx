@@ -9,7 +9,9 @@ import {
 import PostCard from './CardItem';
 import UserCard from './CardUser';
 import BlankCard from './CardBlank';
-import CardDateTime from './CardDateTime'
+import CardDateTime from './CardDateTime';
+import CardLocation from './CardMeetingLocation';
+
 import { colors } from '@/styles/globalStyles';
 
 interface Post {
@@ -39,13 +41,14 @@ interface DeckProps {
   onTopCardChange?: (postIndex: number | null) => void;
   selectColor?: string;
   showDateTime?: boolean;
+  showLocation?: boolean;
 }
 
 type DeckItem =
   | { type: 'user' }
   | { type: 'post'; post: Post; postIndex: number }
-  | { type: 'datetime' };
-
+  | { type: 'datetime' }
+  | { type: 'location' };
 
 const Deck: React.FC<DeckProps> = ({
   posts,
@@ -58,7 +61,8 @@ const Deck: React.FC<DeckProps> = ({
   selectedPosts = [],
   onTopCardChange,
   selectColor = colors.actions.offer,
-  showDateTime = false
+  showDateTime = false,
+  showLocation = true,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
@@ -77,10 +81,14 @@ const Deck: React.FC<DeckProps> = ({
   const SWIPE_THRESHOLD = screenWidth * 0.03;
   const GESTURE_THRESHOLD = 5;
 
+  // Ref shared with CardLocation — true while a finger is inside the map
+  const mapActiveRef = useRef(false);
+
   const shouldRepeat = posts.length < 2;
   const baseItems: DeckItem[] = [
     { type: 'user' },
     ...(showDateTime ? [{ type: 'datetime' as const }] : []),
+    ...(showLocation ? [{ type: 'location' as const }] : []),
     ...posts.map((post, i): DeckItem => ({ type: 'post', post, postIndex: i })),
   ];
   const [cards] = useState<DeckItem[]>(
@@ -111,21 +119,22 @@ const Deck: React.FC<DeckProps> = ({
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 
-  // Notify parent of top card whenever visibleIndices changes
   useEffect(() => {
     const topCard = cards[visibleIndices.first];
     if (topCard?.type === 'post') {
       onTopCardChange?.(topCard.postIndex);
     } else {
-      onTopCardChange?.(null); // user card on top
+      onTopCardChange?.(null);
     }
   }, [visibleIndices]);
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: (_, g) => false,
+      onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_, g) => {
+        // If a finger is inside the map, let the map keep the gesture
+        if (mapActiveRef.current) return false;
         return (
           enabledRef.current &&
           !isAnimatingRef.current &&
@@ -134,6 +143,7 @@ const Deck: React.FC<DeckProps> = ({
         );
       },
       onMoveShouldSetPanResponderCapture: (_, g) => {
+        if (mapActiveRef.current) return false;
         return (
           enabledRef.current &&
           !isAnimatingRef.current &&
@@ -226,7 +236,7 @@ const Deck: React.FC<DeckProps> = ({
     pronouns: "(she/he/they)",
     location: "Santa Cruz, CA",
     bio: "pro smasher",
-    profileImageUrl: 'https://picsum.photos/seed/cat/400/400'
+    profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
   };
 
   const userToRender = user ?? defaultUser;
@@ -255,22 +265,20 @@ const Deck: React.FC<DeckProps> = ({
             transform: [
               { translateX },
               { translateY: cardAnim.position.y },
-              ...(isFirst ? [{ rotate }] : [{ scale: 1.0 }])
+              ...(isFirst ? [{ rotate }] : [{ scale: 1.0 }]),
             ],
           },
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard
-            user={userToRender}
-            scale={1}
-            cardWidth={finalCardWidth}
-          />
+          <UserCard user={userToRender} scale={1} cardWidth={finalCardWidth} />
         ) : card.type === 'datetime' ? (
-          <CardDateTime
-            mode="propose"
-            cardWidth={finalCardWidth}
-          />
+          <CardDateTime cardWidth={finalCardWidth} />
+        ) : card.type === 'location' ? (
+          // Pass the shared ref — only matters when this card is on top,
+          // but it's harmless to pass it always since mapActiveRef is only
+          // checked in onMoveShouldSetPanResponder.
+          <CardLocation cardWidth={finalCardWidth} mapActiveRef={mapActiveRef} />
         ) : (
           <PostCard
             post={card.post}
@@ -290,7 +298,12 @@ const Deck: React.FC<DeckProps> = ({
       style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
       {...(enabled ? panResponder.panHandlers : {})}
     >
-      <View style={[styles.frontCard, { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] }]}>
+      <View
+        style={[
+          styles.frontCard,
+          { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] },
+        ]}
+      >
         <BlankCard cardWidth={finalCardWidth} />
       </View>
       {renderCard(visibleIndices.third)}
@@ -324,7 +337,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
-    
   },
 });
 

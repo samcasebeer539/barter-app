@@ -16,9 +16,9 @@ export const colors = {
   // Trade Action Colors
   actions: {
     offer: '#1f8bff',  
-    trade: '#ab57ff',  
+    trade: '#FFA600',  //ab57ff
     counter: '#ff31dd',  
-    query: '#6a50ff',    
+    query: '#ab57ff',    
     decline: '#ff3232',    
     accept: '#06f52e',     
     location: '#229bff',

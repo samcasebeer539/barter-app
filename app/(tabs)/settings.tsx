@@ -42,7 +42,7 @@ export default function SettingsScreen() {
           <Text style={styles.headerTitle}>
             SETTINGS
           </Text>
-          <FontAwesome6 name="chevron-left" size={20} color="#fff" />
+          <FontAwesome6 name="circle-chevron-left" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -53,26 +53,26 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="user" size={20} color="#fff" />
+              <FontAwesome6 name="user" size={22} color="#fff" />
               <Text style={styles.settingText}>Edit Profile</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="lock" size={20} color="#fff" />
+              <FontAwesome6 name="lock" size={22} color="#fff" />
               <Text style={styles.settingText}>Privacy</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="shield-halved" size={20} color="#fff" />
+              <FontAwesome6 name="shield-halved" size={22} color="#fff" />
               <Text style={styles.settingText}>Security</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
           </TouchableOpacity>
         </View>
 
@@ -82,7 +82,7 @@ export default function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="bell" size={20} color="#fff" />
+              <FontAwesome6 name="bell" size={22} color="#fff" />
               <Text style={styles.settingText}>Notifications</Text>
             </View>
             <Switch
@@ -95,7 +95,7 @@ export default function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="location-dot" size={20} color="#fff" />
+              <FontAwesome6 name="location-dot" size={22} color="#fff" />
               <Text style={styles.settingText}>Location Services</Text>
             </View>
             <Switch
@@ -108,12 +108,12 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="globe" size={20} color="#fff" />
+              <FontAwesome6 name="globe" size={22} color="#fff" />
               <Text style={styles.settingText}>Language</Text>
             </View>
             <View style={styles.settingRight}>
               <Text style={styles.settingValue}>English</Text>
-              <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+              <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
             </View>
           </TouchableOpacity>
         </View>
@@ -124,26 +124,26 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="circle-question" size={20} color="#fff" />
+              <FontAwesome6 name="circle-question" size={22} color="#fff" />
               <Text style={styles.settingText}>Help Center</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="circle-info" size={20} color="#fff" />
+              <FontAwesome6 name="circle-info" size={22} color="#fff" />
               <Text style={styles.settingText}>About</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <FontAwesome6 name="scale-balanced" size={20} color="#fff" />
+              <FontAwesome6 name="scale-balanced" size={22} color="#fff" />
               <Text style={styles.settingText}>Terms & Conditions</Text>
             </View>
-            <FontAwesome6 name="chevron-right" size={20} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
           </TouchableOpacity>
         </View>
 
@@ -151,7 +151,7 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
           <FontAwesome6
             name="right-from-bracket"
-            size={20}
+            size={22}
             color={colors.actions.decline}
           />
           <Text style={styles.logoutText}>Log Out</Text>
@@ -206,11 +206,16 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginTop: 100,
+    marginTop: 92,
+    
   },
   section: {
-    marginTop: 32,
-    paddingHorizontal: 28,
+    marginTop: 8,
+    marginHorizontal: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 2,
+    backgroundColor: colors.ui.secondary
   },
   sectionTitle: {
     fontSize: 20,
@@ -254,11 +259,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
     height: 44,
-    marginHorizontal: 28,
-    marginTop: 16,
+    marginHorizontal: 12,
+    marginTop: 8,
     
     
-    borderRadius: 2,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
     borderWidth: 3,
     borderColor: colors.actions.decline,
   },

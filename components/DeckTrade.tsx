@@ -29,11 +29,12 @@ interface TradeDeckProps {
   onHorizontalGestureStart?: () => void; 
   onGestureEnd?: () => void; 
   showDateTime?: boolean;
+  showLocation?: boolean;
 }
 
 const DECK_WIDTH = width - 40;
 
-export default function TradeDeck({ posts, actions, showDateTime = false, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
+export default function TradeDeck({ posts, actions, showDateTime = false, showLocation = false, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showingPlayer, setShowingPlayer] = useState(false);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
@@ -62,16 +63,20 @@ export default function TradeDeck({ posts, actions, showDateTime = false, onHori
       <View style={styles.column}>
 
         <View style={styles.itemCountRow}>
-          <View style={styles.itemCountButtonParter}>
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.ui.secondarydisabled : colors.cardTypes.good }]}>0{itemCount}</Text>
-          </View>
-          <TouchableOpacity style={styles.switchDecksButton} onPress={handleSwitchDecks}>
-            <FontAwesome6 name={showingPlayer ? "angle-right" : "angle-left"} size={26} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.itemCountButtonPlayer}>
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+          
+          <TouchableOpacity style={styles.itemCountButtonParter} onPress={handleSwitchDecks}>
+            <FontAwesome6 name={"circle-user"} size={22} color={colors.ui.secondarydisabled} />
             
-          </View>
+            <Text style={[styles.secondaryText, { color: !showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled  }]}>0{itemCount}</Text>
+            <FontAwesome6 name={"arrows-rotate"} size={22} color={!showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled} />
+
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.itemCountButtonPlayer} onPress={handleSwitchDecks}>
+            <FontAwesome6 name={"circle-user"} size={22} color={colors.ui.secondarydisabled} />
+            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+            <FontAwesome6 name={"arrows-rotate"} size={22} color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.deckClipWindow}>
@@ -83,6 +88,7 @@ export default function TradeDeck({ posts, actions, showDateTime = false, onHori
                 onHorizontalGestureStart={onHorizontalGestureStart}
                 onGestureEnd={onGestureEnd}  
                 showDateTime={showDateTime}
+                showLocation={showLocation}
               />
             </View>
             <View style={{ width: DECK_WIDTH }}>
@@ -91,7 +97,8 @@ export default function TradeDeck({ posts, actions, showDateTime = false, onHori
                 enabled={true} 
                 onHorizontalGestureStart={onHorizontalGestureStart}
                 onGestureEnd={onGestureEnd}
-                showDateTime={showDateTime}         
+                showDateTime={showDateTime}
+                showLocation={showLocation}         
               />
             </View>
           </Animated.View>
@@ -177,9 +184,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 22,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
   },
   itemCountButtonPlayer: {
     height: 36,
@@ -191,9 +198,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
   },
   turnsAndButtonRow: {
     width: 334,

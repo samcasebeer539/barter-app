@@ -113,33 +113,46 @@ const PostCard: React.FC<PostCardProps> = ({
            
 
             <View style={styles.titleContainer}>
+                
                 <TextTicker
                     key={isSelectMode ? 'select' : 'normal'}
                     style={styles.title}
                     duration={8000}
                     loop
                     bounce={false}
-                    repeatSpacer={50}
+                    repeatSpacer={20}
                     marqueeDelay={200}
                     ellipsizeMode='tail'
                 >
                     {post.name}
                 </TextTicker>
+                <View style={{ flex: 1 }} />
+                
+                    <TouchableOpacity
+                        activeOpacity={0.2}
+                        onPress={onSelect}
+                        style={[styles.selectIconContainer, {backgroundColor: isSelected ? '#fff' : 'transparent'}]}
+                    >
+                        {isSelectMode && (
+                        <FontAwesome6
+                            name={isSelected ? 'circle-check' : 'circle'}
+                            size={22}
+                            color={isSelected ? selectColor : 'transparent'}
+                        />
+                        )}
+                    </TouchableOpacity>
+                
+                <View style={styles.iconContainer}>
+                  <FontAwesome6
+                      name={'arrows-rotate'}
+                      size={22}
+                      color={colors.actions.trade}
+                  />
+                </View>
             </View>
 
-            {isSelectMode && (
-                <TouchableOpacity
-                    activeOpacity={0.2}
-                    onPress={onSelect}
-                    style={[styles.selectContainer, {backgroundColor: isSelected ? '#fff' : 'transparent'}]}
-                >
-                    <FontAwesome6
-                        name={isSelected ? 'circle-check' : 'circle'}
-                        size={22}
-                        color={isSelected ? selectColor : 'transparent'}
-                    />
-                </TouchableOpacity>
-            )}
+            
+            
         </View>
 
         <Animated.View
@@ -203,7 +216,7 @@ const PostCard: React.FC<PostCardProps> = ({
         <View style={styles.dateWrapper}>
           <Text style={[styles.date, { color: colors.ui.cardsecondary }]}>{"\n"}11/26/24</Text>
         </View>
-
+{/* 
        {isSelectMode && (
           <>
               <View style={[
@@ -219,7 +232,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   { borderColor: isSelected ? 'transparent' : 'transparent' }
               ]} />
           </>
-      )}
+      )} */}
 
       </View>
     </Animated.View>
@@ -306,16 +319,22 @@ selectBackground2: {
     flexShrink: 0,
     paddingBottom: 16,
   },
-  selectContainer: {
-    position: 'absolute',
-    top: 12,
-    right: 14,
-    zIndex: 50,
-    paddingLeft: 6,
+  selectIconContainer: {
+    
+    flexShrink: 0,
+    paddingBottom: 16,
 },
   titleContainer: {
     flex: 1,
-    overflow: 'hidden',
+   
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingLeft: 4,
+    
+  },
+  textTickerWidth: {
+    width: 200,
   },
   title: {
     fontSize: 18,
@@ -323,6 +342,7 @@ selectBackground2: {
     lineHeight: 22,
     color: '#000',
     fontFamily: globalFonts.bold,
+    flex: 1, 
   },
   date: {
     fontSize: 18,
@@ -333,8 +353,9 @@ selectBackground2: {
     textAlign: 'right',
   },
   dateWrapper: {
+    position: 'absolute',
     right: 16,
-    top: 374,
+    bottom: 10,
     zIndex: 30,
   },
   photoSectionWrapper: {
@@ -367,7 +388,7 @@ selectBackground2: {
     shadowRadius: 8,
     elevation: 3,
     overflow: 'hidden',
-    borderRadius: 4,
+    borderRadius: 2,
     position: 'relative',
   },
   photo: { width: '100%', height: '100%' },

@@ -79,7 +79,7 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
                 <View style={styles.itemCountRow}>
                     <View style={styles.itemCountButton}>
                         <Text style={styles.secondaryText}>0{itemCount}</Text>
-                        
+                        <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
                     </View>
                 </View>
 
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     itemCountRow: {
         width: 334,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         gap: 4,
         zIndex: 0,
     },
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 22,
         borderBottomLeftRadius: 2,
         backgroundColor: colors.ui.secondary,
-        justifyContent: 'flex-start',
+        justifyContent: 'flex-end',
         alignItems: 'center',
         paddingHorizontal: 16,
     },

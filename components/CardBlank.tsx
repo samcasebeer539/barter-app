@@ -1,4 +1,3 @@
-//should have optional decline button for profile use, removes it and all user's cards from profile deck
 
 
 import React from 'react';

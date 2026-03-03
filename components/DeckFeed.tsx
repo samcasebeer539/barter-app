@@ -50,7 +50,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       backdropOpacity.setValue(0);
       Animated.parallel([
         Animated.timing(deckTranslateY, {
-          toValue: 0,
+          toValue: -40,
           useNativeDriver: true,
           duration: 350,
         }),
@@ -162,8 +162,10 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
               </TouchableOpacity>
               <View style={styles.itemCountButton}>
+                <FontAwesome6 name='circle-user' size={22} color={colors.ui.secondarydisabled} />
+                <FontAwesome6 name='circle-dot' size={22} color={colors.ui.secondarydisabled} />
                 <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{postCount}</Text>
-            
+                <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
               </View>
               
               {/* <TouchableOpacity style={styles.upButton} onPress={handleCloseModal}>
@@ -180,6 +182,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 selectedPosts={selectedPosts}
                 onTopCardChange={handleTopCardChange}
                 selectColor={colors.actions.offer}
+                showLocation={true}
               />
             </View>
 
@@ -249,9 +252,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
   saveButton: {
     width: 50,

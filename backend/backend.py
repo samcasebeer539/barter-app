@@ -27,9 +27,10 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 db = client.dev
 user_data_collection = db.user_data
 
-@app.route('/dev/user_data', methods=['GET'])
+@app.route('/dev/user_data', methods=['GET'], strict_slashes=False)
 def get_user_data():
     try:
+        # Get token info to authorize user
         auth_header = request.headers.get("Authorization")
         
         if not auth_header:
@@ -38,14 +39,16 @@ def get_user_data():
         id_token = auth_header.split(" ")[1]
         decoded_token = firebase_auth.verify_id_token(id_token)
         uid = decoded_token['uid']
-        email = decoded_token['email']
 
+        # Check to see if user's firebase uid matches
         existing_user = user_data_collection.find_one({"firebase_uid": uid})
-        if existing_user:
-            return existing_user, 200
+        if not existing_user:
+            return jsonify({"message": "No user found"}), 400
+        
+        existing_user["_id"] = str(existing_user["_id"])
+        
+        return jsonify(existing_user), 200
 
-        return jsonify({"message": "No user found"}), 400
-    
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -61,6 +64,13 @@ def create_user():
         decoded_token = firebase_auth.verify_id_token(id_token)
         uid = decoded_token['uid']
         email = decoded_token['email']
+        
+        data = request.json
+        first_name = data.get("firstName")
+        last_name = data.get("lastName")
+
+        if not first_name or not last_name:
+            return jsonify({"error": "Missing name fields"}), 400
 
         existing_user = user_data_collection.find_one({"firebase_uid": uid})
         if existing_user:
@@ -68,7 +78,8 @@ def create_user():
 
         new_user_data = {
             "firebase_uid": uid,
-            "name": "",
+            "first_name": first_name,
+            "last_name": last_name,
             "email": email,
             "phone": "",
             "bio": "",

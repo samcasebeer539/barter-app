@@ -12,6 +12,7 @@ export default function HandleLogin() {
     const [loading, setLoading] = useState(false);
     const [isSigningUp, setIsSigningUp] = useState(false);
 
+    // Update your .env file so that EXPO_PUBLIC_API_URL = {your IP address}
     const API_URL = process.env.EXPO_PUBLIC_API_URL
 
     const signUp = async () => {
@@ -22,17 +23,23 @@ export default function HandleLogin() {
         setLoading(true);
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            // Gets token for backend verification
             const token = await userCredential.user.getIdToken();
-            console.log("TOKEN: ", token)
         
             const response  = await fetch(`${API_URL}/dev/create_user`, {
                 method: "POST",
                 headers: {
-                Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
+                body: JSON.stringify({
+                    // Sends first and last name to the backend
+                    firstName,
+                    lastName,
+                }),
             });
-            const data = await response.json();
-            console.log("BACKEND RESPONSE:", data);
+            // const data = await response.json();
+            // console.log("BACKEND RESPONSE:", data);
         } catch(e: any) {
             alert('Sign Up Failed: ' + e.message);
         } finally {
@@ -45,12 +52,11 @@ export default function HandleLogin() {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
-            console.log("TOKEN: ", token)
         
-            const response = await fetch(`${API_URL}/dev/create_user`, {
+            const response = await fetch(`${API_URL}/dev/user_data`, {
                 method: "GET",
                 headers: {
-                Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
             const data = await response.json();

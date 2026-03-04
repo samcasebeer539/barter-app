@@ -16,11 +16,13 @@ export default function HandleLogin() {
     const API_URL = process.env.EXPO_PUBLIC_API_URL
 
     const signUp = async () => {
+        // If there is currently a sign in happening, stop the extra sign in
+        if (loading) return;
+        setLoading(true);
         if (!firstName.trim() || !lastName.trim()) {
             alert('Please enter your first and last name.');
             return;
         }
-        setLoading(true);
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             // Gets token for backend verification
@@ -48,6 +50,11 @@ export default function HandleLogin() {
     };
 
     const signIn = async () => {
+        // If there is currently a sign in happening, stop the extra sign in
+        if (loading) {
+            console.log("Attempted 2nd sign in")
+            return;
+        }
         setLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -144,14 +151,16 @@ export default function HandleLogin() {
                 ) : (
                     <View style={styles.signButtonRow}>
                         <TouchableOpacity
-                            activeOpacity={1}
+                            disabled={loading}
+                            activeOpacity={loading ? 1 : 0.7}
                             style={[styles.signInButton, { backgroundColor: !isSigningUp ? colors.actions.offer : colors.ui.secondary }]}
                             onPress={handleSignInPress}
                         >
                             <Text style={styles.buttonText}>Sign In</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            activeOpacity={1}
+                            disabled={loading}
+                            activeOpacity={loading ? 1 : 0.7}
                             style={[styles.signUpButton, { backgroundColor: isSigningUp ? colors.actions.offer : colors.ui.secondary }]}
                             onPress={handleSignUpPress}
                         >

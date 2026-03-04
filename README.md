@@ -26,7 +26,7 @@ cd barter-app
 npm install
 ```
 
-### 3. Start the development server
+### 3. Start the development frontend server
 ```bash
 npm start
 # or
@@ -38,7 +38,13 @@ npx expo start --tunnel --clear
 # this worked when just tunnel didn't
 ```
 
-### 4. Run on your iPhone
+### 4. Start the development backend server
+
+```bash
+python3 backend/backend.py
+```
+
+### 5. Run on your iPhone
 1. Open the Expo Go app on your iPhone
 2. Scan the QR code shown in your terminal
 
@@ -61,7 +67,7 @@ barter-app/
 ```
 
 ## Features (To Be Implemented)
-
+See GitHub Projects page
 
 ## Development Tips
 

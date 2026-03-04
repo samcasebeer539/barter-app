@@ -13,7 +13,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log('onAuthStateChanged', user);
+            // console.log('onAuthStateChanged', user);
             setUser(user);
             if (initializing) setInitializing(false);
         });

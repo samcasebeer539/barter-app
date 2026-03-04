@@ -1,5 +1,6 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from pymongo.errors import DuplicateKeyError
 import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -26,6 +27,7 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 
 db = client.dev
 user_data_collection = db.user_data
+user_data_collection.create_index("firebase_uid", unique=True)
 
 @app.route('/dev/user_data', methods=['GET'], strict_slashes=False)
 def get_user_data():
@@ -66,8 +68,8 @@ def create_user():
         email = decoded_token['email']
         
         data = request.json
-        first_name = data.get("firstName")
-        last_name = data.get("lastName")
+        first_name = data.get("firstName").strip()
+        last_name = data.get("lastName").strip()
 
         if not first_name or not last_name:
             return jsonify({"error": "Missing name fields"}), 400
@@ -89,7 +91,10 @@ def create_user():
             "location": None
         }
 
-        result = user_data_collection.insert_one(new_user_data)
+        try:
+            result = user_data_collection.insert_one(new_user_data)
+        except DuplicateKeyError:
+            return jsonify({"message": "User already exists"}), 200
         new_user_data["_id"] = str(result.inserted_id)
 
         return jsonify({"message": "User created", "User": new_user_data}), 201

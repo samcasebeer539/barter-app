@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
     card: {
     backgroundColor: '#ffffff',
-    borderRadius: 6,
+    borderRadius: 2,
  
     position: 'relative',
 

@@ -42,7 +42,7 @@ export default function ActiveTradesTestScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
   const [resetKey, setResetKey] = useState(0);
-  const [tab, setTab] = useState<'offers' | 'trades' | 'deals' | 'queries'>('offers');
+  const [tab, setTab] = useState<'open' | 'barter' | 'close'>('open');
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -93,10 +93,10 @@ export default function ActiveTradesTestScreen() {
   return (
     <View style={styles.container}>
       <OffersTradesDealsBar
-        onQueriesPress={() => setTab('queries')}
-        onOffersPress={() => setTab('offers')}
-        onTradesPress={() => setTab('trades')}
-        onDealsPress={() => setTab('deals')}
+        
+        onOffersPress={() => setTab('open')}
+        onTradesPress={() => setTab('barter')}
+        onDealsPress={() => setTab('close')}
       />
 
       <ScrollView
@@ -112,18 +112,8 @@ export default function ActiveTradesTestScreen() {
         scrollEventThrottle={16}
       >
         <View style={styles.topSpacer} />
-        {tab === 'queries' && (
-          <View>
-            <View style={{ height: 542 }} />
-            <OfferDeck
-              posts={POSTS}
-              onHorizontalGestureStart={() => setScrollEnabled(false)}
-              onGestureEnd={() => setScrollEnabled(true)}
-              actions={queriesActions}
-            />
-          </View>
-        )}
-        {tab === 'offers' && (
+     
+        {tab === 'open' && (
           <View>
             <View style={{ height: 542 }} />
             <OfferDeck
@@ -132,17 +122,24 @@ export default function ActiveTradesTestScreen() {
               onGestureEnd={() => setScrollEnabled(true)}
               actions={offersActions}
             />
+            <View style={{ height: 24 }} />
+            <OfferDeck
+              posts={POSTS}
+              onHorizontalGestureStart={() => setScrollEnabled(false)}
+              onGestureEnd={() => setScrollEnabled(true)}
+              actions={queriesActions}
+            />
           </View>
         )}
 
-        {tab === 'trades' && (
+        {tab === 'barter' && (
           <View>
             <View style={{ height: 342 }} />
             <TradeDeck
               posts={POSTS}
               actions={tradesActions}
             />
-            <View style={{ height: 6 }} />
+            <View style={{ height: 24 }} />
             <TradeDeck
               posts={POSTS}
               actions={tradesActions}
@@ -150,7 +147,7 @@ export default function ActiveTradesTestScreen() {
           </View>
         )}
 
-        {tab === 'deals' && (
+        {tab === 'close' && (
           <View>
             <View style={{ height: 342 }} />
             <TradeDeck

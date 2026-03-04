@@ -3,18 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 
-import { defaultTextStyle, globalFonts, colors} from '../styles/globalStyles';
+import { globalFonts, colors } from '../styles/globalStyles';
 import TradeUI from './TradeActions';
-import TradeTurns, { TradeTurn, TradeTurnType } from './TradeTurns';
-import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tradeConfig';
+import TradeTurns, { TradeTurn } from './TradeTurns';
+import { TRADE_ACTIONS, TradeActionConfig } from '../config/tradeConfig';
+import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH, } from '../styles/deckStyles';
 
 const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-  { type: 'turnCounter', isUser: true  },
-  { type: 'turnTrade', user: 'Jay Wilson', item: 'Bike Repair', isUser: false  },
-  { type: 'turnOffer', item: 'Fantasy Books', isUser: true  },
+  { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+  { type: 'turnCounter', isUser: true },
+  { type: 'turnTrade',   user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
+  { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
 ];
 
 interface Post {
@@ -26,106 +27,107 @@ interface Post {
 interface TradeDeckProps {
   posts: Post[];
   actions: TradeActionConfig[];
-  onHorizontalGestureStart?: () => void; 
-  onGestureEnd?: () => void; 
+  onHorizontalGestureStart?: () => void;
+  onGestureEnd?: () => void;
   showDateTime?: boolean;
   showLocation?: boolean;
 }
 
-const DECK_WIDTH = width - 40;
+const DECK_WIDTH = Math.min(width - 36, 400);
 
-export default function TradeDeck({ posts, actions, showDateTime = false, showLocation = false, onHorizontalGestureStart, onGestureEnd }: TradeDeckProps) {
+export default function TradeDeck({
+  posts,
+  actions,
+  showDateTime = false,
+  showLocation = false,
+  onHorizontalGestureStart,
+  onGestureEnd,
+}: TradeDeckProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showingPlayer, setShowingPlayer] = useState(false);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
   const [turns, setTurns] = useState<TradeTurn[]>(trade1Turns);
 
-  const slideAnim = useRef(new Animated.Value(-11)).current;
+  const slideAnim = useRef(new Animated.Value(-12)).current;
 
-  const { itemCount } = useMemo(() => {
-      const itemCount = posts.length;
-      return { itemCount };
-  }, [posts]);
+  const itemCount = useMemo(() => posts.length, [posts]);
 
   const handleSwitchDecks = () => {
-    const toValue = showingPlayer ? -11 : -(DECK_WIDTH) - 38;
+    const toValue = showingPlayer ? -12 : -(DECK_WIDTH) - 38;
     Animated.spring(slideAnim, {
       toValue,
       useNativeDriver: true,
       tension: 60,
       friction: 10,
     }).start();
-    setShowingPlayer(!showingPlayer);
+    setShowingPlayer(prev => !prev);
+  };
+
+  const sharedDeckProps = {
+    cardWidth: DECK_WIDTH,
+    enabled: true,
+    onHorizontalGestureStart,
+    onGestureEnd,
+    showDateTime,
+    showLocation,
   };
 
   return (
     <View style={styles.modalContent} pointerEvents="box-none">
-      <View style={styles.column}>
-
-        <View style={styles.itemCountRow}>
-          
-          <TouchableOpacity style={styles.itemCountButtonParter} onPress={handleSwitchDecks}>
-            <FontAwesome6 name={"circle-user"} size={22} color={colors.ui.secondarydisabled} />
-            
-            <Text style={[styles.secondaryText, { color: !showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled  }]}>0{itemCount}</Text>
-            <FontAwesome6 name={"arrows-rotate"} size={22} color={!showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled} />
-
+      <View style={deckStyles.column}>
+        {/* Partner / Player switcher bar */}
+        <View style={deckStyles.itemCountRow}>
+          <TouchableOpacity style={styles.partnerBar} onPress={handleSwitchDecks}>
+            <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
+            <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{itemCount}</Text>
+            <FontAwesome6
+              name="arrows-rotate"
+              size={22}
+              color={!showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled}
+            />
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.itemCountButtonPlayer} onPress={handleSwitchDecks}>
-            <FontAwesome6 name={"circle-user"} size={22} color={colors.ui.secondarydisabled} />
-            <Text style={[styles.secondaryText, { color: showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled }]}>0{itemCount}</Text>
-            <FontAwesome6 name={"arrows-rotate"} size={22} color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled} />
+
+          <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
+            <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
+            <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{itemCount}</Text>
+            <FontAwesome6
+              name="arrows-rotate"
+              size={22}
+              color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled}
+            />
           </TouchableOpacity>
         </View>
 
+        {/* Sliding deck window */}
         <View style={styles.deckClipWindow}>
           <Animated.View style={[styles.decksRow, { transform: [{ translateX: slideAnim }] }]}>
             <View style={{ width: DECK_WIDTH }}>
-              <Deck posts={posts} 
-                cardWidth={DECK_WIDTH} 
-                enabled={true} 
-                onHorizontalGestureStart={onHorizontalGestureStart}
-                onGestureEnd={onGestureEnd}  
-                showDateTime={showDateTime}
-                showLocation={showLocation}
-              />
+              <Deck posts={posts} {...sharedDeckProps} />
             </View>
             <View style={{ width: DECK_WIDTH }}>
-              <Deck posts={posts} 
-                cardWidth={DECK_WIDTH} 
-                enabled={true} 
-                onHorizontalGestureStart={onHorizontalGestureStart}
-                onGestureEnd={onGestureEnd}
-                showDateTime={showDateTime}
-                showLocation={showLocation}         
-              />
+              <Deck posts={posts} {...sharedDeckProps} />
             </View>
           </Animated.View>
         </View>
 
-        <View style={styles.turnsAndButtonRow}>
-          <TradeUI
-            actions={actions}
-            onQueryToggle={setIsQueryOpen}
-          />
+        {/* Actions + turns */}
+        <View style={deckStyles.turnsAndButtonRow}>
           {isExpanded && (
-            <View style={styles.turnsRows}>
-              <TradeTurns
-                turns={turns}
-                isQueryOpen={isQueryOpen}
-              />
+          <TradeUI actions={actions} onQueryToggle={setIsQueryOpen} />
+          )}
+          {isExpanded && (
+            <View style={deckStyles.turnsRow}>
+              <TradeTurns turns={turns} isQueryOpen={isQueryOpen} />
             </View>
           )}
         </View>
 
         <TouchableOpacity
           style={styles.collapseBar}
-          onPress={() => setIsExpanded(!isExpanded)}
+          onPress={() => setIsExpanded(prev => !prev)}
         >
-          <FontAwesome6 name={isExpanded ? "angle-up" : "angle-down"} size={26} color="#fff" />
+          <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
         </TouchableOpacity>
-
       </View>
     </View>
   );
@@ -138,104 +140,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     bottom: 400,
   },
-  column: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
+  // Partner bar: left-cap, count left-aligned
+  partnerBar: {
+    ...makeCountBar('leftCap', 'flex-start'),
   },
-  itemCountRow: {
-    width: 334,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 4,
-    alignSelf: 'center',
+  // Player bar: right-cap, count right-aligned
+  playerBar: {
+    ...makeCountBar('rightCap', 'flex-end'),
+  },
+  activeText: {
+    color: colors.cardTypes.good,
   },
   deckClipWindow: {
     width: width,
     overflow: 'hidden',
     alignItems: 'flex-start',
-    paddingTop: 20,      
-    marginTop: -20,    
-    paddingBottom: 20,  
-    marginBottom: -20,    
+   
   },
   decksRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 27,
+    gap: 26,
     zIndex: 30,
   },
-  switchDecksButton: {
-    width: 50,
-    height: 36,
-    borderRadius: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.ui.secondary,
-  },
-  itemCountButtonParter: {
-    height: 36,
-    flex: 1,
-    flexDirection: 'row',
-    gap: 4,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 22,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  itemCountButtonPlayer: {
-    height: 36,
-    flex: 1,
-    flexDirection: 'row',
-    gap: 4,
-    borderTopRightRadius: 22,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  turnsAndButtonRow: {
-    width: 334,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    zIndex: 10,
-    gap: 4,
-  },
-  turnsRows: {
-    top: -6,
-  },
-  secondaryText: {
-    color: colors.ui.secondarydisabled,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  goodText: {
-    color: colors.cardTypes.good,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  serviceText: {
-    color: colors.cardTypes.service,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
+  
   collapseBar: {
-    top: -10,
-    width: 334,
+    top: -6,
+    width: DECK_BAR_WIDTH,
     height: 36,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
+    ...barRadius.bottomCap,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',

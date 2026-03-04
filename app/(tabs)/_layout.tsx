@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
-import { colors } from '@/styles/globalStyles';
+import { colors, globalFonts } from '@/styles/globalStyles';
 
 
 function TabBarBackground() {
@@ -33,12 +33,13 @@ export default function RootLayout() {
             tabBarStyle: {
                 backgroundColor: 'transparent',
                 borderTopWidth: 0,
-                height: 80,
+                height: 72,
                 paddingBottom: 0,
                 paddingTop: 0,
                 position: 'absolute',
                 bottom: 0,
             },
+
             
             tabBarBackground: () => <TabBarBackground />,
             tabBarShowLabel: false,
@@ -92,23 +93,25 @@ export default function RootLayout() {
             name="feed"
             options={{
                 tabBarIcon: ({ color }) => (
-                <FontAwesome6 name="square" size={24} color={color} style={{ marginTop: 0 }}/>
+                <FontAwesome6 name="circle" size={22} color={color} style={{ marginTop: 0 }}/>
                 ),
             }}
             />
             <Tabs.Screen
-            name="barter"
-            options={{
-                tabBarIcon: ({ color }) => (
-                <FontAwesome6 name="arrow-right-arrow-left" size={24} color={color} style={{ marginTop: 0 }}/>
-                ),
-            }}
-            />
+                name="barter"
+                options={{
+                    
+                    tabBarIcon: ({ color }) => (
+                    <FontAwesome6 name="arrow-right-arrow-left" size={22} color={color} style={{ marginTop: 0 }}/>
+                    ),
+                    
+                }}
+                />
             <Tabs.Screen
             name="profiledeck"
             options={{
                 tabBarIcon: ({ color }) => (
-                <FontAwesome6 name="user-circle" size={24} color={color} style={{ marginTop: 0 }}/>
+                <FontAwesome6 name="user-circle" size={22} color={color} style={{ marginTop: 0 }}/>
                 ),
             }}
             />
@@ -130,28 +133,36 @@ const styles = StyleSheet.create({
         marginHorizontal: 2,
         justifyContent: 'center',
         alignItems: 'center',
+        
         height: 44,
         marginTop: 8,
-        marginBottom: 24,
+        marginBottom: 20,
     },
     leftButton: {
         borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 36,
+        borderBottomLeftRadius: 32,
         borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         marginLeft: 12,
     },
     middleButton: {
+        
         borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
+        
     },
     rightButton: {
         borderTopRightRadius: 2,
-        borderBottomRightRadius: 36,
+        borderBottomRightRadius: 32,
         borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
         marginRight: 12,
     },
+    actionButtonText: {
+        fontSize: 22,
+        fontFamily: globalFonts.bold,
+        bottom: 14,
+        },
 });

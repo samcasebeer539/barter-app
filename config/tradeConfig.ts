@@ -41,7 +41,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     turnType: 'turnOffer',
   },
   {
-    text: 'TRADE',
+    text: 'BARTER',
     color: colors.actions.trade,
     hasButtons: true,
     actionType: 'trade',
@@ -77,14 +77,14 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
   },
   
   {
-    text: '*ACCEPT',
+    text: '*AGREE',
     color: colors.actions.accept,
     hasButtons: true,
     actionType: 'accept',
     turnType: 'turnAccept',
   },
   {
-    text: 'DECLINE',
+    text: 'WITHDRAW',
     color: colors.actions.decline,
     hasButtons: true,
     actionType: 'decline',

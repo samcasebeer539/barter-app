@@ -21,13 +21,14 @@ export const colors = {
     query: '#ab57ff',    
     decline: '#ff3232',    
     accept: '#06f52e',     
-    location: '#229bff',
-    time: '#fb4921',
+    location: '#ff3a86',
+    time: '#00e4e8', 
     verify: '#ff8d0a',
     wait: '#372788',
     stall: '#fb4921',
-    rescind: '#ff630f',
+    rescind: '#ff3232',
   },
+
 
   // Post Type Colors
   cardTypes: {

@@ -8,6 +8,7 @@ import TradeTurns, { TradeTurn } from './TradeTurns';
 import { globalFonts, colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS } from '../config/tradeConfig';
+import { deckStyles, makeCountBar, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -64,15 +65,10 @@ export default function ProfileDeck({
   const [isTradeSelectMode, setIsTradeSelectMode] = useState(false);
   const [selectedSecondaryPosts, setSelectedSecondaryPosts] = useState<number[]>([]);
   const [topSecondaryPostIndex, setTopSecondaryPostIndex] = useState<number | null>(null);
-
-  // Query input state for the secondary deck's TradeUI
   const [isTradeQueryOpen, setIsTradeQueryOpen] = useState(false);
   const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
-  const { itemCount } = useMemo(() => {
-          const itemCount = posts.length;
-          return { itemCount };
-  }, [posts]);
+  const itemCount = useMemo(() => posts.length, [posts]);
 
   const isDeckRevealedRef = useRef(isDeckRevealed);
 
@@ -94,22 +90,16 @@ export default function ProfileDeck({
     });
   }, [isDeckRevealed]);
 
-  const handleSecondaryLayout = (height: number) => {
-    setSecondaryHeight(height);
-    // If already fully revealed, snap slideAnim to 1 so the new outputRange
-    // takes effect immediately (no re-animation, just a position jump).
-    if (isDeckRevealedRef.current) {
-      slideAnim.setValue(1);
-    }
+  const handleSecondaryLayout = (h: number) => {
+    setSecondaryHeight(h);
+    if (isDeckRevealedRef.current) slideAnim.setValue(1);
   };
 
   const handleTradeActionSelected = (action: TradeAction) => {
     if (action.actionType === 'trade' && action.subAction === 'write') {
       if (!isTradeSelectMode) {
         setIsTradeSelectMode(true);
-        if (topSecondaryPostIndex !== null) {
-          setSelectedSecondaryPosts([topSecondaryPostIndex]);
-        }
+        if (topSecondaryPostIndex !== null) setSelectedSecondaryPosts([topSecondaryPostIndex]);
       } else {
         if (topSecondaryPostIndex !== null) {
           setSelectedSecondaryPosts(prev =>
@@ -122,13 +112,8 @@ export default function ProfileDeck({
     }
   };
 
-  const handleTopSecondaryCardChange = (postIndex: number | null) => {
-    setTopSecondaryPostIndex(postIndex);
-  };
-
-  const handleTradeQueryToggle = (isOpen: boolean) => {
-    setIsTradeQueryOpen(isOpen);
-  };
+  const handleTopSecondaryCardChange = (postIndex: number | null) => setTopSecondaryPostIndex(postIndex);
+  const handleTradeQueryToggle = (isOpen: boolean) => setIsTradeQueryOpen(isOpen);
 
   const topSecondaryCardIsSelected =
     topSecondaryPostIndex !== null && selectedSecondaryPosts.includes(topSecondaryPostIndex);
@@ -138,7 +123,7 @@ export default function ProfileDeck({
     []
   );
 
-  const cardWidth = Math.min(width - 40, 400);
+  const cardWidth = Math.min(width - 36, 400);
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, secondaryHeight + SLIDE_MARGIN],
@@ -146,13 +131,13 @@ export default function ProfileDeck({
 
   return (
     <View style={styles.container} pointerEvents="box-none">
-      {/* offers bar */}
-      <View style={styles.itemCountRow}>
+      {/* Offers bar */}
+      <View style={[deckStyles.itemCountRow, {marginBottom: 8}]}>
         <TouchableOpacity
           style={styles.queryButton}
           onPress={() => setIsQueryDrawerOpen(prev => !prev)}
         >
-          <Text style={[styles.actionButtonText, { color: colors.actions.query }]}>
+          <Text style={[deckStyles.actionButtonText, { color: colors.actions.query }]}>
             1 QUERY
           </Text>
         </TouchableOpacity>
@@ -161,23 +146,21 @@ export default function ProfileDeck({
           onPress={onToggleReveal}
           disabled={!toggleEnabled}
         >
-          <Text style={[styles.actionButtonText, { color: colors.actions.offer }]}>2 OFFERS</Text>
-          <Text style={styles.secondaryText}>                 0{itemCount}</Text>
+          <Text style={[deckStyles.actionButtonText, { color: colors.actions.offer,}]}>2 OFFERS</Text>
+          <Text style={[deckStyles.countText, {marginLeft: 'auto'}]}>0{itemCount}</Text>
           <FontAwesome6 name="arrows-rotate" size={22} color={colors.ui.secondarydisabled} />
-       
         </TouchableOpacity>
       </View>
 
       {/* Decks */}
       <View style={styles.decksContainer}>
-
         {/* Secondary deck */}
         {showSecondary && secondaryPosts.length > 0 && (
           <View
             style={styles.secondaryDeckContainer}
             onLayout={e => handleSecondaryLayout(e.nativeEvent.layout.height)}
           >
-            <View style={styles.secondaryDeckWrapper}>
+            <View style={deckStyles.deckWrapper}>
               <Deck
                 posts={secondaryPosts}
                 user={SECONDARY_USER}
@@ -190,8 +173,8 @@ export default function ProfileDeck({
               />
             </View>
 
-            <View style={styles.turnsAndButtonRow}>
-              <View style={styles.actionRow}>
+            <View style={[deckStyles.turnsAndButtonRow, {marginBottom: 4}]}>
+              <View style={deckStyles.actionRow}>
                 <TradeUI
                   actions={tradeActions}
                   onActionSelected={handleTradeActionSelected}
@@ -201,74 +184,55 @@ export default function ProfileDeck({
                   topCardIsSelected={topSecondaryCardIsSelected}
                 />
               </View>
-              <View style={styles.tradeRow}>
-                <TradeTurns
-                  turns={tradeTurns}
-                  isQueryOpen={isTradeQueryOpen}
+              <View style={deckStyles.turnsRow}>
+                <TradeTurns turns={tradeTurns} 
+                  isQueryOpen={isTradeQueryOpen} 
                 />
+
               </View>
             </View>
           </View>
         )}
 
         {/* Primary deck (animated drawer) */}
-        <Animated.View style={[styles.primaryDeckandButtonsWrapper, { transform: [{ translateY }] }]}>
+        <Animated.View style={[styles.primaryDeckWrapper, { transform: [{ translateY }] }]}>
           <View style={styles.primaryDeckColumn}>
-            {/* Query drawer */}
+            
+
+            <View style={deckStyles.deckWrapper}>
+              <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
+            </View>
             {isQueryDrawerOpen && (
               <View style={styles.queryDrawer}>
                 <TradeTurns turns={[{ type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false }]} />
               </View>
             )}
-            <View style={styles.primaryDeckWrapper}>
-              <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
-            </View>
-
-            {/* Query drawer
-            {isQueryDrawerOpen && (
-              <View style={styles.queryDrawer}>
-                <TradeTurns turns={[{ type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false }]} />
-              </View>
-            )} */}
-
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={[styles.iconButton, styles.deleteButton]} onPress={() => {}}>
-                <FontAwesome6 name="circle-xmark" size={22} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-                <FontAwesome6 name="sliders" size={21} color="#fff" />
-              </TouchableOpacity>
-              <View style={styles.myitemCountButton}>
-                <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
-                
-                <Text style={[styles.goodText]}>0{itemCount}</Text>
-                <FontAwesome6 name="arrows-rotate" size={22} color={colors.actions.trade} />
-                <FontAwesome6 name="circle-dot" size={22} color={colors.ui.secondarydisabled} />
-              </View>
-              
-              
-              <TouchableOpacity style={[styles.iconButton, styles.addButton]} onPress={() => {}}>
+              <TouchableOpacity style={styles.addButton} onPress={() => {}}>
                 <FontAwesome6 name="circle-plus" size={22} color="#fff" />
               </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.settingsButton} onPress={() => {}}>
+                <FontAwesome6 name="sliders" size={21} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton} onPress={() => {}}>
+                <FontAwesome6 name="circle-xmark" size={22} color="#fff" />
+              </TouchableOpacity>
+              <View style={styles.myItemCountBar}>
+                <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
+                <FontAwesome6 name="circle-dot" size={22} color={colors.ui.secondarydisabled} />
+                <Text style={[deckStyles.countText, { color: colors.actions.trade }]}>0{itemCount}</Text>
+                <FontAwesome6 name="arrows-rotate" size={22} color={colors.actions.trade} />
+              </View>
+              
+              
             </View>
-
           </View>
         </Animated.View>
-
       </View>
     </View>
   );
 }
-
-const roundedButton = {
-  justifyContent: 'center' as const,
-  alignItems: 'center' as const,
-  borderTopRightRadius: 2,
-  borderBottomRightRadius: 2,
-  borderTopLeftRadius: 2,
-  borderBottomLeftRadius: 2,
-  backgroundColor: colors.ui.secondary,
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -285,7 +249,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
     minHeight: 800,
   },
-  primaryDeckandButtonsWrapper: {
+  primaryDeckWrapper: {
     width: '100%',
     alignItems: 'center',
     flexDirection: 'column',
@@ -300,36 +264,29 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.ui.background,
     paddingBottom: 50,
-    
-    
-  },
-  primaryDeckWrapper: {
-    left: -12,
-  },
-  secondaryDeckWrapper: {
-    marginBottom: 8,
-    left: -12,
   },
   secondaryDeckContainer: {
     position: 'absolute',
     width: '100%',
     alignItems: 'center',
+    flexDirection: 'column',
+    gap: 8,
     zIndex: 1,
     elevation: 1,
     backgroundColor: colors.ui.background,
   },
   queryDrawer: {
-    width: 334,
+    width: DECK_BAR_WIDTH,
   },
   buttonRow: {
-    width: 334,
+    width: DECK_BAR_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
     gap: 4,
   },
   tradeRow: {
-    width: 334,
+    width: DECK_BAR_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -337,52 +294,29 @@ const styles = StyleSheet.create({
     top: -10,
     elevation: 10,
     zIndex: 0,
+   
   },
-  itemCountRow: {
-    width: 334,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 4,
-    top: 0,
-    zIndex: 0,
-    elevation: 0,
-    marginBottom: 8,
-  },
-  turnsAndButtonRow: {
-    width: 334,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    top: 0,
-    zIndex: 10,
-    gap: 4,
-  },
-  myitemCountButton: {
+  myItemCountBar: {
     height: 44,
     flexDirection: 'row',
     flex: 1,
     gap: 4,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
+    ...barRadius.bottomRightCap,
     backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     paddingVertical: 10,
   },
+  // ProfileDeck-specific asymmetric pill buttons
   offerButton: {
     flex: 1,
     paddingLeft: 16,
     paddingRight: 16,
     height: 36,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    ...barRadius.rightCap,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.ui.secondary,
     gap: 2,
@@ -392,72 +326,19 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 12,
     height: 36,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
+    ...barRadius.leftCap,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.ui.secondary,
   },
-  iconButton: {
-    ...roundedButton,
-    width: 50,
-    height: 44,
+  deleteButton: {
+    ...makeIconButton('flat'),
+  },
+  settingsButton: {
+    ...makeIconButton('flat'),
   },
   addButton: {
-    borderBottomRightRadius: 25,
-  },
-  deleteButton: {
-    borderBottomLeftRadius: 25,
-  },
-  secondaryText: {
-    color: colors.ui.secondarydisabled,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  goodText: {
-    color: colors.actions.trade,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  serviceText: {
-    color: colors.cardTypes.service,
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  actionButtonText: {
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  actionRow: {
-    width: 334,
-    marginBottom: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    width: 50,
-    height: 40,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
-    backgroundColor: colors.actions.trade,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectButton: {
-    flex: 1,
-    height: 40,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 25,
-    borderWidth: 3,
-    borderColor: colors.actions.trade,
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...makeIconButton('bottomLeftCap'),
   },
 });

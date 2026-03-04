@@ -71,8 +71,8 @@ const Deck: React.FC<DeckProps> = ({
 
   const POSITIONS = {
     first: { x: 0, y: 0 },
-    second: { x: 7, y: 7 },
-    third: { x: 14, y: 14 },
+    second: { x: 6, y: 6 },
+    third: { x: 12, y: 12 },
   };
 
   const deckContainerWidth = finalCardWidth + POSITIONS.third.x;

@@ -1,3 +1,4 @@
+import { colors } from '@/styles/globalStyles';
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Text, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker, MapPressEvent } from 'react-native-maps';
@@ -60,7 +61,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
             pitchEnabled={true}
             userInterfaceStyle="dark"
           >
-            <Marker coordinate={pin} />
+            
+            <Marker coordinate={pin} pinColor={colors.actions.location}/>  
           </MapView>
         </View>
 
@@ -81,7 +83,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 6,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   mapWrapper: {
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   footerButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.actions.location,
     borderRadius: 6,
     paddingVertical: 8,
     alignItems: 'center',

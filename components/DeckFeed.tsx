@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Modal, 
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { globalFonts, colors} from '../styles/globalStyles';
+import { globalFonts, colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
+import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,11 +38,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     []
   );
 
-  const { postCount } = useMemo(() => {
-    const postCount = posts.length;
-   
-    return { postCount };
-  }, [posts]);
+  const postCount = useMemo(() => posts.length, [posts]);
 
   useEffect(() => {
     if (visible) {
@@ -98,42 +95,32 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
   const handleActionSelected = (action: TradeAction) => {
     if (action.actionType === 'offer' && action.subAction === 'write') {
-        if (!isSelectMode) {
-            setIsSelectMode(true);
-            if (topPostIndex !== null) {
-                setSelectedPosts([topPostIndex]);
-            }
-        } else {
-            if (topPostIndex !== null) {
-                setSelectedPosts(prev =>
-                    prev.includes(topPostIndex)
-                        ? prev.filter(i => i !== topPostIndex)
-                        : [...prev, topPostIndex]
-                );
-            }
+      if (!isSelectMode) {
+        setIsSelectMode(true);
+        if (topPostIndex !== null) setSelectedPosts([topPostIndex]);
+      } else {
+        if (topPostIndex !== null) {
+          setSelectedPosts(prev =>
+            prev.includes(topPostIndex)
+              ? prev.filter(i => i !== topPostIndex)
+              : [...prev, topPostIndex]
+          );
         }
+      }
     }
     if (action.actionType === 'offer' && action.subAction === 'select') {
-        setIsSelectMode(false);
-        setSelectedPosts([]);
+      setIsSelectMode(false);
+      setSelectedPosts([]);
     }
   };
 
-  const handleTopCardChange = (postIndex: number | null) => {
-    setTopPostIndex(postIndex);
-  };
-
+  const handleTopCardChange = (postIndex: number | null) => setTopPostIndex(postIndex);
   const handleSave = () => setShowSaved(prev => !prev);
 
   const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-    >
+    <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         <Animated.View
           style={[styles.modalBackground, { opacity: backdropOpacity }]}
@@ -147,62 +134,52 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
         <Animated.View
           pointerEvents="auto"
-          style={[
-            styles.animatedContainer,
-            { transform: [{ translateY: deckTranslateY }] },
-          ]}
+          style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}
         >
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'position' : 'height'}
             keyboardVerticalOffset={120}
           >
-            <View style={styles.column}>
-            <View style={styles.itemCountRow}>
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
-              </TouchableOpacity>
-              <View style={styles.itemCountButton}>
-                <FontAwesome6 name='circle-user' size={22} color={colors.ui.secondarydisabled} />
-                <FontAwesome6 name='circle-dot' size={22} color={colors.ui.secondarydisabled} />
-                <Text style={[styles.buttonText, { color: colors.ui.secondarydisabled }]}>0{postCount}</Text>
-                <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
+            <View style={deckStyles.column}>
+              <View style={deckStyles.itemCountRow}>
+                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                  <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
+                </TouchableOpacity>
+                <View style={styles.statusBar}>
+                  <FontAwesome6 name='circle-user' size={22} color={colors.ui.secondarydisabled} />
+                  <FontAwesome6 name='circle-dot' size={22} color={colors.ui.secondarydisabled} />
+                  <Text style={[deckStyles.countText]}>0{postCount}</Text>
+                  <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
+                </View>
               </View>
-              
-              {/* <TouchableOpacity style={styles.upButton} onPress={handleCloseModal}>
-                <FontAwesome6 name="angle-down" size={26} color='#fff' />
-              </TouchableOpacity> */}
-            </View>
 
-            <View style={styles.deckWrapper}>
-              <Deck
-                posts={posts}
-                cardWidth={Math.min(width - 40, 400)}
-                enabled={true}
-                isSelectMode={isSelectMode}
-                selectedPosts={selectedPosts}
-                onTopCardChange={handleTopCardChange}
-                selectColor={colors.actions.offer}
-                showLocation={true}
-              />
-            </View>
+              <View style={deckStyles.deckWrapper}>
+                <Deck
+                  posts={posts}
+                  cardWidth={Math.min(width - 36, 400)}
+                  enabled={true}
+                  isSelectMode={isSelectMode}
+                  selectedPosts={selectedPosts}
+                  onTopCardChange={handleTopCardChange}
+                  selectColor={colors.actions.offer}
+                  showLocation={true}
+                />
+              </View>
 
-            <View style={styles.actionRow}>
-              <TradeUI
-                actions={feedActions}
-                onActionSelected={handleActionSelected}
-                onQueryToggle={setIsQueryOpen}
-                isSelectMode={isSelectMode}
-                selectedCount={selectedPosts.length}
-                topCardIsSelected={topCardIsSelected}
-              />
-            </View>
+              <View style={deckStyles.actionRow}>
+                <TradeUI
+                  actions={feedActions}
+                  onActionSelected={handleActionSelected}
+                  onQueryToggle={setIsQueryOpen}
+                  isSelectMode={isSelectMode}
+                  selectedCount={selectedPosts.length}
+                  topCardIsSelected={topCardIsSelected}
+                />
+              </View>
 
-            <View style={styles.turnsRow}>
-              <TradeTurns
-                turns={[]}
-                isQueryOpen={isQueryOpen}
-              />
-            </View>
+              <View style={deckStyles.turnsRow}>
+                <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+              </View>
             </View>
           </KeyboardAvoidingView>
         </Animated.View>
@@ -227,68 +204,17 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
-  column: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  deckWrapper: {
-    left: -12,
-  },
-  itemCountRow: {
-    width: 334,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 4,
-  },
-  itemCountButton: {
-    height: 36,
-    flex: 1,
-    flexDirection: 'row',
-    gap: 4,
-    borderTopRightRadius: 22,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
+  // Save button: left-cap shape, fixed width
   saveButton: {
     width: 50,
     height: 36,
     backgroundColor: colors.ui.secondary,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 22,
-    borderBottomLeftRadius: 2,
+    ...barRadius.leftCap,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  upButton: {
-    width: 50,
-    height: 36,
-    backgroundColor: colors.ui.secondary,
-    borderTopRightRadius: 22,
-    borderBottomRightRadius: 2,
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 20,
-    fontFamily: globalFonts.bold,
-  },
-  actionRow: {
-    width: 334,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  turnsRow: {
-    width: 334,
-    marginTop: -10,
+  // Status bar: right-cap, takes remaining space
+  statusBar: {
+    ...makeCountBar('rightCap', 'flex-end'),
   },
 });

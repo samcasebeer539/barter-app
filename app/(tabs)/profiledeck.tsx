@@ -81,7 +81,7 @@ export default function ProfileDeck() {
         <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={0}
+            keyboardVerticalOffset={450}
             style={{ flex: 1 }}
         >
             <View style={styles.content}>
@@ -118,17 +118,17 @@ const styles = StyleSheet.create({
   settingsButtonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     width: '100%',
-    marginBottom: 46,
+    marginBottom: 38,
     paddingHorizontal: 12,
   },
   settingsButton: {
-    width: 116,
+    flex: 1,
     height: 36,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',

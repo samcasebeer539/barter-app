@@ -138,7 +138,6 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     alignItems: 'center',
-    bottom: 400,
   },
   // Partner bar: left-cap, count left-aligned
   partnerBar: {

@@ -39,9 +39,17 @@ interface DeckProps {
   isSelectMode?: boolean;
   selectedPosts?: number[];
   onTopCardChange?: (postIndex: number | null) => void;
+  onTopCardTypeChange?: (type: 'user' | 'post' | 'datetime' | 'location') => void;
   selectColor?: string;
   showDateTime?: boolean;
   showLocation?: boolean;
+  isEditMode?: boolean;
+  onExitEdit?: () => void;
+  onEnterEdit?: () => void;
+  isUser?: boolean;
+  isPostEditMode?: boolean;
+  onExitPostEdit?: () => void;
+  onEnterPostEdit?: () => void;
 }
 
 type DeckItem =
@@ -60,9 +68,17 @@ const Deck: React.FC<DeckProps> = ({
   isSelectMode = false,
   selectedPosts = [],
   onTopCardChange,
+  onTopCardTypeChange,
   selectColor = colors.actions.offer,
   showDateTime = false,
   showLocation = true,
+  isEditMode = false,
+  onExitEdit,
+  onEnterEdit,
+  isUser = false,
+  isPostEditMode = false,
+  onExitPostEdit,
+  onEnterPostEdit,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
@@ -78,10 +94,9 @@ const Deck: React.FC<DeckProps> = ({
   const deckContainerWidth = finalCardWidth + POSITIONS.third.x;
   const deckContainerHeight = cardHeight + POSITIONS.third.y;
 
-  const SWIPE_THRESHOLD = screenWidth * 0.03;
-  const GESTURE_THRESHOLD = 5;
+  const SWIPE_THRESHOLD = 10;
+  const GESTURE_THRESHOLD = 3;
 
-  // Ref shared with CardLocation — true while a finger is inside the map
   const mapActiveRef = useRef(false);
 
   const shouldRepeat = posts.length < 2;
@@ -126,6 +141,9 @@ const Deck: React.FC<DeckProps> = ({
     } else {
       onTopCardChange?.(null);
     }
+    if (topCard) {
+      onTopCardTypeChange?.(topCard.type);
+    }
   }, [visibleIndices]);
 
   const panResponder = useRef(
@@ -133,7 +151,6 @@ const Deck: React.FC<DeckProps> = ({
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_, g) => {
-        // If a finger is inside the map, let the map keep the gesture
         if (mapActiveRef.current) return false;
         return (
           enabledRef.current &&
@@ -220,6 +237,8 @@ const Deck: React.FC<DeckProps> = ({
       setVisibleIndices(newIndices);
       visibleIndicesRef.current = newIndices;
       isAnimatingRef.current = false;
+      onExitEdit?.();
+      onExitPostEdit?.();
     });
   };
 
@@ -271,13 +290,18 @@ const Deck: React.FC<DeckProps> = ({
         ]}
       >
         {card.type === 'user' ? (
-          <UserCard user={userToRender} scale={1} cardWidth={finalCardWidth} />
+          <UserCard
+            user={userToRender}
+            scale={1}
+            cardWidth={finalCardWidth}
+            isUser={isUser}
+            isEditable={isFirst && isEditMode}
+            onExitEdit={onExitEdit}
+            onEnterEdit={onEnterEdit}
+          />
         ) : card.type === 'datetime' ? (
           <CardDateTime cardWidth={finalCardWidth} />
         ) : card.type === 'location' ? (
-          // Pass the shared ref — only matters when this card is on top,
-          // but it's harmless to pass it always since mapActiveRef is only
-          // checked in onMoveShouldSetPanResponder.
           <CardLocation cardWidth={finalCardWidth} mapActiveRef={mapActiveRef} />
         ) : (
           <PostCard
@@ -287,6 +311,10 @@ const Deck: React.FC<DeckProps> = ({
             isSelectMode={isFirst && isSelectMode}
             isSelected={selectedPosts.includes(card.postIndex)}
             selectColor={selectColor}
+            isUser={isUser}
+            isEditable={isFirst && isPostEditMode}
+            onEnterEdit={onEnterPostEdit}
+            onExitEdit={onExitPostEdit}
           />
         )}
       </Animated.View>

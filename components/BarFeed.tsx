@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     zIndex: 10,
-    paddingBottom: 4,
+    paddingBottom: 8,
     paddingTop: 48,
   },
 

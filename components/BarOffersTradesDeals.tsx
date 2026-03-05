@@ -86,11 +86,14 @@ const styles = StyleSheet.create({
         paddingBottom: 72,
         paddingTop: 8,
         gap: 4,
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+
     },
     queriesButton: {
         flex: 1,
         height: 36,
-        borderTopLeftRadius: 2,
+        borderTopLeftRadius: 22,
         borderTopRightRadius: 2,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
@@ -101,7 +104,7 @@ const styles = StyleSheet.create({
     offersButton: {
         flex: 1,
         height: 36,
-        borderTopLeftRadius: 2,
+        borderTopLeftRadius: 22,
         borderTopRightRadius: 2,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
@@ -124,7 +127,7 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 36,
         borderTopLeftRadius: 2,
-        borderTopRightRadius: 2,
+        borderTopRightRadius: 22,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
         backgroundColor: colors.ui.secondary,

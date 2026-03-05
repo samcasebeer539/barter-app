@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TradeActionConfig } from '@/config/tradeConfig';
-import { deckStyles, makeCountBar, DECK_BAR_WIDTH } from '../styles/deckStyles';
+import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 const { width } = Dimensions.get('window');
 
@@ -27,9 +27,8 @@ const trade1Turns: TradeTurn[] = [
   { type: 'turnQuery', isUser: true },
 ];
 
-const DECK_WIDTH = Math.min(width - 40, 600);
-
 export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd }: OfferDeckProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
@@ -90,21 +89,33 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
             selectColor={selectColor}
           />
         </View>
-        
-        <View style={deckStyles.actionRow}>
-          <TradeUI
-            actions={actions}
-            onActionSelected={handleActionSelected}
-            onQueryToggle={setIsQueryOpen}
-            isSelectMode={isSelectMode}
-            selectedCount={selectedPosts.length}
-            topCardIsSelected={topCardIsSelected}
-          />
+
+        <View style={deckStyles.turnsAndButtonRow}>
+          {isExpanded && (
+            <View style={deckStyles.actionRow}>
+              <TradeUI
+                actions={actions}
+                onActionSelected={handleActionSelected}
+                onQueryToggle={setIsQueryOpen}
+                isSelectMode={isSelectMode}
+                selectedCount={selectedPosts.length}
+                topCardIsSelected={topCardIsSelected}
+              />
+            </View>
+          )}
+          {isExpanded && (
+            <View style={deckStyles.turnsRow}>
+              <TradeTurns turns={trade1Turns} isQueryOpen={isQueryOpen} />
+            </View>
+          )}
         </View>
 
-        <View style={deckStyles.turnsRow}>
-          <TradeTurns turns={trade1Turns} isQueryOpen={isQueryOpen} />
-        </View>
+        <TouchableOpacity
+          style={styles.collapseBar}
+          onPress={() => setIsExpanded(prev => !prev)}
+        >
+          <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -115,10 +126,19 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     alignItems: 'center',
-    bottom: 600,
   },
-  // pill shape — both ends capped
   statusBar: {
     ...makeCountBar('pill', 'flex-end'),
+  },
+  collapseBar: {
+    top: -6,
+    width: DECK_BAR_WIDTH,
+    height: 36,
+    ...barRadius.bottomCap,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    zIndex: 10,
   },
 });

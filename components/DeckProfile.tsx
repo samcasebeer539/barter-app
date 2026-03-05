@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -58,41 +58,78 @@ export default function ProfileDeck({
 }: ProfileDeckProps) {
   const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
+
   const [showSecondary, setShowSecondary] = useState(false);
   const [secondaryHeight, setSecondaryHeight] = useState(0);
-  const [isQueryDrawerOpen, setIsQueryDrawerOpen] = useState(false);
+  const pendingOpenRef = useRef(false);
 
+  const isDeckRevealedRef = useRef(isDeckRevealed);
+  useEffect(() => { isDeckRevealedRef.current = isDeckRevealed; }, [isDeckRevealed]);
+
+  const [isQueryDrawerOpen, setIsQueryDrawerOpen] = useState(false);
   const [isTradeSelectMode, setIsTradeSelectMode] = useState(false);
   const [selectedSecondaryPosts, setSelectedSecondaryPosts] = useState<number[]>([]);
   const [topSecondaryPostIndex, setTopSecondaryPostIndex] = useState<number | null>(null);
   const [isTradeQueryOpen, setIsTradeQueryOpen] = useState(false);
   const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
+  // Track what type of card is on top of the primary deck
+  const [topCardType, setTopCardType] = useState<'user' | 'post' | 'datetime' | 'location'>('user');
+  // Edit mode — only meaningful when topCardType === 'user'
+  const [isEditMode, setIsEditMode] = useState(false);
+  // Post edit mode — only meaningful when topCardType === 'post'
+  const [isPostEditMode, setIsPostEditMode] = useState(false);
+
+  // When the top card changes away from its type, exit the relevant edit mode
+  useEffect(() => {
+    if (topCardType !== 'user') setIsEditMode(false);
+    if (topCardType !== 'post') setIsPostEditMode(false);
+  }, [topCardType]);
+
   const itemCount = useMemo(() => posts.length, [posts]);
 
-  const isDeckRevealedRef = useRef(isDeckRevealed);
-
-  useEffect(() => {
-    if (isDeckRevealed) setShowSecondary(true);
-    isDeckRevealedRef.current = isDeckRevealed;
-
+  const animateOpen = useCallback((toHeight: number) => {
+    slideAnim.setValue(0);
     Animated.timing(slideAnim, {
-      toValue: isDeckRevealed ? 1 : 0,
+      toValue: 1,
       useNativeDriver: false,
       duration: 300,
-    }).start(() => {
-      if (!isDeckRevealed) {
+    }).start();
+  }, [slideAnim]);
+
+  const animateClose = useCallback(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      useNativeDriver: false,
+      duration: 300,
+    }).start(({ finished }) => {
+      if (finished) {
         setShowSecondary(false);
+        setSecondaryHeight(0);
         setIsTradeSelectMode(false);
         setSelectedSecondaryPosts([]);
         setIsTradeQueryOpen(false);
+        pendingOpenRef.current = false;
       }
     });
+  }, [slideAnim]);
+
+  useEffect(() => {
+    if (isDeckRevealed) {
+      pendingOpenRef.current = true;
+      setShowSecondary(true);
+    } else {
+      animateClose();
+    }
   }, [isDeckRevealed]);
 
   const handleSecondaryLayout = (h: number) => {
+    if (h === 0) return;
     setSecondaryHeight(h);
-    if (isDeckRevealedRef.current) slideAnim.setValue(1);
+    if (pendingOpenRef.current) {
+      pendingOpenRef.current = false;
+      animateOpen(h);
+    }
   };
 
   const handleTradeActionSelected = (action: TradeAction) => {
@@ -112,7 +149,8 @@ export default function ProfileDeck({
     }
   };
 
-  const handleTopSecondaryCardChange = (postIndex: number | null) => setTopSecondaryPostIndex(postIndex);
+  const handleTopSecondaryCardChange = (postIndex: number | null) =>
+    setTopSecondaryPostIndex(postIndex);
   const handleTradeQueryToggle = (isOpen: boolean) => setIsTradeQueryOpen(isOpen);
 
   const topSecondaryCardIsSelected =
@@ -124,7 +162,8 @@ export default function ProfileDeck({
   );
 
   const cardWidth = Math.min(width - 36, 400);
-  const translateY = slideAnim.interpolate({
+
+  const spacerHeight = slideAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, secondaryHeight + SLIDE_MARGIN],
   });
@@ -132,7 +171,7 @@ export default function ProfileDeck({
   return (
     <View style={styles.container} pointerEvents="box-none">
       {/* Offers bar */}
-      <View style={[deckStyles.itemCountRow, {marginBottom: 8}]}>
+      <View style={[deckStyles.itemCountRow, { marginBottom: 8 }]}>
         <TouchableOpacity
           style={styles.queryButton}
           onPress={() => setIsQueryDrawerOpen(prev => !prev)}
@@ -146,14 +185,17 @@ export default function ProfileDeck({
           onPress={onToggleReveal}
           disabled={!toggleEnabled}
         >
-          <Text style={[deckStyles.actionButtonText, { color: colors.actions.offer,}]}>2 OFFERS</Text>
-          <Text style={[deckStyles.countText, {marginLeft: 'auto'}]}>0{itemCount}</Text>
-          <FontAwesome6 name="arrows-rotate" size={22} color={colors.ui.secondarydisabled} />
+          <Text style={[deckStyles.actionButtonText, { color: colors.actions.offer }]}>
+            2 OFFERS
+          </Text>
+          <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{itemCount}</Text>
+          <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
         </TouchableOpacity>
       </View>
 
       {/* Decks */}
       <View style={styles.decksContainer}>
+
         {/* Secondary deck */}
         {showSecondary && secondaryPosts.length > 0 && (
           <View
@@ -172,8 +214,7 @@ export default function ProfileDeck({
                 selectColor={colors.actions.trade}
               />
             </View>
-
-            <View style={[deckStyles.turnsAndButtonRow, {marginBottom: 4}]}>
+            <View style={[deckStyles.turnsAndButtonRow, { marginBottom: 4 }]}>
               <View style={deckStyles.actionRow}>
                 <TradeUI
                   actions={tradeActions}
@@ -185,50 +226,61 @@ export default function ProfileDeck({
                 />
               </View>
               <View style={deckStyles.turnsRow}>
-                <TradeTurns turns={tradeTurns} 
-                  isQueryOpen={isTradeQueryOpen} 
-                />
-
+                <TradeTurns turns={tradeTurns} isQueryOpen={isTradeQueryOpen} />
               </View>
             </View>
           </View>
         )}
 
-        {/* Primary deck (animated drawer) */}
-        <Animated.View style={[styles.primaryDeckWrapper, { transform: [{ translateY }] }]}>
-          <View style={styles.primaryDeckColumn}>
-            
+        {/* Spacer */}
+        <Animated.View style={{ height: spacerHeight }} pointerEvents="none" />
 
+        {/* Primary deck */}
+        <View style={styles.primaryDeckWrapper}>
+          <View style={styles.primaryDeckColumn}>
             <View style={deckStyles.deckWrapper}>
-              <Deck posts={posts} user={PRIMARY_USER} cardWidth={cardWidth} enabled />
+              <Deck
+                posts={posts}
+                user={PRIMARY_USER}
+                cardWidth={cardWidth}
+                enabled
+                onTopCardTypeChange={setTopCardType}
+                isUser={true}
+                isEditMode={isEditMode}
+                onExitEdit={() => setIsEditMode(false)}
+                onEnterEdit={() => setIsEditMode(true)}
+                isPostEditMode={isPostEditMode}
+                onExitPostEdit={() => setIsPostEditMode(false)}
+                onEnterPostEdit={() => setIsPostEditMode(true)}
+              />
             </View>
             {isQueryDrawerOpen && (
               <View style={styles.queryDrawer}>
-                <TradeTurns turns={[{ type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false }]} />
+                <TradeTurns
+                  turns={[
+                    { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+                  ]}
+                />
               </View>
             )}
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.addButton} onPress={() => {}}>
-                <FontAwesome6 name="circle-plus" size={22} color="#fff" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.settingsButton} onPress={() => {}}>
-                <FontAwesome6 name="sliders" size={21} color="#fff" />
+                <FontAwesome6 name="circle-plus" size={24} color="#fff" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.deleteButton} onPress={() => {}}>
-                <FontAwesome6 name="circle-xmark" size={22} color="#fff" />
+                <FontAwesome6 name="circle-xmark" size={24} color="#fff" />
               </TouchableOpacity>
               <View style={styles.myItemCountBar}>
-                <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
-                <FontAwesome6 name="circle-dot" size={22} color={colors.ui.secondarydisabled} />
-                <Text style={[deckStyles.countText, { color: colors.actions.trade }]}>0{itemCount}</Text>
-                <FontAwesome6 name="arrows-rotate" size={22} color={colors.actions.trade} />
+                <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
+                <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />
+                <Text style={[deckStyles.countText, { color: colors.actions.trade }]}>
+                  0{itemCount}
+                </Text>
+                <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
               </View>
-              
-              
             </View>
           </View>
-        </Animated.View>
+        </View>
       </View>
     </View>
   );
@@ -244,20 +296,17 @@ const styles = StyleSheet.create({
   },
   decksContainer: {
     width: '100%',
-    position: 'relative',
     alignItems: 'center',
     overflow: 'visible',
-    minHeight: 800,
   },
   primaryDeckWrapper: {
     width: '100%',
     alignItems: 'center',
-    flexDirection: 'column',
     zIndex: 2,
     elevation: 2,
-    backgroundColor: colors.ui.background,
   },
   primaryDeckColumn: {
+    width: '100%',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
@@ -267,6 +316,7 @@ const styles = StyleSheet.create({
   },
   secondaryDeckContainer: {
     position: 'absolute',
+    top: 0,
     width: '100%',
     alignItems: 'center',
     flexDirection: 'column',
@@ -285,17 +335,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     gap: 4,
   },
-  tradeRow: {
-    width: DECK_BAR_WIDTH,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 4,
-    top: -10,
-    elevation: 10,
-    zIndex: 0,
-   
-  },
   myItemCountBar: {
     height: 44,
     flexDirection: 'row',
@@ -306,9 +345,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
-  // ProfileDeck-specific asymmetric pill buttons
   offerButton: {
     flex: 1,
     paddingLeft: 16,
@@ -335,7 +373,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     ...makeIconButton('flat'),
   },
-  settingsButton: {
+  editButton: {
     ...makeIconButton('flat'),
   },
   addButton: {

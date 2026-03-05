@@ -59,7 +59,7 @@ export default function RootLayout() {
                 
                 const href = props.href as string;
                 const isFirst = href === '/feed';
-                const isLast = href === '/profiledeck';
+                const isLast = href === '/profile';
                 const isMiddle = href === '/barter';
                 
                 return (
@@ -108,7 +108,7 @@ export default function RootLayout() {
                 }}
                 />
             <Tabs.Screen
-            name="profiledeck"
+            name="profile"
             options={{
                 tabBarIcon: ({ color }) => (
                 <FontAwesome6 name="user-circle" size={22} color={color} style={{ marginTop: 0 }}/>

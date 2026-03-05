@@ -7,6 +7,10 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarOffersTradesDeals';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 
+const TOP_PADDING = 0;
+const BOTTOM_PADDING = 110;
+const DECK_GAP = 16;
+
 const POSTS = [
   {
     name: 'Fantasy Books',
@@ -93,7 +97,6 @@ export default function ActiveTradesTestScreen() {
   return (
     <View style={styles.container}>
       <OffersTradesDealsBar
-        
         onOffersPress={() => setTab('open')}
         onTradesPress={() => setTab('barter')}
         onDealsPress={() => setTab('close')}
@@ -104,7 +107,7 @@ export default function ActiveTradesTestScreen() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingBottom: keyboardHeight },
+          { paddingBottom: BOTTOM_PADDING + keyboardHeight },
         ]}
         keyboardShouldPersistTaps="handled"
         scrollEnabled={scrollEnabled}
@@ -112,17 +115,15 @@ export default function ActiveTradesTestScreen() {
         scrollEventThrottle={16}
       >
         <View style={styles.topSpacer} />
-     
+
         {tab === 'open' && (
-          <View>
-            <View style={{ height: 542 }} />
+          <View style={styles.deckList}>
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
               actions={offersActions}
             />
-            <View style={{ height: 24 }} />
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
@@ -133,23 +134,14 @@ export default function ActiveTradesTestScreen() {
         )}
 
         {tab === 'barter' && (
-          <View>
-            <View style={{ height: 342 }} />
-            <TradeDeck
-              posts={POSTS}
-              actions={tradesActions}
-            />
-            <View style={{ height: 24 }} />
-            <TradeDeck
-              posts={POSTS}
-              actions={tradesActions}
-            />
+          <View style={styles.deckList}>
+            <TradeDeck posts={POSTS} actions={tradesActions} />
+            <TradeDeck posts={POSTS} actions={tradesActions} />
           </View>
         )}
 
         {tab === 'close' && (
-          <View>
-            <View style={{ height: 342 }} />
+          <View style={styles.deckList}>
             <TradeDeck
               posts={POSTS}
               actions={dealsActions}
@@ -158,8 +150,6 @@ export default function ActiveTradesTestScreen() {
             />
           </View>
         )}
-
-        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
@@ -172,14 +162,16 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+    marginTop: 44,
   },
   contentContainer: {
+    flexGrow: 1,
     paddingTop: 0,
   },
   topSpacer: {
-    height: 110,
+    height: TOP_PADDING,
   },
-  bottomSpacer: {
-    height: 0,
+  deckList: {
+    gap: DECK_GAP,
   },
 });

@@ -5,7 +5,7 @@ import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { globalFonts, colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
-import TradeTurns from './TradeTurns';
+import TradeTurns, {TradeTurn} from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
@@ -23,7 +23,8 @@ interface FeedDeckProps {
   onClose: () => void;
 }
 
-export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
+
+export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -47,7 +48,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       backdropOpacity.setValue(0);
       Animated.parallel([
         Animated.timing(deckTranslateY, {
-          toValue: -40,
+          toValue: 0,
           useNativeDriver: true,
           duration: 350,
         }),
@@ -121,7 +122,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-only">
         <Animated.View
           style={[styles.modalBackground, { opacity: backdropOpacity }]}
           pointerEvents="none"
@@ -153,7 +154,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 </View>
               </View>
 
-              <View style={deckStyles.deckWrapper}>
+              <View style={deckStyles.deckWrapper} pointerEvents="box-none">
                 <Deck
                   posts={posts}
                   cardWidth={Math.min(width - 36, 400)}
@@ -166,20 +167,28 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 />
               </View>
 
-              <View style={deckStyles.actionRow}>
-                <TradeUI
-                  actions={feedActions}
-                  onActionSelected={handleActionSelected}
-                  onQueryToggle={setIsQueryOpen}
-                  isSelectMode={isSelectMode}
-                  selectedCount={selectedPosts.length}
-                  topCardIsSelected={topCardIsSelected}
-                />
-              </View>
+              <View style={deckStyles.turnsAndButtonRow}>
+                <View style={deckStyles.actionRow}>
+                  <TradeUI
+                    actions={feedActions}
+                    onActionSelected={handleActionSelected}
+                    onQueryToggle={setIsQueryOpen}
+                    isSelectMode={isSelectMode}
+                    selectedCount={selectedPosts.length}
+                    topCardIsSelected={topCardIsSelected}
+                  />
+                </View>
 
-              <View style={deckStyles.turnsRow}>
-                <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+                <View style={deckStyles.turnsRow}>
+                  <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+                </View>
               </View>
+              <TouchableOpacity
+                style={styles.collapseBar}
+                onPress={handleCloseModal}
+              >
+                <FontAwesome6 name="angle-down" size={26} color="#fff" />
+              </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
         </Animated.View>
@@ -204,7 +213,6 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
-  // Save button: left-cap shape, fixed width
   saveButton: {
     width: 50,
     height: 36,
@@ -213,8 +221,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Status bar: right-cap, takes remaining space
   statusBar: {
     ...makeCountBar('rightCap', 'flex-end'),
+  },
+  collapseBar: {
+    top: -10,
+    width: DECK_BAR_WIDTH,
+    height: 36,
+    ...barRadius.bottomCap,
+    backgroundColor: colors.ui.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    zIndex: 10,
   },
 });

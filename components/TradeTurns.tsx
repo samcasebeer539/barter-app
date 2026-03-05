@@ -19,7 +19,7 @@ interface TradeTurnsProps {
   isQueryOpen?: boolean;
 }
 
-const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false }) => {
+const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) => {
   const [queryAnswers, setQueryAnswers] = React.useState<Record<number, string>>({});
   const [activeQueryText, setActiveQueryText] = React.useState('');
   const internalInputRefs = useRef<Record<number, TextInput | null>>({});
@@ -75,7 +75,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false }) =
         </View>
 
         {isQuery && !turn.isUser && (
-          <View style={styles.answerRow}>
+          <View style={styles.answerRowPartner}>
             <TextInput
               ref={el => { internalInputRefs.current[index] = el; }}
               style={styles.answerInput}
@@ -91,6 +91,24 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false }) =
             <TouchableOpacity onPress={() => Keyboard.dismiss()}>
               <FontAwesome6 name="arrow-left-long" size={26} color={colors.actions.query} />
             </TouchableOpacity>
+          </View>
+        )}
+
+        {isQuery && turn.isUser && (
+          <View style={styles.answerRowUser}>
+            <TextInput
+              ref={el => { internalInputRefs.current[index] = el; }}
+              style={styles.answerInput}
+              placeholder="Answer"
+              placeholderTextColor={colors.actions.query}
+              value={answerValue}
+              onChangeText={text => setQueryAnswers(prev => ({ ...prev, [index]: text }))}
+              multiline
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+              blurOnSubmit
+            />
+     
           </View>
         )}
       </View>
@@ -147,14 +165,14 @@ const styles = StyleSheet.create({
     ...rowBase,
     borderTopLeftRadius: 2,
     borderBottomRightRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderBottomLeftRadius: 25,
     borderTopRightRadius: 25,
   },
   rowPartner: {
     ...rowBase,
     justifyContent: 'center',
     borderTopLeftRadius: 25,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 25,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
   },
@@ -166,12 +184,25 @@ const styles = StyleSheet.create({
     borderColor: colors.actions.query,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderTopRightRadius: 2,
     paddingHorizontal: 10,
     paddingBottom: 2,
   },
-  answerRow: {
+  answerRowUser: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    borderWidth: 3,
+    borderColor: colors.actions.query,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    borderTopRightRadius: 2,
+    paddingHorizontal: 10,
+    paddingBottom: 2,
+  },
+  answerRowPartner: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,

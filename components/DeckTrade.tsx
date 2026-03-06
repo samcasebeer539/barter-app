@@ -27,10 +27,12 @@ interface Post {
 interface TradeDeckProps {
   posts: Post[];
   actions: TradeActionConfig[];
+  turns: TradeTurn[];
   onHorizontalGestureStart?: () => void;
   onGestureEnd?: () => void;
   showDateTime?: boolean;
   showLocation?: boolean;
+
 }
 
 const DECK_WIDTH = Math.min(width - 36, 400);
@@ -38,6 +40,7 @@ const DECK_WIDTH = Math.min(width - 36, 400);
 export default function TradeDeck({
   posts,
   actions,
+  turns,
   showDateTime = false,
   showLocation = false,
   onHorizontalGestureStart,
@@ -46,7 +49,6 @@ export default function TradeDeck({
   const [isExpanded, setIsExpanded] = useState(true);
   const [showingPlayer, setShowingPlayer] = useState(false);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
-  const [turns, setTurns] = useState<TradeTurn[]>(trade1Turns);
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
 
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
   },
   deckClipWindow: {
     width: width,
-    overflow: 'hidden',
+    // overflow: 'hidden',
     alignItems: 'flex-start',
    
   },

@@ -1,15 +1,30 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+  Modal,
+  Platform,
+  ScrollView,
+  Keyboard,
+  KeyboardEvent,
+} from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { globalFonts, colors } from '../styles/globalStyles';
+import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
-import TradeTurns, {TradeTurn} from './TradeTurns';
+import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 const { width, height } = Dimensions.get('window');
+
+const BOTTOM_BASE = 140;
+const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - 60;
 
 interface Post {
   name: string;
@@ -23,8 +38,7 @@ interface FeedDeckProps {
   onClose: () => void;
 }
 
-
-export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
+export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -33,6 +47,10 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollY = useRef(0);
 
   const feedActions = useMemo(
     () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
@@ -40,6 +58,31 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
   );
 
   const postCount = useMemo(() => posts.length, [posts]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const show = Keyboard.addListener(showEvent, (e: KeyboardEvent) => {
+      const kbHeight = e.endCoordinates.height;
+      setKeyboardHeight(kbHeight);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          y: scrollY.current + kbHeight * 0.8,
+          animated: true,
+        });
+      }, 50);
+    });
+
+    const hide = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (visible) {
@@ -73,11 +116,13 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
       ]).start(() => {
         setIsRendered(false);
         setIsQueryOpen(false);
+        setKeyboardHeight(0);
       });
     }
   }, [visible]);
 
   const handleCloseModal = () => {
+    Keyboard.dismiss();
     Animated.parallel([
       Animated.timing(deckTranslateY, {
         toValue: height,
@@ -122,24 +167,35 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-only">
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+
+        {/* Dim backdrop — purely visual, no touch handling */}
         <Animated.View
           style={[styles.modalBackground, { opacity: backdropOpacity }]}
           pointerEvents="none"
         />
+
+        {/* Close strip — only occupies the space BELOW the deck (BOTTOM_BASE tall) */}
         <TouchableOpacity
-          style={StyleSheet.absoluteFill}
+          style={styles.closeStrip}
           activeOpacity={1}
           onPress={handleCloseModal}
         />
 
+        {/* Deck — slides in/out, sits above the close strip */}
         <Animated.View
-          pointerEvents="auto"
           style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'position' : 'height'}
-            keyboardVerticalOffset={120}
+          <ScrollView
+            ref={scrollViewRef}
+            style={{ maxHeight: MAX_SCROLL_HEIGHT }}
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: keyboardHeight }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            scrollEnabled={scrollEnabled}
+            onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
+            scrollEventThrottle={16}
           >
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
@@ -154,7 +210,7 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
                 </View>
               </View>
 
-              <View style={deckStyles.deckWrapper} pointerEvents="box-none">
+              <View style={deckStyles.deckWrapper}>
                 <Deck
                   posts={posts}
                   cardWidth={Math.min(width - 36, 400)}
@@ -164,14 +220,16 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
                   onTopCardChange={handleTopCardChange}
                   selectColor={colors.actions.offer}
                   showLocation={true}
+                  onHorizontalGestureStart={() => setScrollEnabled(false)}
+                  onGestureEnd={() => setScrollEnabled(true)}
                 />
               </View>
 
-              <View style={deckStyles.turnsAndButtonRow}>
-                <View style={deckStyles.queryRow}>
+              <View style={styles.turnsAndButtonColumn}>
+                <View style={[styles.queryRow, { marginBottom: isQueryOpen ? 4 : 0 }]}>
                   <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
                 </View>
-                <View style={[deckStyles.actionRow, {bottom: 4}]}>
+                <View style={styles.actionRow}>
                   <TradeUI
                     actions={feedActions}
                     onActionSelected={handleActionSelected}
@@ -181,18 +239,11 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
                     topCardIsSelected={topCardIsSelected}
                   />
                 </View>
-
-                
               </View>
-              {/* <TouchableOpacity
-                style={styles.collapseBar}
-                onPress={handleCloseModal}
-              >
-                <FontAwesome6 name="angle-down" size={26} color="#fff" />
-              </TouchableOpacity> */}
             </View>
-          </KeyboardAvoidingView>
+          </ScrollView>
         </Animated.View>
+
       </View>
     </Modal>
   );
@@ -207,12 +258,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: colors.ui.background,
   },
+  // Sits in the bottom strip only — the gap between screen bottom and the deck
+  closeStrip: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: BOTTOM_BASE,
+  },
   animatedContainer: {
     position: 'absolute',
-    bottom: 120,
+    bottom: BOTTOM_BASE,
     left: 0,
     right: 0,
     alignItems: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   saveButton: {
     width: 50,
@@ -227,7 +289,7 @@ const styles = StyleSheet.create({
   },
   collapseBar: {
     top: -10,
-    width: DECK_BAR_WIDTH ,
+    width: DECK_BAR_WIDTH,
     height: 36,
     ...barRadius.bottomCap,
     backgroundColor: colors.ui.secondary,
@@ -236,4 +298,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     zIndex: 10,
   },
+  turnsAndButtonColumn: {
+    flexDirection: 'column',
+    width: DECK_BAR_WIDTH,
+  },
+  queryRow: {
+
+  },
+  actionRow: {
+
+  }
 });

@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 25,
+    minHeight: 32,
   },
   rowPartner: {
     ...rowBase,
@@ -175,6 +176,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
+    minHeight: 32,
   },
   activeQueryRow: {
     flexDirection: 'row',

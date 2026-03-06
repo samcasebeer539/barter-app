@@ -21,13 +21,14 @@ interface OfferDeckProps {
   actions: TradeActionConfig[];
   onHorizontalGestureStart?: () => void;
   onGestureEnd?: () => void;
+  isOffer?: boolean;
 }
 
 const trade1Turns: TradeTurn[] = [
   { type: 'turnQuery', isUser: true },
 ];
 
-export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd }: OfferDeckProps) {
+export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd, isOffer }: OfferDeckProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
@@ -70,7 +71,19 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
     <View style={styles.modalContent} pointerEvents="box-none">
       <View style={deckStyles.column}>
         <View style={deckStyles.itemCountRow}>
+          
           <View style={styles.statusBar}>
+            {isOffer && (
+              <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: colors.actions.offer }]}>
+                12 OFFERS
+              </Text>
+            )}
+            {!isOffer && (
+              <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: colors.actions.query }]}>
+                6 QUERIES
+              </Text>
+            )}
+
             <Text style={deckStyles.countText}>0{itemCount}</Text>
             <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
           </View>

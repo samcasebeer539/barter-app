@@ -167,56 +167,61 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
 
   // ---- Main card ----
   return (
-    <View style={[styles.container, { transform: [{ scale }] }]}>
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Propose Meetup Times</Text>
-          <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
-        </View>
+    <View
+      style={[styles.container, { transform: [{ scale }] }]}
+      onStartShouldSetResponder={() => true}
+    >
+      <View style={[styles.container, { transform: [{ scale }] }]}>
+        <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>Propose Meetup Times</Text>
+            <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
+          </View>
 
-        <ScrollView style={styles.dateList} showsVerticalScrollIndicator={false}>
-          {dates.map(dateEntry => (
-            <View key={dateEntry.id} style={styles.dateBlock}>
-              <View style={styles.dateRow}>
-                <Text style={styles.dateText}>{dateEntry.date}</Text>
-                <TouchableOpacity onPress={() => removeDate(dateEntry.id)}>
-                  <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-              </View>
+          <ScrollView style={styles.dateList} showsVerticalScrollIndicator={false}>
+            {dates.map(dateEntry => (
+              <View key={dateEntry.id} style={styles.dateBlock}>
+                <View style={styles.dateRow}>
+                  <Text style={styles.dateText}>{dateEntry.date}</Text>
+                  <TouchableOpacity onPress={() => removeDate(dateEntry.id)}>
+                    <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                </View>
 
-              <View style={styles.timeList}>
-                {dateEntry.times.map(span => (
-                  <View key={span.id} style={styles.timeRow}>
-                    <View style={styles.timeChip}>
-                      <TouchableOpacity onPress={() => removeTime(dateEntry.id, span.id)}>
-                        <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
-                      </TouchableOpacity>
-                      <Text style={styles.timeText}>{span.start} – {span.end}</Text>
+                <View style={styles.timeList}>
+                  {dateEntry.times.map(span => (
+                    <View key={span.id} style={styles.timeRow}>
+                      <View style={styles.timeChip}>
+                        <TouchableOpacity onPress={() => removeTime(dateEntry.id, span.id)}>
+                          <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+                        </TouchableOpacity>
+                        <Text style={styles.timeText}>{span.start} – {span.end}</Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  ))}
 
-                <TouchableOpacity style={styles.addTimeBtn} onPress={() => startAddingTime(dateEntry.id)}>
-                  <FontAwesome6 name="circle-plus" size={22} color={colors.ui.cardsecondary} />
-                  <Text style={styles.timeText}>Time span</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity style={styles.addTimeBtn} onPress={() => startAddingTime(dateEntry.id)}>
+                    <FontAwesome6 name="circle-plus" size={22} color={colors.ui.cardsecondary} />
+                    <Text style={styles.timeText}>Time span</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
+            ))}
 
-          {dates.length < MAX_DATES && (
-            <TouchableOpacity style={styles.addDateBtn} onPress={() => setShowDatePicker(true)}>
-              <FontAwesome6 name="circle-plus" size={22} color={colors.actions.time} />
-              <Text style={[styles.addDateText, { color: colors.actions.time }]}>Date</Text>
+            {dates.length < MAX_DATES && (
+              <TouchableOpacity style={styles.addDateBtn} onPress={() => setShowDatePicker(true)}>
+                <FontAwesome6 name="circle-plus" size={22} color={colors.actions.time} />
+                <Text style={[styles.addDateText, { color: colors.actions.time }]}>Date</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+
+          {dates.length > 0 && onConfirm && (
+            <TouchableOpacity style={styles.confirmBtn} onPress={() => onConfirm(dates)}>
+              <Text style={styles.confirmText}>Send Proposal</Text>
             </TouchableOpacity>
           )}
-        </ScrollView>
-
-        {dates.length > 0 && onConfirm && (
-          <TouchableOpacity style={styles.confirmBtn} onPress={() => onConfirm(dates)}>
-            <Text style={styles.confirmText}>Send Proposal</Text>
-          </TouchableOpacity>
-        )}
+        </View>
       </View>
     </View>
   );

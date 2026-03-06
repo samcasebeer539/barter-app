@@ -6,6 +6,25 @@ import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
+import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
+
+const trade1Turns: TradeTurn[] = [
+  { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+  { type: 'turnCounter', isUser: true },
+  { type: 'turnTrade',   user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
+  { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
+];
+
+const deal1Turns: TradeTurn[] = [
+  { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
+  { type: 'turnAccept',  isUser: true },
+
+  { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+  { type: 'turnCounter', isUser: true },
+  { type: 'turnTrade',   user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
+  { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
+];
+
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
@@ -66,7 +85,7 @@ export default function ActiveTradesTestScreen() {
   );
   const dealsActions = useMemo(
     () => TRADE_ACTIONS.filter(a =>
-      ['accept', 'decline', 'where', 'when', 'wait', 'play', 'cancel'].includes(a.actionType)
+      ['where', 'when', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
     ),
     []
   );
@@ -123,20 +142,22 @@ export default function ActiveTradesTestScreen() {
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
               actions={offersActions}
+              isOffer={true}
             />
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
               actions={queriesActions}
+              isOffer={false}
             />
           </View>
         )}
 
         {tab === 'barter' && (
           <View style={styles.deckList}>
-            <TradeDeck posts={POSTS} actions={tradesActions} />
-            <TradeDeck posts={POSTS} actions={tradesActions} />
+            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns}/>
+            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns}/>
           </View>
         )}
 
@@ -147,7 +168,9 @@ export default function ActiveTradesTestScreen() {
               actions={dealsActions}
               showDateTime={true}
               showLocation={true}
+              turns={deal1Turns}
             />
+           
           </View>
         )}
       </ScrollView>

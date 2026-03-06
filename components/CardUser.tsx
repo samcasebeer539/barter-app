@@ -112,197 +112,202 @@ const UserCard: React.FC<UserCardProps> = ({
   const contactString = [user.email, user.phone].filter(Boolean).join(' · ') || 'None';
 
   return (
-    <View style={[styles.container, { transform: [{ scale }] }]} pointerEvents="box-none">
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+    <View
+      style={[styles.container, { transform: [{ scale }] }]}
+      onStartShouldSetResponder={() => true}
+    >
+      <View style={[styles.container, { transform: [{ scale }] }]} pointerEvents="box-none">
+        <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
 
-        <View
-          style={[StyleSheet.absoluteFill, styles.gestureOverlay]}
-          onStartShouldSetResponder={() => false}
-          onMoveShouldSetResponder={() => false}
-        />
+          <View
+            style={[StyleSheet.absoluteFill, styles.gestureOverlay]}
+            onStartShouldSetResponder={() => false}
+            onMoveShouldSetResponder={() => false}
+          />
 
-        {/* Photo */}
-        <TouchableOpacity
-          activeOpacity={isInfoExpanded ? 0.8 : 1}
-          onPress={() => !isEditable && isInfoExpanded && setIsInfoExpanded(false)}
-          style={styles.photoTouchable}
-        >
-          <Animated.View style={[styles.photoSection, { height: photoHeight }]}>
-            <Image
-              source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
-              style={styles.photo}
-              resizeMode="cover"
-            />
+          {/* Photo */}
+          <TouchableOpacity
+            activeOpacity={isInfoExpanded ? 0.8 : 1}
+            onPress={() => !isEditable && isInfoExpanded && setIsInfoExpanded(false)}
+            style={styles.photoTouchable}
+          >
+            <Animated.View style={[styles.photoSection, { height: photoHeight }]}>
+              <Image
+                source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
+                style={styles.photo}
+                resizeMode="cover"
+              />
+              {isEditable && (
+                <View style={styles.photoEditOverlay} pointerEvents="none">
+                  <FontAwesome6 name="camera" size={24} color="#fff" />
+                </View>
+              )}
+            </Animated.View>
+          </TouchableOpacity>
+
+          {/* Info section */}
+          <TouchableOpacity
+            activeOpacity={isEditable ? 1 : 0.9}
+            onPress={() => !isEditable && setIsInfoExpanded(true)}
+            style={styles.infoSection}
+          >
+            {/* Name row */}
+            <View style={[styles.headerRow, { marginBottom: 8 }]}>
+              <Text style={styles.name} numberOfLines={1}>
+                {user.name}
+                {!isEditable && user.pronouns
+                  ? <Text style={styles.pronouns}> {user.pronouns}</Text>
+                  : null}
+              </Text>
+
+              {isEditable ? (
+                // Edit mode: check, x, profile icon
+                <>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
+                    <FontAwesome6 name="circle-check" size={24} color={colors.actions.accept} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleCancel}>
+                    <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                </>
+              ) : isUser ? (
+                // Own profile view mode: sliders (enter edit) + profile icon
+                <>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={e => { e.stopPropagation(); onEnterEdit?.(); }}
+                  >
+                    <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                // Other user: ban, report, profile icon
+                <>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <FontAwesome6 name="ban" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <FontAwesome6 name="circle-exclamation" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+
+            {/* Pronouns — editable input only in edit mode */}
             {isEditable && (
-              <View style={styles.photoEditOverlay} pointerEvents="none">
-                <FontAwesome6 name="camera" size={24} color="#fff" />
+              <View style={styles.fieldRow}>
+                <Text style={styles.fieldLabel}>Pronouns:</Text>
+                <TextInput
+                  style={[styles.location, styles.editableText, { flex: 1 }]}
+                  value={draft.pronouns}
+                  onChangeText={v => updateDraft('pronouns', v)}
+                  placeholder="optional"
+                  placeholderTextColor={colors.ui.cardsecondary}
+                />
               </View>
             )}
-          </Animated.View>
-        </TouchableOpacity>
 
-        {/* Info section */}
-        <TouchableOpacity
-          activeOpacity={isEditable ? 1 : 0.9}
-          onPress={() => !isEditable && setIsInfoExpanded(true)}
-          style={styles.infoSection}
-        >
-          {/* Name row */}
-          <View style={[styles.headerRow, { marginBottom: 8 }]}>
-            <Text style={styles.name} numberOfLines={1}>
-              {user.name}
-              {!isEditable && user.pronouns
-                ? <Text style={styles.pronouns}> {user.pronouns}</Text>
-                : null}
-            </Text>
-
+            {/* Contacts */}
             {isEditable ? (
-              // Edit mode: check, x, profile icon
               <>
-                <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
-                  <FontAwesome6 name="circle-check" size={24} color={colors.actions.accept} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton} onPress={handleCancel}>
-                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                  <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-              </>
-            ) : isUser ? (
-              // Own profile view mode: sliders (enter edit) + profile icon
-              <>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={e => { e.stopPropagation(); onEnterEdit?.(); }}
-                >
-                  <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                  <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Email:</Text>
+                  <TextInput
+                    style={[styles.location, styles.editableText, { flex: 1 }]}
+                    value={draft.email}
+                    onChangeText={v => updateDraft('email', v)}
+                    placeholder="your@email.com"
+                    placeholderTextColor={colors.ui.cardsecondary}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    secureTextEntry={!emailVisible}
+                  />
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => setEmailVisible(prev => !prev)}
+                  >
+                    <FontAwesome6
+                      name={emailVisible ? 'eye' : 'eye-slash'}
+                      size={20}
+                      color={colors.ui.cardsecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.fieldRow}>
+                  <Text style={styles.fieldLabel}>Phone:</Text>
+                  <TextInput
+                    style={[styles.location, styles.editableText, { flex: 1 }]}
+                    value={draft.phone}
+                    onChangeText={v => updateDraft('phone', v)}
+                    placeholder="optional"
+                    placeholderTextColor={colors.ui.cardsecondary}
+                    keyboardType="phone-pad"
+                    secureTextEntry={!phoneVisible}
+                  />
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => setPhoneVisible(prev => !prev)}
+                  >
+                    <FontAwesome6
+                      name={phoneVisible ? 'eye' : 'eye-slash'}
+                      size={20}
+                      color={colors.ui.cardsecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
               </>
             ) : (
-              // Other user: ban, report, profile icon
-              <>
-                <TouchableOpacity style={styles.actionButton}>
-                  <FontAwesome6 name="ban" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                  <FontAwesome6 name="circle-exclamation" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}>
-                  <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-              </>
+              <View style={styles.headerRow}>
+                <View style={styles.locationRow}>
+                  <Text style={styles.location}>
+                    {isUser
+                      ? `Contacts: ${contactString}`
+                      : `Contacts: ${contactString}`}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Bio */}
+            {isEditable ? (
+              <View>
+                <Text style={styles.fieldLabel}>Bio:</Text>
+                <TextInput
+                  style={[styles.bio, styles.editableText, { flexShrink: 1 }]}
+                  value={draft.bio}
+                  onChangeText={v => updateDraft('bio', v)}
+                  placeholder="Tell others about yourself"
+                  placeholderTextColor={colors.ui.cardsecondary}
+                  multiline
+                />
+              </View>
+            ) : (
+              <Text style={styles.bio} numberOfLines={isInfoExpanded ? undefined : 2}>
+                {user.bio}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Bottom row — ratings only in view mode */}
+          <View style={styles.ratingsRow}>
+            {!isEditable && (
+              <View style={styles.ratingContainer}>
+                <StarRating rating={user.rating} />
+                <Text style={styles.ratingText}>({user.reviewCount ?? 0}  ratings)</Text>
+              </View>
             )}
           </View>
 
-          {/* Pronouns — editable input only in edit mode */}
-          {isEditable && (
-            <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>Pronouns:</Text>
-              <TextInput
-                style={[styles.location, styles.editableText, { flex: 1 }]}
-                value={draft.pronouns}
-                onChangeText={v => updateDraft('pronouns', v)}
-                placeholder="optional"
-                placeholderTextColor={colors.ui.cardsecondary}
-              />
-            </View>
-          )}
-
-          {/* Contacts */}
-          {isEditable ? (
-            <>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Email:</Text>
-                <TextInput
-                  style={[styles.location, styles.editableText, { flex: 1 }]}
-                  value={draft.email}
-                  onChangeText={v => updateDraft('email', v)}
-                  placeholder="your@email.com"
-                  placeholderTextColor={colors.ui.cardsecondary}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  secureTextEntry={!emailVisible}
-                />
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => setEmailVisible(prev => !prev)}
-                >
-                  <FontAwesome6
-                    name={emailVisible ? 'eye' : 'eye-slash'}
-                    size={20}
-                    color={colors.ui.cardsecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Phone:</Text>
-                <TextInput
-                  style={[styles.location, styles.editableText, { flex: 1 }]}
-                  value={draft.phone}
-                  onChangeText={v => updateDraft('phone', v)}
-                  placeholder="optional"
-                  placeholderTextColor={colors.ui.cardsecondary}
-                  keyboardType="phone-pad"
-                  secureTextEntry={!phoneVisible}
-                />
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => setPhoneVisible(prev => !prev)}
-                >
-                  <FontAwesome6
-                    name={phoneVisible ? 'eye' : 'eye-slash'}
-                    size={20}
-                    color={colors.ui.cardsecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-            </>
-          ) : (
-            <View style={styles.headerRow}>
-              <View style={styles.locationRow}>
-                <Text style={styles.location}>
-                  {isUser
-                    ? `Contacts: ${contactString}`
-                    : `Contacts: ${contactString}`}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Bio */}
-          {isEditable ? (
-            <View>
-              <Text style={styles.fieldLabel}>Bio:</Text>
-              <TextInput
-                style={[styles.bio, styles.editableText, { flexShrink: 1 }]}
-                value={draft.bio}
-                onChangeText={v => updateDraft('bio', v)}
-                placeholder="Tell others about yourself"
-                placeholderTextColor={colors.ui.cardsecondary}
-                multiline
-              />
-            </View>
-          ) : (
-            <Text style={styles.bio} numberOfLines={isInfoExpanded ? undefined : 2}>
-              {user.bio}
-            </Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Bottom row — ratings only in view mode */}
-        <View style={styles.ratingsRow}>
-          {!isEditable && (
-            <View style={styles.ratingContainer}>
-              <StarRating rating={user.rating} />
-              <Text style={styles.ratingText}>({user.reviewCount ?? 0}  ratings)</Text>
-            </View>
-          )}
         </View>
-
       </View>
     </View>
   );

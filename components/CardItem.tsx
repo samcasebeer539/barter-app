@@ -177,229 +177,234 @@ const PostCard: React.FC<PostCardProps> = ({
   };
 
   return (
-    <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-        <View style={styles.header}>
-          <View style={styles.titleContainer}>
+    <View
+      style={[styles.container, { transform: [{ scale }] }]}
+      onStartShouldSetResponder={() => true}
+    >
+      <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
+        <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+          <View style={styles.header}>
+            <View style={styles.titleContainer}>
 
-            {/* Title: label + input in edit mode, ticker in view mode */}
-            {isEditable ? (
-              <View style={styles.titleEditWrapper}>
-                <Text style={styles.fieldLabelTitle}>Title:</Text>
-                <TextInput
-                  style={[styles.title, styles.titleInput]}
-                  value={draft.name}
-                  onChangeText={v => updateDraft('name', v)}
-                  placeholder="Item title"
-                  placeholderTextColor={colors.ui.cardsecondary}
-                />
-              </View>
-            ) : (
-              <TextTicker
-                key={isSelectMode ? 'select' : 'normal'}
-                style={[styles.title, { marginTop: 12 }]}
-                duration={8000}
-                loop
-                bounce={false}
-                repeatSpacer={20}
-                marqueeDelay={200}
-                ellipsizeMode='tail'
-              >
-                {post.name}
-              </TextTicker>
-            )}
-
-            {!isEditable && (
-              <View style={{ flex: 1 }} />
-            )}
-
-            {/* Select icon (view mode only) */}
-            {!isEditable && (
-              <TouchableOpacity
-                activeOpacity={0.2}
-                onPress={onSelect}
-                style={[styles.selectIconContainer, { backgroundColor: isSelected ? '#fff' : 'transparent' }]}
-              >
-                {isSelectMode && (
-                  <FontAwesome6
-                    name={isSelected ? 'circle-check' : 'circle'}
-                    size={24}
-                    color={isSelected ? selectColor : 'transparent'}
+              {/* Title: label + input in edit mode, ticker in view mode */}
+              {isEditable ? (
+                <View style={styles.titleEditWrapper}>
+                  <Text style={styles.fieldLabelTitle}>Title:</Text>
+                  <TextInput
+                    style={[styles.title, styles.titleInput]}
+                    value={draft.name}
+                    onChangeText={v => updateDraft('name', v)}
+                    placeholder="Item title"
+                    placeholderTextColor={colors.ui.cardsecondary}
                   />
-                )}
-              </TouchableOpacity>
-            )}
-
-            {/* Edit mode: save + cancel */}
-            {isEditable ? (
-              <>
-                <TouchableOpacity style={styles.iconContainer} onPress={handleSave}>
-                  <FontAwesome6 name="circle-check" size={24} color={colors.actions.trade} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconContainer} onPress={handleCancel}>
-                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-              </>
-            ) : isUser ? (
-              <TouchableOpacity style={styles.iconContainer} onPress={onEnterEdit}>
-                <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
-              </TouchableOpacity>
-            ) : null}
-
-            {/* arrows-rotate always visible */}
-            <View style={styles.iconContainer}>
-              <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
-            </View>
-          </View>
-        </View>
-
-        {/* ── VIEW MODE: absolute-positioned photo + description ── */}
-        {!isEditable && (
-          <>
-            <Animated.View
-              style={[styles.photoSectionWrapper, { bottom: photoBottom }]}
-              pointerEvents="box-none"
-            >
-              <View style={styles.photoSection}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={handlePhotoTap}
-                  style={styles.photoTouchable}
+                </View>
+              ) : (
+                <TextTicker
+                  key={isSelectMode ? 'select' : 'normal'}
+                  style={[styles.title, { marginTop: 12 }]}
+                  duration={8000}
+                  loop
+                  bounce={false}
+                  repeatSpacer={20}
+                  marqueeDelay={200}
+                  ellipsizeMode='tail'
                 >
-                  {displayPhotos.length > 0 && (
-                    <View style={[styles.photoFrame, {
-                      aspectRatio: photoAspectRatios[currentPhotoIndex] || 1,
-                      maxHeight: '100%',
-                      maxWidth: '100%',
-                    }]}>
-                      <Image
-                        source={{ uri: displayPhotos[currentPhotoIndex] }}
-                        style={styles.photo}
-                        resizeMode="cover"
-                      />
-                    </View>
+                  {post.name}
+                </TextTicker>
+              )}
+
+              {!isEditable && (
+                <View style={{ flex: 1 }} />
+              )}
+
+              {/* Select icon (view mode only) */}
+              {!isEditable && (
+                <TouchableOpacity
+                  activeOpacity={0.2}
+                  onPress={onSelect}
+                  style={[styles.selectIconContainer, { backgroundColor: isSelected ? '#fff' : 'transparent' }]}
+                >
+                  {isSelectMode && (
+                    <FontAwesome6
+                      name={isSelected ? 'circle-check' : 'circle'}
+                      size={24}
+                      color={isSelected ? selectColor : 'transparent'}
+                    />
                   )}
                 </TouchableOpacity>
-              </View>
-
-              {displayPhotos.length > 1 && (
-                <View style={styles.dotsContainer} pointerEvents="none">
-                  {displayPhotos.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[styles.dot, {
-                        backgroundColor: colors.ui.cardsecondary,
-                        transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
-                        opacity: index === currentPhotoIndex ? 1 : 0.4,
-                      }]}
-                    />
-                  ))}
-                </View>
-              )}
-            </Animated.View>
-
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={toggleMode}
-              style={styles.descriptionTouchable}
-            >
-              <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
-                <View style={styles.descriptionScroll}>
-                  <Text
-                    style={styles.descriptionText}
-                    numberOfLines={isDescriptionMode ? undefined : 4}
-                  >
-                    {post.description}
-                  </Text>
-                </View>
-              </Animated.View>
-            </TouchableOpacity>
-          </>
-        )}
-
-        {/* ── EDIT MODE: normal flow layout ── */}
-        {isEditable && (
-          <View style={styles.editBody}>
-            {/* Photo area */}
-            <View style={styles.editPhotoArea}>
-              {displayPhotos.length > 0 ? (
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={handlePhotoTap}
-                  style={styles.editPhotoFrame}
-                >
-                  <Image
-                    source={{ uri: displayPhotos[currentPhotoIndex] }}
-                    style={styles.photo}
-                    resizeMode="cover"
-                  />
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.emptyPhotoPlaceholder}>
-                  <FontAwesome6 name="image" size={32} color={colors.ui.cardsecondary} />
-                  <Text style={styles.emptyPhotoText}>No photos</Text>
-                </View>
               )}
 
-              {/* Photo controls row: delete / dots / add */}
-              <View style={styles.editPhotoControls}>
-                {/* Delete current photo */}
-                <TouchableOpacity
-                  style={styles.photoNavButton}
-                  onPress={() => handleRemovePhoto(currentPhotoIndex)}
-                  disabled={displayPhotos.length === 0}
-                >
-                  <FontAwesome6
-                    name="circle-minus"
-                    size={24}
-                    color={displayPhotos.length === 0 ? 'transparent' : colors.ui.cardsecondary}
-                  />
+              {/* Edit mode: save + cancel */}
+              {isEditable ? (
+                <>
+                  <TouchableOpacity style={styles.iconContainer} onPress={handleSave}>
+                    <FontAwesome6 name="circle-check" size={24} color={colors.actions.trade} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconContainer} onPress={handleCancel}>
+                    <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                </>
+              ) : isUser ? (
+                <TouchableOpacity style={styles.iconContainer} onPress={onEnterEdit}>
+                  <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
+              ) : null}
 
-                {/* Dots */}
-                <View style={styles.editDotsRow}>
-                  {displayPhotos.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[styles.dot, {
-                        backgroundColor: colors.ui.cardsecondary,
-                        transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
-                        opacity: index === currentPhotoIndex ? 1 : 0.4,
-                      }]}
-                    />
-                  ))}
-                </View>
-
-                {/* Add photo — now opens image picker */}
-                <TouchableOpacity style={styles.photoNavButton} onPress={handleAddPhoto}>
-                  <FontAwesome6 name="circle-plus" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
+              {/* arrows-rotate always visible */}
+              <View style={styles.iconContainer}>
+                <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
               </View>
-            </View>
-
-            {/* Description — editable TextInput */}
-            <View style={styles.editDescriptionArea}>
-              <Text style={styles.fieldLabel}>Description:</Text>
-              <TextInput
-                style={[styles.descriptionText, styles.descriptionInput]}
-                value={draft.description}
-                onChangeText={v => updateDraft('description', v)}
-                placeholder="Describe this item"
-                placeholderTextColor={colors.ui.cardsecondary}
-                multiline
-                scrollEnabled
-                textAlignVertical="top"
-              />
             </View>
           </View>
-        )}
 
-        <View style={styles.dateWrapper}>
-          <Text style={[styles.date, { color: colors.ui.cardsecondary }]}>{"\n"}11/26/24</Text>
+          {/* ── VIEW MODE: absolute-positioned photo + description ── */}
+          {!isEditable && (
+            <>
+              <Animated.View
+                style={[styles.photoSectionWrapper, { bottom: photoBottom }]}
+                pointerEvents="box-none"
+              >
+                <View style={styles.photoSection}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={handlePhotoTap}
+                    style={styles.photoTouchable}
+                  >
+                    {displayPhotos.length > 0 && (
+                      <View style={[styles.photoFrame, {
+                        aspectRatio: photoAspectRatios[currentPhotoIndex] || 1,
+                        maxHeight: '100%',
+                        maxWidth: '100%',
+                      }]}>
+                        <Image
+                          source={{ uri: displayPhotos[currentPhotoIndex] }}
+                          style={styles.photo}
+                          resizeMode="cover"
+                        />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {displayPhotos.length > 1 && (
+                  <View style={styles.dotsContainer} pointerEvents="none">
+                    {displayPhotos.map((_, index) => (
+                      <View
+                        key={index}
+                        style={[styles.dot, {
+                          backgroundColor: colors.ui.cardsecondary,
+                          transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
+                          opacity: index === currentPhotoIndex ? 1 : 0.4,
+                        }]}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Animated.View>
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={toggleMode}
+                style={styles.descriptionTouchable}
+              >
+                <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
+                  <View style={styles.descriptionScroll}>
+                    <Text
+                      style={styles.descriptionText}
+                      numberOfLines={isDescriptionMode ? undefined : 4}
+                    >
+                      {post.description}
+                    </Text>
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* ── EDIT MODE: normal flow layout ── */}
+          {isEditable && (
+            <View style={styles.editBody}>
+              {/* Photo area */}
+              <View style={styles.editPhotoArea}>
+                {displayPhotos.length > 0 ? (
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={handlePhotoTap}
+                    style={styles.editPhotoFrame}
+                  >
+                    <Image
+                      source={{ uri: displayPhotos[currentPhotoIndex] }}
+                      style={styles.photo}
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.emptyPhotoPlaceholder}>
+                    <FontAwesome6 name="image" size={32} color={colors.ui.cardsecondary} />
+                    <Text style={styles.emptyPhotoText}>No photos</Text>
+                  </View>
+                )}
+
+                {/* Photo controls row: delete / dots / add */}
+                <View style={styles.editPhotoControls}>
+                  {/* Delete current photo */}
+                  <TouchableOpacity
+                    style={styles.photoNavButton}
+                    onPress={() => handleRemovePhoto(currentPhotoIndex)}
+                    disabled={displayPhotos.length === 0}
+                  >
+                    <FontAwesome6
+                      name="circle-minus"
+                      size={24}
+                      color={displayPhotos.length === 0 ? 'transparent' : colors.ui.cardsecondary}
+                    />
+                  </TouchableOpacity>
+
+                  {/* Dots */}
+                  <View style={styles.editDotsRow}>
+                    {displayPhotos.map((_, index) => (
+                      <View
+                        key={index}
+                        style={[styles.dot, {
+                          backgroundColor: colors.ui.cardsecondary,
+                          transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
+                          opacity: index === currentPhotoIndex ? 1 : 0.4,
+                        }]}
+                      />
+                    ))}
+                  </View>
+
+                  {/* Add photo — now opens image picker */}
+                  <TouchableOpacity style={styles.photoNavButton} onPress={handleAddPhoto}>
+                    <FontAwesome6 name="circle-plus" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Description — editable TextInput */}
+              <View style={styles.editDescriptionArea}>
+                <Text style={styles.fieldLabel}>Description:</Text>
+                <TextInput
+                  style={[styles.descriptionText, styles.descriptionInput]}
+                  value={draft.description}
+                  onChangeText={v => updateDraft('description', v)}
+                  placeholder="Describe this item"
+                  placeholderTextColor={colors.ui.cardsecondary}
+                  multiline
+                  scrollEnabled
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+          )}
+
+          <View style={styles.dateWrapper}>
+            <Text style={[styles.date, { color: colors.ui.cardsecondary }]}>{"\n"}11/26/24</Text>
+          </View>
+
         </View>
-
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 };
 

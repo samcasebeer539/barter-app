@@ -128,6 +128,14 @@ const Deck: React.FC<DeckProps> = ({
     third: 2,
   });
 
+  // shadowIndices tracks which cards should have shadow — updated at animation
+  // START so the third card gets its shadow as soon as the swipe begins,
+  // not after it finishes moving into the second slot.
+  const [shadowIndices, setShadowIndices] = useState({
+    first: 0,
+    second: 1,
+  });
+
   const visibleIndicesRef = useRef(visibleIndices);
   visibleIndicesRef.current = visibleIndices;
   const isAnimatingRef = useRef(false);
@@ -146,19 +154,25 @@ const Deck: React.FC<DeckProps> = ({
     }
   }, [visibleIndices]);
 
+  const isHorizontalGestureRef = useRef(false);
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
+
       onMoveShouldSetPanResponder: (_, g) => {
         if (mapActiveRef.current) return false;
-        return (
+        const horizontal = (
           enabledRef.current &&
           !isAnimatingRef.current &&
           Math.abs(g.dx) > GESTURE_THRESHOLD &&
           Math.abs(g.dx) > Math.abs(g.dy) * 2
         );
+        isHorizontalGestureRef.current = horizontal;
+        return horizontal;
       },
+
       onMoveShouldSetPanResponderCapture: (_, g) => {
         if (mapActiveRef.current) return false;
         return (
@@ -168,6 +182,7 @@ const Deck: React.FC<DeckProps> = ({
           Math.abs(g.dx) > Math.abs(g.dy) * 2
         );
       },
+
       onPanResponderGrant: () => {
         if (!enabledRef.current) return;
         onHorizontalGestureStart?.();
@@ -182,6 +197,7 @@ const Deck: React.FC<DeckProps> = ({
       },
       onPanResponderRelease: (_, gesture) => {
         if (!enabledRef.current) return;
+        isHorizontalGestureRef.current = false;
         onGestureEnd?.();
         if (gesture.dx > SWIPE_THRESHOLD) {
           swipeOut(1);
@@ -192,6 +208,7 @@ const Deck: React.FC<DeckProps> = ({
         }
       },
       onPanResponderTerminate: () => {
+        isHorizontalGestureRef.current = false;
         onGestureEnd?.();
         resetPosition();
       },
@@ -204,6 +221,10 @@ const Deck: React.FC<DeckProps> = ({
     const secondIndex = visibleIndicesRef.current.second;
     const thirdIndex = visibleIndicesRef.current.third;
     const nextIndex = (thirdIndex + 1) % cards.length;
+
+    // Update shadow immediately at animation start — third card gets shadow
+    // as it begins moving into the second position
+    setShadowIndices({ first: secondIndex, second: thirdIndex });
 
     Animated.parallel([
       Animated.timing(cardAnimations[firstIndex].swipeX, {
@@ -236,6 +257,8 @@ const Deck: React.FC<DeckProps> = ({
       };
       setVisibleIndices(newIndices);
       visibleIndicesRef.current = newIndices;
+      // Sync shadow back to the new first/second after animation completes
+      setShadowIndices({ first: secondIndex, second: thirdIndex });
       isAnimatingRef.current = false;
       onExitEdit?.();
       onExitPostEdit?.();
@@ -275,11 +298,14 @@ const Deck: React.FC<DeckProps> = ({
       ? Animated.add(cardAnim.position.x, cardAnim.swipeX)
       : cardAnim.position.x;
 
+    const hasShadow = index === shadowIndices.first || index === shadowIndices.second;
+
     return (
       <Animated.View
         key={index}
         style={[
           styles.frontCard,
+          hasShadow ? styles.cardShadow : styles.noShadow,
           {
             transform: [
               { translateX },
@@ -326,9 +352,11 @@ const Deck: React.FC<DeckProps> = ({
       style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
       {...(enabled ? panResponder.panHandlers : {})}
     >
+      {/* Static blank card — no shadow */}
       <View
         style={[
           styles.frontCard,
+          styles.noShadow,
           { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] },
         ]}
       >
@@ -358,13 +386,19 @@ const styles = StyleSheet.create({
   frontCard: {
     position: 'absolute',
     zIndex: 10,
-    elevation: 8,
     top: 0,
     left: 0,
+  },
+  cardShadow: {
     shadowColor: colors.ui.secondary,
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
+    elevation: 8,
+  },
+  noShadow: {
+    shadowOpacity: 0,
+    elevation: 0,
   },
 });
 

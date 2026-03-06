@@ -46,7 +46,6 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const [isNaming, setIsNaming] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [descInput, setDescInput] = useState('');
-  // Real measured height of the footer — drives mapWrapper's marginBottom
   const [footerHeight, setFooterHeight] = useState(80);
 
   const handleMapPress = (event: MapPressEvent) => {
@@ -91,10 +90,12 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const canAddMore = locations.length < MAX_LOCATIONS;
 
   return (
-    <View style={[styles.container, { transform: [{ scale }] }]}>
+    <View
+      style={[styles.container, { transform: [{ scale }] }]}
+      onStartShouldSetResponder={() => true}
+    >
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
 
-        {/* Map — marginBottom always equals the footer's actual rendered height */}
         <View
           style={[styles.mapWrapper, { marginBottom: footerHeight }]}
           onTouchStart={() => { if (mapActiveRef) mapActiveRef.current = true; }}
@@ -128,7 +129,6 @@ const CardLocation: React.FC<CardLocationProps> = ({
           </MapView>
         </View>
 
-        {/* Footer — self-reports its height so the map always stays above it */}
         <View
           style={styles.footer}
           onLayout={e => setFooterHeight(e.nativeEvent.layout.height)}
@@ -190,7 +190,6 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 />
                 <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
                   <FontAwesome6 name="circle-check" size={22} color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location} />
-                  
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleCancelNaming} hitSlop={8}>
                   <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
@@ -206,14 +205,6 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 returnKeyType="done"
                 onSubmitEditing={handleSave}
               />
-
-              {/* <TouchableOpacity
-                style={[styles.saveBtn, !nameInput.trim() && styles.saveBtnDisabled]}
-                onPress={handleSave}
-                disabled={!nameInput.trim()}
-              >
-                <Text style={styles.saveBtnText}>Save</Text>
-              </TouchableOpacity> */}
             </View>
           )}
         </View>

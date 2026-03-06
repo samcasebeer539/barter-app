@@ -32,8 +32,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
     const [isQueryOpen, setIsQueryOpen] = useState(false);
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
 
-    const shimmerAnim1 = useRef(new Animated.Value(0)).current;
-    const shimmerAnim2 = useRef(new Animated.Value(0)).current;
+    const shimmerAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         const runShimmer = (anim: Animated.Value, delay: number) => {
@@ -47,20 +46,14 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 }),
             ]).start(() => {
                 anim.setValue(0);
-                runShimmer(anim, 0);
+                runShimmer(anim, 1000);
             });
         };
 
-        runShimmer(shimmerAnim1, 0);
-        runShimmer(shimmerAnim2, 1800);
+        runShimmer(shimmerAnim, 0);
     }, []);
 
-    const shimmerTranslate1 = shimmerAnim1.interpolate({
-        inputRange: [0, 1],
-        outputRange: [400, -400],
-    });
-
-    const shimmerTranslate2 = shimmerAnim2.interpolate({
+    const shimmerTranslate = shimmerAnim.interpolate({
         inputRange: [0, 1],
         outputRange: [400, -400],
     });
@@ -99,7 +92,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
         setIsQueryOpen(next);
         onQueryToggle?.(next);
 
-        // also fire the action so parent knows
         const tradeAction: TradeAction = {
             actionType: 'query',
             subAction: 'write',
@@ -228,7 +220,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                             {String(selectedCount).padStart(2, '0')}
                         </Text>
                         <FontAwesome6
-                            name={topCardIsSelected ? 'circle-check' : 'circle-dot'}
+                            name={topCardIsSelected ? 'circle-check' : 'circle'}
                             size={26}
                             color={currentAction?.color}
                         />
@@ -249,7 +241,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                             {String(selectedCount).padStart(2, '0')}
                         </Text>
                         <FontAwesome6
-                            name={topCardIsSelected ? 'circle-check' : 'circle-dot'}
+                            name={topCardIsSelected ? 'circle-check' : 'circle'}
                             size={26}
                             color={currentAction?.color}
                         />
@@ -300,7 +292,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                             {String(selectedCount).padStart(2, '0')}
                         </Text>
                         <FontAwesome6
-                            name={topCardIsSelected ? 'circle-check' : 'circle-dot'}
+                            name={topCardIsSelected ? 'circle-check' : 'circle'}
                             size={26}
                             color={currentAction?.color}
                         />
@@ -377,15 +369,15 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 </TouchableOpacity>
             </View>
 
-            {/* shimmer overlay */}
+            {/* Single shimmer overlay */}
             <View pointerEvents="none" style={styles.shimmerOverlay}>
                 <Animated.View
                     style={[
                         StyleSheet.absoluteFill,
                         {
                             transform: [
-                                { translateX: shimmerTranslate1 },
-                                { skewX: '45deg' },
+                                { translateX: shimmerTranslate },
+                                {skewX: '315deg'},
                             ],
                         },
                     ]}
@@ -396,31 +388,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                             currentAction?.color + '66',
                             currentAction?.color + '00',
                         ]}
-                        locations={[0, 0.3, 1]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={StyleSheet.absoluteFill}
-                    />
-                </Animated.View>
-
-                <Animated.View
-                    style={[
-                        StyleSheet.absoluteFill,
-                        {
-                            transform: [
-                                { translateX: shimmerTranslate2 },
-                                { skewX: '45deg' },
-                            ],
-                        },
-                    ]}
-                >
-                    <LinearGradient
-                        colors={[
-                            currentAction?.color + '00',
-                            currentAction?.color + '66',
-                            currentAction?.color + '00',
-                        ]}
-                        locations={[0, 0.3, 1]}
+                        locations={[0, 0.1, 1]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}

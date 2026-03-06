@@ -168,7 +168,10 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
               </View>
 
               <View style={deckStyles.turnsAndButtonRow}>
-                <View style={deckStyles.actionRow}>
+                <View style={deckStyles.queryRow}>
+                  <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+                </View>
+                <View style={[deckStyles.actionRow, {bottom: 4}]}>
                   <TradeUI
                     actions={feedActions}
                     onActionSelected={handleActionSelected}
@@ -179,16 +182,14 @@ export default function FeedDeck({ posts, visible, onClose, }: FeedDeckProps) {
                   />
                 </View>
 
-                <View style={deckStyles.turnsRow}>
-                  <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
-                </View>
+                
               </View>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.collapseBar}
                 onPress={handleCloseModal}
               >
                 <FontAwesome6 name="angle-down" size={26} color="#fff" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </KeyboardAvoidingView>
         </Animated.View>
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
   },
   collapseBar: {
     top: -10,
-    width: DECK_BAR_WIDTH,
+    width: DECK_BAR_WIDTH ,
     height: 36,
     ...barRadius.bottomCap,
     backgroundColor: colors.ui.secondary,

@@ -16,11 +16,12 @@ export const colors = {
   // Trade Action Colors
   actions: {
     offer: '#1f8bff',  
-    trade: '#FFA600',  //ab57ff
+    trade: '#FFA600',  
+    query: '#a057ff',     //ab57ff
     counter: '#ff31dd',  
-    query: '#ab57ff',    
+    
     decline: '#ff3232',    
-    accept: '#06f52e',     
+    accept: '#00e582',     
     location: '#ff3a86',
     time: '#00e4e8', 
     verify: '#ff8d0a',
@@ -32,8 +33,8 @@ export const colors = {
 
   // Post Type Colors
   cardTypes: {
-    service: '#ff3a86',    // Yellow/Orange - Service icon
-    good: '#FFA600',       // Coral/Red - Good icon
+    service: '#ff3a86',    // location now
+    good: '#FFA600',       // this is now trade color
     user: '#1686ff', 
     times: '#2fff00', 
     locations:'#FFA600', 
@@ -43,8 +44,8 @@ export const colors = {
   // UI Element Colors
   ui: {
     secondary: '#372788',     // 270e96 Secondary button color (purple-grey) 5c5579  4a4468 372788
-    secondarydisabled: '#7a6bed',
-    cardsecondary: '#ac9ff0',
+    secondarydisabled: '#8779ee',
+    cardsecondary: '#8779ee',
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
     background: '#000',    // Main app background
   },

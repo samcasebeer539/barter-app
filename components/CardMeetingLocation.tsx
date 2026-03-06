@@ -134,7 +134,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
           onLayout={e => setFooterHeight(e.nativeEvent.layout.height)}
         >
           <View style={styles.titleRow}>
-            <Text style={styles.footerTitle}>Meetup Locations</Text>
+            <Text style={styles.footerTitle}>Your Safe Exchange Locations</Text>
             <FontAwesome6 name="circle-dot" size={22} color={colors.ui.cardsecondary} />
           </View>
 
@@ -188,6 +188,10 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   autoFocus
                   returnKeyType="next"
                 />
+                <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
+                  <FontAwesome6 name="circle-check" size={22} color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location} />
+                  
+                </TouchableOpacity>
                 <TouchableOpacity onPress={handleCancelNaming} hitSlop={8}>
                   <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
@@ -203,13 +207,13 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 onSubmitEditing={handleSave}
               />
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[styles.saveBtn, !nameInput.trim() && styles.saveBtnDisabled]}
                 onPress={handleSave}
                 disabled={!nameInput.trim()}
               >
                 <Text style={styles.saveBtnText}>Save</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           )}
         </View>

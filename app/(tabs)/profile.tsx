@@ -14,7 +14,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const TOP_PADDING = 0;
-const BOTTOM_PADDING = 12;
+const BOTTOM_PADDING = 20;
 
 export default function ProfileDeck() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
@@ -86,11 +86,14 @@ export default function ProfileDeck() {
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
-      setKeyboardHeight(e.endCoordinates.height);
-      scrollViewRef.current?.scrollTo({
-        y: scrollY.current + e.endCoordinates.height * 0.8,
-        animated: true,
-      });
+      const kbHeight = e.endCoordinates.height;
+      setKeyboardHeight(kbHeight);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          y: scrollY.current + kbHeight,
+          animated: true,
+        });
+      }, 50);
     });
     const hide = Keyboard.addListener('keyboardWillHide', () => {
       setKeyboardHeight(0);
@@ -108,7 +111,7 @@ export default function ProfileDeck() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingBottom: BOTTOM_PADDING + keyboardHeight },
+          { paddingBottom: keyboardHeight > 0 ? BOTTOM_PADDING + keyboardHeight : 0 },
         ]}
         keyboardShouldPersistTaps="handled"
         onScroll={e => {
@@ -169,16 +172,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 8,
     borderTopLeftRadius: 34,
-        borderTopRightRadius: 34,
-        backgroundColor: colors.ui.background
+    borderTopRightRadius: 34,
+    backgroundColor: colors.ui.background,
   },
   settingsButton: {
     flex: 1,
     height: 36,
     borderTopLeftRadius: 22,
-        borderTopRightRadius: 22,
-        borderBottomLeftRadius: 2,
-        borderBottomRightRadius: 2,
+    borderTopRightRadius: 22,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',

@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   },
   editPhotoFrame: {
     width: '100%',
-    aspectRatio: 4 / 3,
+    aspectRatio: 3 / 2,
     borderRadius: 2,
     overflow: 'hidden',
     position: 'relative',
@@ -573,6 +573,7 @@ const styles = StyleSheet.create({
   editPhotoControls: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 6,
   },
   editDotsRow: {
     flex: 1,

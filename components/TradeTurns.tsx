@@ -75,7 +75,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
         </View>
 
         {isQuery && !turn.isUser && (
-          <View style={styles.answerRowPartner}>
+          <View style={styles.answerRowUser}>
             <TextInput
               ref={el => { internalInputRefs.current[index] = el; }}
               style={styles.answerInput}
@@ -95,11 +95,11 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
         )}
 
         {isQuery && turn.isUser && (
-          <View style={styles.answerRowUser}>
+          <View style={styles.answerRowPartner}>
             <TextInput
               ref={el => { internalInputRefs.current[index] = el; }}
               style={styles.answerInput}
-              placeholder="Answer"
+              placeholder="..."
               placeholderTextColor={colors.actions.query}
               value={answerValue}
               onChangeText={text => setQueryAnswers(prev => ({ ...prev, [index]: text }))}
@@ -132,7 +132,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
             blurOnSubmit
           />
           <TouchableOpacity onPress={() => Keyboard.dismiss()}>
-            <FontAwesome6 name="arrow-left-long" size={26} color={colors.actions.query} />
+            <FontAwesome6 name="check" size={26} color={colors.actions.query} />
           </TouchableOpacity>
         </View>
       )}
@@ -165,14 +165,14 @@ const styles = StyleSheet.create({
     ...rowBase,
     borderTopLeftRadius: 2,
     borderBottomRightRadius: 2,
-    borderBottomLeftRadius: 25,
+    borderBottomLeftRadius: 2,
     borderTopRightRadius: 25,
   },
   rowPartner: {
     ...rowBase,
     justifyContent: 'center',
     borderTopLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
   },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
     borderBottomRightRadius: 2,
-    borderTopRightRadius: 2,
+    borderTopRightRadius: 25,
     paddingHorizontal: 10,
     paddingBottom: 2,
   },
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     borderColor: colors.actions.query,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
+    borderBottomRightRadius: 25,
     borderTopRightRadius: 2,
     paddingHorizontal: 10,
     paddingBottom: 2,
@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.actions.query,
     borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 2,
     borderTopRightRadius: 2,
     paddingHorizontal: 10,
     paddingBottom: 2,

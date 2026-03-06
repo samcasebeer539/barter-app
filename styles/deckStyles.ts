@@ -125,6 +125,10 @@ turnsRow: {
     width: DECK_BAR_WIDTH,
     top: -6
 },
+queryRow: {
+    width: DECK_BAR_WIDTH,
+    marginBottom: 4
+},
 turnsAndButtonRow: {
     width: DECK_BAR_WIDTH,
     flexDirection: 'column',

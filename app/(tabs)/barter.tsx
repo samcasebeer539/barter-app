@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
-import OffersTradesDealsBar from '../../components/BarOffersTradesDeals';
+import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 
 const TOP_PADDING = 0;

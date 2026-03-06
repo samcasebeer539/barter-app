@@ -86,8 +86,8 @@ const styles = StyleSheet.create({
         paddingBottom: 72,
         paddingTop: 8,
         gap: 4,
-        borderTopLeftRadius: 36,
-        borderTopRightRadius: 36,
+        borderTopLeftRadius: 34,
+        borderTopRightRadius: 34,
 
     },
     queriesButton: {

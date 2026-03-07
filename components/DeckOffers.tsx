@@ -22,14 +22,15 @@ interface OfferDeckProps {
   onHorizontalGestureStart?: () => void;
   onGestureEnd?: () => void;
   isOffer?: boolean;
+  isDecline?: boolean;
 }
 
 const trade1Turns: TradeTurn[] = [
   { type: 'turnQuery', isUser: true },
 ];
 
-export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd, isOffer }: OfferDeckProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+export default function OfferDeck({ posts, actions, onHorizontalGestureStart, onGestureEnd, isOffer, isDecline }: OfferDeckProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
@@ -73,14 +74,19 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
         <View style={deckStyles.itemCountRow}>
           
           <View style={styles.statusBar}>
-            {isOffer && (
+            {isOffer && !isDecline && (
               <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: colors.actions.offer }]}>
                 12 OFFERS
               </Text>
             )}
-            {!isOffer && (
+            {!isOffer && !isDecline && (
               <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: colors.actions.query }]}>
                 6 QUERIES
+              </Text>
+            )}
+            {isDecline && (
+              <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: colors.actions.decline }]}>
+                6 DECLINES
               </Text>
             )}
 
@@ -88,7 +94,7 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
             <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
           </View>
         </View>
-
+        {isExpanded && (
         <View style={deckStyles.deckWrapper}>
           <Deck
             posts={posts}
@@ -102,7 +108,7 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
             selectColor={selectColor}
           />
         </View>
-
+        )}
         <View style={deckStyles.turnsAndButtonRow}>
           {isExpanded && (
             <View style={deckStyles.actionRow}>
@@ -117,14 +123,14 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
             </View>
           )}
           {isExpanded && (
-            <View style={deckStyles.turnsRow}>
+            <View style={[deckStyles.turnsRow]}>
               <TradeTurns turns={trade1Turns} isQueryOpen={isQueryOpen} />
             </View>
           )}
         </View>
 
         <TouchableOpacity
-          style={styles.collapseBar}
+          style={[styles.collapseBar, {top: isExpanded ? -6 : -8}]}
           onPress={() => setIsExpanded(prev => !prev)}
         >
           <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
@@ -146,7 +152,7 @@ const styles = StyleSheet.create({
   collapseBar: {
     top: -6,
     width: DECK_BAR_WIDTH,
-    height: 36,
+    height: 44,
     ...barRadius.bottomCap,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',

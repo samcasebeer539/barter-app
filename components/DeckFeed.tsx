@@ -200,13 +200,13 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
                 <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                  <Icon name='bookmark' size={22} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
+                  <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
                 </TouchableOpacity>
                 <View style={styles.statusBar}>
-                  <FontAwesome6 name='circle-user' size={22} color={colors.ui.secondarydisabled} />
-                  <FontAwesome6 name='circle-dot' size={22} color={colors.ui.secondarydisabled} />
+                  <FontAwesome6 name='circle-user' size={24} color={colors.ui.secondarydisabled} />
+                  <FontAwesome6 name='circle-dot' size={24} color={colors.ui.secondarydisabled} />
                   <Text style={[deckStyles.countText]}>0{postCount}</Text>
-                  <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
+                  <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
                 </View>
               </View>
 

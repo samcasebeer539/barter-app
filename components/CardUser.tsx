@@ -237,7 +237,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   >
                     <FontAwesome6
                       name={emailVisible ? 'eye' : 'eye-slash'}
-                      size={20}
+                      size={22}
                       color={colors.ui.cardsecondary}
                     />
                   </TouchableOpacity>
@@ -259,7 +259,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   >
                     <FontAwesome6
                       name={phoneVisible ? 'eye' : 'eye-slash'}
-                      size={20}
+                      size={22}
                       color={colors.ui.cardsecondary}
                     />
                   </TouchableOpacity>
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   actionButton: {
-    marginLeft: 4,
+    marginLeft: 8,
   },
   editableText: {
     paddingVertical: 2,

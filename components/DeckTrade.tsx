@@ -80,27 +80,28 @@ export default function TradeDeck({
         {/* Partner / Player switcher bar */}
         <View style={deckStyles.itemCountRow}>
           <TouchableOpacity style={styles.partnerBar} onPress={handleSwitchDecks}>
-            <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
             <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{itemCount}</Text>
             <FontAwesome6
               name="arrows-rotate"
-              size={22}
+              size={24}
               color={!showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled}
             />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
-            <FontAwesome6 name="circle-user" size={22} color={colors.ui.secondarydisabled} />
+            <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
             <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{itemCount}</Text>
             <FontAwesome6
               name="arrows-rotate"
-              size={22}
+              size={24}
               color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled}
             />
           </TouchableOpacity>
         </View>
 
-        {/* Sliding deck window */}
+        {isExpanded && (
+        
         <View style={styles.deckClipWindow}>
           <Animated.View style={[styles.decksRow, { transform: [{ translateX: slideAnim }] }]}>
             <View style={{ width: DECK_WIDTH }}>
@@ -111,7 +112,7 @@ export default function TradeDeck({
             </View>
           </Animated.View>
         </View>
-
+        )}
         {/* Actions + turns */}
         <View style={deckStyles.turnsAndButtonRow}>
           {isExpanded && isQueryOpen && (
@@ -130,7 +131,7 @@ export default function TradeDeck({
         </View>
 
         <TouchableOpacity
-          style={styles.collapseBar}
+          style={[styles.collapseBar, {top: isExpanded ? -6 : -8}]}
           onPress={() => setIsExpanded(prev => !prev)}
         >
           <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
   collapseBar: {
     top: -6,
     width: DECK_BAR_WIDTH,
-    height: 36,
+    height: 44,
     ...barRadius.bottomCap,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'center',

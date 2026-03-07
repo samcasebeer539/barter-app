@@ -259,14 +259,15 @@ const styles = StyleSheet.create({
   itemTitleWrapper: {
     backgroundColor: colors.ui.secondary,
     marginTop: 4,
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingLeft: 8,
-    paddingRight: 16,
+    paddingRight: 10,
     
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 4,
-   
+    
+    gap: 2,
+      minHeight: 36,
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 20,

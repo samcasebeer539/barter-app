@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     height: 44,
     flexDirection: 'row',
     flex: 1,
-    gap: 4,
+    gap: 8,
     ...barRadius.bottomRightCap,
     backgroundColor: colors.ui.secondary,
     justifyContent: 'flex-end',
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.ui.secondary,
-    gap: 2,
+    gap: 8,
   },
   queryButton: {
     flexShrink: 0,

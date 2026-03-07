@@ -135,7 +135,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
         >
           <View style={styles.titleRow}>
             <Text style={styles.footerTitle}>Your Safe Exchange Locations</Text>
-            <FontAwesome6 name="circle-dot" size={22} color={colors.ui.cardsecondary} />
+            <FontAwesome6 name="circle-dot" size={24} color={colors.ui.cardsecondary} />
           </View>
 
           {locations.map(loc => (
@@ -150,7 +150,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 ) : null}
               </View>
               <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
-                <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+                <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
               </TouchableOpacity>
             </View>
           ))}
@@ -164,7 +164,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             >
               <FontAwesome6
                 name="circle-plus"
-                size={22}
+                size={24}
                 color={pinReady ? colors.actions.location : colors.ui.cardsecondary}
               />
               <Text style={[
@@ -189,10 +189,10 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   returnKeyType="next"
                 />
                 <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
-                  <FontAwesome6 name="circle-check" size={22} color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location} />
+                  <FontAwesome6 name="circle-check" size={24} color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleCancelNaming} hitSlop={8}>
-                  <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               </View>
 

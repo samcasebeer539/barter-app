@@ -131,9 +131,9 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
             onSubmitEditing={() => Keyboard.dismiss()}
             blurOnSubmit
           />
-          <TouchableOpacity onPress={() => Keyboard.dismiss()}>
+          {/* <TouchableOpacity onPress={() => Keyboard.dismiss()}>
             <FontAwesome6 name="check" size={26} color={colors.actions.query} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       )}
       {turns.map(renderTurn)}
@@ -186,10 +186,11 @@ const styles = StyleSheet.create({
     borderColor: colors.actions.query,
     borderTopLeftRadius: 2,
     borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
-    borderTopRightRadius: 25,
+    borderBottomRightRadius: 25,
+    borderTopRightRadius: 2,
     paddingHorizontal: 10,
     paddingBottom: 2,
+    minHeight: 32,
   },
   answerRowUser: {
     flexDirection: 'row',
@@ -203,6 +204,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 2,
     paddingHorizontal: 10,
     paddingBottom: 2,
+    minHeight: 32,
   },
   answerRowPartner: {
     flexDirection: 'row',
@@ -216,6 +218,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 2,
     paddingHorizontal: 10,
     paddingBottom: 2,
+    minHeight: 32,
   },
   answerInput: {
     flex: 1,

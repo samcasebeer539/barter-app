@@ -285,8 +285,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 0,
-    marginTop: 2,
+    paddingVertical: 4,
+    
   },
   addLocationText: {
     fontSize: 18,

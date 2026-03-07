@@ -114,12 +114,17 @@ export default function TradeDeck({
 
         {/* Actions + turns */}
         <View style={deckStyles.turnsAndButtonRow}>
+          {isExpanded && isQueryOpen && (
+            <View style={[deckStyles.turnsRow, { top: isQueryOpen ? 0 : 0 }]}>
+              <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+            </View>
+          )}
           {isExpanded && (
           <TradeUI actions={actions} onQueryToggle={setIsQueryOpen} />
           )}
           {isExpanded && (
             <View style={deckStyles.turnsRow}>
-              <TradeTurns turns={turns} isQueryOpen={isQueryOpen} />
+              <TradeTurns turns={turns} />
             </View>
           )}
         </View>

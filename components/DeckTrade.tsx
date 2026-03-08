@@ -85,7 +85,7 @@ export default function TradeDeck({
             <FontAwesome6
               name="arrows-rotate"
               size={24}
-              color={!showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled}
+              color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled}
             />
           </TouchableOpacity>
 
@@ -95,7 +95,7 @@ export default function TradeDeck({
             <FontAwesome6
               name="arrows-rotate"
               size={24}
-              color={showingPlayer ? colors.cardTypes.good : colors.ui.secondarydisabled}
+              color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled}
             />
           </TouchableOpacity>
         </View>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     ...makeCountBar('rightCap', 'flex-end'),
   },
   activeText: {
-    color: colors.cardTypes.good,
+    color: colors.actions.trade,
   },
   deckClipWindow: {
     width: width,

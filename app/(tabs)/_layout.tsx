@@ -16,7 +16,8 @@ export default function RootLayout() {
     const [fontsLoaded] = useFonts({
         'YourFontName-Regular': require('@/assets/fonts/Roboto-Regular.ttf'),
         'YourFontName-Bold': require('@/assets/fonts/RobotoCondensed-SemiBold.ttf'),
-        'YourFontName-ExtraBold': require('@/assets/fonts/Oswald-Bold.ttf'),
+        // 'YourFontName-ExtraBold': require('@/assets/fonts/Oswald-Bold.ttf'),
+        'YourFontName-ExtraBold': require('@/assets/fonts/michel.otf'),
     });
 
     if (!fontsLoaded) {

@@ -87,6 +87,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
               returnKeyType="done"
               onSubmitEditing={() => Keyboard.dismiss()}
               blurOnSubmit
+              keyboardAppearance="dark" 
             />
             <TouchableOpacity onPress={() => Keyboard.dismiss()}>
               <FontAwesome6 name="arrow-left-long" size={26} color={colors.actions.query} />
@@ -107,6 +108,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
               returnKeyType="done"
               onSubmitEditing={() => Keyboard.dismiss()}
               blurOnSubmit
+              keyboardAppearance="dark" 
             />
      
           </View>
@@ -130,6 +132,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
             returnKeyType="done"
             onSubmitEditing={() => Keyboard.dismiss()}
             blurOnSubmit
+            keyboardAppearance="dark" 
           />
           {/* <TouchableOpacity onPress={() => Keyboard.dismiss()}>
             <FontAwesome6 name="check" size={26} color={colors.actions.query} />

@@ -141,16 +141,17 @@ export default function ActiveTradesTestScreen() {
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
-              actions={offersActions}
-              isOffer={true}
+              actions={queriesActions}
+              isOffer={false}
             />
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
-              actions={queriesActions}
-              isOffer={false}
+              actions={offersActions}
+              isOffer={true}
             />
+       
             <OfferDeck
               posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}

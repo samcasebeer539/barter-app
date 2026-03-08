@@ -101,7 +101,7 @@ const UserCard: React.FC<UserCardProps> = ({
     return (
       <View style={styles.ratingRow}>
         {[...Array(5)].map((_, i) => {
-          if (i < fullStars) return <FontAwesome6 key={i} name="star" size={20} color="#F5B301" solid />;
+          if (i < fullStars) return <FontAwesome6 key={i} name="star" size={20} color={colors.actions.accept} solid />;
           if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={20} color="#F5B301" solid />;
           return <FontAwesome6 key={i} name="star" size={20} color={colors.ui.cardsecondary} />;
         })}
@@ -202,7 +202,7 @@ const UserCard: React.FC<UserCardProps> = ({
               )}
             </View>
 
-            {/* Pronouns — editable input only in edit mode */}
+            {/* pronouns */}
             {isEditable && (
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Pronouns:</Text>
@@ -302,7 +302,7 @@ const UserCard: React.FC<UserCardProps> = ({
             {!isEditable && (
               <View style={styles.ratingContainer}>
                 <StarRating rating={user.rating} />
-                <Text style={styles.ratingText}>({user.reviewCount ?? 0}  ratings)</Text>
+                <Text style={styles.ratingText}>({user.reviewCount ?? 0}  Exchange Ratings)</Text>
               </View>
             )}
           </View>

@@ -84,6 +84,8 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 setIsActionSelected((prev) => !prev);
             }
         }
+        setIsActionSelected((prev) => !prev);
+
     };
 
     const handleQueryPress = (isInTopSpot: boolean) => {
@@ -97,6 +99,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
             subAction: 'write',
         };
         onActionSelected?.(tradeAction);
+        setIsActionSelected(true);
     };
 
     const handleActionTextPress = () => {
@@ -195,55 +198,57 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                                 opacity,
                                 borderColor: currentAction?.color,
                                 backgroundColor: isQueryOpen && isInTopSpot
-                                    ? currentAction?.color + '50'
+                                    ? currentAction?.color
                                     : 'transparent',
                             },
                         ]}
                         onPress={() => handleQueryPress(isInTopSpot)}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="question" size={26} color={currentAction?.color} />
+                        <FontAwesome6 name="circle-question" size={26} color={isQueryOpen ? '#000' : currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'offer':
                 return (
-                    <TouchableOpacity
+                     <TouchableOpacity
                         style={[styles.actionButton, styles.selectButton, {
                             opacity,
                             borderColor: currentAction?.color,
-                            backgroundColor: topCardIsSelected ? currentAction?.color + '50' : 'transparent',
+                            backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
+                            
                         }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: colors.actions.offer }]}>
+                        <Text style={[styles.buttonText, { color: topCardIsSelected ? '#000' : currentAction?.color }]}>
                             {String(selectedCount).padStart(2, '0')}
                         </Text>
                         <FontAwesome6
                             name={topCardIsSelected ? 'circle-check' : 'circle'}
                             size={26}
-                            color={currentAction?.color}
+                            color={topCardIsSelected ? '#000' : currentAction?.color}
                         />
                     </TouchableOpacity>
                 );
             case 'trade':
                 return (
-                    <TouchableOpacity
+                     <TouchableOpacity
                         style={[styles.actionButton, styles.selectButton, {
                             opacity,
                             borderColor: currentAction?.color,
-                            backgroundColor: topCardIsSelected ? currentAction?.color + '50' : 'transparent',
+                            backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
+                            
                         }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: currentAction?.color }]}>
+                        <Text style={[styles.buttonText, { color: topCardIsSelected ? '#000' : currentAction?.color }]}>
                             {String(selectedCount).padStart(2, '0')}
                         </Text>
                         <FontAwesome6
                             name={topCardIsSelected ? 'circle-check' : 'circle'}
                             size={26}
-                            color={currentAction?.color}
+                            color={topCardIsSelected ? '#000' : currentAction?.color}
                         />
                     </TouchableOpacity>
                 );
@@ -254,7 +259,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="location-dot" size={22} color={currentAction?.color} />
+                        <FontAwesome6 name="circle-dot" size={26} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'when':
@@ -264,7 +269,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="clock" size={22} color={currentAction?.color} />
+                        <FontAwesome6 name="clock" size={26} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'verify':
@@ -274,7 +279,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         onPress={() => playAction('select')}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="camera" size={22} color={currentAction?.color} />
+                        <FontAwesome6 name="camera-rotate" size={22} color={currentAction?.color} />
                     </TouchableOpacity>
                 );
             case 'rescind':
@@ -283,18 +288,19 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         style={[styles.actionButton, styles.selectButton, {
                             opacity,
                             borderColor: currentAction?.color,
-                            backgroundColor: topCardIsSelected ? currentAction?.color + '50' : 'transparent',
+                            backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
+                            
                         }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: currentAction?.color }]}>
+                        <Text style={[styles.buttonText, { color: topCardIsSelected ? '#000' : currentAction?.color }]}>
                             {String(selectedCount).padStart(2, '0')}
                         </Text>
                         <FontAwesome6
                             name={topCardIsSelected ? 'circle-check' : 'circle'}
                             size={26}
-                            color={currentAction?.color}
+                            color={topCardIsSelected ? '#000' : currentAction?.color}
                         />
                     </TouchableOpacity>
                 );
@@ -307,11 +313,12 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
             default:
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
+                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color, backgroundColor: isActionSelected ? currentAction?.color : 'transparent', }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
+                        
                     >
-                        <FontAwesome6 name="check" size={26} color={currentAction?.color} />
+                        <FontAwesome6 name="circle-check" size={26} color={isActionSelected ? '#000' : currentAction?.color} />
                     </TouchableOpacity>
                 );
         }
@@ -428,10 +435,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     tradeLineText: {
-        fontSize: 48,
+        fontSize: 56,
         fontFamily: globalFonts.extrabold,
-        bottom: 18,
-        letterSpacing: -2,
+        bottom: 13,
+        letterSpacing: -3,
     },
     playButton: {
         justifyContent: 'center',
@@ -461,7 +468,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         flexDirection: 'row',
-        paddingHorizontal: 8,
+        paddingHorizontal: 4,
         height: 40,
         flex: 1,
         bottom: 12,
@@ -501,7 +508,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         flexDirection: 'row',
-        paddingHorizontal: 10,
+        paddingHorizontal: 4,
         height: 40,
         flex: 1,
         bottom: 12,

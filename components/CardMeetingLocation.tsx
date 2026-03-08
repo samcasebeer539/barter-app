@@ -7,8 +7,8 @@ import { FontAwesome6 } from '@expo/vector-icons';
 const MAX_LOCATIONS = 3;
 
 const initialRegion = {
-  latitude: 37.7749,
-  longitude: -122.4194,
+  latitude: 36.9945,
+  longitude: -122.0658,
   latitudeDelta: 0.02,
   longitudeDelta: 0.02,
 };

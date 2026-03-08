@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.ui.background,
     fontFamily: globalFonts.regular,
-    letterSpacing: -0.1,
+    letterSpacing: 0,
   },
   descriptionInput: {
     flex: 1,

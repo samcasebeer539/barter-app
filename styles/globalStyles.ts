@@ -15,14 +15,14 @@ export const defaultTextStyle = {
 export const colors = {
   // Trade Action Colors
   actions: {
-    offer: '#1f8bff',  
-    trade: '#FFA600',  
-    query: '#a057ff',     //ab57ff
-    counter: '#ff31dd',  
+    offer: '#FFA600',  
+    trade: '#ff3a86',  
+    query: '#1f8bff',     //ab57ff  ff3a86 ff31dd
+    counter: '#a057ff',  
     
     decline: '#ff3232',    
     accept: '#00e582',     
-    location: '#ff3a86',
+    location: '#ff31dd',
     time: '#00e4e8', 
     verify: '#ff8d0a',
     wait: '#372788',

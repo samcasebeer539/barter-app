@@ -86,7 +86,7 @@ export default function OfferDeck({ posts, actions, onHorizontalGestureStart, on
             )}
             {isDecline && (
               <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: colors.actions.decline }]}>
-                6 DECLINES
+                6 DECLINED
               </Text>
             )}
 

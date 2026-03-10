@@ -51,3 +51,7 @@ package-lock.json
 logs/
 *.log
 
+# Python
+bartervenv/
+__pycache__/
+*.pyc

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput, ActivityIndicator } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { Post, User } from '@/types/index';
+import { uploadProfilePhoto } from '@/services/userService';
 
 
 interface UserCardProps {
@@ -40,6 +41,7 @@ const UserCard: React.FC<UserCardProps> = ({
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const [emailVisible, setEmailVisible] = useState(user.email_visible);
   const [phoneVisible, setPhoneVisible] = useState(user.phone_visible);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const photoHeight = useRef(new Animated.Value(photoExpanded)).current;
 
   const [draft, setDraft] = useState({
@@ -105,7 +107,15 @@ const UserCard: React.FC<UserCardProps> = ({
     });
 
     if (!result.canceled && result.assets[0]) {
-      updateDraft('profileImageUrl', result.assets[0].uri);
+      try {
+        setIsUploadingPhoto(true);
+        const remoteUrl = await uploadProfilePhoto(result.assets[0].uri);
+        updateDraft('profileImageUrl', remoteUrl);
+      } catch (err) {
+        console.error('Photo upload failed:', err);
+      } finally {
+        setIsUploadingPhoto(false);
+      }
     }
   };
 
@@ -165,6 +175,7 @@ const UserCard: React.FC<UserCardProps> = ({
               }
             }}
             style={styles.photoTouchable}
+            disabled={isUploadingPhoto}
           >
             <Animated.View style={[styles.photoSection, { height: photoHeight }]}>
               <Image
@@ -174,7 +185,10 @@ const UserCard: React.FC<UserCardProps> = ({
               />
               {isEditable && (
                 <View style={styles.photoEditOverlay} pointerEvents="none">
-                  <FontAwesome6 name="camera" size={24} color="#fff" />
+                  {isUploadingPhoto
+                    ? <ActivityIndicator color="#fff" size="small" />
+                    : <FontAwesome6 name="camera" size={24} color="#fff" />
+                  }
                 </View>
               )}
             </Animated.View>
@@ -197,8 +211,8 @@ const UserCard: React.FC<UserCardProps> = ({
 
               {isEditable ? (
                 <>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
-                    <FontAwesome6 name="circle-check" size={24} color={colors.actions.accept} />
+                  <TouchableOpacity style={styles.actionButton} onPress={handleSave} disabled={isUploadingPhoto}>
+                    <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.cardsecondary : colors.actions.accept} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionButton} onPress={handleCancel}>
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />

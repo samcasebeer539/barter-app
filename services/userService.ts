@@ -1,5 +1,7 @@
 import { User } from '@/types/index';
 import { getAuth } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -9,11 +11,7 @@ async function getAuthHeader() {
 }
 
 export async function getCurrentUser(): Promise<User> {
-  console.log('BASE_URL:', BASE_URL);
-  console.log('Full URL:', `${BASE_URL}/dev/user_data`);
-
   const headers = await getAuthHeader();
-  console.log('Token present:', !!getAuth().currentUser);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
@@ -26,7 +24,6 @@ export async function getCurrentUser(): Promise<User> {
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    console.log('Response data:', JSON.stringify(data));
 
     return {
       first_name: data.first_name,
@@ -48,10 +45,29 @@ export async function getCurrentUser(): Promise<User> {
 
 export async function updateUser(fields: Partial<User>): Promise<void> {
   const headers = await getAuthHeader();
+
+  // Map frontend field names → DB field names
+  const { profileImageUrl, ...rest } = fields as any;
+  const payload = {
+    ...rest,
+    ...(profileImageUrl !== undefined && { profile_photo: profileImageUrl }),
+  };
+
   const res = await fetch(`${BASE_URL}/dev/update_user`, {
     method: 'PATCH',
     headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(fields),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
+export async function uploadProfilePhoto(localUri: string): Promise<string> {
+  const response = await fetch(localUri);
+  const blob = await response.blob();
+
+  const uid = getAuth().currentUser?.uid;
+  const storageRef = ref(storage, `profile_photos/${uid}`);
+
+  await uploadBytes(storageRef, blob);
+  return await getDownloadURL(storageRef);
 }

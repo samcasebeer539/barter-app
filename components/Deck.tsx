@@ -11,23 +11,8 @@ import UserCard from './CardUser';
 import BlankCard from './CardBlank';
 import CardDateTime from './CardDateTime';
 import CardLocation from './CardMeetingLocation';
-
+import { Post, User } from '@/types/index';
 import { colors } from '@/styles/globalStyles';
-
-interface Post {
-  name: string;
-  description: string;
-  photos: string[];
-}
-
-interface User {
-  name: string;
-  pronouns: string;
-  location: string;
-  bio: string;
-  avatarText?: string;
-  profileImageUrl?: string;
-}
 
 interface DeckProps {
   posts: Post[];
@@ -50,6 +35,7 @@ interface DeckProps {
   isPostEditMode?: boolean;
   onExitPostEdit?: () => void;
   onEnterPostEdit?: () => void;
+  onSaveUser?: (updated: User) => void;
 }
 
 type DeckItem =
@@ -79,6 +65,7 @@ const Deck: React.FC<DeckProps> = ({
   isPostEditMode = false,
   onExitPostEdit,
   onEnterPostEdit,
+  onSaveUser,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
@@ -128,9 +115,6 @@ const Deck: React.FC<DeckProps> = ({
     third: 2,
   });
 
-  // shadowIndices tracks which cards should have shadow — updated at animation
-  // START so the third card gets its shadow as soon as the swipe begins,
-  // not after it finishes moving into the second slot.
   const [shadowIndices, setShadowIndices] = useState({
     first: 0,
     second: 1,
@@ -222,8 +206,6 @@ const Deck: React.FC<DeckProps> = ({
     const thirdIndex = visibleIndicesRef.current.third;
     const nextIndex = (thirdIndex + 1) % cards.length;
 
-    // Update shadow immediately at animation start — third card gets shadow
-    // as it begins moving into the second position
     setShadowIndices({ first: secondIndex, second: thirdIndex });
 
     Animated.parallel([
@@ -257,7 +239,6 @@ const Deck: React.FC<DeckProps> = ({
       };
       setVisibleIndices(newIndices);
       visibleIndicesRef.current = newIndices;
-      // Sync shadow back to the new first/second after animation completes
       setShadowIndices({ first: secondIndex, second: thirdIndex });
       isAnimatingRef.current = false;
       onExitEdit?.();
@@ -274,11 +255,15 @@ const Deck: React.FC<DeckProps> = ({
   };
 
   const defaultUser: User = {
-    name: "Jay Wilson",
-    pronouns: "(she/he/they)",
-    location: "Santa Cruz, CA",
-    bio: "pro smasher",
+    first_name: 'Jay',
+    last_name: 'Wilson',
+    email: 'jathwils@ucsc.edu',
+    pronouns: '(she/he/they)',
+    bio: 'pro smasher',
+    phone: '',
     profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
+    email_visible: false,
+    phone_visible: false,
   };
 
   const userToRender = user ?? defaultUser;
@@ -324,6 +309,7 @@ const Deck: React.FC<DeckProps> = ({
             isEditable={isFirst && isEditMode}
             onExitEdit={onExitEdit}
             onEnterEdit={onEnterEdit}
+            onSave={onSaveUser}
           />
         ) : card.type === 'datetime' ? (
           <CardDateTime cardWidth={finalCardWidth} />

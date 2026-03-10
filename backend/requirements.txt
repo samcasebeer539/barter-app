@@ -1,3 +1,5 @@
 Flask
 pymongo[srv]==3.12
 Flask-PyMongo
+python-dotenv
+firebase-admin

@@ -10,6 +10,8 @@ import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
+import { Post, User } from '@/types/index';
+
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
 
@@ -17,44 +19,26 @@ const trade1Turns: TradeTurn[] = [
   { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
 ];
 
-const PRIMARY_USER = {
-  name: 'Sam Casebeer',
-  pronouns: '(they/them)',
-  location: 'Santa Cruz, CA',
-  bio: 'UCSC 2026 for Computer Science, multimedia visual artist, sci-fi/fantasy reader, cat lover',
-  profileImageUrl: 'https://picsum.photos/seed/tutor1/600/600',
-  rating: 4.2,
-  reviewCount: 12,
-};
-
-const SECONDARY_USER = {
-  name: 'Jay Wilson',
-  pronouns: '(she/he/they)',
-  location: 'Santa Cruz, CA',
-  bio: 'Pro Smasher',
-  profileImageUrl: 'https://picsum.photos/seed/bird/800/800',
-};
-
-export interface Post {
-  name: string;
-  description: string;
-  photos: string[];
-}
-
 interface ProfileDeckProps {
   posts: Post[];
+  primaryUser: User;
   secondaryPosts?: Post[];
+  secondaryUser?: User;
   onToggleReveal?: () => void;
   toggleEnabled?: boolean;
   isDeckRevealed?: boolean;
+  onSaveUser?: (updated: User) => void;
 }
 
 export default function ProfileDeck({
   posts,
+  primaryUser,
   secondaryPosts = [],
+  secondaryUser,
   onToggleReveal,
   toggleEnabled = false,
   isDeckRevealed = false,
+  onSaveUser,
 }: ProfileDeckProps) {
   const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -73,14 +57,10 @@ export default function ProfileDeck({
   const [isTradeQueryOpen, setIsTradeQueryOpen] = useState(false);
   const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
-  // Track what type of card is on top of the primary deck
   const [topCardType, setTopCardType] = useState<'user' | 'post' | 'datetime' | 'location'>('user');
-  // Edit mode — only meaningful when topCardType === 'user'
   const [isEditMode, setIsEditMode] = useState(false);
-  // Post edit mode — only meaningful when topCardType === 'post'
   const [isPostEditMode, setIsPostEditMode] = useState(false);
 
-  // When the top card changes away from its type, exit the relevant edit mode
   useEffect(() => {
     if (topCardType !== 'user') setIsEditMode(false);
     if (topCardType !== 'post') setIsPostEditMode(false);
@@ -168,6 +148,8 @@ export default function ProfileDeck({
     outputRange: [0, secondaryHeight + SLIDE_MARGIN],
   });
 
+  const secondaryUserName = secondaryUser?.first_name ?? 'Partner';
+
   return (
     <View style={styles.container} pointerEvents="box-none">
       {/* Offers bar */}
@@ -205,7 +187,7 @@ export default function ProfileDeck({
             <View style={deckStyles.deckWrapper}>
               <Deck
                 posts={secondaryPosts}
-                user={SECONDARY_USER}
+                user={secondaryUser}
                 cardWidth={cardWidth}
                 enabled
                 isSelectMode={isTradeSelectMode}
@@ -241,7 +223,7 @@ export default function ProfileDeck({
             <View style={deckStyles.deckWrapper}>
               <Deck
                 posts={posts}
-                user={PRIMARY_USER}
+                user={primaryUser}
                 cardWidth={cardWidth}
                 enabled
                 onTopCardTypeChange={setTopCardType}
@@ -252,13 +234,14 @@ export default function ProfileDeck({
                 isPostEditMode={isPostEditMode}
                 onExitPostEdit={() => setIsPostEditMode(false)}
                 onEnterPostEdit={() => setIsPostEditMode(true)}
+                onSaveUser={onSaveUser}
               />
             </View>
             {isQueryDrawerOpen && (
               <View style={styles.queryDrawer}>
                 <TradeTurns
                   turns={[
-                    { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+                    { type: 'turnQuery', user: secondaryUserName, item: 'Fantasy Books', isUser: false },
                   ]}
                 />
               </View>

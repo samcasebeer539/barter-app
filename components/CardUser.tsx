@@ -1,22 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
+import { Post, User } from '@/types/index';
 
-interface User {
-  name: string;
-  pronouns?: string;
-  bio: string;
-  profileImageUrl?: string;
-  rating?: number;
-  reviewCount?: number;
-  email?: string;
-  phone?: string;
-}
 
 interface UserCardProps {
   user: User;
-  isUser?: boolean;       // true = own profile (edit + eye toggle), false = other user (block + report)
+  isUser?: boolean;
   isEditable?: boolean;
   onSave?: (updated: User) => void;
   onExitEdit?: () => void;
@@ -46,24 +38,26 @@ const UserCard: React.FC<UserCardProps> = ({
   const photoCollapsed = 80;
 
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
-  const [emailVisible, setEmailVisible] = useState(false);
-  const [phoneVisible, setPhoneVisible] = useState(false);
+  const [emailVisible, setEmailVisible] = useState(user.email_visible);
+  const [phoneVisible, setPhoneVisible] = useState(user.phone_visible);
   const photoHeight = useRef(new Animated.Value(photoExpanded)).current;
 
   const [draft, setDraft] = useState({
-    pronouns: user.pronouns ?? '',
+    pronouns: user.pronouns,
     bio: user.bio,
-    email: user.email ?? '',
-    phone: user.phone ?? '',
+    phone: user.phone,
+    profileImageUrl: user.profileImageUrl,
   });
 
   useEffect(() => {
     setDraft({
-      pronouns: user.pronouns ?? '',
+      pronouns: user.pronouns,
       bio: user.bio,
-      email: user.email ?? '',
-      phone: user.phone ?? '',
+      phone: user.phone,
+      profileImageUrl: user.profileImageUrl,
     });
+    setEmailVisible(user.email_visible);
+    setPhoneVisible(user.phone_visible);
   }, [user]);
 
   const updateDraft = (field: keyof typeof draft, value: string) => {
@@ -71,18 +65,48 @@ const UserCard: React.FC<UserCardProps> = ({
   };
 
   const handleSave = () => {
-    onSave?.({ ...user, ...draft });
+    onSave?.({ ...user, ...draft, email_visible: emailVisible, phone_visible: phoneVisible });
     onExitEdit?.();
   };
 
   const handleCancel = () => {
     setDraft({
-      pronouns: user.pronouns ?? '',
+      pronouns: user.pronouns,
       bio: user.bio,
-      email: user.email ?? '',
-      phone: user.phone ?? '',
+      phone: user.phone,
+      profileImageUrl: user.profileImageUrl,
     });
+    setEmailVisible(user.email_visible);
+    setPhoneVisible(user.phone_visible);
     onExitEdit?.();
+  };
+
+  const handleEmailVisibleToggle = () => {
+    const next = !emailVisible;
+    setEmailVisible(next);
+    onSave?.({ ...user, email_visible: next });
+  };
+
+  const handlePhoneVisibleToggle = () => {
+    const next = !phoneVisible;
+    setPhoneVisible(next);
+    onSave?.({ ...user, phone_visible: next });
+  };
+
+  const handlePickPhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      updateDraft('profileImageUrl', result.assets[0].uri);
+    }
   };
 
   useEffect(() => {
@@ -109,7 +133,12 @@ const UserCard: React.FC<UserCardProps> = ({
     );
   };
 
-  const contactString = [user.email, user.phone].filter(Boolean).join(' · ') || 'None';
+  // Only show contacts that are marked visible
+  const visibleContacts = [
+    user.email_visible ? user.email : null,
+    user.phone_visible && user.phone ? user.phone : null,
+  ].filter(Boolean).join(' · ');
+  const contactString = visibleContacts || 'No contacts shared';
 
   return (
     <View
@@ -127,13 +156,19 @@ const UserCard: React.FC<UserCardProps> = ({
 
           {/* Photo */}
           <TouchableOpacity
-            activeOpacity={isInfoExpanded ? 0.8 : 1}
-            onPress={() => !isEditable && isInfoExpanded && setIsInfoExpanded(false)}
+            activeOpacity={isEditable ? 0.8 : (isInfoExpanded ? 0.8 : 1)}
+            onPress={() => {
+              if (isEditable) {
+                handlePickPhoto();
+              } else if (isInfoExpanded) {
+                setIsInfoExpanded(false);
+              }
+            }}
             style={styles.photoTouchable}
           >
             <Animated.View style={[styles.photoSection, { height: photoHeight }]}>
               <Image
-                source={{ uri: user.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
+                source={{ uri: draft.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
                 style={styles.photo}
                 resizeMode="cover"
               />
@@ -154,14 +189,13 @@ const UserCard: React.FC<UserCardProps> = ({
             {/* Name row */}
             <View style={[styles.headerRow, { marginBottom: 8 }]}>
               <Text style={styles.name} numberOfLines={1}>
-                {user.name}
+                {user.first_name} {user.last_name}
                 {!isEditable && user.pronouns
                   ? <Text style={styles.pronouns}> {user.pronouns}</Text>
                   : null}
               </Text>
 
               {isEditable ? (
-                // Edit mode: check, x, profile icon
                 <>
                   <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
                     <FontAwesome6 name="circle-check" size={24} color={colors.actions.accept} />
@@ -174,7 +208,6 @@ const UserCard: React.FC<UserCardProps> = ({
                   </TouchableOpacity>
                 </>
               ) : isUser ? (
-                // Own profile view mode: sliders (enter edit) + profile icon
                 <>
                   <TouchableOpacity
                     style={styles.actionButton}
@@ -187,7 +220,6 @@ const UserCard: React.FC<UserCardProps> = ({
                   </TouchableOpacity>
                 </>
               ) : (
-                // Other user: ban, report, profile icon
                 <>
                   <TouchableOpacity style={styles.actionButton}>
                     <FontAwesome6 name="ban" size={24} color={colors.ui.cardsecondary} />
@@ -202,7 +234,7 @@ const UserCard: React.FC<UserCardProps> = ({
               )}
             </View>
 
-            {/* pronouns */}
+            {/* Pronouns */}
             {isEditable && (
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Pronouns:</Text>
@@ -219,21 +251,15 @@ const UserCard: React.FC<UserCardProps> = ({
             {/* Contacts */}
             {isEditable ? (
               <>
+                {/* Email — read-only with visibility toggle */}
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Email:</Text>
-                  <TextInput
-                    style={[styles.location, styles.editableText, { flex: 1 }]}
-                    value={draft.email}
-                    onChangeText={v => updateDraft('email', v)}
-                    placeholder="your@email.com"
-                    placeholderTextColor={colors.ui.cardsecondary}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    secureTextEntry={!emailVisible}
-                  />
+                  <Text style={[styles.location, { flex: 1 }]}>
+                    {emailVisible ? user.email : '••••••••••••'}
+                  </Text>
                   <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => setEmailVisible(prev => !prev)}
+                    onPress={handleEmailVisibleToggle}
                   >
                     <FontAwesome6
                       name={emailVisible ? 'eye' : 'eye-slash'}
@@ -242,6 +268,8 @@ const UserCard: React.FC<UserCardProps> = ({
                     />
                   </TouchableOpacity>
                 </View>
+
+                {/* Phone — editable with visibility toggle */}
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Phone:</Text>
                   <TextInput
@@ -255,7 +283,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   />
                   <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => setPhoneVisible(prev => !prev)}
+                    onPress={handlePhoneVisibleToggle}
                   >
                     <FontAwesome6
                       name={phoneVisible ? 'eye' : 'eye-slash'}
@@ -269,9 +297,7 @@ const UserCard: React.FC<UserCardProps> = ({
               <View style={styles.headerRow}>
                 <View style={styles.locationRow}>
                   <Text style={styles.location}>
-                    {isUser
-                      ? `Contacts: ${contactString}`
-                      : `Contacts: ${contactString}`}
+                    {`Contacts: ${contactString}`}
                   </Text>
                 </View>
               </View>

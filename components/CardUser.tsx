@@ -124,8 +124,8 @@ const UserCard: React.FC<UserCardProps> = ({
     Animated.spring(photoHeight, {
       toValue: target,
       useNativeDriver: false,
-      damping: 20,
-      stiffness: 200,
+      damping: 40,
+      stiffness: 270,
     }).start();
   }, [isInfoExpanded, isEditable]);
 
@@ -135,9 +135,9 @@ const UserCard: React.FC<UserCardProps> = ({
     return (
       <View style={styles.ratingRow}>
         {[...Array(5)].map((_, i) => {
-          if (i < fullStars) return <FontAwesome6 key={i} name="star" size={20} color={colors.actions.accept} solid />;
-          if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={20} color="#F5B301" solid />;
-          return <FontAwesome6 key={i} name="star" size={20} color={colors.ui.cardsecondary} />;
+          if (i < fullStars) return <FontAwesome6 key={i} name="star" size={24} color={colors.actions.accept} solid />;
+          if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={24} color="#F5B301" solid />;
+          return <FontAwesome6 key={i} name="star" size={24} color={colors.ui.cardsecondary} />;
         })}
       </View>
     );
@@ -341,8 +341,9 @@ const UserCard: React.FC<UserCardProps> = ({
           <View style={styles.ratingsRow}>
             {!isEditable && (
               <View style={styles.ratingContainer}>
+                <Text style={styles.ratingText}>{user.reviewCount ?? 0}  Exchanges:</Text>
                 <StarRating rating={user.rating} />
-                <Text style={styles.ratingText}>({user.reviewCount ?? 0}  Exchange Ratings)</Text>
+                
               </View>
             )}
           </View>
@@ -420,13 +421,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   location: {
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
   },
   fieldLabel: {
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
@@ -435,6 +436,8 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
     gap: 6,
   },
   ratingRow: {
@@ -443,12 +446,12 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     lineHeight: 20,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
   },
   bio: {
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
     color: '#000000',
     fontFamily: globalFonts.regular,
@@ -457,7 +460,7 @@ const styles = StyleSheet.create({
   },
   ratingsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     gap: 8,
     backgroundColor: '#ffffff',
     paddingTop: 8,

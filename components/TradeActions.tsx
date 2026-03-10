@@ -370,7 +370,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 >
                     <FontAwesome6
                         name="arrow-left-long"
-                        size={26}
+                        size={22}
                         color={isActionSelected ? '#000' : currentAction?.color}
                     />
                 </TouchableOpacity>

@@ -142,12 +142,13 @@ const CardLocation: React.FC<CardLocationProps> = ({
             <View key={loc.id} style={styles.locationRow}>
               <View style={styles.locationInfo}>
                 <Text style={styles.locationName}>{loc.name}</Text>
-                <Text style={styles.coordText}>
-                  {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
-                </Text>
+                
                 {loc.description ? (
                   <Text style={styles.locationDesc}>{loc.description}</Text>
                 ) : null}
+                <Text style={styles.coordText}>
+                  {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
+                </Text>
               </View>
               <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
                 <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   locationInfo: {
     flex: 1,
     paddingRight: 8,
-    gap: 1,
+    gap: 4,
   },
   locationName: {
     fontSize: 18,
@@ -270,13 +271,13 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   coordText: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: globalFonts.regular,
     color: colors.ui.cardsecondary,
     letterSpacing: -0.2,
   },
   locationDesc: {
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
     fontFamily: globalFonts.regular,
     color: colors.ui.background,
@@ -295,6 +296,7 @@ const styles = StyleSheet.create({
   namingBlock: {
     gap: 8,
     marginTop: 2,
+    marginBottom: 6,  
   },
   nameRow: {
     flexDirection: 'row',
@@ -308,38 +310,13 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   descInput: {
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 20,
     fontFamily: globalFonts.regular,
     color: '#000',
   },
-  saveBtn: {
-    backgroundColor: colors.actions.location,
-    borderRadius: 4,
-    paddingVertical: 7,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  saveBtnDisabled: {
-    opacity: 0.4,
-  },
-  saveBtnText: {
-    color: '#fff',
-    fontFamily: globalFonts.bold,
-    fontSize: 14,
-  },
-  confirmBtn: {
-    backgroundColor: colors.actions.location,
-    borderRadius: 4,
-    paddingVertical: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  confirmBtnText: {
-    color: '#fff',
-    fontFamily: globalFonts.bold,
-    fontSize: 14,
-  },
+
+
 });
 
 export default CardLocation;

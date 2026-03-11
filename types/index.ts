@@ -1,7 +1,9 @@
 export interface Post {
+  _id?: string;
   name: string;
   description: string;
   photos: string[];
+  date_posted: string;
 }
 
 export interface User {

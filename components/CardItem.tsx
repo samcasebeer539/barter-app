@@ -4,12 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import TextTicker from 'react-native-text-ticker';
 import { globalFonts, colors } from '../styles/globalStyles';
-
-interface Post {
-  name: string;
-  description: string;
-  photos: string[];
-}
+import { Post, User } from '@/types/index';
 
 interface PostCardProps {
   post: Post;
@@ -39,17 +34,21 @@ const DATE_HEIGHT      = 20;
 const DESC_COLLAPSED_HEIGHT = DESC_PAD_TOP + DESC_LINE_HEIGHT * 2 + DESC_PAD_BOTTOM;
 const DESC_EXPANDED_HEIGHT  = DESC_PAD_TOP + DESC_LINE_HEIGHT * 10 + DESC_PAD_BOTTOM;
 
-// The date is pinned absolutely at the bottom — these are the only static values it needs
 const DATE_BOTTOM = BOTTOM_PADDING;
 
-// The animated zone covers: dots + gap + description. Date sits below, pinned absolutely.
 const ANIMATED_ZONE_COLLAPSED = GAP + DOTS_HEIGHT + GAP + DESC_COLLAPSED_HEIGHT;
 const ANIMATED_ZONE_EXPANDED  = GAP + DOTS_HEIGHT + GAP + DESC_EXPANDED_HEIGHT;
 
-// Full bottom zone height (animated zone + gap + date + bottom padding)
 const BOTTOM_ZONE_COLLAPSED = ANIMATED_ZONE_COLLAPSED + GAP + DATE_HEIGHT + BOTTOM_PADDING;
 const BOTTOM_ZONE_EXPANDED  = ANIMATED_ZONE_EXPANDED  + GAP + DATE_HEIGHT + BOTTOM_PADDING;
 // ─────────────────────────────────────────────────────────────────────────────
+
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
+}
 
 const PostCard: React.FC<PostCardProps> = ({
   post,
@@ -224,7 +223,6 @@ const PostCard: React.FC<PostCardProps> = ({
           {/* ── VIEW MODE ──────────────────────────────────────────────────── */}
           {!isEditable && (
             <>
-              {/* Photo fills space between header and bottom zone */}
               <Animated.View style={[styles.photoWrapper, { bottom: bottomZoneHeight }]}>
                 <TouchableOpacity
                   activeOpacity={displayPhotos.length > 1 ? 0.8 : 1}
@@ -243,10 +241,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 </TouchableOpacity>
               </Animated.View>
 
-              {/* Bottom zone — white background, grows with animation */}
               <Animated.View style={[styles.bottomZone, { height: bottomZoneHeight }]}>
-
-                {/* Animated inner content: dots + description only */}
                 <Animated.View style={{ height: animatedZoneHeight, overflow: 'hidden' }}>
                   <View style={styles.dotsRow}>
                     {displayPhotos.length > 1 && displayPhotos.map((_, index) => (
@@ -271,11 +266,10 @@ const PostCard: React.FC<PostCardProps> = ({
                     </Animated.View>
                   </TouchableOpacity>
                 </Animated.View>
-
               </Animated.View>
 
-              {/* Date — pinned absolutely to card bottom, never participates in animation */}
-              <Text style={styles.date}>11/26/24</Text>
+              {/* Date — real date from DB */}
+              <Text style={styles.date}>{formatDate(post.date_posted)}</Text>
             </>
           )}
 
@@ -364,8 +358,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-
-  // ── Header
   header: {
     paddingHorizontal: 16,
     height: HEADER_HEIGHT,
@@ -381,7 +373,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    
   },
   title: {
     fontSize: 18,
@@ -406,14 +397,11 @@ const styles = StyleSheet.create({
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.bold,
   },
-
-  // ── Photo (view mode)
   photoWrapper: {
     position: 'absolute',
     top: HEADER_HEIGHT,
     left: 16,
     right: 16,
-    // bottom is animated
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -431,8 +419,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.cardsecondary,
     opacity: 0.1,
   },
-
-  // ── Bottom zone (view mode)
   bottomZone: {
     position: 'absolute',
     left: 0,
@@ -441,7 +427,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: GAP,
     backgroundColor: '#fff',
-    // height is animated — no gap/paddingBottom here so date is unaffected
   },
   dotsRow: {
     height: DOTS_HEIGHT,
@@ -449,7 +434,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
-    
   },
   dot: {
     width: 6,
@@ -469,8 +453,6 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.regular,
     letterSpacing: 0,
   },
-
-  // Date is pinned absolutely to the card — outside all animated containers
   date: {
     position: 'absolute',
     bottom: DATE_BOTTOM,
@@ -480,8 +462,6 @@ const styles = StyleSheet.create({
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
   },
-
-  // ── Edit mode
   editBody: {
     flex: 1,
     paddingHorizontal: 16,

@@ -7,14 +7,11 @@ import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TradeActionConfig } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
+import { Post, User } from '@/types/index';
 
 const { width } = Dimensions.get('window');
 
-interface Post {
-  name: string;
-  description: string;
-  photos: string[];
-}
+
 
 interface OfferDeckProps {
   posts: Post[];

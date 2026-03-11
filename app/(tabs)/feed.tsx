@@ -1,92 +1,53 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { FontAwesome6 } from '@expo/vector-icons';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
-import { defaultTextStyle, globalFonts, colors, uiColors } from '../../styles/globalStyles';
+import { globalFonts, colors } from '../../styles/globalStyles';
+import { getFeedPosts, FeedItem } from '@/services/feedService';
 
 
-// Sample barter items with aspect ratios between 3:4 (0.75) and 4:3 (1.33)
-const BARTER_ITEMS = [
-  { id: '1', title: 'sci-fi books', image: 'https://picsum.photos/seed/camera1/400/500', height: 150 },
-  { id: '2', title: 'iPad 5th Generation 2017', image: 'https://picsum.photos/seed/guitar1/400/320', height: 200 },
-  { id: '3', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', height: 210 },
-  { id: '4', title: 'HP Laptop', image: 'https://picsum.photos/seed/records1/400/340', height: 170 },
-  { id: '5', title: 'DVD collection', image: 'https://picsum.photos/seed/photo1/400/520', height: 260 },
-  { id: '6', title: 'Handmade Pottery Set For Sale Now', image: 'https://picsum.photos/seed/pottery1/400/500', height: 250 },
-  { id: '7', title: 'Web Design', image: 'https://picsum.photos/seed/web1/400/310', height: 155 },
-  { id: '8', title: 'Plant Collection', image: 'https://picsum.photos/seed/plants1/400/460', height: 230 },
-  { id: '9', title: 'Yoga Classes', image: 'https://picsum.photos/seed/yoga1/400/530', height: 265 },
-  { id: '10', title: 'Vintage Books', image: 'https://picsum.photos/seed/books1/400/330', height: 165 },
-  { id: '11', title: 'Carpentry Work', image: 'https://picsum.photos/seed/wood1/400/490', height: 245 },
-  { id: '12', title: 'Art Prints', image: 'https://picsum.photos/seed/art1/400/450', height: 225 },
-  { id: '13', title: 'Vintage Camera', image: 'https://picsum.photos/seed/camera1/400/500', height: 150 },
-  { id: '14', title: 'Guitar Lessons', image: 'https://picsum.photos/seed/guitar1/400/320', height: 200 },
-  { id: '15', title: 'Bike Repair', image: 'https://picsum.photos/seed/bike1/400/480', height: 240 },
-  { id: '16', title: 'Vintage Records', image: 'https://picsum.photos/seed/records1/400/340', height: 170 },
- 
-];
-
-// Sample posts for the deck
-const DECK_POSTS = [
-  {
-    name: 'Bike Repair Service This Title is Long',
-    description: 'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
-    photos: [
-      'https://picsum.photos/seed/landscape1/800/400',
-      'https://picsum.photos/seed/portrait1/400/600',
-      'https://picsum.photos/seed/square1/500/500',
-    ],
-  },
-  {
-    name: 'DVD collection',
-    description: 'This has an unusually long description. adsf asdf asdga sfgsd hsdgh sdfg asdg sdg asfgs fga sfg asfgdfjahsdfg asdfgasdf asdf asdf asdf asdf asdf a sdf asdg asgf asdg fas gf asdf sdf asdf as df asdfasd gfas g asdgasf g sagf ADF A S DFASDGASDGASFGASDFASDFASDFAas df  ',
-    photos: [
-      'https://picsum.photos/seed/camera1/600/400',
-      'https://picsum.photos/seed/camera2/500/700',
-      'https://picsum.photos/seed/camera3/600/600',
-    ],
-  },
-  {
-    name: 'iPad 5th Generation 2017',
-    description: '128 GB storage, factory reset, battery capacity at 82%. Case if you want it!',
-    photos: [
-       Image.resolveAssetSource(require('@/assets/photos/ipad.jpeg')).uri,
-      'https://picsum.photos/seed/camera3/600/600',
-    ],
-  },
-  {
-    name: 'Handmade Pottery Set',
-    description: 'Beautiful hand-thrown ceramic bowls, plates, and mugs. Food-safe glazes in earthy tones.',
-    photos: [
-      'https://picsum.photos/seed/pottery1/600/400',
-      'https://picsum.photos/seed/pottery2/500/700',
-      'https://picsum.photos/seed/pottery3/600/600',
-    ],
-  },
-  {
-    name: 'Professional Photography',
-    description: 'Portrait and event photography services. 10+ years experience with professional equipment.',
-    photos: [
-      'https://picsum.photos/seed/photo1/700/500',
-      'https://picsum.photos/seed/photo2/400/600',
-      'https://picsum.photos/seed/photo3/500/500',
-    ],
-  },
-];
 
 export default function FeedScreen() {
-  const [showHeader, setShowHeader] = useState(true);
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [showDeck, setShowDeck] = useState(false);
   const [showSaved, setShowSaved] = useState(true);
   const [showLocation, setShowLocation] = useState(true);
   const scrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
+  const [showHeader, setShowHeader] = useState(true);
+  const { width } = useWindowDimensions();
+  // Each column is half the screen minus padding/gap
+  const columnWidth = (width - 24 - 4) / 2;
 
-  const leftColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 0);
-  const rightColumn = BARTER_ITEMS.filter((_, index) => index % 2 === 1);
+  useEffect(() => {
+    getFeedPosts()
+      .then(setFeedItems)
+      .catch(err => console.error('Feed load error:', err));
+  }, []);
 
+  // When a new image URI is known, measure its natural dimensions
+  useEffect(() => {
+    feedItems.forEach(item => {
+      if (!item.image || imageHeights[item.id] !== undefined) return;
+      Image.getSize(
+        item.image,
+        (w, h) => {
+          const aspectRatio = h / w;
+          setImageHeights(prev => ({ ...prev, [item.id]: columnWidth * aspectRatio }));
+        },
+        () => {
+          // Fallback height if getSize fails
+          setImageHeights(prev => ({ ...prev, [item.id]: columnWidth }));
+        }
+      );
+    });
+  }, [feedItems, columnWidth]);
+
+  const leftColumn = feedItems.filter((_, i) => i % 2 === 0);
+  const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
 
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
@@ -108,78 +69,54 @@ export default function FeedScreen() {
         useNativeDriver: true,
       }).start();
     }
-
     scrollY.current = currentScrollY;
   };
 
-  const handleCardPress = () => {
-    setShowDeck(true);
-  };
+  const renderItem = (item: FeedItem) => {
+    // Use measured height, or a placeholder while loading
+    const imgHeight = imageHeights[item.id];
+    return (
+      <View key={item.id} style={styles.cardWrapper}>
+        <TouchableOpacity style={styles.card} onPress={() => {
+          setSelectedPostId(item.id);
+          setShowDeck(true);
+        }}>
+          <View style={[styles.imageContainer, { height: imgHeight ?? columnWidth }]}>
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.imagePlaceholder} />
+            )}
+          </View>
+        </TouchableOpacity>
 
-  const handleCloseDeck = () => {
-    setShowDeck(false);
-  };
-
-  const handleSave = () => {
-    console.log('Save button', showSaved);
-    setShowSaved(prev => !prev);
-  };
-  const handleLocation = () => {
-    console.log('Location button', showLocation);
-    setShowLocation(prev => !prev);
-  };
-  const handleSearch = () => {
-    console.log('Search bar');
-
-  };
-
-
-  const renderItem = (item: typeof BARTER_ITEMS[0]) => (
-    
-    <View key={item.id} style={styles.cardWrapper}>
-      <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-        <View style={[styles.imageContainer, { height: item.height }]}>
-          <Image 
-            source={{ uri: item.image }} 
-            style={styles.image}
-            resizeMode="cover"
-          />
-     
-        
-
+        <View style={styles.itemTitleWrapper}>
+          <Text style={styles.itemTitle}>
+            {item.title}
+            <Text style={styles.itemDistance}> 12{'\u00A0'}mi</Text>
+          </Text>
         </View>
-      </TouchableOpacity>
-      
-      <View style={styles.itemTitleWrapper}>
-
-          
-            <Text style={styles.itemTitle}>
-              {item.title}
-              <Text style={styles.itemDistance}> 12{'\u00A0'}mi</Text>
-            </Text>
-            
-          
       </View>
-     
-    </View>
-  );
+    );
+  };
 
   return (
-    
     <View style={styles.container}>
-      
       <StatusBar style="light" />
-      
+
       <FeedBar
         showLocation={showLocation}
         showSaved={showSaved}
-        onLocationPress={handleLocation}
-        
-        onSavePress={handleSave}
+        onLocationPress={() => setShowLocation(prev => !prev)}
+        onSavePress={() => setShowSaved(prev => !prev)}
         headerTranslateY={headerTranslateY}
       />
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -196,26 +133,20 @@ export default function FeedScreen() {
         </View>
       </ScrollView>
 
-      {/* FeedDeck Component */}
-      <FeedDeck 
-        posts={DECK_POSTS}
+      <FeedDeck
+        postId={selectedPostId}
         visible={showDeck}
-        onClose={handleCloseDeck}
+        onClose={() => setShowDeck(false)}
       />
-
-      
     </View>
-    
-   
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
     backgroundColor: colors.ui.background,
   },
-
   scrollView: {
     flex: 1,
     marginTop: 44,
@@ -252,9 +183,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  typeIcon: {
-  
-    
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#2C2C2E',
   },
   itemTitleWrapper: {
     backgroundColor: colors.ui.secondary,
@@ -262,12 +194,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingLeft: 8,
     paddingRight: 10,
-    
     flexDirection: 'row',
     alignItems: 'flex-start',
-    
     gap: 2,
-      minHeight: 36,
+    minHeight: 36,
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 20,
@@ -276,22 +206,16 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 16,
-    
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
     flex: 1,
     minWidth: 0,
-    
-    
   },
   itemDistance: {
     fontSize: 16,
-    
     color: colors.ui.secondarydisabled,
     fontFamily: globalFonts.regular,
     flexShrink: 0,
     letterSpacing: -0.3,
-    
-    
   },
 });

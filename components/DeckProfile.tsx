@@ -11,6 +11,7 @@ import { TRADE_ACTIONS } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 import { Post, User } from '@/types/index';
+import { createPost, updatePost, deletePost } from '@/services/postService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -28,6 +29,7 @@ interface ProfileDeckProps {
   toggleEnabled?: boolean;
   isDeckRevealed?: boolean;
   onSaveUser?: (updated: User) => void;
+  onPostsChange?: (updated: Post[]) => void;
 }
 
 export default function ProfileDeck({
@@ -39,6 +41,7 @@ export default function ProfileDeck({
   toggleEnabled = false,
   isDeckRevealed = false,
   onSaveUser,
+  onPostsChange,
 }: ProfileDeckProps) {
   const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -58,8 +61,15 @@ export default function ProfileDeck({
   const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
   const [topCardType, setTopCardType] = useState<'user' | 'post' | 'datetime' | 'location'>('user');
+  const [topPrimaryPostIndex, setTopPrimaryPostIndex] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPostEditMode, setIsPostEditMode] = useState(false);
+
+  const DECK_PREFIX = 2;
+
+  const [jumpToken, setJumpToken] = useState<number | undefined>(undefined);
+  const [jumpToIndex, setJumpToIndex] = useState(0);
+  const jumpCounterRef = useRef(0);
 
   useEffect(() => {
     if (topCardType !== 'user') setIsEditMode(false);
@@ -141,6 +151,71 @@ export default function ProfileDeck({
     []
   );
 
+  // ── Save post (create or update) ──────────────────────────────────────────
+
+  const handleSavePost = useCallback(async (updated: Post) => {
+    try {
+      let newPosts: Post[];
+
+      if (!updated._id) {
+        const created = await createPost(updated);
+        // Replace by position (topPrimaryPostIndex) since updated is a new
+        // object from PostCard's draft spread and won't match by reference.
+        newPosts = posts.map((p, i) => (i === topPrimaryPostIndex ? created : p));
+      } else {
+        await updatePost(updated._id, updated);
+        newPosts = posts.map(p => (p._id === updated._id ? updated : p));
+      }
+
+      onPostsChange?.(newPosts);
+
+    } catch (err) {
+      console.error('Failed to save post:', err);
+    }
+  }, [posts, onPostsChange, topPrimaryPostIndex]);
+
+  // ── Add post ──────────────────────────────────────────────────────────────
+
+  const handleAddPost = useCallback(() => {
+    // No _id yet — will be created when user hits ✓ in PostCard
+    const emptyPost: Post = { name: 'New Item', description: '', photos: [], date_posted: "" };
+    jumpCounterRef.current += 1;
+    setJumpToIndex(DECK_PREFIX);
+    setJumpToken(jumpCounterRef.current);
+    onPostsChange?.([emptyPost, ...posts]);
+  }, [posts, onPostsChange]);
+
+  // ── Delete top post ───────────────────────────────────────────────────────
+
+  const handleDeleteTopPost = useCallback(async () => {
+    if (topCardType !== 'post' || topPrimaryPostIndex === null) return;
+
+    const postToDelete = posts[topPrimaryPostIndex];
+
+    // Remove from local state immediately (optimistic)
+    const updated = posts.filter((_, i) => i !== topPrimaryPostIndex);
+    const targetInNewCards = DECK_PREFIX + topPrimaryPostIndex;
+    const newLen = DECK_PREFIX + updated.length;
+    const target = targetInNewCards < newLen ? targetInNewCards : 0;
+    jumpCounterRef.current += 1;
+    setJumpToIndex(target);
+    setJumpToken(jumpCounterRef.current);
+    onPostsChange?.(updated);
+
+    // Only hit the DB if it was already persisted
+    if (postToDelete._id) {
+      try {
+        await deletePost(postToDelete._id);
+      } catch (err) {
+        console.error('Failed to delete post:', err);
+        // Re-insert on failure
+        onPostsChange?.(posts);
+      }
+    }
+  }, [topCardType, topPrimaryPostIndex, posts, onPostsChange]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   const cardWidth = Math.min(width - 36, 400);
 
   const spacerHeight = slideAnim.interpolate({
@@ -149,6 +224,7 @@ export default function ProfileDeck({
   });
 
   const secondaryUserName = secondaryUser?.first_name ?? 'Partner';
+  const deleteDisabled = topCardType !== 'post' || topPrimaryPostIndex === null;
 
   return (
     <View style={styles.container} pointerEvents="box-none">
@@ -227,6 +303,7 @@ export default function ProfileDeck({
                 cardWidth={cardWidth}
                 enabled
                 onTopCardTypeChange={setTopCardType}
+                onTopCardChange={setTopPrimaryPostIndex}
                 isUser={true}
                 isEditMode={isEditMode}
                 onExitEdit={() => setIsEditMode(false)}
@@ -235,6 +312,9 @@ export default function ProfileDeck({
                 onExitPostEdit={() => setIsPostEditMode(false)}
                 onEnterPostEdit={() => setIsPostEditMode(true)}
                 onSaveUser={onSaveUser}
+                onSavePost={handleSavePost}
+                jumpToken={jumpToken}
+                jumpToCardIndex={jumpToIndex}
               />
             </View>
             {isQueryDrawerOpen && (
@@ -247,11 +327,19 @@ export default function ProfileDeck({
               </View>
             )}
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.addButton} onPress={() => {}}>
+              <TouchableOpacity style={styles.addButton} onPress={handleAddPost}>
                 <FontAwesome6 name="circle-plus" size={24} color="#fff" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteButton} onPress={() => {}}>
-                <FontAwesome6 name="circle-xmark" size={24} color="#fff" />
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleDeleteTopPost}
+                disabled={deleteDisabled}
+              >
+                <FontAwesome6
+                  name="circle-xmark"
+                  size={24}
+                  color={deleteDisabled ? colors.ui.secondarydisabled : '#fff'}
+                />
               </TouchableOpacity>
               <View style={styles.myItemCountBar}>
                 <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />

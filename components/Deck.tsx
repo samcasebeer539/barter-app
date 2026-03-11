@@ -1,10 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, {
+  useRef, useState, useEffect, useMemo, useCallback,
+  useImperativeHandle, forwardRef,
+} from 'react';
 import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  PanResponder,
+  View, StyleSheet, Dimensions, Animated, PanResponder,
 } from 'react-native';
 import PostCard from './CardItem';
 import UserCard from './CardUser';
@@ -36,6 +35,9 @@ interface DeckProps {
   onExitPostEdit?: () => void;
   onEnterPostEdit?: () => void;
   onSaveUser?: (updated: User) => void;
+  onSavePost?: (updated: Post) => void;  // ← new
+  jumpToken?: number;
+  jumpToCardIndex?: number;
 }
 
 type DeckItem =
@@ -43,6 +45,176 @@ type DeckItem =
   | { type: 'post'; post: Post; postIndex: number }
   | { type: 'datetime' }
   | { type: 'location' };
+
+const SLOT_POSITIONS = [
+  { x: 0,  y: 0  },
+  { x: 6,  y: 6  },
+  { x: 12, y: 12 },
+];
+
+interface SlotHandle {
+  setCard: (item: DeckItem | null, isFront: boolean) => void;
+  setZIndex: (z: number) => void;
+  setShadow: (enabled: boolean) => void;
+}
+
+interface CardSlotProps {
+  slotAnim: { position: Animated.ValueXY; swipeX: Animated.Value };
+  initialCard: DeckItem | null;
+  initialIsFront: boolean;
+  initialZIndex: number;
+  screenWidth: number;
+  finalCardWidth: number;
+  isUser: boolean;
+  isSelectMode: boolean;
+  selectedPosts: number[];
+  selectColor: string;
+  user: User;
+  mapActiveRef: React.MutableRefObject<boolean>;
+  isEditMode: boolean;
+  isPostEditMode: boolean;
+  onExitEdit?: () => void;
+  onEnterEdit?: () => void;
+  onExitPostEdit?: () => void;
+  onEnterPostEdit?: () => void;
+  onSaveUser?: (u: User) => void;
+  onSavePost?: (updated: Post) => void;  // ← new
+}
+
+const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
+  slotAnim,
+  initialCard,
+  initialIsFront,
+  initialZIndex,
+  screenWidth,
+  finalCardWidth,
+  isUser,
+  isSelectMode,
+  selectedPosts,
+  selectColor,
+  user,
+  mapActiveRef,
+  isEditMode,
+  isPostEditMode,
+  onExitEdit,
+  onEnterEdit,
+  onExitPostEdit,
+  onEnterPostEdit,
+  onSaveUser,
+  onSavePost,  // ← new
+}, ref) => {
+  const [card, setCardState] = useState<DeckItem | null>(initialCard);
+  const [isFront, setIsFront] = useState(initialIsFront);
+
+  const wrapperRef = useRef<View>(null);
+  const cardRef = useRef<View>(null);
+
+  useImperativeHandle(ref, () => ({
+    setCard(item: DeckItem | null, front: boolean) {
+      setCardState(item);
+      setIsFront(front);
+    },
+    setZIndex(z: number) {
+      wrapperRef.current?.setNativeProps({ style: { zIndex: z } });
+    },
+    setShadow(enabled: boolean) {
+      cardRef.current?.setNativeProps({
+        style: {
+          shadowOpacity: enabled ? 0.5 : 0,
+          elevation: enabled ? 8 : 0,
+        },
+      });
+    },
+  }));
+
+  const rotate = slotAnim.swipeX.interpolate({
+    inputRange: [-screenWidth, 0, screenWidth],
+    outputRange: ['-10deg', '0deg', '10deg'],
+  });
+
+  const translateX = isFront
+    ? Animated.add(slotAnim.position.x, slotAnim.swipeX)
+    : slotAnim.position.x;
+
+  return (
+    <View ref={wrapperRef} style={[slotStyles.wrapper, { zIndex: initialZIndex }]}>
+      <Animated.View
+        ref={cardRef}
+        style={[
+          slotStyles.card,
+          slotStyles.shadowBase,
+          {
+            transform: [
+              { translateX },
+              { translateY: slotAnim.position.y },
+              ...(isFront ? [{ rotate }] : []),
+            ],
+          },
+        ]}
+      >
+        {card?.type === 'user' && (
+          <UserCard
+            user={user}
+            scale={1}
+            cardWidth={finalCardWidth}
+            isUser={isUser}
+            isEditable={isFront && isEditMode}
+            onExitEdit={onExitEdit}
+            onEnterEdit={onEnterEdit}
+            onSave={onSaveUser}
+          />
+        )}
+        {card?.type === 'datetime' && (
+          <CardDateTime cardWidth={finalCardWidth} />
+        )}
+        {card?.type === 'location' && (
+          <CardLocation cardWidth={finalCardWidth} mapActiveRef={mapActiveRef} />
+        )}
+        {card?.type === 'post' && (
+          <PostCard
+            post={card.post}
+            scale={1}
+            cardWidth={finalCardWidth}
+            isSelectMode={isFront && isSelectMode}
+            isSelected={selectedPosts.includes(card.postIndex)}
+            selectColor={selectColor}
+            isUser={isUser}
+            isEditable={isFront && isPostEditMode}
+            onEnterEdit={onEnterPostEdit}
+            onExitEdit={onExitPostEdit}
+            onSave={onSavePost}  // ← wired in
+          />
+        )}
+      </Animated.View>
+    </View>
+  );
+});
+
+const slotStyles = StyleSheet.create({
+  wrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  card: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+  },
+  shadowBase: {
+    shadowColor: colors.ui.secondary,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0,
+    shadowRadius: 2,
+    elevation: 0,
+  },
+});
+
+// ─── Deck ─────────────────────────────────────────────────────────────────────
 
 const Deck: React.FC<DeckProps> = ({
   posts,
@@ -66,180 +238,176 @@ const Deck: React.FC<DeckProps> = ({
   onExitPostEdit,
   onEnterPostEdit,
   onSaveUser,
+  onSavePost,  // ← new
+  jumpToken,
+  jumpToCardIndex,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 38, 290);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
+  const deckContainerWidth  = finalCardWidth + SLOT_POSITIONS[2].x;
+  const deckContainerHeight = cardHeight    + SLOT_POSITIONS[2].y;
 
-  const POSITIONS = {
-    first: { x: 0, y: 0 },
-    second: { x: 6, y: 6 },
-    third: { x: 12, y: 12 },
-  };
-
-  const deckContainerWidth = finalCardWidth + POSITIONS.third.x;
-  const deckContainerHeight = cardHeight + POSITIONS.third.y;
-
-  const SWIPE_THRESHOLD = 10;
+  const SWIPE_THRESHOLD   = 10;
   const GESTURE_THRESHOLD = 3;
-
   const mapActiveRef = useRef(false);
 
-  const shouldRepeat = posts.length < 2;
-  const baseItems: DeckItem[] = [
+  const defaultUser: User = {
+    first_name: 'Jay', last_name: 'Wilson',
+    email: 'jathwils@ucsc.edu', pronouns: '(she/he/they)',
+    bio: 'pro smasher', phone: '',
+    profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
+    email_visible: false, phone_visible: false,
+  };
+  const userToRender = user ?? defaultUser;
+
+  const cards = useMemo<DeckItem[]>(() => [
     { type: 'user' },
     ...(showDateTime ? [{ type: 'datetime' as const }] : []),
     ...(showLocation ? [{ type: 'location' as const }] : []),
     ...posts.map((post, i): DeckItem => ({ type: 'post', post, postIndex: i })),
-  ];
-  const [cards] = useState<DeckItem[]>(
-    shouldRepeat ? [...baseItems, ...baseItems] : baseItems
-  );
+  ], [posts, showDateTime, showLocation]);
 
-  const cardAnimations = useRef(
-    cards.map((_, index) => ({
-      position: new Animated.ValueXY(
-        index === 0 ? POSITIONS.first :
-        index === 1 ? POSITIONS.second :
-        index === 2 ? POSITIONS.third :
-        { x: -22, y: -32 }
-      ),
-      swipeX: new Animated.Value(0),
-    }))
-  ).current;
+  const cardsRef = useRef(cards);
+  cardsRef.current = cards;
 
-  const [visibleIndices, setVisibleIndices] = useState({
-    first: 0,
-    second: 1,
-    third: 2,
-  });
+  const ci = useCallback((n: number) => {
+    const len = cardsRef.current.length;
+    return ((n % len) + len) % len;
+  }, []);
 
-  const [shadowIndices, setShadowIndices] = useState({
-    first: 0,
-    second: 1,
-  });
+  const slotAnims = useRef([
+    { position: new Animated.ValueXY(SLOT_POSITIONS[0]), swipeX: new Animated.Value(0) },
+    { position: new Animated.ValueXY(SLOT_POSITIONS[1]), swipeX: new Animated.Value(0) },
+    { position: new Animated.ValueXY(SLOT_POSITIONS[2]), swipeX: new Animated.Value(0) },
+  ]).current;
 
-  const visibleIndicesRef = useRef(visibleIndices);
-  visibleIndicesRef.current = visibleIndices;
+  const slotRefs = useRef<React.RefObject<SlotHandle>[]>([
+    React.createRef<SlotHandle>(),
+    React.createRef<SlotHandle>(),
+    React.createRef<SlotHandle>(),
+  ]).current;
+
+  const rotatingFrontRef = useRef(0);
+  const roleToSlot = (role: number) => (rotatingFrontRef.current + role) % 3;
+
+  const slotZIndex = useRef([12, 11, 10]);
+
+  const frontCardIndexRef = useRef(0);
+  const [frontCardIndex, setFrontCardIndex] = useState(0);
   const isAnimatingRef = useRef(false);
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 
   useEffect(() => {
-    const topCard = cards[visibleIndices.first];
+    slotRefs[0].current?.setShadow(true);
+    slotRefs[1].current?.setShadow(true);
+    slotRefs[2].current?.setShadow(false);
+  }, []);
+
+  // When posts change (e.g. after a save), re-sync all three visible slots
+  // so they show the latest post data without needing a full jump.
+  useEffect(() => {
+    const front  = rotatingFrontRef.current;
+    const second = (front + 1) % 3;
+    const third  = (front + 2) % 3;
+    const f = ci(frontCardIndexRef.current);
+    const s = ci(frontCardIndexRef.current + 1);
+    const t = ci(frontCardIndexRef.current + 2);
+    slotRefs[front].current?.setCard(cardsRef.current[f], true);
+    slotRefs[second].current?.setCard(cardsRef.current[s], false);
+    slotRefs[third].current?.setCard(cardsRef.current[t], false);
+  }, [cards]);
+
+  useEffect(() => {
+    const topCard = cardsRef.current[frontCardIndex];
     if (topCard?.type === 'post') {
       onTopCardChange?.(topCard.postIndex);
     } else {
       onTopCardChange?.(null);
     }
-    if (topCard) {
-      onTopCardTypeChange?.(topCard.type);
-    }
-  }, [visibleIndices]);
+    if (topCard) onTopCardTypeChange?.(topCard.type);
+  }, [frontCardIndex, cards]);
 
-  const isHorizontalGestureRef = useRef(false);
+  // ── Jump ──────────────────────────────────────────────────────────────────
+  const prevJumpToken = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (jumpToken === undefined || jumpToken === prevJumpToken.current) return;
+    prevJumpToken.current = jumpToken;
+    if (jumpToCardIndex === undefined) return;
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onStartShouldSetPanResponderCapture: () => false,
+    const f = ci(jumpToCardIndex);
+    const s = ci(jumpToCardIndex + 1);
+    const t = ci(jumpToCardIndex + 2);
 
-      onMoveShouldSetPanResponder: (_, g) => {
-        if (mapActiveRef.current) return false;
-        const horizontal = (
-          enabledRef.current &&
-          !isAnimatingRef.current &&
-          Math.abs(g.dx) > GESTURE_THRESHOLD &&
-          Math.abs(g.dx) > Math.abs(g.dy) * 2
-        );
-        isHorizontalGestureRef.current = horizontal;
-        return horizontal;
-      },
+    const front  = rotatingFrontRef.current;
+    const second = (front + 1) % 3;
+    const third  = (front + 2) % 3;
 
-      onMoveShouldSetPanResponderCapture: (_, g) => {
-        if (mapActiveRef.current) return false;
-        return (
-          enabledRef.current &&
-          !isAnimatingRef.current &&
-          Math.abs(g.dx) > GESTURE_THRESHOLD &&
-          Math.abs(g.dx) > Math.abs(g.dy) * 2
-        );
-      },
+    slotRefs[front].current?.setCard(cardsRef.current[f], true);
+    slotRefs[second].current?.setCard(cardsRef.current[s], false);
+    slotRefs[third].current?.setCard(cardsRef.current[t], false);
 
-      onPanResponderGrant: () => {
-        if (!enabledRef.current) return;
-        onHorizontalGestureStart?.();
-        const firstCardIndex = visibleIndicesRef.current.first;
-        cardAnimations[firstCardIndex].swipeX.setOffset(0);
-        cardAnimations[firstCardIndex].swipeX.setValue(0);
-      },
-      onPanResponderMove: (_, gesture) => {
-        if (!enabledRef.current) return;
-        const firstCardIndex = visibleIndicesRef.current.first;
-        cardAnimations[firstCardIndex].swipeX.setValue(gesture.dx);
-      },
-      onPanResponderRelease: (_, gesture) => {
-        if (!enabledRef.current) return;
-        isHorizontalGestureRef.current = false;
-        onGestureEnd?.();
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          swipeOut(1);
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          swipeOut(-1);
-        } else {
-          resetPosition();
-        }
-      },
-      onPanResponderTerminate: () => {
-        isHorizontalGestureRef.current = false;
-        onGestureEnd?.();
-        resetPosition();
-      },
-    })
-  ).current;
+    slotRefs[front].current?.setShadow(true);
+    slotRefs[second].current?.setShadow(true);
+    slotRefs[third].current?.setShadow(false);
 
+    frontCardIndexRef.current = f;
+    setFrontCardIndex(f);
+  }, [jumpToken]);
+
+  // ── Swipe out ─────────────────────────────────────────────────────────────
   const swipeOut = (direction: number) => {
     isAnimatingRef.current = true;
-    const firstIndex = visibleIndicesRef.current.first;
-    const secondIndex = visibleIndicesRef.current.second;
-    const thirdIndex = visibleIndicesRef.current.third;
-    const nextIndex = (thirdIndex + 1) % cards.length;
 
-    setShadowIndices({ first: secondIndex, second: thirdIndex });
+    const frontSlot  = roleToSlot(0);
+    const secondSlot = roleToSlot(1);
+    const thirdSlot  = roleToSlot(2);
+
+    slotRefs[frontSlot].current?.setShadow(false);
+    slotRefs[thirdSlot].current?.setShadow(true);
 
     Animated.parallel([
-      Animated.timing(cardAnimations[firstIndex].swipeX, {
+      Animated.timing(slotAnims[frontSlot].swipeX, {
         toValue: direction * screenWidth * 1.1,
         duration: 250,
         useNativeDriver: true,
       }),
-      Animated.timing(cardAnimations[secondIndex].position, {
-        toValue: POSITIONS.first,
+      Animated.timing(slotAnims[secondSlot].position, {
+        toValue: SLOT_POSITIONS[0],
         duration: 250,
         useNativeDriver: true,
       }),
-      Animated.timing(cardAnimations[thirdIndex].position, {
-        toValue: POSITIONS.second,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(cardAnimations[nextIndex].position, {
-        toValue: POSITIONS.third,
+      Animated.timing(slotAnims[thirdSlot].position, {
+        toValue: SLOT_POSITIONS[1],
         duration: 250,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      cardAnimations[secondIndex].swipeX.flattenOffset();
-      cardAnimations[secondIndex].swipeX.setValue(0);
-      const newIndices = {
-        first: secondIndex,
-        second: thirdIndex,
-        third: nextIndex,
-      };
-      setVisibleIndices(newIndices);
-      visibleIndicesRef.current = newIndices;
-      setShadowIndices({ first: secondIndex, second: thirdIndex });
+      slotAnims[frontSlot].swipeX.setValue(0);
+      slotAnims[frontSlot].position.setValue(SLOT_POSITIONS[2]);
+
+      rotatingFrontRef.current = secondSlot;
+
+      const newFrontCardIndex = ci(frontCardIndexRef.current + 1);
+      const nextCardIndex     = ci(frontCardIndexRef.current + 3);
+      const secondCardIndex   = ci(frontCardIndexRef.current + 2);
+
+      slotRefs[frontSlot].current?.setCard(cardsRef.current[nextCardIndex], false);
+      slotRefs[secondSlot].current?.setCard(cardsRef.current[newFrontCardIndex], true);
+      slotRefs[thirdSlot].current?.setCard(cardsRef.current[secondCardIndex], false);
+
+      slotZIndex.current[secondSlot] = 12;
+      slotZIndex.current[thirdSlot]  = 11;
+      slotZIndex.current[frontSlot]  = 10;
+      slotRefs[secondSlot].current?.setZIndex(12);
+      slotRefs[thirdSlot].current?.setZIndex(11);
+      slotRefs[frontSlot].current?.setZIndex(10);
+
+      frontCardIndexRef.current = newFrontCardIndex;
+      setFrontCardIndex(newFrontCardIndex);
+
       isAnimatingRef.current = false;
       onExitEdit?.();
       onExitPostEdit?.();
@@ -247,90 +415,75 @@ const Deck: React.FC<DeckProps> = ({
   };
 
   const resetPosition = () => {
-    Animated.spring(cardAnimations[visibleIndicesRef.current.first].swipeX, {
+    Animated.spring(slotAnims[roleToSlot(0)].swipeX, {
       toValue: 0,
       useNativeDriver: true,
       friction: 5,
     }).start();
   };
 
-  const defaultUser: User = {
-    first_name: 'Jay',
-    last_name: 'Wilson',
-    email: 'jathwils@ucsc.edu',
-    pronouns: '(she/he/they)',
-    bio: 'pro smasher',
-    phone: '',
-    profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
-    email_visible: false,
-    phone_visible: false,
-  };
+  // ── Pan responder ─────────────────────────────────────────────────────────
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, g) => {
+        if (mapActiveRef.current) return false;
+        return (
+          enabledRef.current && !isAnimatingRef.current &&
+          Math.abs(g.dx) > GESTURE_THRESHOLD &&
+          Math.abs(g.dx) > Math.abs(g.dy) * 2
+        );
+      },
+      onMoveShouldSetPanResponderCapture: (_, g) => {
+        if (mapActiveRef.current) return false;
+        return (
+          enabledRef.current && !isAnimatingRef.current &&
+          Math.abs(g.dx) > GESTURE_THRESHOLD &&
+          Math.abs(g.dx) > Math.abs(g.dy) * 2
+        );
+      },
+      onPanResponderGrant: () => {
+        if (!enabledRef.current) return;
+        onHorizontalGestureStart?.();
+        slotAnims[roleToSlot(0)].swipeX.setOffset(0);
+        slotAnims[roleToSlot(0)].swipeX.setValue(0);
+      },
+      onPanResponderMove: (_, gesture) => {
+        if (!enabledRef.current) return;
+        slotAnims[roleToSlot(0)].swipeX.setValue(gesture.dx);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (!enabledRef.current) return;
+        onGestureEnd?.();
+        if (gesture.dx > SWIPE_THRESHOLD) swipeOut(1);
+        else if (gesture.dx < -SWIPE_THRESHOLD) swipeOut(-1);
+        else resetPosition();
+      },
+      onPanResponderTerminate: () => {
+        onGestureEnd?.();
+        resetPosition();
+      },
+    })
+  ).current;
 
-  const userToRender = user ?? defaultUser;
-
-  const renderCard = (index: number, isFirst: boolean = false) => {
-    const card = cards[index];
-    if (!card) return null;
-
-    const cardAnim = cardAnimations[index];
-
-    const rotate = cardAnim.swipeX.interpolate({
-      inputRange: [-screenWidth, 0, screenWidth],
-      outputRange: ['-10deg', '0deg', '10deg'],
-    });
-
-    const translateX = isFirst
-      ? Animated.add(cardAnim.position.x, cardAnim.swipeX)
-      : cardAnim.position.x;
-
-    const hasShadow = index === shadowIndices.first || index === shadowIndices.second;
-
-    return (
-      <Animated.View
-        key={index}
-        style={[
-          styles.frontCard,
-          hasShadow ? styles.cardShadow : styles.noShadow,
-          {
-            transform: [
-              { translateX },
-              { translateY: cardAnim.position.y },
-              ...(isFirst ? [{ rotate }] : [{ scale: 1.0 }]),
-            ],
-          },
-        ]}
-      >
-        {card.type === 'user' ? (
-          <UserCard
-            user={userToRender}
-            scale={1}
-            cardWidth={finalCardWidth}
-            isUser={isUser}
-            isEditable={isFirst && isEditMode}
-            onExitEdit={onExitEdit}
-            onEnterEdit={onEnterEdit}
-            onSave={onSaveUser}
-          />
-        ) : card.type === 'datetime' ? (
-          <CardDateTime cardWidth={finalCardWidth} />
-        ) : card.type === 'location' ? (
-          <CardLocation cardWidth={finalCardWidth} mapActiveRef={mapActiveRef} />
-        ) : (
-          <PostCard
-            post={card.post}
-            scale={1}
-            cardWidth={finalCardWidth}
-            isSelectMode={isFirst && isSelectMode}
-            isSelected={selectedPosts.includes(card.postIndex)}
-            selectColor={selectColor}
-            isUser={isUser}
-            isEditable={isFirst && isPostEditMode}
-            onEnterEdit={onEnterPostEdit}
-            onExitEdit={onExitPostEdit}
-          />
-        )}
-      </Animated.View>
-    );
+  const sharedProps = {
+    screenWidth,
+    finalCardWidth,
+    isUser,
+    isEditMode,
+    isPostEditMode,
+    isSelectMode,
+    selectedPosts,
+    selectColor,
+    user: userToRender,
+    onExitEdit,
+    onEnterEdit,
+    onExitPostEdit,
+    onEnterPostEdit,
+    onSaveUser,
+    onSavePost,  // ← included in sharedProps
+    mapActiveRef,
   };
 
   return (
@@ -338,19 +491,21 @@ const Deck: React.FC<DeckProps> = ({
       style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
       {...(enabled ? panResponder.panHandlers : {})}
     >
-      {/* Static blank card — no shadow */}
-      <View
-        style={[
-          styles.frontCard,
-          styles.noShadow,
-          { transform: [{ translateX: POSITIONS.third.x }, { translateY: POSITIONS.third.y }] },
-        ]}
-      >
+      <View style={styles.blankCard}>
         <BlankCard cardWidth={finalCardWidth} />
       </View>
-      {renderCard(visibleIndices.third)}
-      {renderCard(visibleIndices.second)}
-      {renderCard(visibleIndices.first, true)}
+
+      {[0, 1, 2].map(slot => (
+        <CardSlot
+          key={slot}
+          ref={slotRefs[slot]}
+          slotAnim={slotAnims[slot]}
+          initialCard={cards[slot] ?? null}
+          initialIsFront={slot === 0}
+          initialZIndex={slotZIndex.current[slot]}
+          {...sharedProps}
+        />
+      ))}
     </View>
   );
 };
@@ -362,29 +517,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginLeft: 24,
   },
-  backingCard: {
+  blankCard: {
     position: 'absolute',
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#d4d4d4',
-    backgroundColor: 'transparent',
-  },
-  frontCard: {
-    position: 'absolute',
-    zIndex: 10,
     top: 0,
     left: 0,
-  },
-  cardShadow: {
-    shadowColor: colors.ui.secondary,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    elevation: 8,
-  },
-  noShadow: {
-    shadowOpacity: 0,
-    elevation: 0,
+    transform: [{ translateX: SLOT_POSITIONS[2].x }, { translateY: SLOT_POSITIONS[2].y }],
   },
 });
 

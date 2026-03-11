@@ -11,6 +11,7 @@ import {
   ScrollView,
   Keyboard,
   KeyboardEvent,
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
@@ -20,25 +21,21 @@ import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
+import { getFeedProfile, FeedProfile } from '@/services/feedService';
+import { Post, User } from '@/types/index';
 
 const { width, height } = Dimensions.get('window');
 
 const BOTTOM_BASE = 140;
 const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - 60;
 
-interface Post {
-  name: string;
-  description: string;
-  photos: string[];
-}
-
 interface FeedDeckProps {
-  posts: Post[];
+  postId: string | null;  // the tapped post id — null when closed
   visible: boolean;
   onClose: () => void;
 }
 
-export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
+export default function FeedDeck({ postId, visible, onClose }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -52,12 +49,52 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
 
+  const [profile, setProfile] = useState<FeedProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const feedActions = useMemo(
     () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
     []
   );
 
-  const postCount = useMemo(() => posts.length, [posts]);
+  // Map FeedProfile to the types Deck expects
+  const deckUser: User | undefined = profile ? profile.user : undefined;
+  const deckPosts: Post[] = profile
+    ? profile.posts.map(p => ({
+        _id: p._id,
+        name: p.name,
+        description: p.description,
+        photos: p.photos,
+        date_posted: p.date_posted,
+      }))
+    : [];
+
+  const postCount = deckPosts.length;
+
+  // Jump token to land on the tapped post when the deck opens
+  const [jumpToken, setJumpToken] = useState<number | undefined>(undefined);
+  const [jumpToIndex, setJumpToIndex] = useState(0);
+  const jumpCounterRef = useRef(0);
+
+  // Fetch profile when a postId is provided
+  useEffect(() => {
+    if (!postId) return;
+    setIsLoading(true);
+    setProfile(null);
+    getFeedProfile(postId)
+      .then(data => {
+        setProfile(data);
+        // Find which index in the posts array matches the tapped post
+        const idx = data.posts.findIndex(p => p._id === data.tappedPostId);
+        // DECK_PREFIX = 2 (user + location cards before posts)
+        const cardIndex = idx >= 0 ? 2 + idx : 2;
+        jumpCounterRef.current += 1;
+        setJumpToIndex(cardIndex);
+        setJumpToken(jumpCounterRef.current);
+      })
+      .catch(err => console.error('FeedDeck profile load error:', err))
+      .finally(() => setIsLoading(false));
+  }, [postId]);
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -73,15 +110,8 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
         });
       }, 50);
     });
-
-    const hide = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      show.remove();
-      hide.remove();
-    };
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => { show.remove(); hide.remove(); };
   }, []);
 
   useEffect(() => {
@@ -90,33 +120,19 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
       deckTranslateY.setValue(height);
       backdropOpacity.setValue(0);
       Animated.parallel([
-        Animated.timing(deckTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          duration: 350,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 0.88,
-          duration: 400,
-          useNativeDriver: true,
-        }),
+        Animated.timing(deckTranslateY, { toValue: 0, useNativeDriver: true, duration: 350 }),
+        Animated.timing(backdropOpacity, { toValue: 0.88, duration: 400, useNativeDriver: true }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(deckTranslateY, {
-          toValue: height,
-          duration: 80,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
+        Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
+        Animated.timing(backdropOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
       ]).start(() => {
         setIsRendered(false);
         setIsQueryOpen(false);
         setKeyboardHeight(0);
+        setIsSelectMode(false);
+        setSelectedPosts([]);
       });
     }
   }, [visible]);
@@ -124,19 +140,9 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
   const handleCloseModal = () => {
     Keyboard.dismiss();
     Animated.parallel([
-      Animated.timing(deckTranslateY, {
-        toValue: height,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onClose();
-    });
+      Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: true }),
+    ]).start(() => onClose());
   };
 
   const handleActionSelected = (action: TradeAction) => {
@@ -160,29 +166,23 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
     }
   };
 
-  const handleTopCardChange = (postIndex: number | null) => setTopPostIndex(postIndex);
-  const handleSave = () => setShowSaved(prev => !prev);
-
   const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
 
-        {/* Dim backdrop — purely visual, no touch handling */}
         <Animated.View
           style={[styles.modalBackground, { opacity: backdropOpacity }]}
           pointerEvents="none"
         />
 
-        {/* Close strip — only occupies the space BELOW the deck (BOTTOM_BASE tall) */}
         <TouchableOpacity
           style={styles.closeStrip}
           activeOpacity={1}
           onPress={handleCloseModal}
         />
 
-        {/* Deck — slides in/out, sits above the close strip */}
         <Animated.View
           style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}
         >
@@ -199,7 +199,7 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
           >
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <TouchableOpacity style={styles.saveButton} onPress={() => setShowSaved(p => !p)}>
                   <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
                 </TouchableOpacity>
                 <View style={styles.statusBar}>
@@ -210,20 +210,29 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
                 </View>
               </View>
 
-              <View style={deckStyles.deckWrapper}>
-                <Deck
-                  posts={posts}
-                  cardWidth={Math.min(width - 36, 400)}
-                  enabled={true}
-                  isSelectMode={isSelectMode}
-                  selectedPosts={selectedPosts}
-                  onTopCardChange={handleTopCardChange}
-                  selectColor={colors.actions.offer}
-                  showLocation={true}
-                  onHorizontalGestureStart={() => setScrollEnabled(false)}
-                  onGestureEnd={() => setScrollEnabled(true)}
-                />
-              </View>
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={colors.ui.secondarydisabled} />
+                </View>
+              ) : (
+                <View style={deckStyles.deckWrapper}>
+                  <Deck
+                    posts={deckPosts}
+                    user={deckUser}
+                    cardWidth={Math.min(width - 36, 400)}
+                    enabled={true}
+                    isSelectMode={isSelectMode}
+                    selectedPosts={selectedPosts}
+                    onTopCardChange={setTopPostIndex}
+                    selectColor={colors.actions.offer}
+                    showLocation={true}
+                    onHorizontalGestureStart={() => setScrollEnabled(false)}
+                    onGestureEnd={() => setScrollEnabled(true)}
+                    jumpToken={jumpToken}
+                    jumpToCardIndex={jumpToIndex}
+                  />
+                </View>
+              )}
 
               <View style={styles.turnsAndButtonColumn}>
                 <View style={[styles.queryRow, { marginBottom: isQueryOpen ? 4 : 0 }]}>
@@ -252,29 +261,27 @@ export default function FeedDeck({ posts, visible, onClose }: FeedDeckProps) {
 const styles = StyleSheet.create({
   modalBackground: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: colors.ui.background,
   },
-  // Sits in the bottom strip only — the gap between screen bottom and the deck
   closeStrip: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: 0, left: 0, right: 0,
     height: BOTTOM_BASE,
   },
   animatedContainer: {
     position: 'absolute',
     bottom: BOTTOM_BASE,
-    left: 0,
-    right: 0,
+    left: 0, right: 0,
     alignItems: 'center',
   },
   scrollContent: {
     flexGrow: 1,
+  },
+  loadingContainer: {
+    height: 300,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   saveButton: {
     width: 50,
@@ -287,25 +294,10 @@ const styles = StyleSheet.create({
   statusBar: {
     ...makeCountBar('rightCap', 'flex-end'),
   },
-  collapseBar: {
-    top: -10,
-    width: DECK_BAR_WIDTH,
-    height: 36,
-    ...barRadius.bottomCap,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    zIndex: 10,
-  },
   turnsAndButtonColumn: {
     flexDirection: 'column',
     width: DECK_BAR_WIDTH,
   },
-  queryRow: {
-
-  },
-  actionRow: {
-
-  }
+  queryRow: {},
+  actionRow: {},
 });

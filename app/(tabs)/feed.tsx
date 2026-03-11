@@ -5,6 +5,7 @@ import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
 import { getFeedPosts, getFeedProfile, FeedItem, FeedProfile } from '@/services/feedService';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 
 
@@ -105,18 +106,34 @@ export default function FeedScreen() {
             )}
             {loadingPostId === item.id && (
               <View style={styles.imageLoadingOverlay}>
-                <ActivityIndicator size="small" color="#ffffff" />
+                {/* <ActivityIndicator size="large" color={colors.actions.trade} /> */}
+                <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
               </View>
             )}
           </View>
         </TouchableOpacity>
-
+        <TouchableOpacity
+          
+          onPress={() => {
+            setLoadingPostId(item.id);
+            getFeedProfile(item.id)
+              .then(profile => {
+                setPrefetchedProfile(profile);
+                setSelectedPostId(item.id);
+                setShowDeck(true);
+              })
+              .catch(err => console.error('Feed prefetch error:', err))
+              .finally(() => setLoadingPostId(null));
+          }}
+        >
         <View style={styles.itemTitleWrapper}>
           <Text style={styles.itemTitle}>
             {item.title}
-            <Text style={styles.itemDistance}> 12{'\u00A0'}mi</Text>
+            
           </Text>
+          <Text style={styles.itemDistance}>3.5{'\u00A0'}mi</Text>
         </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -203,7 +220,7 @@ const styles = StyleSheet.create({
   },
   imageLoadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: colors.ui.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -216,20 +233,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ui.secondary,
     marginTop: 4,
     paddingVertical: 8,
-    paddingLeft: 8,
-    paddingRight: 10,
-    flexDirection: 'row',
+    paddingLeft: 12,
+    paddingRight: 12,
+    flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 2,
     minHeight: 36,
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 20,
+    borderBottomRightRadius: 25,
     borderBottomLeftRadius: 2,
-    flexWrap: 'wrap',
+  
   },
   itemTitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#FFFFFF',
     fontFamily: globalFonts.bold,
     flex: 1,

@@ -235,7 +235,7 @@ export default function ProfileDeck({
           onPress={() => setIsQueryDrawerOpen(prev => !prev)}
         >
           <Text style={[deckStyles.actionButtonText, { color: colors.actions.query }]}>
-            1 QUERY
+            QUERIES
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -244,7 +244,7 @@ export default function ProfileDeck({
           disabled={!toggleEnabled}
         >
           <Text style={[deckStyles.actionButtonText, { color: colors.actions.offer }]}>
-            2 OFFERS
+            OFFERS
           </Text>
           <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{itemCount}</Text>
           <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />

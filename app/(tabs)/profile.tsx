@@ -125,9 +125,11 @@ export default function ProfileScreen() {
   );
 
   if (!primaryUser) return (
-    <SafeAreaView style={styles.container}>
-      <Text style={{ color: 'white', padding: 20 }}>Loading...</Text>
-    </SafeAreaView>
+    <View style={styles.loadingContainer}>
+      <View style={styles.loadingIconContainer}>
+        <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
+      </View>
+    </View>
   );
 
   return (
@@ -178,6 +180,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.ui.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.ui.background,
+  },
+  loadingIconContainer: {
+    height: 44,
+    width: 44,
+    borderRadius: 36,
+    backgroundColor: colors.ui.secondary,
+  
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   scroll: {
     flex: 1,

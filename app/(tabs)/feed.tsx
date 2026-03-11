@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
-import { getFeedPosts, FeedItem } from '@/services/feedService';
+import { getFeedPosts, getFeedProfile, FeedItem, FeedProfile } from '@/services/feedService';
 
 
 
@@ -12,6 +12,8 @@ export default function FeedScreen() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [loadingPostId, setLoadingPostId] = useState<string | null>(null);
+  const [prefetchedProfile, setPrefetchedProfile] = useState<FeedProfile | null>(null);
   const [showDeck, setShowDeck] = useState(false);
   const [showSaved, setShowSaved] = useState(true);
   const [showLocation, setShowLocation] = useState(true);
@@ -77,10 +79,20 @@ export default function FeedScreen() {
     const imgHeight = imageHeights[item.id];
     return (
       <View key={item.id} style={styles.cardWrapper}>
-        <TouchableOpacity style={styles.card} onPress={() => {
-          setSelectedPostId(item.id);
-          setShowDeck(true);
-        }}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => {
+            setLoadingPostId(item.id);
+            getFeedProfile(item.id)
+              .then(profile => {
+                setPrefetchedProfile(profile);
+                setSelectedPostId(item.id);
+                setShowDeck(true);
+              })
+              .catch(err => console.error('Feed prefetch error:', err))
+              .finally(() => setLoadingPostId(null));
+          }}
+        >
           <View style={[styles.imageContainer, { height: imgHeight ?? columnWidth }]}>
             {item.image ? (
               <Image
@@ -90,6 +102,11 @@ export default function FeedScreen() {
               />
             ) : (
               <View style={styles.imagePlaceholder} />
+            )}
+            {loadingPostId === item.id && (
+              <View style={styles.imageLoadingOverlay}>
+                <ActivityIndicator size="small" color="#ffffff" />
+              </View>
             )}
           </View>
         </TouchableOpacity>
@@ -137,6 +154,7 @@ export default function FeedScreen() {
         postId={selectedPostId}
         visible={showDeck}
         onClose={() => setShowDeck(false)}
+        prefetchedProfile={prefetchedProfile}
       />
     </View>
   );
@@ -167,7 +185,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   card: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.ui.secondary,
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
     borderBottomRightRadius: 2,
@@ -176,17 +194,23 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.ui.secondary,
     position: 'relative',
   },
   image: {
     width: '100%',
     height: '100%',
   },
+  imageLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   imagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.ui.secondary,
   },
   itemTitleWrapper: {
     backgroundColor: colors.ui.secondary,

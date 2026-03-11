@@ -30,12 +30,13 @@ const BOTTOM_BASE = 140;
 const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - 60;
 
 interface FeedDeckProps {
-  postId: string | null;  // the tapped post id — null when closed
+  postId: string | null;
   visible: boolean;
   onClose: () => void;
+  prefetchedProfile?: FeedProfile | null;
 }
 
-export default function FeedDeck({ postId, visible, onClose }: FeedDeckProps) {
+export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -76,25 +77,31 @@ export default function FeedDeck({ postId, visible, onClose }: FeedDeckProps) {
   const [jumpToIndex, setJumpToIndex] = useState(0);
   const jumpCounterRef = useRef(0);
 
-  // Fetch profile when a postId is provided
+  // Use prefetched profile if available, otherwise fetch
   useEffect(() => {
     if (!postId) return;
-    setIsLoading(true);
-    setProfile(null);
-    getFeedProfile(postId)
-      .then(data => {
-        setProfile(data);
-        // Find which index in the posts array matches the tapped post
-        const idx = data.posts.findIndex(p => p._id === data.tappedPostId);
-        // DECK_PREFIX = 2 (user + location cards before posts)
-        const cardIndex = idx >= 0 ? 2 + idx : 2;
-        jumpCounterRef.current += 1;
-        setJumpToIndex(cardIndex);
-        setJumpToken(jumpCounterRef.current);
-      })
-      .catch(err => console.error('FeedDeck profile load error:', err))
-      .finally(() => setIsLoading(false));
-  }, [postId]);
+
+    const applyProfile = (data: FeedProfile) => {
+      setProfile(data);
+      const idx = data.posts.findIndex(p => p._id === data.tappedPostId);
+      const cardIndex = idx >= 0 ? 2 + idx : 2;
+      jumpCounterRef.current += 1;
+      setJumpToIndex(cardIndex);
+      setJumpToken(jumpCounterRef.current);
+    };
+
+    if (prefetchedProfile) {
+      setProfile(null);
+      applyProfile(prefetchedProfile);
+    } else {
+      setIsLoading(true);
+      setProfile(null);
+      getFeedProfile(postId)
+        .then(applyProfile)
+        .catch(err => console.error('FeedDeck profile load error:', err))
+        .finally(() => setIsLoading(false));
+    }
+  }, [postId, prefetchedProfile]);
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';

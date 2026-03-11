@@ -2,6 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo.errors import DuplicateKeyError
 from bson.objectid import ObjectId
+from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -30,6 +31,15 @@ db = client.dev
 user_data_collection = db.user_data
 user_data_collection.create_index("firebase_uid", unique=True)
 posts_collection = db.posts
+
+# ─── Helpers ─────────────────────────────────────────────────────────────────
+
+def serialize_post(p):
+    p["_id"] = str(p["_id"])
+    p["user_id"] = str(p["user_id"])
+    if "date_posted" in p and hasattr(p["date_posted"], "isoformat"):
+        p["date_posted"] = p["date_posted"].isoformat()
+    return p
 
 # ─── Auth helper ──────────────────────────────────────────────────────────────
 
@@ -153,12 +163,49 @@ def get_feed():
         exclude_user_id = user["_id"] if user else None
 
         # query = {"user_id": {"$ne": exclude_user_id}} if exclude_user_id else {}
-        query = {}  #load own posts in feed for now
+        query = {}
         posts = list(posts_collection.find(query).sort("date_posted", -1))
-        for p in posts:
-            p["_id"] = str(p["_id"])
-            p["user_id"] = str(p["user_id"])
+        posts = [serialize_post(p) for p in posts]
         return jsonify(posts), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/dev/feed/<post_id>', methods=['GET'])
+def get_feed_profile(post_id):
+    try:
+        uid, err = get_uid_from_request()
+        if err: return err
+
+        print(f"get_feed_profile called with post_id: '{post_id}'")
+
+        # Find the post
+        post = posts_collection.find_one({"_id": ObjectId(post_id)})
+        print(f"post found: {post is not None}")
+        if not post:
+            return jsonify({"error": "Post not found"}), 404
+
+        print(f"post user_id: {post['user_id']} (type: {type(post['user_id'])})")
+
+        # Find the owner
+        owner = user_data_collection.find_one({"_id": post["user_id"]})
+        print(f"owner found: {owner is not None}")
+        if not owner:
+            return jsonify({"error": "User not found"}), 404
+
+        # Get all of the owner's posts
+        owner_posts = list(posts_collection.find({"user_id": post["user_id"]}))
+        owner_posts = [serialize_post(p) for p in owner_posts]
+
+        owner["_id"] = str(owner["_id"])
+        owner["posts"] = [str(p) for p in owner.get("posts", [])]
+
+        return jsonify({
+            "user": owner,
+            "posts": owner_posts,
+            "tapped_post_id": post_id,
+        }), 200
 
     except Exception as e:
         traceback.print_exc()
@@ -176,9 +223,7 @@ def get_posts():
 
         user_id = user["_id"]
         posts = list(posts_collection.find({"user_id": user_id}))
-        for p in posts:
-            p["_id"] = str(p["_id"])
-            p["user_id"] = str(p["user_id"])
+        posts = [serialize_post(p) for p in posts]
         return jsonify(posts), 200
 
     except Exception as e:
@@ -201,7 +246,7 @@ def create_post():
             "post_title": data.get("post_title", ""),
             "description": data.get("description", ""),
             "photos": data.get("photos", []),
-            "is_good": data.get("is_good", False),
+            "date_posted": datetime.now(timezone.utc),
             "trade_history": {},
             "incoming_offers": [],
         }
@@ -215,8 +260,7 @@ def create_post():
             {"$push": {"posts": post_id}}
         )
 
-        new_post["_id"] = str(post_id)
-        new_post["user_id"] = str(new_post["user_id"])
+        new_post = serialize_post(new_post)
         return jsonify(new_post), 201
 
     except Exception as e:

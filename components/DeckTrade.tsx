@@ -4,25 +4,15 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 
 import { globalFonts, colors } from '../styles/globalStyles';
-import TradeUI from './TradeActions';
+import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TRADE_ACTIONS, TradeActionConfig } from '../config/tradeConfig';
-import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH, } from '../styles/deckStyles';
+import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
+import { Post } from '@/types/index';
 
 const { width } = Dimensions.get('window');
 
-const trade1Turns: TradeTurn[] = [
-  { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-  { type: 'turnCounter', isUser: true },
-  { type: 'turnTrade',   user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
-  { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
-];
 
-interface Post {
-  name: string;
-  description: string;
-  photos: string[];
-}
 
 interface TradeDeckProps {
   posts: Post[];
@@ -32,7 +22,6 @@ interface TradeDeckProps {
   onGestureEnd?: () => void;
   showDateTime?: boolean;
   showLocation?: boolean;
-
 }
 
 const DECK_WIDTH = Math.min(width - 36, 400);
@@ -50,19 +39,46 @@ export default function TradeDeck({
   const [showingPlayer, setShowingPlayer] = useState(false);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
 
-  const slideAnim = useRef(new Animated.Value(-12)).current;
+  // Partner deck (left) — the other user's posts, query-selectable
+  const [partnerTopPostIndex, setPartnerTopPostIndex] = useState<number | null>(null);
+  const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
 
+  // Player deck (right) — own posts, barter-selectable
+  const [playerTopPostIndex, setPlayerTopPostIndex] = useState<number | null>(null);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+
+  const slideAnim = useRef(new Animated.Value(-12)).current;
   const itemCount = useMemo(() => posts.length, [posts]);
 
   const handleSwitchDecks = () => {
     const toValue = showingPlayer ? -12 : -(DECK_WIDTH) - 38;
-    Animated.spring(slideAnim, {
-      toValue,
-      useNativeDriver: true,
-      tension: 60,
-      friction: 10,
-    }).start();
+    Animated.spring(slideAnim, { toValue, useNativeDriver: true, tension: 60, friction: 10 }).start();
     setShowingPlayer(prev => !prev);
+  };
+
+  const topPostIndex = showingPlayer ? playerTopPostIndex : partnerTopPostIndex;
+  const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
+
+  const handleActionSelected = (action: TradeAction) => {
+    if (action.actionType === 'barter' && action.subAction === 'write') {
+      if (!isSelectMode) {
+        setIsSelectMode(true);
+        if (playerTopPostIndex !== null) setSelectedPosts([playerTopPostIndex]);
+      } else {
+        if (playerTopPostIndex !== null) {
+          setSelectedPosts(prev =>
+            prev.includes(playerTopPostIndex)
+              ? prev.filter(i => i !== playerTopPostIndex)
+              : [...prev, playerTopPostIndex]
+          );
+        }
+      }
+    }
+    if (action.actionType === 'barter' && action.subAction === 'select') {
+      setIsSelectMode(false);
+      setSelectedPosts([]);
+    }
   };
 
   const sharedDeckProps = {
@@ -82,56 +98,73 @@ export default function TradeDeck({
           <TouchableOpacity style={styles.partnerBar} onPress={handleSwitchDecks}>
             <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
             <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{itemCount}</Text>
-            <FontAwesome6
-              name="arrows-rotate"
-              size={24}
-              color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled}
-            />
+            <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
             <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
             <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{itemCount}</Text>
-            <FontAwesome6
-              name="arrows-rotate"
-              size={24}
-              color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled}
-            />
+            <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
         </View>
 
         {isExpanded && (
-        
-        <View style={styles.deckClipWindow}>
-          <Animated.View style={[styles.decksRow, { transform: [{ translateX: slideAnim }] }]}>
-            <View style={{ width: DECK_WIDTH }}>
-              <Deck posts={posts} {...sharedDeckProps} />
-            </View>
-            <View style={{ width: DECK_WIDTH }}>
-              <Deck posts={posts} {...sharedDeckProps} />
-            </View>
-          </Animated.View>
-        </View>
+          <View style={styles.deckClipWindow}>
+            <Animated.View style={[styles.decksRow, { transform: [{ translateX: slideAnim }] }]}>
+              {/* Partner deck — query mode */}
+              <View style={{ width: DECK_WIDTH }}>
+                <Deck
+                  posts={posts}
+                  {...sharedDeckProps}
+                  isUser={false}
+                  onTopCardChange={setPartnerTopPostIndex}
+                  isQueryMode={true}
+                  querySelectedPostIndex={querySelectedPost}
+                />
+              </View>
+              {/* Player deck — barter select mode */}
+              <View style={{ width: DECK_WIDTH }}>
+                <Deck
+                  posts={posts}
+                  {...sharedDeckProps}
+                  isUser={true}
+                  onTopCardChange={setPlayerTopPostIndex}
+                  isSelectMode={isSelectMode}
+                  selectedPosts={selectedPosts}
+                  selectColor={colors.actions.trade}
+                />
+              </View>
+            </Animated.View>
+          </View>
         )}
+
         {/* Actions + turns */}
-        <View style={deckStyles.turnsAndButtonRow}>
-          {isExpanded && isQueryOpen && (
-            <View style={[deckStyles.turnsRow, { top: isQueryOpen ? 0 : 0 }]}>
+        {isExpanded && (
+          <View style={styles.turnsAndButtonColumn}>
+            <View style={[styles.queryRow, { marginBottom: isQueryOpen ? 4 : 0 }]}>
               <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
             </View>
-          )}
-          {isExpanded && (
-          <TradeUI actions={actions} onQueryToggle={setIsQueryOpen} />
-          )}
-          {isExpanded && (
-            <View style={deckStyles.turnsRow}>
+            <View style={styles.actionRow}>
+              <TradeUI
+                actions={actions}
+                onActionSelected={handleActionSelected}
+                onQueryToggle={setIsQueryOpen}
+                isSelectMode={isSelectMode}
+                selectedCount={selectedPosts.length}
+                topCardIsSelected={topCardIsSelected}
+                isQueryMode={true}
+                queryPostSelected={querySelectedPost !== null}
+                onQueryPostSelect={() => setQuerySelectedPost(partnerTopPostIndex)}
+                onQueryPostDeselect={() => setQuerySelectedPost(null)}
+              />
+            </View>
+            <View style={styles.turnsRow}>
               <TradeTurns turns={turns} />
             </View>
-          )}
-        </View>
+          </View>
+        )}
 
         <TouchableOpacity
-          style={[styles.collapseBar, {top: isExpanded ? -6 : -8}]}
+          style={styles.collapseBar}
           onPress={() => setIsExpanded(prev => !prev)}
         >
           <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
@@ -147,11 +180,13 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
   },
-  // Partner bar: left-cap, count left-aligned
+  turnsAndButtonColumn: { flexDirection: 'column', width: DECK_BAR_WIDTH },
+  queryRow: {},
+  actionRow: {marginBottom: -2},
+  turnsRow: {},
   partnerBar: {
     ...makeCountBar('leftCap', 'flex-start'),
   },
-  // Player bar: right-cap, count right-aligned
   playerBar: {
     ...makeCountBar('rightCap', 'flex-end'),
   },
@@ -160,9 +195,7 @@ const styles = StyleSheet.create({
   },
   deckClipWindow: {
     width: width,
-    // overflow: 'hidden',
     alignItems: 'flex-start',
-   
   },
   decksRow: {
     flexDirection: 'row',
@@ -170,9 +203,8 @@ const styles = StyleSheet.create({
     gap: 26,
     zIndex: 30,
   },
-  
   collapseBar: {
-    top: -6,
+    top: 0,
     width: DECK_BAR_WIDTH,
     height: 44,
     ...barRadius.bottomCap,

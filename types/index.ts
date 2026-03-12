@@ -19,3 +19,11 @@ export interface User {
   email_visible: boolean;
   phone_visible: boolean;
 }
+
+export interface Locations {
+  id: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  description: string;
+}

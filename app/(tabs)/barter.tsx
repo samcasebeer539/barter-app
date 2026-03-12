@@ -11,20 +11,18 @@ import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 const trade1Turns: TradeTurn[] = [
   { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
   { type: 'turnCounter', isUser: true },
-  { type: 'turnTrade',   user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
+  { type: 'turnBarter',  user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
   { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
 ];
 
 const deal1Turns: TradeTurn[] = [
   { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
   { type: 'turnAccept',  isUser: true },
-
   { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
   { type: 'turnCounter', isUser: true },
-  { type: 'turnTrade',   user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
+  { type: 'turnBarter',  user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
   { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
 ];
-
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
@@ -39,6 +37,7 @@ const POSTS = [
       'https://picsum.photos/seed/portrait1/400/600',
       'https://picsum.photos/seed/square1/500/500',
     ],
+    date_posted: '11/17/24'
   },
   {
     name: 'Bike Repair',
@@ -49,6 +48,7 @@ const POSTS = [
       'https://picsum.photos/seed/camera2/500/700',
       'https://picsum.photos/seed/camera3/600/600',
     ],
+    date_posted: '11/17/24'
   },
   {
     name: 'Guitar Lessons',
@@ -58,6 +58,7 @@ const POSTS = [
       'https://picsum.photos/seed/guitar2/400/600',
       'https://picsum.photos/seed/guitar3/500/500',
     ],
+    date_posted: '11/17/24'
   },
 ];
 
@@ -74,18 +75,18 @@ export default function ActiveTradesTestScreen() {
     []
   );
   const offersActions = useMemo(
-    () => TRADE_ACTIONS.filter(a => ['rescind'].includes(a.actionType)),
+    () => TRADE_ACTIONS.filter(a => ['query', 'rescind'].includes(a.actionType)),
     []
   );
   const tradesActions = useMemo(
     () => TRADE_ACTIONS.filter(a =>
-      ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
+      ['query', 'counter', 'stall', 'verify', 'accept', 'acceptFinal', 'decline', 'wait', 'play'].includes(a.actionType)
     ),
     []
   );
   const dealsActions = useMemo(
     () => TRADE_ACTIONS.filter(a =>
-      ['where', 'when', 'query', 'accept', 'decline', 'wait', 'play', 'cancel'].includes(a.actionType)
+      ['where', 'when', 'query', 'accept', 'decline', 'wait', 'play'].includes(a.actionType)
     ),
     []
   );
@@ -139,33 +140,31 @@ export default function ActiveTradesTestScreen() {
           <View style={styles.deckList}>
             <OfferDeck
               posts={POSTS}
+              deckType="queries"
+              actions={queriesActions}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
-              actions={queriesActions}
-              isOffer={false}
             />
             <OfferDeck
               posts={POSTS}
-              onHorizontalGestureStart={() => setScrollEnabled(false)}
-              onGestureEnd={() => setScrollEnabled(true)}
+              deckType="offers"
               actions={offersActions}
-              isOffer={true}
-            />
-       
-            <OfferDeck
-              posts={POSTS}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
-              actions={queriesActions}
-              isDecline={true}
+            />
+            <OfferDeck
+              posts={POSTS}
+              deckType="declined"
+              onHorizontalGestureStart={() => setScrollEnabled(false)}
+              onGestureEnd={() => setScrollEnabled(true)}
             />
           </View>
         )}
 
         {tab === 'barter' && (
           <View style={styles.deckList}>
-            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns}/>
-            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns}/>
+            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns} />
+            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns} />
           </View>
         )}
 
@@ -178,7 +177,10 @@ export default function ActiveTradesTestScreen() {
               showLocation={true}
               turns={deal1Turns}
             />
-           
+            <OfferDeck
+              posts={POSTS}
+              deckType="deals"
+            />
           </View>
         )}
       </ScrollView>

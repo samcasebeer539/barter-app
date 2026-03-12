@@ -18,9 +18,28 @@ interface TradeUIProps {
     isSelectMode?: boolean;
     selectedCount?: number;
     topCardIsSelected?: boolean;
+    // Query mode — single post select
+    isQueryMode?: boolean;
+    queryPostSelected?: boolean;
+    onQueryPostSelect?: () => void;
+    onQueryPostDeselect?: () => void;
+    onActionChange?: (actionType: TradeActionType) => void;
+
 }
 
-const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, actions = TRADE_ACTIONS, isSelectMode = false, selectedCount = 0, topCardIsSelected = false }) => {
+const TradeUI: React.FC<TradeUIProps> = ({
+    onActionSelected,
+    onQueryToggle,
+    actions = TRADE_ACTIONS,
+    isSelectMode = false,
+    selectedCount = 0,
+    topCardIsSelected = false,
+    isQueryMode = false,
+    queryPostSelected = false,
+    onQueryPostSelect,
+    onQueryPostDeselect,
+    onActionChange
+}) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
     const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
@@ -49,7 +68,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 runShimmer(anim, 1000);
             });
         };
-
         runShimmer(shimmerAnim, 0);
     }, []);
 
@@ -77,7 +95,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
         onActionSelected?.(tradeAction);
 
         if (currentAction.actionType !== 'offer' &&
-            currentAction.actionType !== 'trade' &&
+            currentAction.actionType !== 'barter' &&
             currentAction.actionType !== 'rescind') {
             const actualIndex = index % actions.length;
             if (actualIndex === currentActionIndex) {
@@ -85,14 +103,26 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
             }
         }
         setIsActionSelected((prev) => !prev);
-
     };
 
     const handleQueryPress = (isInTopSpot: boolean) => {
         if (!isInTopSpot) return;
-        const next = !isQueryOpen;
-        setIsQueryOpen(next);
-        onQueryToggle?.(next);
+
+        // Toggle post selection for query
+        if (queryPostSelected) {
+            onQueryPostDeselect?.();
+            // Close query drawer too if open
+            if (isQueryOpen) {
+                setIsQueryOpen(false);
+                onQueryToggle?.(false);
+            }
+        } else {
+            onQueryPostSelect?.();
+            // Open query drawer
+            const next = !isQueryOpen;
+            setIsQueryOpen(next);
+            onQueryToggle?.(next);
+        }
 
         const tradeAction: TradeAction = {
             actionType: 'query',
@@ -137,6 +167,10 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
             setIsQueryOpen(false);
             onQueryToggle?.(false);
         }
+        // Scrolling away from query deselects the post
+        if (queryPostSelected) {
+            onQueryPostDeselect?.();
+        }
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -146,6 +180,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
         if (itemIndex !== currentActionIndex) {
             setIsActionSelected(false);
             setCurrentActionIndex(itemIndex);
+            onActionChange?.(actions[itemIndex].actionType);
         }
     };
 
@@ -193,11 +228,12 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 return (
                     <TouchableOpacity
                         style={[
-                            styles.queryButton,
+                            styles.actionButton,
+                            styles.selectButton,
                             {
                                 opacity,
                                 borderColor: currentAction?.color,
-                                backgroundColor: isQueryOpen && isInTopSpot
+                                backgroundColor: queryPostSelected && isInTopSpot
                                     ? currentAction?.color
                                     : 'transparent',
                             },
@@ -205,17 +241,20 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         onPress={() => handleQueryPress(isInTopSpot)}
                         disabled={disabled}
                     >
-                        <FontAwesome6 name="circle-question" size={26} color={isQueryOpen ? '#000' : currentAction?.color} />
+                        <FontAwesome6
+                            name={queryPostSelected && isInTopSpot ? 'circle-question' : 'circle'}
+                            size={26}
+                            color={queryPostSelected && isInTopSpot ? '#000' : currentAction?.color}
+                        />
                     </TouchableOpacity>
                 );
             case 'offer':
                 return (
-                     <TouchableOpacity
+                    <TouchableOpacity
                         style={[styles.actionButton, styles.selectButton, {
                             opacity,
                             borderColor: currentAction?.color,
                             backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
-                            
                         }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
@@ -230,14 +269,13 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         />
                     </TouchableOpacity>
                 );
-            case 'trade':
+            case 'barter':
                 return (
-                     <TouchableOpacity
+                    <TouchableOpacity
                         style={[styles.actionButton, styles.selectButton, {
                             opacity,
                             borderColor: currentAction?.color,
                             backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
-                            
                         }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
@@ -289,7 +327,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                             opacity,
                             borderColor: currentAction?.color,
                             backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
-                            
                         }]}
                         onPress={() => playAction('write')}
                         disabled={disabled}
@@ -308,15 +345,16 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 return null;
             case 'wait':
                 return null;
-            case 'cancel':
-                return null;
             default:
                 return (
                     <TouchableOpacity
-                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color, backgroundColor: isActionSelected ? currentAction?.color : 'transparent', }]}
+                        style={[styles.actionButton, {
+                            opacity,
+                            borderColor: currentAction?.color,
+                            backgroundColor: isActionSelected ? currentAction?.color : 'transparent',
+                        }]}
                         onPress={() => playAction('select')}
                         disabled={disabled}
-                        
                     >
                         <FontAwesome6 name="circle-check" size={26} color={isActionSelected ? '#000' : currentAction?.color} />
                     </TouchableOpacity>
@@ -376,7 +414,6 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                 </TouchableOpacity>
             </View>
 
-            {/* Single shimmer overlay */}
             <View pointerEvents="none" style={styles.shimmerOverlay}>
                 <Animated.View
                     style={[
@@ -384,7 +421,7 @@ const TradeUI: React.FC<TradeUIProps> = ({ onActionSelected, onQueryToggle, acti
                         {
                             transform: [
                                 { translateX: shimmerTranslate },
-                                {skewX: '315deg'},
+                                { skewX: '315deg' },
                             ],
                         },
                     ]}
@@ -503,58 +540,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 25,
         borderWidth: 3,
         borderColor: colors.actions.counter,
-    },
-    queryButton: {
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        flexDirection: 'row',
-        paddingHorizontal: 4,
-        height: 40,
-        flex: 1,
-        bottom: 12,
-        borderWidth: 3,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 25,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-    },
-    locationButton: {
-        flex: 1,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25,
-        borderColor: colors.actions.location,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        paddingHorizontal: 16,
-    },
-    verifyButton: {
-        flex: 1,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25,
-        borderColor: colors.actions.verify,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        paddingHorizontal: 16,
-    },
-    stallButton: {
-        flex: 1,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25,
-        borderColor: colors.actions.stall,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        paddingHorizontal: 16,
-    },
-    timeButton: {
-        flex: 1,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25,
-        borderColor: colors.actions.time,
-        justifyContent: 'flex-end',
     },
     selectButton: {
         flex: 1,

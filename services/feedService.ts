@@ -1,4 +1,5 @@
 import { getAuth } from 'firebase/auth';
+import { Locations } from '@/types/index';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -27,6 +28,7 @@ export interface FeedProfile {
     profileImageUrl: string;
     email_visible: boolean;
     phone_visible: boolean;
+    locations: Locations[];
   };
   posts: {
     _id: string;
@@ -96,6 +98,7 @@ export async function getFeedProfile(postId: string): Promise<FeedProfile> {
         profileImageUrl: data.user.profile_photo,
         email_visible: data.user.email_visible ?? false,
         phone_visible: data.user.phone_visible ?? false,
+        locations: data.user.locations ?? [],
       },
       posts: data.posts.map((p: any) => ({
         _id: p._id,

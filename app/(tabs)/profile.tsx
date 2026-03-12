@@ -13,12 +13,18 @@ import DecksProfile from '@/components/DeckProfile';
 import { colors } from '@/styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Post, User } from '@/types/index';
+import { Post, User, Locations } from '@/types/index';
 import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
+import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 20;
+
+// TODO: replace with the real secondary user's MongoDB _id from routing/auth.
+// Leave empty to skip the secondary locations fetch until you have a real id —
+// a fake id will cause ObjectId() to throw a 404 on the backend.
+const SECONDARY_USER_ID = '';
 
 const SECONDARY_USER: User = {
   first_name: 'Jay',
@@ -65,19 +71,44 @@ export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const [primaryUser, setPrimaryUser] = useState<User | null>(null);
   const [primaryPosts, setPrimaryPosts] = useState<Post[]>([]);
+  const [myLocations, setMyLocations] = useState<Locations[]>([]);
+  const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    Promise.all([getCurrentUser(), getUserPosts()])
-      .then(([user, posts]) => {
+    const load = async () => {
+      // ── Core data: must succeed for screen to render ──────────────────────
+      try {
+        const [user, posts] = await Promise.all([getCurrentUser(), getUserPosts()]);
         setPrimaryUser(user);
         setPrimaryPosts(posts);
-      })
-      .catch(err => {
-        console.error('Failed to load profile:', err);
+      } catch (err: any) {
+        console.error('Failed to load core profile data:', err);
         setError(err.message ?? 'Unknown error');
-      });
+        return;
+      }
+
+      // ── My locations: non-fatal ───────────────────────────────────────────
+      try {
+        const myLocs = await getMyLocations();
+        setMyLocations(myLocs);
+      } catch (err) {
+        console.warn('Could not load my locations:', err);
+      }
+
+      // ── Their locations: only fetch if we have a valid MongoDB _id ────────
+      if (SECONDARY_USER_ID) {
+        try {
+          const theirLocs = await getUserLocations(SECONDARY_USER_ID);
+          setTheirLocations(theirLocs);
+        } catch (err) {
+          console.warn('Could not load their locations:', err);
+        }
+      }
+    };
+
+    load();
   }, []);
 
   const handleSaveUser = async (updated: User) => {
@@ -89,9 +120,24 @@ export default function ProfileScreen() {
     }
   };
 
-  // Only updates local state — persistence happens in DeckProfile.handleSavePost
   const handlePostsChange = (updated: Post[]) => {
     setPrimaryPosts(updated);
+  };
+
+  const handleConfirmLocations = async (updated: Locations[]) => {
+    const previous = myLocations;
+    setMyLocations(updated); // optimistic
+    try {
+      await saveMyLocations(updated);
+    } catch (err) {
+      console.error('Failed to save locations:', err);
+      setMyLocations(previous); // revert on failure
+    }
+  };
+
+  const handleSelectLocation = (location: Locations | null) => {
+    // Wire into your trade/offer submission flow here
+    console.log('Selected meetup location:', location);
   };
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -112,10 +158,7 @@ export default function ProfileScreen() {
     const hide = Keyboard.addListener('keyboardWillHide', () => {
       setKeyboardHeight(0);
     });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
+    return () => { show.remove(); hide.remove(); };
   }, []);
 
   if (error) return (
@@ -142,19 +185,20 @@ export default function ProfileScreen() {
           { paddingBottom: keyboardHeight > 0 ? BOTTOM_PADDING + keyboardHeight : 0 },
         ]}
         keyboardShouldPersistTaps="handled"
-        onScroll={e => {
-          scrollY.current = e.nativeEvent.contentOffset.y;
-        }}
+        onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
       >
         <View style={styles.topSpacer} />
-
         <View style={styles.deckWrapper}>
           <DecksProfile
             posts={primaryPosts}
             primaryUser={primaryUser}
             secondaryPosts={SECONDARY_POSTS}
             secondaryUser={SECONDARY_USER}
+            initialLocations={myLocations}
+            onConfirmLocations={handleConfirmLocations}
+            externalLocations={theirLocations}
+            onSelectLocation={handleSelectLocation}
             onToggleReveal={() => setIsDeckRevealed(prev => !prev)}
             toggleEnabled={true}
             isDeckRevealed={isDeckRevealed}
@@ -192,9 +236,8 @@ const styles = StyleSheet.create({
     width: 44,
     borderRadius: 36,
     backgroundColor: colors.ui.secondary,
-  
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   scroll: {
     flex: 1,

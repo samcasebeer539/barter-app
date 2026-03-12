@@ -1,31 +1,20 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
-  Modal,
-  Platform,
-  ScrollView,
-  Keyboard,
-  KeyboardEvent,
-  ActivityIndicator,
+  View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions,
+  Modal, Platform, ScrollView, Keyboard, KeyboardEvent, ActivityIndicator,
 } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
-import TradeTurns, { TradeTurn } from './TradeTurns';
+import TradeTurns from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { getFeedProfile, FeedProfile } from '@/services/feedService';
-import { Post, User } from '@/types/index';
+import { Post, User, Locations } from '@/types/index';
 
 const { width, height } = Dimensions.get('window');
-
 const BOTTOM_BASE = 140;
 const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - 60;
 
@@ -45,59 +34,50 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
   const [isQueryOpen, setIsQueryOpen] = useState(false);
+  const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
-
   const [profile, setProfile] = useState<FeedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [activeActionType, setActiveActionType] = useState<string>('offer');
+  const isOfferActive = activeActionType === 'offer';
+  const isQueryActive = activeActionType === 'query';
 
   const feedActions = useMemo(
     () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
     []
   );
 
-  // Map FeedProfile to the types Deck expects
-  const deckUser: User | undefined = profile ? profile.user : undefined;
+  const deckUser: User | undefined = profile?.user;
   const deckPosts: Post[] = profile
     ? profile.posts.map(p => ({
-        _id: p._id,
-        name: p.name,
-        description: p.description,
-        photos: p.photos,
-        date_posted: p.date_posted,
+        _id: p._id, name: p.name, description: p.description,
+        photos: p.photos, date_posted: p.date_posted,
       }))
     : [];
-
+  const externalLocations: Locations[] = profile?.user?.locations ?? [];
   const postCount = deckPosts.length;
 
-  // Jump token to land on the tapped post when the deck opens
   const [jumpToken, setJumpToken] = useState<number | undefined>(undefined);
   const [jumpToIndex, setJumpToIndex] = useState(0);
   const jumpCounterRef = useRef(0);
 
-  // Use prefetched profile if available, otherwise fetch
   useEffect(() => {
     if (!postId) return;
-
     const applyProfile = (data: FeedProfile) => {
       setProfile(data);
       const idx = data.posts.findIndex(p => p._id === data.tappedPostId);
-      const cardIndex = idx >= 0 ? 2 + idx : 2;
       jumpCounterRef.current += 1;
-      setJumpToIndex(cardIndex);
+      setJumpToIndex(idx >= 0 ? 2 + idx : 2);
       setJumpToken(jumpCounterRef.current);
     };
-
-    if (prefetchedProfile) {
-      setProfile(null);
-      applyProfile(prefetchedProfile);
-    } else {
-      setIsLoading(true);
-      setProfile(null);
-      getFeedProfile(postId)
-        .then(applyProfile)
+    if (prefetchedProfile) { setProfile(null); applyProfile(prefetchedProfile); }
+    else {
+      setIsLoading(true); setProfile(null);
+      getFeedProfile(postId).then(applyProfile)
         .catch(err => console.error('FeedDeck profile load error:', err))
         .finally(() => setIsLoading(false));
     }
@@ -106,16 +86,9 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
     const show = Keyboard.addListener(showEvent, (e: KeyboardEvent) => {
-      const kbHeight = e.endCoordinates.height;
-      setKeyboardHeight(kbHeight);
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({
-          y: scrollY.current + kbHeight * 0.8,
-          animated: true,
-        });
-      }, 50);
+      setKeyboardHeight(e.endCoordinates.height);
+      setTimeout(() => scrollViewRef.current?.scrollTo({ y: scrollY.current + e.endCoordinates.height * 0.8, animated: true }), 50);
     });
     const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
     return () => { show.remove(); hide.remove(); };
@@ -140,6 +113,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
         setKeyboardHeight(0);
         setIsSelectMode(false);
         setSelectedPosts([]);
+        setQuerySelectedPost(null);
       });
     }
   }, [visible]);
@@ -154,22 +128,15 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
 
   const handleActionSelected = (action: TradeAction) => {
     if (action.actionType === 'offer' && action.subAction === 'write') {
-      if (!isSelectMode) {
-        setIsSelectMode(true);
-        if (topPostIndex !== null) setSelectedPosts([topPostIndex]);
-      } else {
-        if (topPostIndex !== null) {
-          setSelectedPosts(prev =>
-            prev.includes(topPostIndex)
-              ? prev.filter(i => i !== topPostIndex)
-              : [...prev, topPostIndex]
-          );
-        }
+      if (!isSelectMode) { setIsSelectMode(true); if (topPostIndex !== null) setSelectedPosts([topPostIndex]); }
+      else if (topPostIndex !== null) {
+        setSelectedPosts(prev =>
+          prev.includes(topPostIndex) ? prev.filter(i => i !== topPostIndex) : [...prev, topPostIndex]
+        );
       }
     }
     if (action.actionType === 'offer' && action.subAction === 'select') {
-      setIsSelectMode(false);
-      setSelectedPosts([]);
+      setIsSelectMode(false); setSelectedPosts([]);
     }
   };
 
@@ -178,21 +145,9 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-
-        <Animated.View
-          style={[styles.modalBackground, { opacity: backdropOpacity }]}
-          pointerEvents="none"
-        />
-
-        <TouchableOpacity
-          style={styles.closeStrip}
-          activeOpacity={1}
-          onPress={handleCloseModal}
-        />
-
-        <Animated.View
-          style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}
-        >
+        <Animated.View style={[styles.modalBackground, { opacity: backdropOpacity }]} pointerEvents="none" />
+        <TouchableOpacity style={styles.closeStrip} activeOpacity={1} onPress={handleCloseModal} />
+        <Animated.View style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}>
           <ScrollView
             ref={scrollViewRef}
             style={{ maxHeight: MAX_SCROLL_HEIGHT }}
@@ -228,15 +183,29 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
                     user={deckUser}
                     cardWidth={Math.min(width - 36, 400)}
                     enabled={true}
-                    isSelectMode={isSelectMode}
+                    isUser={false}
+                   
+                    isSelectMode={isOfferActive && isSelectMode}
+                    isQueryMode={isQueryActive}
                     selectedPosts={selectedPosts}
                     onTopCardChange={setTopPostIndex}
                     selectColor={colors.actions.offer}
                     showLocation={true}
+                    externalLocations={externalLocations}
                     onHorizontalGestureStart={() => setScrollEnabled(false)}
                     onGestureEnd={() => setScrollEnabled(true)}
                     jumpToken={jumpToken}
                     jumpToCardIndex={jumpToIndex}
+                    querySelectedPostIndex={querySelectedPost}
+                    onSelectPost={(postIndex) => {
+                      if (!isSelectMode) setIsSelectMode(true);
+                      setSelectedPosts(prev =>
+                        prev.includes(postIndex)
+                          ? prev.filter(i => i !== postIndex)
+                          : [...prev, postIndex]
+                      );
+                    }}
+                    
                   />
                 </View>
               )}
@@ -253,58 +222,31 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
                     isSelectMode={isSelectMode}
                     selectedCount={selectedPosts.length}
                     topCardIsSelected={topCardIsSelected}
+                    isQueryMode={true}
+                    queryPostSelected={querySelectedPost !== null}
+                    onQueryPostSelect={() => setQuerySelectedPost(topPostIndex)}
+                    onQueryPostDeselect={() => setQuerySelectedPost(null)}
+                    onActionChange={setActiveActionType}
                   />
                 </View>
               </View>
             </View>
           </ScrollView>
         </Animated.View>
-
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalBackground: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: colors.ui.background,
-  },
-  closeStrip: {
-    position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    height: BOTTOM_BASE,
-  },
-  animatedContainer: {
-    position: 'absolute',
-    bottom: BOTTOM_BASE,
-    left: 0, right: 0,
-    alignItems: 'center',
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  loadingContainer: {
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  saveButton: {
-    width: 50,
-    height: 36,
-    backgroundColor: colors.ui.secondary,
-    ...barRadius.leftCap,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statusBar: {
-    ...makeCountBar('rightCap', 'flex-end'),
-  },
-  turnsAndButtonColumn: {
-    flexDirection: 'column',
-    width: DECK_BAR_WIDTH,
-  },
+  modalBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.ui.background },
+  closeStrip: { position: 'absolute', bottom: 0, left: 0, right: 0, height: BOTTOM_BASE },
+  animatedContainer: { position: 'absolute', bottom: BOTTOM_BASE, left: 0, right: 0, alignItems: 'center' },
+  scrollContent: { flexGrow: 1 },
+  loadingContainer: { height: 300, justifyContent: 'center', alignItems: 'center' },
+  saveButton: { width: 50, height: 36, backgroundColor: colors.ui.secondary, ...barRadius.leftCap, justifyContent: 'center', alignItems: 'center' },
+  statusBar: { ...makeCountBar('rightCap', 'flex-end') },
+  turnsAndButtonColumn: { flexDirection: 'column', width: DECK_BAR_WIDTH },
   queryRow: {},
   actionRow: {},
 });

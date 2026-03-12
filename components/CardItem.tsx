@@ -19,6 +19,9 @@ interface PostCardProps {
   onSave?: (updated: Post) => void;
   onExitEdit?: () => void;
   onEnterEdit?: () => void;
+  // Query mode: shows circle-question instead of circle-check, single select
+  isQueryMode?: boolean;
+  isQuerySelected?: boolean;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -63,6 +66,8 @@ const PostCard: React.FC<PostCardProps> = ({
   onSave,
   onExitEdit,
   onEnterEdit,
+  isQueryMode = false,
+  isQuerySelected = false,
 }) => {
   const [isDescriptionMode, setIsDescriptionMode] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -147,6 +152,14 @@ const PostCard: React.FC<PostCardProps> = ({
     setDirection(dir);
   };
 
+  // Resolve which select icon/state to show
+  const showSelectIcon = isSelectMode || isQueryMode || (!isUser && !!onSelect);
+  const activeSelectColor = isQueryMode ? colors.actions.query : selectColor;
+  const isActiveSelected  = isQueryMode ? isQuerySelected : isSelected;
+  const selectIconName    = isQueryMode
+    ? (isQuerySelected ? 'circle-question' : 'circle')
+    : (isSelected ? 'circle-check' : 'circle');
+
   return (
     <View style={[styles.container, { transform: [{ scale }] }]} onStartShouldSetResponder={() => true}>
       <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
@@ -187,13 +200,16 @@ const PostCard: React.FC<PostCardProps> = ({
                 <TouchableOpacity
                   activeOpacity={0.2}
                   onPress={onSelect}
-                  style={[styles.selectIconContainer, { backgroundColor: isSelected ? '#fff' : 'transparent' }]}
+                  style={[
+                    styles.selectIconContainer,
+                    { backgroundColor: isActiveSelected ? '#fff' : 'transparent' },
+                  ]}
                 >
-                  {isSelectMode && (
+                  {showSelectIcon && (
                     <FontAwesome6
-                      name={isSelected ? 'circle-check' : 'circle'}
+                      name={selectIconName}
                       size={24}
-                      color={isSelected ? selectColor : 'transparent'}
+                      color={isActiveSelected ? activeSelectColor : activeSelectColor }
                     />
                   )}
                 </TouchableOpacity>
@@ -268,7 +284,6 @@ const PostCard: React.FC<PostCardProps> = ({
                 </Animated.View>
               </Animated.View>
 
-              {/* Date — real date from DB */}
               <Text style={styles.date}>{formatDate(post.date_posted)}</Text>
             </>
           )}

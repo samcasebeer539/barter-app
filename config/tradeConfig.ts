@@ -1,19 +1,33 @@
-//add verify
 import { colors, globalFonts } from '../styles/globalStyles';
 
-export type TradeActionType = 'offer' | 'trade' | 'query' | 'counter' | 'stall' | 'verify' | 'accept' | 'decline' | 'where' | 'when' | 'wait' | 'play' | 'cancel' | 'rescind';
+export type TradeActionType =
+  | 'offer'
+  | 'barter'
+  | 'query'
+  | 'counter'
+  | 'stall'
+  | 'verify'
+  | 'accept'
+  | 'acceptFinal'
+  | 'decline'
+  | 'where'
+  | 'when'
+  | 'wait'
+  | 'play'
+  | 'rescind';
 
-export type TradeTurnType = 
-  | 'turnOffer' 
-  | 'turnTrade' 
-  | 'turnCounter' 
-  | 'turnQuery' 
-  | 'turnAccept' 
+export type TradeTurnType =
+  | 'turnOffer'
+  | 'turnBarter'
+  | 'turnCounter'
+  | 'turnQuery'
+  | 'turnAccept'
+  | 'turnAcceptFinal'
   | 'turnStall'
+  | 'turnVerify'
   | 'turnDecline'
   | 'turnWhere'
-  | 'turnWhen'
-  | 'turnRescind';
+  | 'turnWhen';
 
 export interface TradeActionConfig {
   text: string;
@@ -31,7 +45,8 @@ export interface TurnDisplayConfig {
   isSent: boolean;
 }
 
-// Configuration for UI actions (used in TradeUI)
+// ─── UI Actions ───────────────────────────────────────────────────────────────
+
 export const TRADE_ACTIONS: TradeActionConfig[] = [
   {
     text: 'OFFER',
@@ -44,8 +59,8 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     text: 'BARTER',
     color: colors.actions.trade,
     hasButtons: true,
-    actionType: 'trade',
-    turnType: 'turnTrade',
+    actionType: 'barter',
+    turnType: 'turnBarter',
   },
   {
     text: 'QUERY',
@@ -66,7 +81,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     color: colors.actions.verify,
     hasButtons: true,
     actionType: 'verify',
-    turnType: 'turnWhen',
+    turnType: 'turnVerify',
   },
   {
     text: 'STALL',
@@ -75,13 +90,19 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'stall',
     turnType: 'turnStall',
   },
-  
   {
-    text: '*AGREE',
+    text: '*ACCEPT',
     color: colors.actions.accept,
     hasButtons: true,
     actionType: 'accept',
     turnType: 'turnAccept',
+  },
+  {
+    text: 'ACCEPT',
+    color: colors.actions.accept,
+    hasButtons: true,
+    actionType: 'acceptFinal',
+    turnType: 'turnAcceptFinal',
   },
   {
     text: 'DECLINE',
@@ -109,33 +130,23 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     color: colors.ui.secondary,
     hasButtons: true,
     actionType: 'wait',
-    turnType: 'turnWhen',
   },
   {
     text: 'PLAY',
     color: colors.ui.secondarydisabled,
     hasButtons: true,
     actionType: 'play',
-    turnType: 'turnWhen',
-  },
-  {
-    text: 'CANCEL',
-    color: colors.actions.decline,
-    hasButtons: true,
-    actionType: 'cancel',
-    turnType: 'turnWhen',
   },
   {
     text: 'RESCIND',
     color: colors.actions.rescind,
     hasButtons: true,
     actionType: 'rescind',
-    turnType: 'turnRescind',
   },
-
 ];
 
-// Configuration for turn display (used in ActiveTrade)
+// ─── Turn Display ─────────────────────────────────────────────────────────────
+
 export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
   turnOffer: {
     actionText: 'OFFER',
@@ -144,78 +155,82 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     templatePartner: '{user} sent offer on "{item}"',
     isSent: true,
   },
-  turnTrade: {
-    actionText: 'TRADE',
+  turnBarter: {
+    actionText: 'BARTER',
     colorStyle: { color: colors.actions.trade, fontFamily: globalFonts.extrabold },
     templateUser: 'You proposed trade for "{item}"',
     templatePartner: '{user} proposed trade for "{item}"',
     isSent: false,
   },
   turnCounter: {
-    actionText: 'COUNTERED',
+    actionText: 'COUNTER',
     colorStyle: { color: colors.actions.counter, fontFamily: globalFonts.extrabold },
-    templateUser: 'You added "Pokemon Cards"',
-    templatePartner: '{user} proposed {action} for "{item}"',
+    templateUser: 'You countered with "{item}"',
+    templatePartner: '{user} countered with "{item}"',
     isSent: true,
   },
   turnQuery: {
-    actionText: 'QUESTION',
+    actionText: 'QUERY',
     colorStyle: { color: colors.actions.query, fontFamily: globalFonts.extrabold },
-    templateUser: 'You asked: ',
-    templatePartner: '{user} asked: this is a question about this item and its going to go onto the second line at least',
+    templateUser: 'You asked: "{item}"',
+    templatePartner: '{user} asked: "{item}"',
     isSent: false,
   },
-  turnAccept: {
-    actionText: 'ACCEPTED',
-    colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    templateUser: 'You agreed*',
-    templatePartner: '{user} agreed*',
-    isSent: true,
-  },
-  turnDecline: {
-    actionText: 'DECLINED',
-    colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    templateUser: 'You {action}',
-    templatePartner: '{user} {action}',
+  turnVerify: {
+    actionText: 'VERIFY',
+    colorStyle: { color: colors.actions.verify, fontFamily: globalFonts.extrabold },
+    templateUser: 'You requested verification',
+    templatePartner: '{user} requested verification',
     isSent: true,
   },
   turnStall: {
     actionText: 'STALL',
     colorStyle: { color: colors.actions.time, fontFamily: globalFonts.extrabold },
-    templateUser: 'You {action}',
-    templatePartner: '{user} {action}',
+    templateUser: 'You stalled',
+    templatePartner: '{user} stalled',
     isSent: true,
   },
-
+  turnAccept: {
+    actionText: '*ACCEPT',
+    colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
+    templateUser: 'You accepted*',
+    templatePartner: '{user} accepted*',
+    isSent: true,
+  },
+  turnAcceptFinal: {
+    actionText: 'ACCEPT',
+    colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
+    templateUser: 'You accepted — moving to close',
+    templatePartner: '{user} accepted — moving to close',
+    isSent: true,
+  },
+  turnDecline: {
+    actionText: 'DECLINED',
+    colorStyle: { color: colors.actions.decline, fontFamily: globalFonts.extrabold },
+    templateUser: 'You declined',
+    templatePartner: '{user} declined',
+    isSent: true,
+  },
   turnWhere: {
     actionText: 'WHERE',
     colorStyle: { color: colors.actions.location, fontFamily: globalFonts.extrabold },
-    templateUser: 'You suggested {action}',
-    templatePartner: '{user} suggested {action}',
+    templateUser: 'You suggested "{item}"',
+    templatePartner: '{user} suggested "{item}"',
     isSent: true,
   },
   turnWhen: {
     actionText: 'WHEN',
     colorStyle: { color: colors.actions.time, fontFamily: globalFonts.extrabold },
-    templateUser: 'You suggested {action}',
-    templatePartner: '{user} suggested {action}',
-    isSent: true,
-  },
-  turnRescind: {
-    actionText: 'RESCIND',
-    colorStyle: { color: colors.actions.rescind, fontFamily: globalFonts.extrabold },
-    templateUser: 'You rescinded',
-    templatePartner: '{user} rescinded',
+    templateUser: 'You suggested "{item}"',
+    templatePartner: '{user} suggested "{item}"',
     isSent: true,
   },
 };
 
-// Helper function to get turn config by type
-export const getTurnConfig = (turnType: TradeTurnType): TurnDisplayConfig | null => {
-  return TURN_DISPLAY[turnType] || null;
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// Helper function to get action config by type
-export const getActionConfig = (actionType: TradeActionType): TradeActionConfig | null => {
-  return TRADE_ACTIONS.find(action => action.actionType === actionType) || null;
-};
+export const getTurnConfig = (turnType: TradeTurnType): TurnDisplayConfig | null =>
+  TURN_DISPLAY[turnType] ?? null;
+
+export const getActionConfig = (actionType: TradeActionType): TradeActionConfig | null =>
+  TRADE_ACTIONS.find(a => a.actionType === actionType) ?? null;

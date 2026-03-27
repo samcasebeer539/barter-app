@@ -13,7 +13,7 @@ const initialRegion = {
   longitudeDelta: 0.02,
 };
 
-interface LocationEntry {
+export interface LocationEntry {
   id: string;
   latitude: number;
   longitude: number;
@@ -26,6 +26,9 @@ interface CardLocationProps {
   cardWidth?: number;
   mapActiveRef?: React.MutableRefObject<boolean>;
   onConfirm?: (locations: LocationEntry[]) => void;
+  initialLocations?: LocationEntry[];
+  onLocationsChange?: (locations: LocationEntry[]) => void;
+  isUser?: boolean;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 8);
@@ -35,20 +38,30 @@ const CardLocation: React.FC<CardLocationProps> = ({
   cardWidth,
   mapActiveRef,
   onConfirm,
+  initialLocations = [],
+  onLocationsChange,
+  isUser = false,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  const [locations, setLocations] = useState<LocationEntry[]>([]);
+  const [locations, setLocations] = useState<LocationEntry[]>(initialLocations ?? []);
   const [pendingPin, setPendingPin] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isNaming, setIsNaming] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [descInput, setDescInput] = useState('');
   const [footerHeight, setFooterHeight] = useState(80);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  const updateLocations = (updated: LocationEntry[]) => {
+    setLocations(updated);
+    onLocationsChange?.(updated);
+  };
 
   const handleMapPress = (event: MapPressEvent) => {
+    if (!isUser) return;
     if (isNaming) return;
     const { coordinate } = event.nativeEvent;
     setPendingPin(coordinate);
@@ -63,13 +76,14 @@ const CardLocation: React.FC<CardLocationProps> = ({
 
   const handleSave = () => {
     if (!pendingPin || !nameInput.trim()) return;
-    setLocations(prev => [...prev, {
+    const newEntry: LocationEntry = {
       id: uid(),
       latitude: pendingPin.latitude,
       longitude: pendingPin.longitude,
       name: nameInput.trim(),
       description: descInput.trim(),
-    }]);
+    };
+    updateLocations([...locations, newEntry]);
     setPendingPin(null);
     setNameInput('');
     setDescInput('');
@@ -83,7 +97,11 @@ const CardLocation: React.FC<CardLocationProps> = ({
   };
 
   const removeLocation = (id: string) => {
-    setLocations(prev => prev.filter(l => l.id !== id));
+    updateLocations(locations.filter(l => l.id !== id));
+  };
+
+  const toggleSelectLocation = (id: string) => {
+    setSelectedLocationId(prev => (prev === id ? null : id));
   };
 
   const pinReady = !!pendingPin && !isNaming;
@@ -116,11 +134,15 @@ const CardLocation: React.FC<CardLocationProps> = ({
               <Marker
                 key={loc.id}
                 coordinate={{ latitude: loc.latitude, longitude: loc.longitude }}
-                pinColor={colors.ui.cardsecondary}
+                pinColor={
+                  !isUser && selectedLocationId === loc.id
+                    ? colors.actions.location
+                    : colors.ui.cardsecondary
+                }
                 title={loc.name}
               />
             ))}
-            {pendingPin && (
+            {isUser && pendingPin && (
               <Marker
                 coordinate={pendingPin}
                 pinColor={colors.actions.location}
@@ -134,7 +156,9 @@ const CardLocation: React.FC<CardLocationProps> = ({
           onLayout={e => setFooterHeight(e.nativeEvent.layout.height)}
         >
           <View style={styles.titleRow}>
-            <Text style={styles.footerTitle}>Your Safe Exchange Locations</Text>
+            <Text style={styles.footerTitle}>
+              {isUser ? 'Your Safe Exchange Locations' : 'Safe Exchange Locations'}
+            </Text>
             <FontAwesome6 name="circle-dot" size={24} color={colors.ui.cardsecondary} />
           </View>
 
@@ -142,7 +166,6 @@ const CardLocation: React.FC<CardLocationProps> = ({
             <View key={loc.id} style={styles.locationRow}>
               <View style={styles.locationInfo}>
                 <Text style={styles.locationName}>{loc.name}</Text>
-                
                 {loc.description ? (
                   <Text style={styles.locationDesc}>{loc.description}</Text>
                 ) : null}
@@ -150,13 +173,28 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
-                <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
-              </TouchableOpacity>
+
+              {isUser ? (
+                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
+                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => toggleSelectLocation(loc.id)} hitSlop={8}>
+                  <FontAwesome6
+                    name={selectedLocationId === loc.id ? 'circle-check' : 'circle'}
+                    size={24}
+                    color={
+                      selectedLocationId === loc.id
+                        ? colors.actions.location
+                        : colors.ui.cardsecondary
+                    }
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           ))}
 
-          {canAddMore && !isNaming && (
+          {isUser && canAddMore && !isNaming && (
             <TouchableOpacity
               style={styles.addLocationBtn}
               onPress={handleAddLocationPress}
@@ -177,7 +215,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             </TouchableOpacity>
           )}
 
-          {isNaming && (
+          {isUser && isNaming && (
             <View style={styles.namingBlock}>
               <View style={styles.nameRow}>
                 <TextInput
@@ -190,13 +228,16 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   returnKeyType="next"
                 />
                 <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
-                  <FontAwesome6 name="circle-check" size={24} color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location} />
+                  <FontAwesome6
+                    name="circle-check"
+                    size={24}
+                    color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleCancelNaming} hitSlop={8}>
                   <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               </View>
-
               <TextInput
                 style={styles.descInput}
                 value={descInput}
@@ -287,7 +328,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 4,
-    
   },
   addLocationText: {
     fontSize: 18,
@@ -296,7 +336,7 @@ const styles = StyleSheet.create({
   namingBlock: {
     gap: 8,
     marginTop: 2,
-    marginBottom: 6,  
+    marginBottom: 6,
   },
   nameRow: {
     flexDirection: 'row',
@@ -315,8 +355,6 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.regular,
     color: '#000',
   },
-
-
 });
 
 export default CardLocation;

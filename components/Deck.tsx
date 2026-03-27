@@ -9,7 +9,7 @@ import PostCard from './CardItem';
 import UserCard from './CardUser';
 import BlankCard from './CardBlank';
 import CardDateTime from './CardDateTime';
-import CardLocation from './CardMeetingLocation';
+import CardLocation, { LocationEntry } from './CardMeetingLocation';
 import { Post, User } from '@/types/index';
 import { colors } from '@/styles/globalStyles';
 
@@ -35,7 +35,9 @@ interface DeckProps {
   onExitPostEdit?: () => void;
   onEnterPostEdit?: () => void;
   onSaveUser?: (updated: User) => void;
-  onSavePost?: (updated: Post) => void;  // ← new
+  onSavePost?: (updated: Post) => void;
+  initialLocations?: LocationEntry[];
+  onLocationsChange?: (locations: LocationEntry[]) => void;
   jumpToken?: number;
   jumpToCardIndex?: number;
 }
@@ -78,7 +80,9 @@ interface CardSlotProps {
   onExitPostEdit?: () => void;
   onEnterPostEdit?: () => void;
   onSaveUser?: (u: User) => void;
-  onSavePost?: (updated: Post) => void;  // ← new
+  onSavePost?: (updated: Post) => void;
+  initialLocations?: LocationEntry[];
+  onLocationsChange?: (locations: LocationEntry[]) => void;
 }
 
 const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
@@ -101,7 +105,9 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
   onExitPostEdit,
   onEnterPostEdit,
   onSaveUser,
-  onSavePost,  // ← new
+  onSavePost,
+  initialLocations,
+  onLocationsChange,
 }, ref) => {
   const [card, setCardState] = useState<DeckItem | null>(initialCard);
   const [isFront, setIsFront] = useState(initialIsFront);
@@ -168,7 +174,13 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
           <CardDateTime cardWidth={finalCardWidth} />
         )}
         {card?.type === 'location' && (
-          <CardLocation cardWidth={finalCardWidth} mapActiveRef={mapActiveRef} />
+          <CardLocation
+            cardWidth={finalCardWidth}
+            mapActiveRef={mapActiveRef}
+            initialLocations={initialLocations}
+            onLocationsChange={onLocationsChange}
+            isUser={isUser}
+          />
         )}
         {card?.type === 'post' && (
           <PostCard
@@ -182,7 +194,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             isEditable={isFront && isPostEditMode}
             onEnterEdit={onEnterPostEdit}
             onExitEdit={onExitPostEdit}
-            onSave={onSavePost}  // ← wired in
+            onSave={onSavePost}
           />
         )}
       </Animated.View>
@@ -238,7 +250,9 @@ const Deck: React.FC<DeckProps> = ({
   onExitPostEdit,
   onEnterPostEdit,
   onSaveUser,
-  onSavePost,  // ← new
+  onSavePost,
+  initialLocations,
+  onLocationsChange,
   jumpToken,
   jumpToCardIndex,
 }) => {
@@ -306,8 +320,6 @@ const Deck: React.FC<DeckProps> = ({
     slotRefs[2].current?.setShadow(false);
   }, []);
 
-  // When posts change (e.g. after a save), re-sync all three visible slots
-  // so they show the latest post data without needing a full jump.
   useEffect(() => {
     const front  = rotatingFrontRef.current;
     const second = (front + 1) % 3;
@@ -482,8 +494,10 @@ const Deck: React.FC<DeckProps> = ({
     onExitPostEdit,
     onEnterPostEdit,
     onSaveUser,
-    onSavePost,  // ← included in sharedProps
+    onSavePost,
     mapActiveRef,
+    initialLocations,
+    onLocationsChange,
   };
 
   return (

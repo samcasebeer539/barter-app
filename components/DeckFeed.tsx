@@ -58,8 +58,13 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
     []
   );
 
-  // Map FeedProfile to the types Deck expects
-  const deckUser: User | undefined = profile ? profile.user : undefined;
+  const deckUser: User | undefined = profile
+    ? {
+        ...profile.user,
+        locations: profile.user.locations ?? [],
+      }
+    : undefined;
+
   const deckPosts: Post[] = profile
     ? profile.posts.map(p => ({
         _id: p._id,
@@ -72,12 +77,10 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
 
   const postCount = deckPosts.length;
 
-  // Jump token to land on the tapped post when the deck opens
   const [jumpToken, setJumpToken] = useState<number | undefined>(undefined);
   const [jumpToIndex, setJumpToIndex] = useState(0);
   const jumpCounterRef = useRef(0);
 
-  // Use prefetched profile if available, otherwise fetch
   useEffect(() => {
     if (!postId) return;
 
@@ -228,11 +231,13 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
                     user={deckUser}
                     cardWidth={Math.min(width - 36, 400)}
                     enabled={true}
+                    isUser={false}
                     isSelectMode={isSelectMode}
                     selectedPosts={selectedPosts}
                     onTopCardChange={setTopPostIndex}
                     selectColor={colors.actions.offer}
                     showLocation={true}
+                    initialLocations={profile?.user.locations ?? []}
                     onHorizontalGestureStart={() => setScrollEnabled(false)}
                     onGestureEnd={() => setScrollEnabled(true)}
                     jumpToken={jumpToken}

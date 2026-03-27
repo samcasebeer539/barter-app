@@ -35,6 +35,7 @@ export async function getCurrentUser(): Promise<User> {
       profileImageUrl: data.profile_photo,
       email_visible: data.email_visible ?? false,
       phone_visible: data.phone_visible ?? false,
+      locations: data.locations ?? [],   // ← add this
     };
   } catch (err: any) {
     clearTimeout(timeout);

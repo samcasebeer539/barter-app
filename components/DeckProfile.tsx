@@ -11,7 +11,9 @@ import { TRADE_ACTIONS } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 import { Post, User } from '@/types/index';
+import { LocationEntry } from './CardMeetingLocation';
 import { createPost, updatePost, deletePost } from '@/services/postService';
+import { updateUser } from '@/services/userService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -151,6 +153,16 @@ export default function ProfileDeck({
     []
   );
 
+  // ── Save locations ────────────────────────────────────────────────────────
+
+  const handleLocationsChange = useCallback(async (locations: LocationEntry[]) => {
+    try {
+      await updateUser({ locations } as any);
+    } catch (err) {
+      console.error('Failed to save locations:', err);
+    }
+  }, []);
+
   // ── Save post (create or update) ──────────────────────────────────────────
 
   const handleSavePost = useCallback(async (updated: Post) => {
@@ -159,8 +171,6 @@ export default function ProfileDeck({
 
       if (!updated._id) {
         const created = await createPost(updated);
-        // Replace by position (topPrimaryPostIndex) since updated is a new
-        // object from PostCard's draft spread and won't match by reference.
         newPosts = posts.map((p, i) => (i === topPrimaryPostIndex ? created : p));
       } else {
         await updatePost(updated._id, updated);
@@ -177,7 +187,6 @@ export default function ProfileDeck({
   // ── Add post ──────────────────────────────────────────────────────────────
 
   const handleAddPost = useCallback(() => {
-    // No _id yet — will be created when user hits ✓ in PostCard
     const emptyPost: Post = { name: 'New Item', description: '', photos: [], date_posted: "" };
     jumpCounterRef.current += 1;
     setJumpToIndex(DECK_PREFIX);
@@ -192,7 +201,6 @@ export default function ProfileDeck({
 
     const postToDelete = posts[topPrimaryPostIndex];
 
-    // Remove from local state immediately (optimistic)
     const updated = posts.filter((_, i) => i !== topPrimaryPostIndex);
     const targetInNewCards = DECK_PREFIX + topPrimaryPostIndex;
     const newLen = DECK_PREFIX + updated.length;
@@ -202,13 +210,11 @@ export default function ProfileDeck({
     setJumpToken(jumpCounterRef.current);
     onPostsChange?.(updated);
 
-    // Only hit the DB if it was already persisted
     if (postToDelete._id) {
       try {
         await deletePost(postToDelete._id);
       } catch (err) {
         console.error('Failed to delete post:', err);
-        // Re-insert on failure
         onPostsChange?.(posts);
       }
     }
@@ -313,6 +319,8 @@ export default function ProfileDeck({
                 onEnterPostEdit={() => setIsPostEditMode(true)}
                 onSaveUser={onSaveUser}
                 onSavePost={handleSavePost}
+                initialLocations={primaryUser.locations ?? []}
+                onLocationsChange={handleLocationsChange}
                 jumpToken={jumpToken}
                 jumpToCardIndex={jumpToIndex}
               />

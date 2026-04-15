@@ -52,7 +52,7 @@ export default function HandleLogin() {
     const signIn = async () => {
         // If there is currently a sign in happening, stop the extra sign in
         if (loading) {
-            console.log("Attempted 2nd sign in")
+            //console.log("Attempted 2nd sign in")
             return;
         }
         setLoading(true);

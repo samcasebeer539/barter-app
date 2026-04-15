@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 cred = credentials.Certificate("firebase-adminsdk.json") 
 firebase_admin.initialize_app(cred, {
-    'storageBucket': os.getenv("FIREBASE_STORAGE_BUCKET")
+    'storageBucket': os.getenv("EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET")
 })
 
 DATABASE_USER = os.getenv("EXPO_PUBLIC_MONGODB_DATABASE_USER")

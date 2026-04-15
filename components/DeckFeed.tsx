@@ -100,13 +100,13 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
       deckTranslateY.setValue(height);
       backdropOpacity.setValue(0);
       Animated.parallel([
-        Animated.timing(deckTranslateY, { toValue: 0, useNativeDriver: true, duration: 350 }),
+        Animated.timing(deckTranslateY, { toValue: 0, useNativeDriver: true, duration: 440 }),
         Animated.timing(backdropOpacity, { toValue: 0.88, duration: 400, useNativeDriver: true }),
       ]).start();
     } else {
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),
       ]).start(() => {
         setIsRendered(false);
         setIsQueryOpen(false);
@@ -128,7 +128,11 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
 
   const handleActionSelected = (action: TradeAction) => {
     if (action.actionType === 'offer' && action.subAction === 'write') {
-      if (!isSelectMode) { setIsSelectMode(true); if (topPostIndex !== null) setSelectedPosts([topPostIndex]); }
+      if (!isSelectMode) { 
+        setIsSelectMode(true); 
+        if (topPostIndex !== null) 
+          setSelectedPosts([topPostIndex]); 
+      }
       else if (topPostIndex !== null) {
         setSelectedPosts(prev =>
           prev.includes(topPostIndex) ? prev.filter(i => i !== topPostIndex) : [...prev, topPostIndex]

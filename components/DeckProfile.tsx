@@ -89,11 +89,11 @@ export default function ProfileDeck({
 
   const animateOpen = useCallback(() => {
     slideAnim.setValue(0);
-    Animated.timing(slideAnim, { toValue: 1, useNativeDriver: false, duration: 300 }).start();
+    Animated.timing(slideAnim, { toValue: 1, useNativeDriver: false, duration: 440 }).start();
   }, [slideAnim]);
 
   const animateClose = useCallback(() => {
-    Animated.timing(slideAnim, { toValue: 0, useNativeDriver: false, duration: 300 }).start(({ finished }) => {
+    Animated.timing(slideAnim, { toValue: 0, useNativeDriver: false, duration: 440 }).start(({ finished }) => {
       if (finished) {
         setShowSecondary(false);
         setSecondaryHeight(0);
@@ -254,7 +254,7 @@ export default function ProfileDeck({
         {/* Primary deck — logged-in user, editable */}
         <View style={styles.primaryDeckWrapper}>
           <View style={styles.primaryDeckColumn}>
-            <View style={deckStyles.deckWrapper}>
+            <View style={[deckStyles.deckWrapper, {backgroundColor: colors.ui.background, paddingTop: 8, marginTop: -8}]}>
               <Deck
                 posts={posts}
                 user={primaryUser}
@@ -306,7 +306,7 @@ export default function ProfileDeck({
 const styles = StyleSheet.create({
   container: { width: '100%', maxWidth: 400, position: 'relative', alignItems: 'center', overflow: 'visible' },
   decksContainer: { width: '100%', alignItems: 'center', overflow: 'visible' },
-  primaryDeckWrapper: { width: '100%', alignItems: 'center', zIndex: 2, elevation: 2 },
+  primaryDeckWrapper: { width: '100%', alignItems: 'center', zIndex: 2, elevation: 2},
   primaryDeckColumn: {
     width: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
     gap: 8, backgroundColor: colors.ui.background, paddingBottom: 50,

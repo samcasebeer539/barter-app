@@ -18,14 +18,106 @@ interface TradeUIProps {
     isSelectMode?: boolean;
     selectedCount?: number;
     topCardIsSelected?: boolean;
-    // Query mode — single post select
     isQueryMode?: boolean;
     queryPostSelected?: boolean;
     onQueryPostSelect?: () => void;
     onQueryPostDeselect?: () => void;
     onActionChange?: (actionType: TradeActionType) => void;
-
 }
+
+// ─── Button pattern helpers ───────────────────────────────────────────────────
+
+interface SelectButtonProps {
+    color: string;
+    isActive: boolean;
+    selectedCount: number;
+    onPress: () => void;
+    disabled: boolean;
+}
+
+const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled }) => (
+    <TouchableOpacity
+        style={[styles.actionButton, styles.selectButton, {
+            borderColor: color,
+            backgroundColor: isActive ? color : 'transparent',
+        }]}
+        onPress={onPress}
+        disabled={disabled}
+    >
+        <Text style={[styles.timerText, { color: isActive ? '#000' : color }]}>
+            {String(selectedCount).padStart(2, '0')}
+        </Text>
+        <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
+    </TouchableOpacity>
+);
+
+interface IconButtonProps {
+    color: string;
+    isActive: boolean;
+    icon: string;
+    iconSize?: number;
+    onPress: () => void;
+    disabled: boolean;
+    fillOnActive?: boolean;
+}
+
+interface TimerButtonProps {
+    color: string;
+    isActive: boolean;
+    onPress?: () => void;
+    disabled: boolean;
+}
+
+const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
+
+const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled }) => {
+    // In real usage, startTime would come from props/store. We simulate a fixed 2-day countdown from now.
+    const [remaining, setRemaining] = useState(TIMER_DURATION_MS);
+
+    useEffect(() => {
+        const tick = setInterval(() => {
+            setRemaining(prev => Math.max(0, prev - 1000));
+        }, 1000);
+        return () => clearInterval(tick);
+    }, []);
+
+    const totalSecs = Math.floor(remaining / 1000);
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    const label = hours > 0
+        ? `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+        : `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+    const filled = isActive && !!onPress;
+
+    const btnStyle = [styles.actionButton, { borderColor: color, backgroundColor: filled ? color : 'transparent', gap: 6 }];
+    const iconColor = filled ? '#000' : color;
+    const content = (
+        <>
+            <Text style={[styles.timerText, { color: iconColor }]}>{label}</Text>
+            <FontAwesome6 name="clock" size={26} color={iconColor} />
+        </>
+    );
+
+    if (!onPress) return <View style={btnStyle}>{content}</View>;
+    return <TouchableOpacity style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
+};
+
+const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false }) => (
+    <TouchableOpacity
+        style={[styles.actionButton, {
+            borderColor: color,
+            backgroundColor: fillOnActive && isActive ? color : 'transparent',
+        }]}
+        onPress={onPress}
+        disabled={disabled}
+    >
+        <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />
+    </TouchableOpacity>
+);
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const TradeUI: React.FC<TradeUIProps> = ({
     onActionSelected,
@@ -38,7 +130,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
     queryPostSelected = false,
     onQueryPostSelect,
     onQueryPostDeselect,
-    onActionChange
+    onActionChange,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -58,124 +150,72 @@ const TradeUI: React.FC<TradeUIProps> = ({
             anim.setValue(0);
             Animated.sequence([
                 Animated.delay(delay),
-                Animated.timing(anim, {
-                    toValue: 1,
-                    duration: 4000,
-                    useNativeDriver: true,
-                }),
-            ]).start(() => {
-                anim.setValue(0);
-                runShimmer(anim, 1000);
-            });
+                Animated.timing(anim, { toValue: 1, duration: 4000, useNativeDriver: true }),
+            ]).start(() => { anim.setValue(0); runShimmer(anim, 1000); });
         };
         runShimmer(shimmerAnim, 0);
     }, []);
 
-    const shimmerTranslate = shimmerAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [400, -400],
-    });
+    const shimmerTranslate = shimmerAnim.interpolate({ inputRange: [0, 1], outputRange: [400, -400] });
 
     const infiniteActions = Array(10).fill(actions).flat();
     const currentAction = actions[currentActionIndex];
 
-    const getButtonProps = (isInTopSpot: boolean) => ({
-        opacity: isInTopSpot ? 1 : 0.3,
-        disabled: !isInTopSpot,
-    });
+    const isInTopSpot = (index: number) => index % actions.length === currentActionIndex;
+
+    const calculateItemIndex = (offsetY: number): number => {
+        const i = Math.round(offsetY / ITEM_HEIGHT) % actions.length;
+        return i < 0 ? (i + actions.length) % actions.length : i;
+    };
 
     const playAction = (subAction?: 'add' | 'remove' | 'write' | 'select', index: number = currentActionIndex) => {
         if (!isActionSelected && !subAction) return;
-
-        const tradeAction: TradeAction = {
-            actionType: currentAction.actionType,
-            subAction,
-        };
-
-        onActionSelected?.(tradeAction);
-
-        if (currentAction.actionType !== 'offer' &&
-            currentAction.actionType !== 'barter' &&
-            currentAction.actionType !== 'rescind') {
-            const actualIndex = index % actions.length;
-            if (actualIndex === currentActionIndex) {
-                setIsActionSelected((prev) => !prev);
-            }
+        onActionSelected?.({ actionType: currentAction.actionType, subAction });
+        const toggleable = !['offer', 'barter', 'rescind'].includes(currentAction.actionType);
+        if (toggleable && index % actions.length === currentActionIndex) {
+            setIsActionSelected(prev => !prev);
+        } else {
+            setIsActionSelected(prev => !prev);
         }
-        setIsActionSelected((prev) => !prev);
     };
 
-    const handleQueryPress = (isInTopSpot: boolean) => {
-        if (!isInTopSpot) return;
-
-        // Toggle post selection for query
+    const handleQueryPress = (active: boolean) => {
+        if (!active) return;
         if (queryPostSelected) {
             onQueryPostDeselect?.();
-            // Close query drawer too if open
-            if (isQueryOpen) {
-                setIsQueryOpen(false);
-                onQueryToggle?.(false);
-            }
+            if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
         } else {
             onQueryPostSelect?.();
-            // Open query drawer
             const next = !isQueryOpen;
             setIsQueryOpen(next);
             onQueryToggle?.(next);
         }
-
-        const tradeAction: TradeAction = {
-            actionType: 'query',
-            subAction: 'write',
-        };
-        onActionSelected?.(tradeAction);
+        onActionSelected?.({ actionType: 'query', subAction: 'write' });
         setIsActionSelected(true);
     };
 
     const handleActionTextPress = () => {
-        const snappedOffset = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
-        const nextOffset = snappedOffset + ITEM_HEIGHT;
-        scrollViewRef.current?.scrollTo({ y: nextOffset, animated: true });
-        if (isQueryOpen) {
-            setIsQueryOpen(false);
-            onQueryToggle?.(false);
-        }
-    };
-
-    const isActionInTopSpot = (index: number) => index % actions.length === currentActionIndex;
-
-    const calculateItemIndex = (offsetY: number): number => {
-        let itemIndex = Math.round(offsetY / ITEM_HEIGHT) % actions.length;
-        return itemIndex < 0 ? (itemIndex + actions.length) % actions.length : itemIndex;
+        const snapped = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
+        scrollViewRef.current?.scrollTo({ y: snapped + ITEM_HEIGHT, animated: true });
+        if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
     };
 
     useEffect(() => {
         setCurrentActionIndex(0);
-        const timer = setTimeout(() => {
-            scrollViewRef.current?.scrollTo({
-                y: ITEM_HEIGHT * actions.length,
-                animated: false,
-            });
-        }, INITIAL_SCROLL_DELAY);
-        return () => clearTimeout(timer);
+        const t = setTimeout(() => scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * actions.length, animated: false }), INITIAL_SCROLL_DELAY);
+        return () => clearTimeout(t);
     }, [actions]);
 
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
         setIsActionSelected(false);
-        if (isQueryOpen) {
-            setIsQueryOpen(false);
-            onQueryToggle?.(false);
-        }
-        // Scrolling away from query deselects the post
-        if (queryPostSelected) {
-            onQueryPostDeselect?.();
-        }
+        if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
+        if (queryPostSelected) onQueryPostDeselect?.();
     };
 
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        currentOffsetRef.current = event.nativeEvent.contentOffset.y;
         const offsetY = event.nativeEvent.contentOffset.y;
+        currentOffsetRef.current = offsetY;
         const itemIndex = calculateItemIndex(offsetY);
         if (itemIndex !== currentActionIndex) {
             setIsActionSelected(false);
@@ -200,164 +240,116 @@ const TradeUI: React.FC<TradeUIProps> = ({
         isScrollingRef.current = false;
     };
 
-    const renderActionButton = (action: TradeActionConfig, isInTopSpot: boolean) => {
+    const renderActionButton = (action: TradeActionConfig, active: boolean) => {
         if (!action.hasButtons) return null;
-        const { opacity, disabled } = getButtonProps(isInTopSpot);
+        const color = currentAction?.color;
+        const disabled = !active;
+        const opacity = active ? 1 : 0.3;
+
+        // Actions that use the select-count pattern
+        if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
+            return (
+                <SelectButton
+                    color={color}
+                    isActive={topCardIsSelected}
+                    selectedCount={selectedCount}
+                    onPress={() => playAction('write')}
+                    disabled={disabled}
+                />
+            );
+        }
+
+        // Icon-only actions
+        const iconMap: Partial<Record<TradeActionType, { icon: string; size?: number; subAction: 'select' | 'write' | 'add' | 'remove' }>> = {
+            where:  { icon: 'circle-dot', subAction: 'select' },
+            when:   { icon: 'clock', subAction: 'select' },
+            verify: { icon: 'camera-rotate', size: 22, subAction: 'select' },
+            stall:  { icon: 'circle-check', subAction: 'select' },
+            accept: { icon: 'circle-check', subAction: 'select' },
+            acceptFinal: { icon: 'circle-check', subAction: 'select' },
+            decline: { icon: 'circle-check', subAction: 'select' },
+        };
+
+        if (iconMap[action.actionType]) {
+            const { icon, size, subAction } = iconMap[action.actionType]!;
+            return (
+                <IconButton
+                    color={color}
+                    isActive={isActionSelected && active}
+                    icon={icon}
+                    iconSize={size}
+                    onPress={() => playAction(subAction)}
+                    disabled={disabled}
+                    fillOnActive
+                />
+            );
+        }
 
         switch (action.actionType) {
             case 'counter':
                 return (
                     <>
                         <TouchableOpacity
-                            style={[styles.counterMinusButton, { opacity, borderColor: currentAction?.color }]}
+                            style={[styles.counterMinusButton, { opacity, borderColor: color }]}
                             onPress={() => playAction('add')}
                             disabled={disabled}
                         >
-                            <FontAwesome6 name="plus" size={22} color={currentAction?.color} />
+                            <FontAwesome6 name="plus" size={22} color={color} />
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.counterPlusButton, { opacity, borderColor: currentAction?.color }]}
+                            style={[styles.counterPlusButton, { opacity, borderColor: color }]}
                             onPress={() => playAction('remove')}
                             disabled={disabled}
                         >
-                            <FontAwesome6 name="minus" size={22} color={currentAction?.color} />
+                            <FontAwesome6 name="minus" size={22} color={color} />
                         </TouchableOpacity>
                     </>
                 );
             case 'query':
                 return (
                     <TouchableOpacity
-                        style={[
-                            styles.actionButton,
-                            styles.selectButton,
-                            {
-                                opacity,
-                                borderColor: currentAction?.color,
-                                backgroundColor: queryPostSelected && isInTopSpot
-                                    ? currentAction?.color
-                                    : 'transparent',
-                            },
-                        ]}
-                        onPress={() => handleQueryPress(isInTopSpot)}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6
-                            name={queryPostSelected && isInTopSpot ? 'circle-question' : 'circle'}
-                            size={26}
-                            color={queryPostSelected && isInTopSpot ? '#000' : currentAction?.color}
-                        />
-                    </TouchableOpacity>
-                );
-            case 'offer':
-                return (
-                    <TouchableOpacity
                         style={[styles.actionButton, styles.selectButton, {
                             opacity,
-                            borderColor: currentAction?.color,
-                            backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
+                            borderColor: color,
+                            backgroundColor: queryPostSelected && active ? color : 'transparent',
                         }]}
-                        onPress={() => playAction('write')}
+                        onPress={() => handleQueryPress(active)}
                         disabled={disabled}
                     >
-                        <Text style={[styles.buttonText, { color: topCardIsSelected ? '#000' : currentAction?.color }]}>
-                            {String(selectedCount).padStart(2, '0')}
-                        </Text>
                         <FontAwesome6
-                            name={topCardIsSelected ? 'circle-check' : 'circle'}
+                            name={queryPostSelected && active ? 'circle-question' : 'circle'}
                             size={26}
-                            color={topCardIsSelected ? '#000' : currentAction?.color}
-                        />
-                    </TouchableOpacity>
-                );
-            case 'barter':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, {
-                            opacity,
-                            borderColor: currentAction?.color,
-                            backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
-                        }]}
-                        onPress={() => playAction('write')}
-                        disabled={disabled}
-                    >
-                        <Text style={[styles.buttonText, { color: topCardIsSelected ? '#000' : currentAction?.color }]}>
-                            {String(selectedCount).padStart(2, '0')}
-                        </Text>
-                        <FontAwesome6
-                            name={topCardIsSelected ? 'circle-check' : 'circle'}
-                            size={26}
-                            color={topCardIsSelected ? '#000' : currentAction?.color}
-                        />
-                    </TouchableOpacity>
-                );
-            case 'where':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
-                        onPress={() => playAction('select')}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6 name="circle-dot" size={26} color={currentAction?.color} />
-                    </TouchableOpacity>
-                );
-            case 'when':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
-                        onPress={() => playAction('select')}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6 name="clock" size={26} color={currentAction?.color} />
-                    </TouchableOpacity>
-                );
-            case 'verify':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, { opacity, borderColor: currentAction?.color }]}
-                        onPress={() => playAction('select')}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6 name="camera-rotate" size={22} color={currentAction?.color} />
-                    </TouchableOpacity>
-                );
-            case 'rescind':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, {
-                            opacity,
-                            borderColor: currentAction?.color,
-                            backgroundColor: topCardIsSelected ? currentAction?.color : 'transparent',
-                        }]}
-                        onPress={() => playAction('write')}
-                        disabled={disabled}
-                    >
-                        <Text style={[styles.buttonText, { color: topCardIsSelected ? '#000' : currentAction?.color }]}>
-                            {String(selectedCount).padStart(2, '0')}
-                        </Text>
-                        <FontAwesome6
-                            name={topCardIsSelected ? 'circle-check' : 'circle'}
-                            size={26}
-                            color={topCardIsSelected ? '#000' : currentAction?.color}
+                            color={queryPostSelected && active ? '#000' : color}
                         />
                     </TouchableOpacity>
                 );
             case 'play':
-                return null;
-            case 'wait':
-                return null;
-            default:
                 return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, {
-                            opacity,
-                            borderColor: currentAction?.color,
-                            backgroundColor: isActionSelected ? currentAction?.color : 'transparent',
-                        }]}
+                    <TimerButton
+                        color={color}
+                        isActive={isActionSelected && active}
                         onPress={() => playAction('select')}
                         disabled={disabled}
-                    >
-                        <FontAwesome6 name="circle-check" size={26} color={isActionSelected ? '#000' : currentAction?.color} />
-                    </TouchableOpacity>
+                    />
+                );
+            case 'wait':
+                return (
+                    <TimerButton
+                        color={color}
+                        isActive={false}
+                        disabled={true}
+                    />
+                );
+            default:
+                return (
+                    <IconButton
+                        color={color}
+                        isActive={isActionSelected && active}
+                        icon="circle-check"
+                        onPress={() => playAction('select')}
+                        disabled={disabled}
+                        fillOnActive
+                    />
                 );
         }
     };
@@ -379,10 +371,10 @@ const TradeUI: React.FC<TradeUIProps> = ({
                         scrollEventThrottle={16}
                     >
                         {infiniteActions.map((action, index) => {
-                            const isInTopSpot = isActionInTopSpot(index);
+                            const active = isInTopSpot(index);
                             return (
                                 <View key={index} style={styles.tradeLine}>
-                                    {renderActionButton(action, isInTopSpot)}
+                                    {renderActionButton(action, active)}
                                     <TouchableOpacity onPress={handleActionTextPress}>
                                         <Text style={[styles.tradeLineText, { color: action.color }]}>
                                             {action.text}
@@ -395,14 +387,11 @@ const TradeUI: React.FC<TradeUIProps> = ({
                 </View>
 
                 <TouchableOpacity
-                    style={[
-                        styles.playButton,
-                        {
-                            backgroundColor: isActionSelected ? currentAction?.color : 'transparent',
-                            borderColor: currentAction?.color,
-                            shadowColor: currentAction?.color,
-                        },
-                    ]}
+                    style={[styles.playButton, {
+                        backgroundColor: isActionSelected ? currentAction?.color : 'transparent',
+                        borderColor: currentAction?.color,
+                        shadowColor: currentAction?.color,
+                    }]}
                     onPress={() => playAction()}
                     disabled={!isActionSelected}
                 >
@@ -415,23 +404,9 @@ const TradeUI: React.FC<TradeUIProps> = ({
             </View>
 
             <View pointerEvents="none" style={styles.shimmerOverlay}>
-                <Animated.View
-                    style={[
-                        StyleSheet.absoluteFill,
-                        {
-                            transform: [
-                                { translateX: shimmerTranslate },
-                                { skewX: '315deg' },
-                            ],
-                        },
-                    ]}
-                >
+                <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: shimmerTranslate }, { skewX: '315deg' }] }]}>
                     <LinearGradient
-                        colors={[
-                            currentAction?.color + '00',
-                            currentAction?.color + '66',
-                            currentAction?.color + '00',
-                        ]}
+                        colors={[currentAction?.color + '00', currentAction?.color + '50', currentAction?.color + '00']}
                         locations={[0, 0.1, 1]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
@@ -443,122 +418,42 @@ const TradeUI: React.FC<TradeUIProps> = ({
     );
 };
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const BORDER_RADIUS = { tl2br25: { borderTopLeftRadius: 2, borderBottomLeftRadius: 25 }, tr25bl2: { borderTopRightRadius: 25, borderBottomRightRadius: 2 } };
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'flex-start',
-        width: '100%',
-        overflow: 'hidden',
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        gap: 4,
-    },
-    scrollViewContainer: {
-        overflow: 'hidden',
-        flex: 1,
-    },
-    scrollView: {
-        flex: 1,
-    },
-    tradeLine: {
-        flexDirection: 'row',
-        gap: 2,
-        height: 64,
-        alignItems: 'center',
-        marginBottom: -10,
-        justifyContent: 'flex-end',
-    },
-    tradeLineText: {
-        fontSize: 56,
-        fontFamily: globalFonts.extrabold,
-        bottom: 13,
-        letterSpacing: -3,
-    },
+    container: { flex: 1, alignItems: 'flex-start', width: '100%', overflow: 'hidden' },
+    row: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 4 },
+    scrollViewContainer: { overflow: 'hidden', flex: 1 },
+    scrollView: { flex: 1 },
+    tradeLine: { flexDirection: 'row', gap: 2, height: 64, alignItems: 'center', marginBottom: -10, justifyContent: 'flex-end' },
+    tradeLineText: { fontSize: 56, fontFamily: globalFonts.extrabold, bottom: 13, letterSpacing: -3 },
     playButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 40,
-        width: 50,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 2,
-        borderWidth: 3,
+        justifyContent: 'center', alignItems: 'center', height: 40, width: 50,
+        borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2, borderWidth: 3,
     },
     shimmerOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 40,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 2,
-        overflow: 'hidden',
-        zIndex: 10,
+        position: 'absolute', top: 0, left: 0, right: 0, height: 40, overflow: 'hidden', zIndex: 10,
+        borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2,
     },
     actionButton: {
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        flexDirection: 'row',
-        paddingHorizontal: 4,
-        height: 40,
-        flex: 1,
-        bottom: 12,
-        borderWidth: 3,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 25,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
+        justifyContent: 'flex-end', alignItems: 'center', flexDirection: 'row', paddingHorizontal: 4,
+        height: 40, flex: 1, bottom: 12, borderWidth: 3,
+        borderTopRightRadius: 25, borderBottomRightRadius: 25, borderTopLeftRadius: 2, borderBottomLeftRadius: 25,
     },
+    selectButton: { gap: 4 },
     counterMinusButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 1,
-        height: 40,
-        bottom: 12,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 2,
-        borderTopRightRadius: 2,
-        borderWidth: 3,
+        justifyContent: 'center', alignItems: 'center', flex: 1, height: 40, bottom: 12, borderWidth: 3,
+        borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderBottomRightRadius: 2, borderTopRightRadius: 2,
         borderColor: colors.actions.counter,
     },
     counterPlusButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 1,
-        height: 40,
-        bottom: 12,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
-        borderBottomRightRadius: 25,
-        borderTopRightRadius: 25,
-        borderWidth: 3,
+        justifyContent: 'center', alignItems: 'center', flex: 1, height: 40, bottom: 12, borderWidth: 3,
+        borderTopLeftRadius: 2, borderBottomLeftRadius: 2, borderBottomRightRadius: 25, borderTopRightRadius: 25,
         borderColor: colors.actions.counter,
     },
-    selectButton: {
-        flex: 1,
-        height: 40,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 25,
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 25,
-        borderWidth: 3,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        flexDirection: 'row',
-        gap: 4,
-        paddingHorizontal: 4,
-    },
-    buttonText: {
-        fontSize: 20,
-        fontFamily: globalFonts.bold,
-    },
+    timerText: { fontSize: 20, fontFamily: globalFonts.bold },
 });
 
 export default TradeUI;

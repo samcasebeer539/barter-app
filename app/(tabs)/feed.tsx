@@ -185,10 +185,12 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     marginTop: 44,
+    marginBottom: 60,
   },
   scrollContent: {
     padding: 12,
     paddingTop: 56,
+    
   },
   columnsContainer: {
     flexDirection: 'row',
@@ -241,7 +243,7 @@ const styles = StyleSheet.create({
     minHeight: 36,
     borderTopLeftRadius: 2,
     borderTopRightRadius: 2,
-    borderBottomRightRadius: 25,
+    borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
   
   },

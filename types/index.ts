@@ -5,6 +5,13 @@ export interface Post {
   photos: string[];
   date_posted: string;
 }
+export interface LocationEntry {
+  id: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  description: string;
+}
 
 export interface User {
   first_name: string;
@@ -18,6 +25,7 @@ export interface User {
   reviewCount?: number;
   email_visible: boolean;
   phone_visible: boolean;
+  locations: LocationEntry[];
 }
 
 export interface Locations {

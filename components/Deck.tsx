@@ -224,6 +224,7 @@ const Deck: React.FC<DeckProps> = ({
     bio: 'pro smasher', phone: '',
     profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
     email_visible: false, phone_visible: false,
+    locations: [],
   };
   const userToRender = user ?? defaultUser;
 

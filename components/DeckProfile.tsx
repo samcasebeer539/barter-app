@@ -12,6 +12,7 @@ import { deckStyles, makeCountBar, makeIconButton, barRadius, DECK_BAR_WIDTH } f
 
 import { Post, User, Locations } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
+import { updateUser } from '@/services/userService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -271,9 +272,11 @@ export default function ProfileDeck({
                 onEnterPostEdit={() => setIsPostEditMode(true)}
                 onSaveUser={onSaveUser}
                 onSavePost={handleSavePost}
+                initialLocations={primaryUser.locations ?? []}
+                //onLocationsChange={handleLocationsChange}
                 jumpToken={jumpToken}
                 jumpToCardIndex={jumpToIndex}
-                initialLocations={initialLocations}
+                //initialLocations={initialLocations}
                 onConfirmLocations={onConfirmLocations}
               />
             </View>

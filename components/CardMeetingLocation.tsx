@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput } from 'react-native';
 import MapView, { Marker, MapPressEvent } from 'react-native-maps';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { Locations } from '@/types/index';
+import { Locations, LocationEntry } from '@/types/index';
 
 const MAX_LOCATIONS = 3;
 
@@ -66,6 +66,12 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [footerHeight, setFooterHeight] = useState(80);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  // const updateLocations = (updated: LocationEntry[]) => {
+  //   setLocations(updated);
+  //   onLocationsChange?.(updated);
+  // };
 
   // ── Handlers: user mode ───────────────────────────────────────────────────
   const handleMapPress = (event: MapPressEvent) => {
@@ -123,6 +129,10 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const canAddMore = locations.length < MAX_LOCATIONS;
   const displayLocations = isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
 
+  const toggleSelectLocation = (id: string) => {
+    setSelectedLocationId(prev => (prev === id ? null : id));
+  };
+  
   return (
     <View
       style={[styles.container, { transform: [{ scale }] }]}
@@ -190,9 +200,24 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
-                <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
-              </TouchableOpacity>
+
+              {isUser ? (
+                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
+                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => toggleSelectLocation(loc.id)} hitSlop={8}>
+                  <FontAwesome6
+                    name={selectedLocationId === loc.id ? 'circle-check' : 'circle'}
+                    size={24}
+                    color={
+                      selectedLocationId === loc.id
+                        ? colors.actions.location
+                        : colors.ui.cardsecondary
+                    }
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           ))}
 

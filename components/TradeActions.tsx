@@ -139,7 +139,9 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
-    const [isActionSelected, setIsActionSelected] = useState(false);
+    // 'idle' = no arrow, 'ready' = arrow outline, 'played' = arrow filled (black)
+    const [playButtonState, setPlayButtonState] = useState<'idle' | 'ready' | 'played'>('idle');
+    const isActionSelected = playButtonState === 'played';
     const [isQueryOpen, setIsQueryOpen] = useState(false);
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
 
@@ -168,14 +170,17 @@ const TradeUI: React.FC<TradeUIProps> = ({
         return i < 0 ? (i + actions.length) % actions.length : i;
     };
 
+    // Signal from an action button that it was pressed — move play button to 'ready'
+    const markReady = () => {
+        setPlayButtonState(prev => prev === 'played' ? 'ready' : 'ready');
+    };
+
     const playAction = (subAction?: 'add' | 'remove' | 'write' | 'select', index: number = currentActionIndex) => {
-        if (!isActionSelected && !subAction) return;
+        if (playButtonState === 'idle' && !subAction) return;
         onActionSelected?.({ actionType: currentAction.actionType, subAction });
-        const toggleable = !['offer', 'barter', 'rescind'].includes(currentAction.actionType);
-        if (toggleable && index % actions.length === currentActionIndex) {
-            setIsActionSelected(prev => !prev);
-        } else {
-            setIsActionSelected(prev => !prev);
+        if (!subAction) {
+            // Play button pressed — toggle between played and ready
+            setPlayButtonState(prev => prev === 'played' ? 'ready' : 'played');
         }
     };
 
@@ -191,7 +196,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             onQueryToggle?.(next);
         }
         onActionSelected?.({ actionType: 'query', subAction: 'write' });
-        setIsActionSelected(true);
+        markReady();
     };
 
     const handleActionTextPress = () => {
@@ -202,13 +207,14 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
     useEffect(() => {
         setCurrentActionIndex(0);
+        setPlayButtonState('idle');
         const t = setTimeout(() => scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * actions.length, animated: false }), INITIAL_SCROLL_DELAY);
         return () => clearTimeout(t);
     }, [actions]);
 
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
-        setIsActionSelected(false);
+        setPlayButtonState('idle');
         if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
         if (queryPostSelected) onQueryPostDeselect?.();
     };
@@ -218,7 +224,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
         currentOffsetRef.current = offsetY;
         const itemIndex = calculateItemIndex(offsetY);
         if (itemIndex !== currentActionIndex) {
-            setIsActionSelected(false);
+            setPlayButtonState('idle');
             setCurrentActionIndex(itemIndex);
             onActionChange?.(actions[itemIndex].actionType);
         }
@@ -240,6 +246,9 @@ const TradeUI: React.FC<TradeUIProps> = ({
         isScrollingRef.current = false;
     };
 
+    // For select-style buttons: arrow shows when selectedCount > 0
+    const selectButtonReady = selectedCount > 0;
+
     const renderActionButton = (action: TradeActionConfig, active: boolean) => {
         if (!action.hasButtons) return null;
         const color = currentAction?.color;
@@ -253,7 +262,10 @@ const TradeUI: React.FC<TradeUIProps> = ({
                     color={color}
                     isActive={topCardIsSelected}
                     selectedCount={selectedCount}
-                    onPress={() => playAction('write')}
+                    onPress={() => {
+                        if (active && selectedCount > 0) markReady();
+                        playAction('write');
+                    }}
                     disabled={disabled}
                 />
             );
@@ -275,10 +287,10 @@ const TradeUI: React.FC<TradeUIProps> = ({
             return (
                 <IconButton
                     color={color}
-                    isActive={isActionSelected && active}
+                    isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
                     icon={icon}
                     iconSize={size}
-                    onPress={() => playAction(subAction)}
+                    onPress={() => { markReady(); playAction(subAction); }}
                     disabled={disabled}
                     fillOnActive
                 />
@@ -291,14 +303,14 @@ const TradeUI: React.FC<TradeUIProps> = ({
                     <>
                         <TouchableOpacity
                             style={[styles.counterMinusButton, { opacity, borderColor: color }]}
-                            onPress={() => playAction('add')}
+                            onPress={() => { markReady(); playAction('add'); }}
                             disabled={disabled}
                         >
                             <FontAwesome6 name="plus" size={22} color={color} />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.counterPlusButton, { opacity, borderColor: color }]}
-                            onPress={() => playAction('remove')}
+                            onPress={() => { markReady(); playAction('remove'); }}
                             disabled={disabled}
                         >
                             <FontAwesome6 name="minus" size={22} color={color} />
@@ -327,8 +339,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
                 return (
                     <TimerButton
                         color={color}
-                        isActive={isActionSelected && active}
-                        onPress={() => playAction('select')}
+                        isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
+                        onPress={() => { markReady(); playAction('select'); }}
                         disabled={disabled}
                     />
                 );
@@ -344,14 +356,30 @@ const TradeUI: React.FC<TradeUIProps> = ({
                 return (
                     <IconButton
                         color={color}
-                        isActive={isActionSelected && active}
+                        isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
                         icon="circle-check"
-                        onPress={() => playAction('select')}
+                        onPress={() => { markReady(); playAction('select'); }}
                         disabled={disabled}
                         fillOnActive
                     />
                 );
         }
+    };
+
+    // Determine play button appearance
+    // For select-type actions, 'ready' is derived from selectedCount > 0, not from button press
+    const isSelectAction = ['offer', 'barter', 'rescind'].includes(currentAction?.actionType);
+    const effectivePlayState = isSelectAction
+        ? (selectedCount > 0 ? (playButtonState === 'played' ? 'played' : 'ready') : 'idle')
+        : playButtonState;
+
+    const showArrow = effectivePlayState !== 'idle';
+    const arrowFilled = effectivePlayState === 'played';
+
+    const handlePlayPress = () => {
+        if (!showArrow) return;
+        onActionSelected?.({ actionType: currentAction.actionType });
+        setPlayButtonState(prev => prev === 'played' ? 'ready' : 'played');
     };
 
     return (
@@ -388,18 +416,20 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
                 <TouchableOpacity
                     style={[styles.playButton, {
-                        backgroundColor: isActionSelected ? currentAction?.color : 'transparent',
+                        backgroundColor: arrowFilled ? currentAction?.color : 'transparent',
                         borderColor: currentAction?.color,
                         shadowColor: currentAction?.color,
                     }]}
-                    onPress={() => playAction()}
-                    disabled={!isActionSelected}
+                    onPress={handlePlayPress}
+                    disabled={!showArrow}
                 >
-                    <FontAwesome6
-                        name="arrow-left-long"
-                        size={22}
-                        color={isActionSelected ? '#000' : currentAction?.color}
-                    />
+                    {showArrow && (
+                        <FontAwesome6
+                            name="arrow-left-long"
+                            size={22}
+                            color={arrowFilled ? '#000' : currentAction?.color}
+                        />
+                    )}
                 </TouchableOpacity>
             </View>
 

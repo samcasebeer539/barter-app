@@ -16,7 +16,7 @@ export default function FeedScreen() {
   const [loadingPostId, setLoadingPostId] = useState<string | null>(null);
   const [prefetchedProfile, setPrefetchedProfile] = useState<FeedProfile | null>(null);
   const [showDeck, setShowDeck] = useState(false);
-  const [showSaved, setShowSaved] = useState(true);
+  // const [showSaved, setShowSaved] = useState(true);
   const [showLocation, setShowLocation] = useState(true);
   const scrollY = useRef(0);
   const headerTranslateY = useRef(new Animated.Value(0)).current;
@@ -144,9 +144,9 @@ export default function FeedScreen() {
 
       <FeedBar
         showLocation={showLocation}
-        showSaved={showSaved}
+        // showSaved={showSaved}
         onLocationPress={() => setShowLocation(prev => !prev)}
-        onSavePress={() => setShowSaved(prev => !prev)}
+        // onSavePress={() => setShowSaved(prev => !prev)}
         headerTranslateY={headerTranslateY}
       />
 

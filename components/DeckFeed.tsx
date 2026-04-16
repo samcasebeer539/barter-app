@@ -5,7 +5,6 @@ import {
 } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns from './TradeTurns';
@@ -28,7 +27,7 @@ interface FeedDeckProps {
 export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
-  const [showSaved, setShowSaved] = useState(false);
+  // const [showSaved, setShowSaved] = useState(false);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
@@ -165,9 +164,9 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
           >
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
-                <TouchableOpacity style={styles.saveButton} onPress={() => setShowSaved(p => !p)}>
+                {/* <TouchableOpacity style={styles.saveButton} onPress={() => setShowSaved(p => !p)}>
                   <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <View style={styles.statusBar}>
                   <FontAwesome6 name='circle-user' size={24} color={colors.ui.secondarydisabled} />
                   <FontAwesome6 name='circle-dot' size={24} color={colors.ui.secondarydisabled} />
@@ -249,7 +248,7 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1 },
   loadingContainer: { height: 300, justifyContent: 'center', alignItems: 'center' },
   saveButton: { width: 50, height: 36, backgroundColor: colors.ui.secondary, ...barRadius.leftCap, justifyContent: 'center', alignItems: 'center' },
-  statusBar: { ...makeCountBar('rightCap', 'flex-end') },
+  statusBar: { ...makeCountBar('topCap', 'flex-end') },
   turnsAndButtonColumn: { flexDirection: 'column', width: DECK_BAR_WIDTH },
   queryRow: {},
   actionRow: {},

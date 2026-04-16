@@ -7,17 +7,17 @@ import { globalFonts, colors } from '../styles/globalStyles';
 
 interface FeedBarProps {
   showLocation: boolean;
-  showSaved: boolean;
+  // showSaved: boolean;
   onLocationPress: () => void;
-  onSavePress: () => void;
+  // onSavePress: () => void;
   headerTranslateY: Animated.Value;
 }
 
 export default function FeedBar({
   showLocation,
-  showSaved,
+  // showSaved,
   onLocationPress,
-  onSavePress,
+  // onSavePress,
   headerTranslateY,
 }: FeedBarProps) {
   const [searchText, setSearchText] = useState('');
@@ -42,12 +42,12 @@ export default function FeedBar({
           { transform: [{ translateY: headerTranslateY }] }
         ]}
       >
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.saveButton}
           onPress={onSavePress}
         >
           <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.searchBar}
           onPress={handleSearchBarPress}
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flex: 1,
     height: 44,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 25,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 25,
     borderBottomRightRadius: 2,

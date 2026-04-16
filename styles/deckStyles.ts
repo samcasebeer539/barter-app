@@ -60,6 +60,12 @@ bottomCap: {
     borderTopRightRadius: 2,
     borderBottomRightRadius: 25,
 },
+topCap: {
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+},
 };
 
 // ─── Count bar factory ───────────────────────────────────────────────────────

@@ -36,6 +36,7 @@ const SECONDARY_USER: User = {
   profileImageUrl: 'https://picsum.photos/seed/bird/800/800',
   email_visible: false,
   phone_visible: false,
+  locations: [],
 };
 
 const SECONDARY_POSTS: Post[] = [

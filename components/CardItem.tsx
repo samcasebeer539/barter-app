@@ -209,7 +209,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     <FontAwesome6
                       name={selectIconName}
                       size={24}
-                      color={isActiveSelected ? activeSelectColor : activeSelectColor }
+                      color={isActiveSelected ? activeSelectColor : '#fff' }
                     />
                   )}
                 </TouchableOpacity>

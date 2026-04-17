@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import TextTicker from 'react-native-text-ticker';
 import { globalFonts, colors } from '../styles/globalStyles';
-import { Post, User } from '@/types/index';
+import { Post } from '@/types/index';
 
 interface PostCardProps {
   post: Post;

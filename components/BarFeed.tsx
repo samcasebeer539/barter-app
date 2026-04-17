@@ -1,25 +1,15 @@
 import { View, StyleSheet, TouchableOpacity, Animated, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useRef } from 'react';
 import { globalFonts, colors } from '../styles/globalStyles';
 
 interface FeedBarProps {
   showLocation: boolean;
-  // showSaved: boolean;
   onLocationPress: () => void;
-  // onSavePress: () => void;
   headerTranslateY: Animated.Value;
 }
 
-export default function FeedBar({
-  showLocation,
-  // showSaved,
-  onLocationPress,
-  // onSavePress,
-  headerTranslateY,
-}: FeedBarProps) {
+export default function FeedBar({ headerTranslateY }: FeedBarProps) {
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef<TextInput>(null);
 
@@ -42,12 +32,6 @@ export default function FeedBar({
           { transform: [{ translateY: headerTranslateY }] }
         ]}
       >
-        {/* <TouchableOpacity
-          style={styles.saveButton}
-          onPress={onSavePress}
-        >
-          <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
-        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.searchBar}
           onPress={handleSearchBarPress}
@@ -64,8 +48,6 @@ export default function FeedBar({
           />
           <FontAwesome6 name='magnifying-glass' size={22} color='#FFFFFF' />
         </TouchableOpacity>
-
-        
       </Animated.View>
     </>
   );

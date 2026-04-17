@@ -41,7 +41,7 @@ npx expo start --tunnel --clear
 ### 4. Start the development backend server
 
 ```bash
-python3 backend/backend.py
+python3 backend/init.py
 ```
 
 ### 5. Run on your iPhone

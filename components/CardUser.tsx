@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, 
 import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
-import { Post, User } from '@/types/index';
+import { User } from '@/types/index';
 import { uploadProfilePhoto } from '@/services/userService';
 
 

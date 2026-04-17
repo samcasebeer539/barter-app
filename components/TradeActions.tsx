@@ -139,7 +139,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
-    // 'idle' = no arrow, 'ready' = arrow outline, 'played' = arrow filled (black)
     const [playButtonState, setPlayButtonState] = useState<'idle' | 'ready' | 'played'>('idle');
     const isActionSelected = playButtonState === 'played';
     const [isQueryOpen, setIsQueryOpen] = useState(false);

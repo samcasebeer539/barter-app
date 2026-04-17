@@ -1,18 +1,16 @@
-import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
+import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 
 import Deck from './Deck';
 import TradeTurns, { TradeTurn } from './TradeTurns';
-import { globalFonts, colors } from '../styles/globalStyles';
+import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS } from '../config/tradeConfig';
-import { deckStyles, makeCountBar, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
+import { deckStyles, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 
 import { Post, User, Locations } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
-import { updateUser } from '@/services/userService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -42,7 +40,6 @@ export default function ProfileDeck({
   primaryUser,
   secondaryPosts = [],
   secondaryUser,
-  initialLocations = [],
   onConfirmLocations,
   externalLocations = [],
   onSelectLocation,
@@ -52,7 +49,6 @@ export default function ProfileDeck({
   onSaveUser,
   onPostsChange,
 }: ProfileDeckProps) {
-  const router = useRouter();
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   const [showSecondary, setShowSecondary] = useState(false);
@@ -273,10 +269,8 @@ export default function ProfileDeck({
                 onSaveUser={onSaveUser}
                 onSavePost={handleSavePost}
                 initialLocations={primaryUser.locations ?? []}
-                //onLocationsChange={handleLocationsChange}
                 jumpToken={jumpToken}
                 jumpToCardIndex={jumpToIndex}
-                //initialLocations={initialLocations}
                 onConfirmLocations={onConfirmLocations}
               />
             </View>

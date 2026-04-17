@@ -249,7 +249,7 @@ const Deck: React.FC<DeckProps> = ({
     { position: new Animated.ValueXY(SLOT_POSITIONS[2]), swipeX: new Animated.Value(0) },
   ]).current;
 
-  const slotRefs = useRef<React.RefObject<SlotHandle>[]>([
+  const slotRefs = useRef<React.RefObject<SlotHandle | null>[]>([
     React.createRef<SlotHandle>(),
     React.createRef<SlotHandle>(),
     React.createRef<SlotHandle>(),

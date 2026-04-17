@@ -1,14 +1,7 @@
 
 
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
-
-import { globalFonts, colors } from '../styles/globalStyles';
-
-
-
-
-
+import { View, StyleSheet, Dimensions } from 'react-native';
 
 interface UserCardProps {
   scale?: number;
@@ -21,18 +14,9 @@ const UserCard: React.FC<UserCardProps> = ({  scale = 1, cardWidth,  }) => {
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-
-
-
- 
-
   return (
     <View style={[styles.container, { transform: [{ scale }] }]}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-        
-
-
-       
       </View>
     </View>
   );
@@ -43,18 +27,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
-    
   },
     card: {
     backgroundColor: '#ffffff',
     borderRadius: 2,
- 
     position: 'relative',
-
-
-  },
-
-  
+  },  
 });
 
 export default UserCard;

@@ -68,11 +68,6 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const [footerHeight, setFooterHeight] = useState(80);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
-  // const updateLocations = (updated: LocationEntry[]) => {
-  //   setLocations(updated);
-  //   onLocationsChange?.(updated);
-  // };
-
   // ── Handlers: user mode ───────────────────────────────────────────────────
   const handleMapPress = (event: MapPressEvent) => {
     if (!isUser || isNaming) return;

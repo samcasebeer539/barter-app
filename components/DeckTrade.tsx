@@ -3,16 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 
-import { globalFonts, colors } from '../styles/globalStyles';
+import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
-import { TRADE_ACTIONS, TradeActionConfig } from '../config/tradeConfig';
+import { TradeActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post } from '@/types/index';
 
 const { width } = Dimensions.get('window');
-
-
 
 interface TradeDeckProps {
   posts: Post[];

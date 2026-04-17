@@ -10,7 +10,8 @@ import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns from './TradeTurns';
 import { TRADE_ACTIONS } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
-import { getFeedProfile, FeedProfile } from '@/services/feedService';
+import { getFeedProfile } from '@/services/feedService';
+import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
 
 const { width, height } = Dimensions.get('window');
@@ -164,9 +165,6 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
           >
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
-                {/* <TouchableOpacity style={styles.saveButton} onPress={() => setShowSaved(p => !p)}>
-                  <Icon name='bookmark' size={24} color={showSaved ? colors.ui.secondarydisabled : '#fff'} />
-                </TouchableOpacity> */}
                 <View style={styles.statusBar}>
                   <FontAwesome6 name='circle-user' size={24} color={colors.ui.secondarydisabled} />
                   <FontAwesome6 name='circle-dot' size={24} color={colors.ui.secondarydisabled} />

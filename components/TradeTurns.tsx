@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { colors, defaultTextStyle, globalFonts } from '../styles/globalStyles';
+import { colors, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
 export interface TradeTurn {
@@ -20,13 +20,13 @@ interface TradeTurnsProps {
 }
 
 const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) => {
-  const [queryAnswers, setQueryAnswers] = React.useState<Record<number, string>>({});
-  const [activeQueryText, setActiveQueryText] = React.useState('');
+  const [queryAnswers, setQueryAnswers] = useState<Record<number, string>>({});
+  const [activeQueryText, setActiveQueryText] = useState('');
   const internalInputRefs = useRef<Record<number, TextInput | null>>({});
   const activeQueryInputRef = useRef<TextInput | null>(null);
 
   // Auto-focus the top query input when it opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isQueryOpen) {
       setTimeout(() => activeQueryInputRef.current?.focus(), 100);
     } else {
@@ -134,9 +134,6 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
             blurOnSubmit
             keyboardAppearance="dark" 
           />
-          {/* <TouchableOpacity onPress={() => Keyboard.dismiss()}>
-            <FontAwesome6 name="check" size={26} color={colors.actions.query} />
-          </TouchableOpacity> */}
         </View>
       )}
       {turns.map(renderTurn)}

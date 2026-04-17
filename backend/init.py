@@ -12,6 +12,7 @@ from routes.dev.user_data.route import user_data_bp
 
 app = Flask(__name__)
 
+# Registers a blueprint (like an instance of the app) for each API route
 app.register_blueprint(create_user_bp)
 app.register_blueprint(feed_bp)
 app.register_blueprint(locations_bp)

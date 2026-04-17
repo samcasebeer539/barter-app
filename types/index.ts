@@ -35,3 +35,44 @@ export interface Locations {
   name: string;
   description: string;
 }
+
+export interface FeedItem {
+  id: string;
+  title: string;
+  image: string;
+  date_posted: string;
+}
+
+export interface FeedProfile {
+  user: {
+    first_name: string;
+    last_name: string;
+    pronouns?: string;
+    email: string;
+    phone?: string;
+    bio: string;
+    profileImageUrl: string;
+    email_visible: boolean;
+    phone_visible: boolean;
+    locations: Locations[];
+  };
+  posts: {
+    _id: string;
+    name: string;
+    description: string;
+    photos: string[];
+    date_posted: string;
+  }[];
+  tappedPostId: string;
+}
+
+export interface PostRecord {
+    _id: string;
+    post_title: string;
+    user_id: string;
+    photos: string[];
+    description: string;
+    date_posted: string;
+    trade_history: object;
+    incoming_offers: any[];
+  }

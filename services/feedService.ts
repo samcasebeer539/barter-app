@@ -1,43 +1,11 @@
 import { getAuth } from 'firebase/auth';
-import { Locations } from '@/types/index';
+import { FeedItem, FeedProfile } from '@/types/index';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 async function getAuthHeader() {
   const token = await getAuth().currentUser?.getIdToken();
   return { Authorization: `Bearer ${token}` };
-}
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface FeedItem {
-  id: string;
-  title: string;
-  image: string;
-  date_posted: string;
-}
-
-export interface FeedProfile {
-  user: {
-    first_name: string;
-    last_name: string;
-    pronouns?: string;
-    email: string;
-    phone?: string;
-    bio: string;
-    profileImageUrl: string;
-    email_visible: boolean;
-    phone_visible: boolean;
-    locations: Locations[];
-  };
-  posts: {
-    _id: string;
-    name: string;
-    description: string;
-    photos: string[];
-    date_posted: string;
-  }[];
-  tappedPostId: string;
 }
 
 // ─── Fetch feed ───────────────────────────────────────────────────────────────

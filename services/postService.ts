@@ -1,4 +1,4 @@
-import { Post } from '@/types/index';
+import { Post, PostRecord } from '@/types/index';
 import { getAuth } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
@@ -8,19 +8,6 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 async function getAuthHeader() {
   const token = await getAuth().currentUser?.getIdToken();
   return { Authorization: `Bearer ${token}` };
-}
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface PostRecord {
-  _id: string;
-  post_title: string;
-  user_id: string;
-  photos: string[];
-  description: string;
-  date_posted: string;
-  trade_history: object;
-  incoming_offers: any[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

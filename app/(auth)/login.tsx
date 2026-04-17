@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, ActivityIndicator, TouchableOpacity } from 'react-native'
 import { auth } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { colors, globalFonts } from '../../styles/globalStyles';
 
 export default function HandleLogin() {

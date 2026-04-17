@@ -13,6 +13,7 @@ import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/d
 import { getFeedProfile } from '@/services/feedService';
 import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
+import { getAuth } from 'firebase/auth';
 
 const { width, height } = Dimensions.get('window');
 const BOTTOM_BASE = 140;
@@ -41,6 +42,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
   const scrollY = useRef(0);
   const [profile, setProfile] = useState<FeedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
 
   const [activeActionType, setActiveActionType] = useState<string>('offer');
   const isOfferActive = activeActionType === 'offer';
@@ -118,6 +120,11 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
     }
   }, [visible]);
 
+  async function getAuthHeader() { 
+    const token = await getAuth().currentUser?.getIdToken(); 
+    return { Authorization: `Bearer ${token}` }; 
+    }
+
   const handleCloseModal = () => {
     Keyboard.dismiss();
     Animated.parallel([
@@ -126,23 +133,64 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
     ]).start(() => onClose());
   };
 
-  const handleActionSelected = (action: TradeAction) => {
+    const handleActionSelected = async (action: TradeAction) => {
     if (action.actionType === 'offer' && action.subAction === 'write') {
-      if (!isSelectMode) { 
-        setIsSelectMode(true); 
-        if (topPostIndex !== null) 
+    //   if (!isSelectMode) { 
+        
+        if (topPostIndex !== null) {
           setSelectedPosts([topPostIndex]); 
-      }
-      else if (topPostIndex !== null) {
-        setSelectedPosts(prev =>
-          prev.includes(topPostIndex) ? prev.filter(i => i !== topPostIndex) : [...prev, topPostIndex]
-        );
-      }
+            setIsSelectMode(true); 
+        }
+    //   }
+    //   else if (topPostIndex !== null) {
+    //     setSelectedPosts(prev =>
+    //       prev.includes(topPostIndex) ? prev.filter(i => i !== topPostIndex) : [...prev, topPostIndex]
+    //     );
+    //   }
     }
+
     if (action.actionType === 'offer' && action.subAction === 'select') {
       setIsSelectMode(false); setSelectedPosts([]);
     }
-  };
+
+    const headers = await getAuthHeader();
+
+    if (action.actionType === 'offer' && !action.subAction) {
+        if (selectedPosts.length === 0 || isSubmittingOffer) return;
+
+        const selectedPost = deckPosts[selectedPosts[0]];
+        setIsSubmittingOffer(true);
+    
+        try {
+            await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/posts/offer`, {
+                method: 'POST',
+                headers: { 
+                    ...headers,
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({
+                    offeredPostId: selectedPost._id,
+                    targetPostId: postId, 
+                })
+            });
+      
+            // reset UI
+            setSelectedPosts([]);
+            setIsSelectMode(false);
+      
+        } catch (err) {
+            console.error('Offer failed:', err);
+        } finally {
+            setIsSubmittingOffer(false);
+        }
+
+        // RESET (optional)
+        if (action.actionType === 'offer' && action.subAction === 'select') {
+            setIsSelectMode(false);
+            setSelectedPosts([]);
+        }
+    }
+    };
 
   const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 

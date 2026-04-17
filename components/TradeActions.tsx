@@ -351,6 +351,20 @@ const TradeUI: React.FC<TradeUIProps> = ({
                         disabled={true}
                     />
                 );
+            case 'offer':
+                return (
+                    <IconButton
+                      color={color}
+                      isActive={topCardIsSelected}
+                      icon="check"
+                      onPress={() => {
+                        markReady();
+                        playAction('write');
+                      }}
+                      disabled={disabled}
+                      fillOnActive
+                    />
+                );
             default:
                 return (
                     <IconButton

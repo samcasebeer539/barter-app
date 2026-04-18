@@ -132,13 +132,25 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
       Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: true }),
     ]).start(() => onClose());
   };
+  const toggleOfferSelection = () => {
+    if (topPostIndex === null) return;
+  
+    setSelectedPosts(prev => {
+      const isSelected = prev.includes(topPostIndex);
+      return isSelected
+        ? prev.filter(i => i !== topPostIndex)
+        : [topPostIndex]; // or [...prev, topPostIndex] if multi-select later
+    });
+  
+    setIsSelectMode(true);
+  };
 
     const handleActionSelected = async (action: TradeAction) => {
     if (action.actionType === 'offer' && action.subAction === 'write') {
     //   if (!isSelectMode) { 
         
         if (topPostIndex !== null) {
-          setSelectedPosts([topPostIndex]); 
+            setSelectedPosts([topPostIndex]); 
             setIsSelectMode(true); 
         }
     //   }
@@ -149,9 +161,9 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
     //   }
     }
 
-    if (action.actionType === 'offer' && action.subAction === 'select') {
-      setIsSelectMode(false); setSelectedPosts([]);
-    }
+    // if (action.actionType === 'offer' && action.subAction === 'select') {
+    //   setIsSelectMode(false); setSelectedPosts([]);
+    // }
 
     const headers = await getAuthHeader();
 
@@ -192,7 +204,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
     }
     };
 
-  const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
+  const topCardIsSelected = topPostIndex !== null && selectedPosts[0] === topPostIndex;
 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>

@@ -257,15 +257,16 @@ const TradeUI: React.FC<TradeUIProps> = ({
         // Actions that use the select-count pattern
         if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
             return (
-                <SelectButton
+                <IconButton
                     color={color}
                     isActive={topCardIsSelected}
-                    selectedCount={selectedCount}
+                    icon={isSelectMode && topCardIsSelected ? 'circle-check' : 'circle'}
                     onPress={() => {
-                        if (active && selectedCount > 0) markReady();
+                        markReady();
                         playAction('write');
                     }}
                     disabled={disabled}
+                    fillOnActive
                 />
             );
         }
@@ -297,6 +298,21 @@ const TradeUI: React.FC<TradeUIProps> = ({
         }
 
         switch (action.actionType) {
+            case 'offer':
+                return (
+                    <IconButton
+                        color={color}
+                        isActive={topCardIsSelected}
+                        icon={topCardIsSelected && isSelectMode ? 'circle-check' : 'circle'}
+                        onPress={() => {
+                            console.log(isSelectMode)
+                            markReady();
+                            playAction('write');
+                        }}
+                        disabled={disabled}
+                        fillOnActive
+                    />
+                );
             case 'counter':
                 return (
                     <>
@@ -351,26 +367,13 @@ const TradeUI: React.FC<TradeUIProps> = ({
                         disabled={true}
                     />
                 );
-            case 'offer':
-                return (
-                    <IconButton
-                      color={color}
-                      isActive={topCardIsSelected}
-                      icon="check"
-                      onPress={() => {
-                        markReady();
-                        playAction('write');
-                      }}
-                      disabled={disabled}
-                      fillOnActive
-                    />
-                );
+            
             default:
                 return (
                     <IconButton
                         color={color}
                         isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
-                        icon="circle-check"
+                        icon="check"
                         onPress={() => { markReady(); playAction('select'); }}
                         disabled={disabled}
                         fillOnActive

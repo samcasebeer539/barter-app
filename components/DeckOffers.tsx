@@ -147,8 +147,13 @@ export default function OfferDeck({
         <TouchableOpacity
           style={styles.collapseBar}
           onPress={() => setIsExpanded(prev => !prev)}
+          disabled={itemCount === 0}
         >
-          <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
+          <FontAwesome6
+            name={isExpanded ? 'angle-up' : 'angle-down'}
+            size={26}
+            color={itemCount === 0 ? colors.ui.secondarydisabled : '#fff'}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -163,7 +168,6 @@ const styles = StyleSheet.create({
   actionRow: {marginBottom: -2},
   turnsRow: {},
   collapseBar: {
-    
     width: DECK_BAR_WIDTH,
     height: 44,
     ...barRadius.bottomCap,

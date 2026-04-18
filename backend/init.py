@@ -9,7 +9,7 @@ from routes.dev.posts.route import posts_bp
 from routes.dev.posts.offer.route import posts_offer_bp
 from routes.dev.update_user.route import update_user_bp
 from routes.dev.user_data.route import user_data_bp
-
+from routes.dev.user_id.route import userId_bp
 
 app = Flask(__name__)
 
@@ -24,6 +24,7 @@ app.register_blueprint(posts_bp)
 app.register_blueprint(posts_offer_bp)
 app.register_blueprint(update_user_bp)
 app.register_blueprint(user_data_bp)
+app.register_blueprint(userId_bp)
 
 
 if __name__ == "__main__":

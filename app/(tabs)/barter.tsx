@@ -139,21 +139,21 @@ export default function ActiveTradesTestScreen() {
         {tab === 'open' && (
           <View style={styles.deckList}>
             <OfferDeck
-              posts={POSTS}
+              posts={[]}
               deckType="queries"
               actions={queriesActions}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
             />
             <OfferDeck
-              posts={POSTS}
+              posts={[]}
               deckType="offers"
               actions={offersActions}
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
             />
             <OfferDeck
-              posts={POSTS}
+              posts={[]}
               deckType="declined"
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}

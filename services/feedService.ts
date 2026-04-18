@@ -83,3 +83,8 @@ export async function getFeedProfile(postId: string): Promise<FeedProfile> {
     throw err;
   }
 }
+
+// for profile deck offerer
+export async function getOffererProfile(offeredPostId: string): Promise<FeedProfile> {
+  return getFeedProfile(offeredPostId);
+}

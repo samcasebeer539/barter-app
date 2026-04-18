@@ -4,6 +4,7 @@ export interface Post {
   description: string;
   photos: string[];
   date_posted: string;
+  incoming_offers?: any[]; 
 }
 export interface LocationEntry {
   id: string;

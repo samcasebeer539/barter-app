@@ -17,6 +17,9 @@ import { Post, User, Locations } from '@/types/index';
 import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
 import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
+import { getOffererProfile } from '@/services/offererService';
+import { FeedProfile } from '@/types/index';
+
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 20;
@@ -26,45 +29,45 @@ const BOTTOM_PADDING = 20;
 // a fake id will cause ObjectId() to throw a 404 on the backend.
 const SECONDARY_USER_ID = '';
 
-const SECONDARY_USER: User = {
-  first_name: 'Jay',
-  last_name: 'Wilson',
-  pronouns: '(she/he/they)',
-  email: 'jathwils@ucsc.edu',
-  phone: '916123456',
-  bio: 'Pro Smasher',
-  profileImageUrl: 'https://picsum.photos/seed/bird/800/800',
-  email_visible: false,
-  phone_visible: false,
-  locations: [],
-};
+// const SECONDARY_USER: User = {
+//   first_name: 'Jay',
+//   last_name: 'Wilson',
+//   pronouns: '(she/he/they)',
+//   email: 'jathwils@ucsc.edu',
+//   phone: '916123456',
+//   bio: 'Pro Smasher',
+//   profileImageUrl: 'https://picsum.photos/seed/bird/800/800',
+//   email_visible: false,
+//   phone_visible: false,
+//   locations: [],
+// };
 
-const SECONDARY_POSTS: Post[] = [
-  {
-    name: 'Web Design',
-    description: 'Professional website design services',
-    photos: ['https://picsum.photos/seed/web1/600/600'],
-    date_posted: '',
-  },
-  {
-    name: 'Laptop Stand',
-    description: 'Adjustable aluminum laptop stand',
-    photos: ['https://picsum.photos/seed/stand1/600/600'],
-    date_posted: '',
-  },
-  {
-    name: 'Tutoring',
-    description: 'Math and science tutoring for high school',
-    photos: ['https://picsum.photos/seed/tutor1/600/600'],
-    date_posted: '',
-  },
-  {
-    name: 'Bicycle',
-    description: 'Mountain bike, lightly used',
-    photos: ['https://picsum.photos/seed/bike1/600/600'],
-    date_posted: '',
-  },
-];
+// const SECONDARY_POSTS: Post[] = [
+//   {
+//     name: 'Web Design',
+//     description: 'Professional website design services',
+//     photos: ['https://picsum.photos/seed/web1/600/600'],
+//     date_posted: '',
+//   },
+//   {
+//     name: 'Laptop Stand',
+//     description: 'Adjustable aluminum laptop stand',
+//     photos: ['https://picsum.photos/seed/stand1/600/600'],
+//     date_posted: '',
+//   },
+//   {
+//     name: 'Tutoring',
+//     description: 'Math and science tutoring for high school',
+//     photos: ['https://picsum.photos/seed/tutor1/600/600'],
+//     date_posted: '',
+//   },
+//   {
+//     name: 'Bicycle',
+//     description: 'Mountain bike, lightly used',
+//     photos: ['https://picsum.photos/seed/bike1/600/600'],
+//     date_posted: '',
+//   },
+// ];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -76,6 +79,24 @@ export default function ProfileScreen() {
   const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+
+  //for offerer deck
+  const [secondaryProfile, setSecondaryProfile] = useState<FeedProfile | null>(null);
+  const [topPrimaryPostIndex, setTopPrimaryPostIndex] = useState<number | null>(null);
+  const topPost = topPrimaryPostIndex !== null ? primaryPosts[topPrimaryPostIndex] : null;
+  const offererUserId = topPost?.incoming_offers?.[0]?.from_user_id ?? null;
+  useEffect(() => {
+    if (!offererUserId) {
+      setSecondaryProfile(null);
+      return;
+    }
+    let cancelled = false;
+    getOffererProfile(offererUserId)
+      .then(profile => { if (!cancelled) setSecondaryProfile(profile); })
+      .catch(err => console.warn('Failed to load offerer profile:', err));
+    return () => { cancelled = true; };
+  }, [offererUserId]);
 
   useEffect(() => {
     const load = async () => {
@@ -194,8 +215,8 @@ export default function ProfileScreen() {
           <DecksProfile
             posts={primaryPosts}
             primaryUser={primaryUser}
-            secondaryPosts={SECONDARY_POSTS}
-            secondaryUser={SECONDARY_USER}
+            secondaryPosts={secondaryProfile?.posts ?? []}
+            secondaryUser={secondaryProfile?.user ?? undefined}
             initialLocations={myLocations}
             onConfirmLocations={handleConfirmLocations}
             externalLocations={theirLocations}
@@ -205,6 +226,7 @@ export default function ProfileScreen() {
             isDeckRevealed={isDeckRevealed}
             onSaveUser={handleSaveUser}
             onPostsChange={handlePostsChange}
+            onTopPrimaryPostChange={setTopPrimaryPostIndex}
           />
         </View>
       </ScrollView>

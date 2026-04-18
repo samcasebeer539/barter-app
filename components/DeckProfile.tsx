@@ -33,6 +33,7 @@ interface ProfileDeckProps {
   isDeckRevealed?: boolean;
   onSaveUser?: (updated: User) => void;
   onPostsChange?: (updated: Post[]) => void;
+  onTopPrimaryPostChange?: (index: number | null) => void;
 }
 
 export default function ProfileDeck({
@@ -48,6 +49,7 @@ export default function ProfileDeck({
   isDeckRevealed = false,
   onSaveUser,
   onPostsChange,
+  onTopPrimaryPostChange,
 }: ProfileDeckProps) {
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -83,6 +85,7 @@ export default function ProfileDeck({
   }, [topCardType]);
 
   const itemCount = useMemo(() => posts.length, [posts]);
+  const offerCount = useMemo(() => secondaryPosts.length, [secondaryPosts]);
 
   const animateOpen = useCallback(() => {
     slideAnim.setValue(0);
@@ -183,15 +186,23 @@ export default function ProfileDeck({
   const secondaryUserName = secondaryUser?.first_name ?? 'Partner';
   const deleteDisabled = topCardType !== 'post' || topPrimaryPostIndex === null;
 
+  // check for incoming offers.
+  const topPost = topPrimaryPostIndex !== null ? posts[topPrimaryPostIndex] : null;
+  const hasIncomingOffers = (topPost?.incoming_offers?.length ?? 0) > 0;
+  
+  const handleTopPrimaryPostChange = useCallback((index: number | null) => {
+    setTopPrimaryPostIndex(index);
+    onTopPrimaryPostChange?.(index);
+  }, [onTopPrimaryPostChange]);
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={[deckStyles.itemCountRow, { marginBottom: 8 }]}>
         <TouchableOpacity style={styles.queryButton} onPress={() => setIsQueryDrawerOpen(prev => !prev)}>
-          <Text style={[deckStyles.actionButtonText, { color: colors.actions.query }]}>QUERIES</Text>
+          <Text style={[deckStyles.actionButtonText, { color: colors.ui.secondarydisabled }]}>QUERIES</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.offerButton} onPress={onToggleReveal} disabled={!toggleEnabled}>
-          <Text style={[deckStyles.actionButtonText, { color: colors.actions.offer }]}>OFFERS</Text>
-          <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{itemCount}</Text>
+        <TouchableOpacity style={styles.offerButton} onPress={onToggleReveal} disabled={!toggleEnabled || !hasIncomingOffers}>
+          <Text style={[deckStyles.actionButtonText, {  color: hasIncomingOffers ? colors.actions.offer : colors.ui.secondarydisabled}]}>OFFERS</Text>
+          <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{offerCount}</Text>
           <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
         </TouchableOpacity>
       </View>
@@ -258,7 +269,7 @@ export default function ProfileDeck({
                 cardWidth={cardWidth}
                 enabled
                 onTopCardTypeChange={setTopCardType}
-                onTopCardChange={setTopPrimaryPostIndex}
+                onTopCardChange={handleTopPrimaryPostChange}
                 isUser={true}
                 isEditMode={isEditMode}
                 onExitEdit={() => setIsEditMode(false)}
@@ -289,8 +300,8 @@ export default function ProfileDeck({
               <View style={styles.myItemCountBar}>
                 <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
                 <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />
-                <Text style={[deckStyles.countText, { color: colors.actions.trade }]}>0{itemCount}</Text>
-                <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
+                <Text style={[deckStyles.countText, { color: colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+                <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
               </View>
             </View>
           </View>

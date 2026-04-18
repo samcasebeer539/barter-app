@@ -19,6 +19,7 @@ function toPost(record: PostRecord): Post {
     photos: record.photos ?? [],
     _id: record._id,
     date_posted: record.date_posted,
+    incoming_offers: record.incoming_offers ?? [],
   };
 }
 

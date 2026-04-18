@@ -35,44 +35,49 @@ def send_offer():
             return jsonify({"error": "Post not found"}), 404
 
         # Ensure it's not on your own post
-        if str(target_post["user_id"]) == str(user["_id"]):
+        if target_post["user_id"] == user["_id"]:
             return jsonify({"error": "Cannot offer on your own post"}), 400
-        
-        # Ensure post does not already exist
-        is_already_existing = posts_collection.find_one({
-            "_id": target_post_id,
-            "incoming_offers": {
-                "$elemMatch": {
-                    "from_user_id": user["_id"],
-                    "offered_post_id": offered_post_id,
-                    "status": "pending"
-                }
-            }
-        })
-
-        if is_already_existing:
-            return jsonify({"error": "Offer already exists"}), 400
 
         offer = {
-            "from_user_id": str(user["_id"]),
-            "offered_post_id": str(offered_post_id),
+            "from_user_id": user["_id"],
+            "offered_post_id": offered_post_id,
             "created_at": datetime.now(timezone.utc),
             "status": "pending",
         }
 
         # Add to target post (receiver side)
-        posts_collection.update_one(
-            {"_id": target_post_id},
-            {"$push": {"incoming_offers": offer}}
+        result = posts_collection.update_one(
+        {
+            "_id": target_post_id,
+            "$or": [
+                {"incoming_offers": {"$exists": False}},
+                {
+                    "incoming_offers": {
+                        "$not": {
+                            "$elemMatch": {
+                                "from_user_id": user["_id"],
+                                "offered_post_id": offered_post_id,
+                                "status": "pending"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "$push": {"incoming_offers": offer}
+        }
         )
 
-        # Track outgoing offers
+        if result.modified_count == 0:
+            return jsonify({"error": "Offer already exists"}), 400
+
         posts_collection.update_one(
             {"_id": offered_post_id},
             {
                 "$push": {
                     "outgoing_offers": {
-                        "to_post_id": str(target_post_id),
+                        "to_post_id": target_post_id,
                         "created_at": datetime.now(timezone.utc),
                         "status": "pending",
                     }

@@ -43,6 +43,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
   const [profile, setProfile] = useState<FeedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+  const [offerResultNotification, setOfferResultNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [activeActionType, setActiveActionType] = useState<string>('offer');
   const isOfferActive = activeActionType === 'offer';
@@ -119,6 +120,12 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
       });
     }
   }, [visible]);
+//   Message for offer sent/not sent automatically dismisses
+  useEffect(() => {
+    if (!offerResultNotification) return;
+    const t = setTimeout(() => setOfferResultNotification(null), 2000);
+    return () => clearTimeout(t);
+  }, [offerResultNotification]);
 
   async function getAuthHeader() { 
     const token = await getAuth().currentUser?.getIdToken(); 
@@ -174,7 +181,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
         setIsSubmittingOffer(true);
     
         try {
-            await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/posts/offer`, {
+            const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/posts/offer`, {
                 method: 'POST',
                 headers: { 
                     ...headers,
@@ -185,13 +192,23 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
                     targetPostId: postId, 
                 })
             });
+
+            const data = await res.json();
+            if (!res.ok) {
+                setOfferResultNotification({
+                    message: data.error || "Something went wrong", type: 'error'  
+                })
+                return;
+            }
+
+            setOfferResultNotification({ message: 'Offer sent!', type: 'success' });
       
             // reset UI
             setSelectedPosts([]);
             setIsSelectMode(false);
       
         } catch (err) {
-            console.error('Offer failed:', err);
+            setOfferResultNotification({ message: 'Offer failed to send', type: 'error'})
         } finally {
             setIsSubmittingOffer(false);
         }
@@ -295,6 +312,14 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
           </ScrollView>
         </Animated.View>
       </View>
+      {offerResultNotification && (
+        <View style={[
+            styles.offerResultNotification,
+            { backgroundColor: offerResultNotification.type === 'success' ? '#2ecc71' : '#e74c3c' }
+        ]}>
+            <Text style={styles.offerResultNotificationText}>{offerResultNotification.message}</Text>
+        </View>
+        )}
     </Modal>
   );
 }
@@ -310,4 +335,17 @@ const styles = StyleSheet.create({
   turnsAndButtonColumn: { flexDirection: 'column', width: DECK_BAR_WIDTH },
   queryRow: {},
   actionRow: {},
+  offerResultNotification: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    zIndex: 999,
+  },
+  offerResultNotificationText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });

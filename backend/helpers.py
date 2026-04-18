@@ -1,12 +1,22 @@
 from flask import jsonify, request
 from firebase_admin import auth as firebase_auth
+from bson import ObjectId
+from datetime import datetime, timezone
 
-def serialize_post(p):
-    p["_id"] = str(p["_id"])
-    p["user_id"] = str(p["user_id"])
-    if "date_posted" in p and hasattr(p["date_posted"], "isoformat"):
-        p["date_posted"] = p["date_posted"].isoformat()
-    return p
+def clean(obj):
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, list):
+        return [clean(i) for i in obj]
+    if isinstance(obj, dict):
+        return {k: clean(v) for k, v in obj.items()}
+    return obj
+
+
+def serialize_post(post):
+    return clean(post)
 
 def get_uid_from_request():
     auth_header = request.headers.get("Authorization")

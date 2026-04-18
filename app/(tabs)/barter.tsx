@@ -152,12 +152,12 @@ export default function ActiveTradesTestScreen() {
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
             />
-            <OfferDeck
+            {/* <OfferDeck
               posts={[]}
               deckType="declined"
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
-            />
+            /> */}
           </View>
         )}
 

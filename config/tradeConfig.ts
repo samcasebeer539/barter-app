@@ -152,7 +152,7 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     actionText: 'OFFER',
     colorStyle: { color: colors.actions.offer, fontFamily: globalFonts.extrabold },
     templateUser: 'You sent offer on "{item}"',
-    templatePartner: '{user} sent offer on "{item}"',
+    templatePartner: '{user} sent offer on {item}',
     isSent: true,
   },
   turnBarter: {

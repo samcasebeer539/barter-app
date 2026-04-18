@@ -16,7 +16,7 @@ const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'turnOffer', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+  { type: 'turnOffer', user: 'Jay Wilson', item: 'iPad 6th gen', isUser: false },
 ];
 
 interface ProfileDeckProps {

@@ -22,8 +22,8 @@ interface OfferDeckProps {
 }
 
 const DECK_LABELS: Record<OfferDeckType, { text: string; color: string }> = {
-  queries:  { text: 'OUTGOING QUERIES',  color: colors.actions.query   },
-  offers:   { text: 'OUTGOING OFFERS',   color: colors.actions.offer   },
+  queries:  { text: 'MY QUERIES',  color: colors.actions.query   },
+  offers:   { text: 'MY OFFERS',   color: colors.actions.offer   },
   declined: { text: 'DECLINED', color: colors.actions.decline },
   deals:    { text: 'DEALS',    color: colors.actions.accept  },
 };

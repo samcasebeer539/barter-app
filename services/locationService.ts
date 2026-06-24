@@ -17,17 +17,17 @@ export async function getMyLocations(): Promise<Locations[]> {
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
-    const res = await fetch(`${BASE_URL}/dev/locations`, {
-      headers,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  } catch (err: any) {
-    clearTimeout(timeout);
-    console.error('getMyLocations error:', err.message);
-    throw err;
+        const res = await fetch(`${BASE_URL}/dev/locations`, {
+            headers,
+            signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    } catch (err: any) {
+        clearTimeout(timeout);
+        console.error('getMyLocations error:', err.message);
+        throw err;
   }
 }
 

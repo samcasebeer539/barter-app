@@ -2,12 +2,12 @@ from datetime import datetime, timezone
 from flask import jsonify, request, Blueprint
 import traceback
 from bson import ObjectId
-from backend import user_data_collection, posts_collection
+from backend import user_data_collection, posts_collection, trades_collection
 from helpers import get_uid_from_request, serialize_post
 
-posts_offer_bp = Blueprint('posts_offer', __name__)
+trades_offer_bp = Blueprint('trades_offer', __name__)
 
-@posts_offer_bp.route('/dev/posts/offer', methods=['POST'])
+@trades_offer_bp.route('/dev/trades/offer', methods=['POST'])
 def send_offer():
     try:
         uid, err = get_uid_from_request()
@@ -39,49 +39,37 @@ def send_offer():
             return jsonify({"error": "Cannot offer on your own post"}), 400
         
         # Ensure post does not already exist
-        is_already_existing = posts_collection.find_one({
-            "_id": target_post_id,
-            "incoming_offers": {
-                "$elemMatch": {
-                    "from_user_id": user["_id"],
-                    "offered_post_id": offered_post_id,
-                    "status": "pending"
-                }
-            }
+        is_already_existing = trades_collection.find_one({
+            "status": "open", 
+            "type": "offer", 
+            "initiator_user_id": user["_id"], 
+            "offered_post_id": offered_post_id, 
+            "target_post_id": target_post_id
         })
 
         if is_already_existing:
             return jsonify({"error": "Offer already exists"}), 400
 
-        offer = {
-            "from_user_id": str(user["_id"]),
-            "offered_post_id": str(offered_post_id),
-            "created_at": datetime.now(timezone.utc),
-            "status": "pending",
-        }
+        trade = { 
+            "type": "offer", 
+            "status": "open", 
+            "created_at": datetime.now(timezone.utc), 
+            "initiator_user_id": user["_id"], 
+            "receiver_user_id": target_post["user_id"], 
+            "offered_post_id": offered_post_id, 
+            "target_post_id": target_post_id, 
+            "messages": [], 
+            "counter_offers": [], 
+            "completed_at": None }
 
-        # Add to target post (receiver side)
-        posts_collection.update_one(
-            {"_id": target_post_id},
-            {"$push": {"incoming_offers": offer}}
-        )
+        result = trades_collection.insert_one(trade)
+        print(result)
 
-        # Track outgoing offers
-        posts_collection.update_one(
-            {"_id": offered_post_id},
-            {
-                "$push": {
-                    "outgoing_offers": {
-                        "to_post_id": str(target_post_id),
-                        "created_at": datetime.now(timezone.utc),
-                        "status": "pending",
-                    }
-                }
-            }
-        )
-
-        return jsonify({"success": True}), 200
-
+        return jsonify({ 
+                "success": True, 
+                "tradeId": str(result.inserted_id) 
+            }), 201
+    
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

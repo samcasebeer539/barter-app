@@ -12,16 +12,17 @@ export interface TradeAction {
 }
 
 interface TradeUIProps {
-    onActionSelected?: (action: TradeAction) => void;
-    onQueryToggle?: (isOpen: boolean) => void;
+    onActionSelected: (action: TradeAction) => void;
     actions?: TradeActionConfig[];
-    isSelectMode?: boolean;
-    selectedCount?: number;
-    topCardIsSelected?: boolean;
-    isQueryMode?: boolean;
-    queryPostSelected?: boolean;
-    onQueryPostSelect?: () => void;
-    onQueryPostDeselect?: () => void;
+    isSelectMode: boolean;
+    selectedCount: number;
+    selectionCommitted: boolean;
+    topCardIsSelected: boolean;
+    isQueryMode: boolean;
+    queryPostSelected: boolean;
+    onQueryPostSelect: () => void;
+    onQueryPostDeselect: () => void;
+    onQueryToggle?: (open: boolean) => void;
     onActionChange?: (actionType: TradeActionType) => void;
 }
 
@@ -60,6 +61,19 @@ interface IconButtonProps {
     disabled: boolean;
     fillOnActive?: boolean;
 }
+
+const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false }) => (
+    <TouchableOpacity
+        style={[styles.actionButton, {
+            borderColor: color,
+            backgroundColor: fillOnActive && isActive ? color : 'transparent',
+        }]}
+        onPress={onPress}
+        disabled={disabled}
+    >
+        <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />
+    </TouchableOpacity>
+);
 
 interface TimerButtonProps {
     color: string;
@@ -104,24 +118,12 @@ const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, dis
     return <TouchableOpacity style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
 };
 
-const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false }) => (
-    <TouchableOpacity
-        style={[styles.actionButton, {
-            borderColor: color,
-            backgroundColor: fillOnActive && isActive ? color : 'transparent',
-        }]}
-        onPress={onPress}
-        disabled={disabled}
-    >
-        <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />
-    </TouchableOpacity>
-);
+
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const TradeUI: React.FC<TradeUIProps> = ({
     onActionSelected,
-    onQueryToggle,
     actions = TRADE_ACTIONS,
     isSelectMode = false,
     selectedCount = 0,
@@ -130,7 +132,9 @@ const TradeUI: React.FC<TradeUIProps> = ({
     queryPostSelected = false,
     onQueryPostSelect,
     onQueryPostDeselect,
+    onQueryToggle,
     onActionChange,
+    selectionCommitted,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -170,32 +174,25 @@ const TradeUI: React.FC<TradeUIProps> = ({
     };
 
     // Signal from an action button that it was pressed — move play button to 'ready'
-    const markReady = () => {
-        setPlayButtonState(prev => prev === 'played' ? 'ready' : 'ready');
-    };
-
-    const playAction = (subAction?: 'add' | 'remove' | 'write' | 'select', index: number = currentActionIndex) => {
-        if (playButtonState === 'idle' && !subAction) return;
-        onActionSelected?.({ actionType: currentAction.actionType, subAction });
-        if (!subAction) {
-            // Play button pressed — toggle between played and ready
-            setPlayButtonState(prev => prev === 'played' ? 'ready' : 'played');
-        }
-    };
+    // const markReady = () => {
+    //     setPlayButtonState(prev => prev === 'played' ? 'ready' : 'ready');
+    // };
 
     const handleQueryPress = (active: boolean) => {
         if (!active) return;
+      
         if (queryPostSelected) {
-            onQueryPostDeselect?.();
-            if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
+            onQueryPostDeselect();
         } else {
-            onQueryPostSelect?.();
-            const next = !isQueryOpen;
-            setIsQueryOpen(next);
-            onQueryToggle?.(next);
+            onQueryPostSelect();
         }
-        onActionSelected?.({ actionType: 'query', subAction: 'write' });
-        markReady();
+
+        onQueryToggle?.(!queryPostSelected)
+      
+        onActionSelected({
+            actionType: 'query',
+            subAction: 'write',
+        });
     };
 
     const handleActionTextPress = () => {
@@ -254,23 +251,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
         const disabled = !active;
         const opacity = active ? 1 : 0.3;
 
-        // Actions that use the select-count pattern
-        if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
-            return (
-                <IconButton
-                    color={color}
-                    isActive={topCardIsSelected}
-                    icon={isSelectMode && topCardIsSelected ? 'circle-check' : 'circle'}
-                    onPress={() => {
-                        markReady();
-                        playAction('write');
-                    }}
-                    disabled={disabled}
-                    fillOnActive
-                />
-            );
-        }
-
         // Icon-only actions
         const iconMap: Partial<Record<TradeActionType, { icon: string; size?: number; subAction: 'select' | 'write' | 'add' | 'remove' }>> = {
             where:  { icon: 'circle-dot', subAction: 'select' },
@@ -283,103 +263,75 @@ const TradeUI: React.FC<TradeUIProps> = ({
         };
 
         if (iconMap[action.actionType]) {
-            const { icon, size, subAction } = iconMap[action.actionType]!;
             return (
                 <IconButton
                     color={color}
-                    isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
-                    icon={icon}
-                    iconSize={size}
-                    onPress={() => { markReady(); playAction(subAction); }}
+                    isActive={active}
+                    icon={iconMap[action.actionType]?.icon ?? 'circle'}
+                    onPress={() =>
+                        onActionSelected({
+                            actionType: action.actionType,
+                            subAction: 'select',
+                        })
+                    }
                     disabled={disabled}
-                    fillOnActive
                 />
             );
         }
 
-        switch (action.actionType) {
-            case 'offer':
-                return (
-                    <IconButton
-                        color={color}
-                        isActive={topCardIsSelected}
-                        icon={topCardIsSelected && isSelectMode ? 'circle-check' : 'circle'}
-                        onPress={() => {
-                            console.log(isSelectMode)
-                            markReady();
-                            playAction('write');
-                        }}
-                        disabled={disabled}
-                        fillOnActive
-                    />
-                );
-            case 'counter':
-                return (
-                    <>
-                        <TouchableOpacity
-                            style={[styles.counterMinusButton, { opacity, borderColor: color }]}
-                            onPress={() => { markReady(); playAction('add'); }}
-                            disabled={disabled}
-                        >
-                            <FontAwesome6 name="plus" size={22} color={color} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.counterPlusButton, { opacity, borderColor: color }]}
-                            onPress={() => { markReady(); playAction('remove'); }}
-                            disabled={disabled}
-                        >
-                            <FontAwesome6 name="minus" size={22} color={color} />
-                        </TouchableOpacity>
-                    </>
-                );
-            case 'query':
-                return (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.selectButton, {
-                            opacity,
+        if (action.actionType === 'query') {
+            return (
+                <TouchableOpacity
+                    style={[
+                        styles.actionButton,
+                        {
                             borderColor: color,
                             backgroundColor: queryPostSelected && active ? color : 'transparent',
-                        }]}
-                        onPress={() => handleQueryPress(active)}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6
-                            name={queryPostSelected && active ? 'circle-question' : 'circle'}
-                            size={26}
-                            color={queryPostSelected && active ? '#000' : color}
-                        />
-                    </TouchableOpacity>
-                );
-            case 'play':
-                return (
-                    <TimerButton
-                        color={color}
-                        isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
-                        onPress={() => { markReady(); playAction('select'); }}
-                        disabled={disabled}
+                        },
+                    ]}
+                    onPress={() => handleQueryPress(active)}
+                    disabled={disabled}
+                >
+                    <FontAwesome6
+                        name={queryPostSelected ? 'circle-question' : 'circle'}
+                        size={26}
+                        color={queryPostSelected ? '#000' : color}
                     />
-                );
-            case 'wait':
-                return (
-                    <TimerButton
-                        color={color}
-                        isActive={false}
-                        disabled={true}
-                    />
-                );
-            
-            default:
-                return (
-                    <IconButton
-                        color={color}
-                        isActive={(playButtonState === 'ready' || playButtonState === 'played') && active}
-                        icon="check"
-                        onPress={() => { markReady(); playAction('select'); }}
-                        disabled={disabled}
-                        fillOnActive
-                    />
-                );
+                </TouchableOpacity>
+            );
         }
+
+        if (action.actionType === 'offer' || action.actionType === 'barter') {
+            return (
+                <IconButton
+                    color={color}
+                    isActive={active}
+                    icon="circle"
+                    onPress={() =>
+                        onActionSelected({
+                            actionType: action.actionType,
+                            subAction: 'write',
+                        })
+                    }
+                    disabled={disabled}
+                />
+            );
+        }
+
+        return (
+            <IconButton
+                color={color}
+                isActive={active}
+                icon="circle"
+                onPress={() =>
+                    onActionSelected({
+                        actionType: action.actionType,
+                        subAction: 'select',
+                    })
+                }
+                disabled={disabled}
+            />
+        );
     };
 
     // Determine play button appearance
@@ -389,13 +341,25 @@ const TradeUI: React.FC<TradeUIProps> = ({
         ? (selectedCount > 0 ? (playButtonState === 'played' ? 'played' : 'ready') : 'idle')
         : playButtonState;
 
-    const showArrow = effectivePlayState !== 'idle';
+    const showArrow = isSelectAction ? selectionCommitted : effectivePlayState === 'ready' || effectivePlayState === 'played';    
     const arrowFilled = effectivePlayState === 'played';
 
     const handlePlayPress = () => {
-        if (!showArrow) return;
-        onActionSelected?.({ actionType: currentAction.actionType });
-        setPlayButtonState(prev => prev === 'played' ? 'ready' : 'played');
+        // 1. commit selection first (this enables arrow logic consistency)
+        if (isSelectAction) {
+            if (!selectionCommitted) return;
+            onActionSelected({
+                actionType: currentAction.actionType,
+                subAction: 'select',
+            });
+            return;
+        }
+    
+        // 2. normal execution path (API call, etc)
+        onActionSelected({
+            actionType: currentAction.actionType,
+            subAction: 'select',
+        });
     };
 
     return (

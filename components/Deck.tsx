@@ -45,6 +45,12 @@ interface DeckProps {
     isQueryMode?: boolean;
     querySelectedPostIndex?: number | null;
     onSelectPost?: (postIndex: number) => void;
+    onQueryPostTap?: (postIndex: number) => void;
+    // ── Trade "where" subflow ───────────────────────────────────────────────
+    /** When true (and isUser), the player's own location card renders in select mode */
+    isLocationSelectMode?: boolean;
+    /** Fires with the chosen location (or null on deselect) while isLocationSelectMode is true */
+    onProposeLocation?: (location: Locations | null) => void;
 }
 
 type DeckItem =
@@ -94,6 +100,8 @@ interface CardSlotProps {
   querySelectedPostIndex: number | null;
   onQueryPostTap?: (postIndex: number) => void;
   onSelectPost?: (postIndex: number) => void;
+  isLocationSelectMode: boolean;
+  onProposeLocation?: (location: Locations | null) => void;
 }
 
 const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
@@ -105,6 +113,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
   externalLocations, onSelectLocation,
   isQueryMode, querySelectedPostIndex, onQueryPostTap,
   onSelectPost,
+  isLocationSelectMode, onProposeLocation,
 }, ref) => {
   const [card, setCardState] = useState<DeckItem | null>(initialCard);
   const [isFront, setIsFront] = useState(initialIsFront);
@@ -150,11 +159,17 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
         )}
         {card?.type === 'datetime' && <CardDateTime cardWidth={finalCardWidth} />}
         {card?.type === 'location' && (
-          <CardLocation cardWidth={finalCardWidth} mapActiveRef={mapActiveRef} isUser={isUser}
+          <CardLocation
+            cardWidth={finalCardWidth}
+            mapActiveRef={mapActiveRef}
+            isUser={isUser}
             initialLocations={isUser ? initialLocations : undefined}
             onConfirm={isUser ? onConfirmLocations : undefined}
             externalLocations={!isUser ? externalLocations : undefined}
-            onSelectLocation={!isUser ? onSelectLocation : undefined} />
+            onSelectLocation={!isUser ? onSelectLocation : undefined}
+            isSelectMode={isUser ? isLocationSelectMode : false}
+            onProposeLocation={isUser ? onProposeLocation : undefined}
+          />
         )}
         {card?.type === 'post' && (
           <PostCard
@@ -205,7 +220,8 @@ const Deck: React.FC<DeckProps> = ({
     jumpToken, jumpToCardIndex,
     initialLocations = [], onConfirmLocations,
     externalLocations = [], onSelectLocation,
-    isQueryMode = false, querySelectedPostIndex = null, onSelectPost
+    isQueryMode = false, querySelectedPostIndex = null, onSelectPost, onQueryPostTap,
+    isLocationSelectMode = false, onProposeLocation,
 }) => {
     const screenWidth = Dimensions.get('window').width;
     const defaultCardWidth = Math.min(screenWidth - 38, 290);
@@ -379,7 +395,8 @@ const Deck: React.FC<DeckProps> = ({
         isSelectMode, selectedPosts, selectColor, user: userToRender,
         onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost,
         mapActiveRef, initialLocations, onConfirmLocations, externalLocations, onSelectLocation,
-        isQueryMode, querySelectedPostIndex, onSelectPost,
+        isQueryMode, querySelectedPostIndex, onSelectPost, onQueryPostTap,
+        isLocationSelectMode, onProposeLocation,
     };
 
     return (

@@ -17,9 +17,11 @@ export type { TradeTurnType };
 interface TradeTurnsProps {
   turns: TradeTurn[];
   isQueryOpen?: boolean;
+  /** Fires on every keystroke in the active "ask a question" input while isQueryOpen is true */
+  onQueryTextChange?: (text: string) => void;
 }
 
-const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) => {
+const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, onQueryTextChange }) => {
   const [queryAnswers, setQueryAnswers] = useState<Record<number, string>>({});
   const [activeQueryText, setActiveQueryText] = useState('');
   const internalInputRefs = useRef<Record<number, TextInput | null>>({});
@@ -33,6 +35,11 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
       setActiveQueryText('');
     }
   }, [isQueryOpen]);
+
+  const handleActiveQueryChange = (text: string) => {
+    setActiveQueryText(text);
+    onQueryTextChange?.(text);
+  };
 
   const renderTurn = (turn: TradeTurn, index: number) => {
     const config = getTurnConfig(turn.type);
@@ -127,7 +134,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, }) 
             placeholder="Ask a question…"
             placeholderTextColor={colors.actions.query}
             value={activeQueryText}
-            onChangeText={setActiveQueryText}
+            onChangeText={handleActiveQueryChange}
             multiline
             returnKeyType="done"
             onSubmitEditing={() => Keyboard.dismiss()}

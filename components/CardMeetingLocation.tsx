@@ -29,6 +29,11 @@ interface CardLocationProps {
   externalLocations?: Locations[];
   /** Called when the viewing user selects or deselects a location */
   onSelectLocation?: (location: Locations | null) => void;
+  // ── Trade "where" subflow ─────────────────────────────────────────────────
+  /** When true (and isUser), render select-toggle UI on own locations instead of add/remove editing */
+  isSelectMode?: boolean;
+  /** Fires with the chosen location (or null on deselect) while isSelectMode is true */
+  onProposeLocation?: (location: Locations | null) => void;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 8);
@@ -42,6 +47,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
   onConfirm,
   externalLocations = [],
   onSelectLocation,
+  isSelectMode = false,
+  onProposeLocation,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
@@ -66,11 +73,19 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [footerHeight, setFooterHeight] = useState(80);
+
+  // ── Own-card select state (trade "where" subflow) ─────────────────────────
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  // Clear any stale selection if select mode is turned off externally
+  // (e.g. the trade subflow was cancelled or reset)
+  useEffect(() => {
+    if (!isSelectMode) setSelectedLocationId(null);
+  }, [isSelectMode]);
 
   // ── Handlers: user mode ───────────────────────────────────────────────────
   const handleMapPress = (event: MapPressEvent) => {
-    if (!isUser || isNaming) return;
+    if (!isUser || isNaming || isSelectMode) return;
     const { coordinate } = event.nativeEvent;
     setPendingPin(coordinate);
   };
@@ -119,15 +134,18 @@ const CardLocation: React.FC<CardLocationProps> = ({
     onSelectLocation?.(next ? loc : null);
   };
 
+  // ── Handlers: own-card select mode (trade "where" subflow) ────────────────
+  const handleProposeLocation = (loc: Locations) => {
+    const next = selectedLocationId === loc.id ? null : loc.id;
+    setSelectedLocationId(next);
+    onProposeLocation?.(next ? loc : null);
+  };
+
   // ── Derived ───────────────────────────────────────────────────────────────
-  const pinReady = !!pendingPin && !isNaming;
+  const pinReady = !!pendingPin && !isNaming && !isSelectMode;
   const canAddMore = locations.length < MAX_LOCATIONS;
   const displayLocations = isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
 
-  const toggleSelectLocation = (id: string) => {
-    setSelectedLocationId(prev => (prev === id ? null : id));
-  };
-  
   return (
     <View
       style={[styles.container, { transform: [{ scale }] }]}
@@ -156,7 +174,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 key={loc.id}
                 coordinate={{ latitude: loc.latitude, longitude: loc.longitude }}
                 pinColor={
-                  !isUser && loc.id === selectedId
+                  (isSelectMode && loc.id === selectedLocationId) ||
+                  (!isUser && loc.id === selectedId)
                     ? colors.actions.location
                     : colors.ui.cardsecondary
                 }
@@ -183,7 +202,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             <FontAwesome6 name="circle-dot" size={24} color={colors.ui.cardsecondary} />
           </View>
 
-          {/* ── User mode: editable list ── */}
+          {/* ── User mode: editable / selectable list ── */}
           {isUser && locations.map(loc => (
             <View key={loc.id} style={styles.locationRow}>
               <View style={styles.locationInfo}>
@@ -196,12 +215,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 </Text>
               </View>
 
-              {isUser ? (
-                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
-                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={() => toggleSelectLocation(loc.id)} hitSlop={8}>
+              {isSelectMode ? (
+                <TouchableOpacity onPress={() => handleProposeLocation(loc)} hitSlop={8}>
                   <FontAwesome6
                     name={selectedLocationId === loc.id ? 'circle-check' : 'circle'}
                     size={24}
@@ -212,11 +227,15 @@ const CardLocation: React.FC<CardLocationProps> = ({
                     }
                   />
                 </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
+                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
+                </TouchableOpacity>
               )}
             </View>
           ))}
 
-          {isUser && canAddMore && !isNaming && (
+          {isUser && canAddMore && !isNaming && !isSelectMode && (
             <TouchableOpacity
               style={styles.addLocationBtn}
               onPress={handleAddLocationPress}
@@ -237,7 +256,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             </TouchableOpacity>
           )}
 
-          {isUser && isNaming && (
+          {isUser && isNaming && !isSelectMode && (
             <View style={styles.namingBlock}>
               <View style={styles.nameRow}>
                 <TextInput
@@ -272,7 +291,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             </View>
           )}
 
-          {/* ── Read-only mode: selectable list ── */}
+          {/* ── Read-only mode: selectable list (other user's locations) ── */}
           {!isUser && externalLocations.slice(0, MAX_LOCATIONS).map(loc => {
             const isSelected = loc.id === selectedId;
             return (

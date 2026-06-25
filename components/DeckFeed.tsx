@@ -8,12 +8,13 @@ import Deck from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns from './TradeTurns';
-import { TRADE_ACTIONS } from '@/config/tradeConfig';
+import { TRADE_ACTIONS, TradeActionType } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { getFeedProfile } from '@/services/feedService';
 import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
 import { getAuth } from 'firebase/auth';
+import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width, height } = Dimensions.get('window');
 const BOTTOM_BASE = 140;
@@ -24,18 +25,14 @@ interface FeedDeckProps {
   visible: boolean;
   onClose: () => void;
   prefetchedProfile?: FeedProfile | null;
+  onQuerySubmit?: (payload: { postIndex: number | null; question: string }) => void;
 }
 
-export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }: FeedDeckProps) {
+export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, onQuerySubmit }: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
-  // const [showSaved, setShowSaved] = useState(false);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
-  const [isSelectMode, setIsSelectMode] = useState(false);
-  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
-  const [isQueryOpen, setIsQueryOpen] = useState(false);
-  const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -44,14 +41,44 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
 
-  const [activeActionType, setActiveActionType] = useState<string>('offer');
-  const isOfferActive = activeActionType === 'offer';
-  const isQueryActive = activeActionType === 'query';
-
   const feedActions = useMemo(
     () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
     []
   );
+
+  const trade = useTradeAction();
+
+  // What the action wheel is currently scrolled to — distinct from
+  // trade.activeAction, which only changes on an icon tap. Select/subflow
+  // UI should disappear as soon as the wheel scrolls away, not linger
+  // until the next tap. See TradeDeck for the same pattern.
+  const [scrolledActionType, setScrolledActionType] = useState<TradeActionType | null>(
+    feedActions[0]?.actionType ?? null
+  );
+
+  // The typed question lives outside the hook, same reasoning as in
+  // TradeDeck: subflowData for 'query' holds the selected post index.
+  const [queryText, setQueryText] = useState('');
+
+  const isOfferActive =
+    trade.activeAction === 'offer' &&
+    scrolledActionType === 'offer' &&
+    trade.phase !== 'confirmed';
+
+  const isQueryActive =
+    trade.activeAction === 'query' &&
+    scrolledActionType === 'query' &&
+    trade.phase !== 'idle' &&
+    trade.phase !== 'confirmed';
+
+  const effectiveIsReady =
+    trade.activeAction === 'query'
+      ? trade.isReady || queryText.trim().length > 0
+      : trade.isReady;
+
+  useEffect(() => {
+    if (!isQueryActive) setQueryText('');
+  }, [isQueryActive]);
 
   const deckUser: User | undefined = profile?.user;
   const deckPosts: Post[] = profile
@@ -111,19 +138,18 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
         Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),
       ]).start(() => {
         setIsRendered(false);
-        setIsQueryOpen(false);
         setKeyboardHeight(0);
-        setIsSelectMode(false);
-        setSelectedPosts([]);
-        setQuerySelectedPost(null);
+        trade.reset();
+        setQueryText('');
+        setScrolledActionType(feedActions[0]?.actionType ?? null);
       });
     }
   }, [visible]);
 
-  async function getAuthHeader() { 
-    const token = await getAuth().currentUser?.getIdToken(); 
-    return { Authorization: `Bearer ${token}` }; 
-    }
+  async function getAuthHeader() {
+    const token = await getAuth().currentUser?.getIdToken();
+    return { Authorization: `Bearer ${token}` };
+  }
 
   const handleCloseModal = () => {
     Keyboard.dismiss();
@@ -132,79 +158,74 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
       Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: true }),
     ]).start(() => onClose());
   };
-  const toggleOfferSelection = () => {
-    if (topPostIndex === null) return;
-  
-    setSelectedPosts(prev => {
-      const isSelected = prev.includes(topPostIndex);
-      return isSelected
-        ? prev.filter(i => i !== topPostIndex)
-        : [topPostIndex]; // or [...prev, topPostIndex] if multi-select later
-    });
-  
-    setIsSelectMode(true);
+
+  const handleActionSelected = (action: TradeAction) => {
+    const { actionType, subAction } = action;
+
+    // Arrow / confirm tap always sends 'select' for the currently-active action.
+    if (subAction === 'select' && trade.activeAction === actionType) {
+      handleConfirm();
+      return;
+    }
+
+    if (actionType === 'offer') {
+      trade.selectAction(actionType, topPostIndex);
+      return;
+    }
+
+    // query: arm the subflow on icon tap
+    trade.selectAction(actionType);
   };
 
-    const handleActionSelected = async (action: TradeAction) => {
-    if (action.actionType === 'offer' && action.subAction === 'write') {
-    //   if (!isSelectMode) { 
-        
-        if (topPostIndex !== null) {
-            setSelectedPosts([topPostIndex]); 
-            setIsSelectMode(true); 
-        }
-    //   }
-    //   else if (topPostIndex !== null) {
-    //     setSelectedPosts(prev =>
-    //       prev.includes(topPostIndex) ? prev.filter(i => i !== topPostIndex) : [...prev, topPostIndex]
-    //     );
-    //   }
-    }
+  const handleConfirm = async () => {
+    if (!effectiveIsReady || !trade.activeAction) return;
 
-    // if (action.actionType === 'offer' && action.subAction === 'select') {
-    //   setIsSelectMode(false); setSelectedPosts([]);
-    // }
+    // Let the press-out opacity animation settle before anything disables
+    // this same button — see TradeDeck for the full explanation.
+    await new Promise(resolve => setTimeout(resolve, 0));
 
-    const headers = await getAuthHeader();
-
-    if (action.actionType === 'offer' && !action.subAction) {
-        if (selectedPosts.length === 0 || isSubmittingOffer) return;
-
-        const selectedPost = deckPosts[selectedPosts[0]];
+    switch (trade.activeAction) {
+      case 'offer': {
+        if (trade.selectedPosts.length === 0 || isSubmittingOffer) break;
+        const selectedPost = deckPosts[trade.selectedPosts[0]];
         setIsSubmittingOffer(true);
-    
         try {
-            await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/posts/offer`, {
-                method: 'POST',
-                headers: { 
-                    ...headers,
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({
-                    offeredPostId: selectedPost._id,
-                    targetPostId: postId, 
-                })
-            });
-      
-            // reset UI
-            setSelectedPosts([]);
-            setIsSelectMode(false);
-      
+          const headers = await getAuthHeader();
+          await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/posts/offer`, {
+            method: 'POST',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              offeredPostId: selectedPost._id,
+              targetPostId: postId,
+            }),
+          });
         } catch (err) {
-            console.error('Offer failed:', err);
+          console.error('Offer failed:', err);
         } finally {
-            setIsSubmittingOffer(false);
+          setIsSubmittingOffer(false);
         }
+        break;
+      }
 
-        // RESET (optional)
-        if (action.actionType === 'offer' && action.subAction === 'select') {
-            setIsSelectMode(false);
-            setSelectedPosts([]);
-        }
+      case 'query':
+        onQuerySubmit?.({
+          postIndex: typeof trade.subflowData === 'number' ? trade.subflowData : null,
+          question: queryText,
+        });
+        break;
+
+      default:
+        break;
     }
-    };
 
-  const topCardIsSelected = topPostIndex !== null && selectedPosts[0] === topPostIndex;
+    trade.confirm();
+    trade.reset();
+  };
+
+  const topCardIsSelected = topPostIndex !== null && trade.selectedPosts.includes(topPostIndex);
 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
@@ -245,10 +266,9 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
                     cardWidth={Math.min(width - 36, 400)}
                     enabled={true}
                     isUser={false}
-                   
-                    isSelectMode={isOfferActive && isSelectMode}
+                    isSelectMode={isOfferActive}
                     isQueryMode={isQueryActive}
-                    selectedPosts={selectedPosts}
+                    selectedPosts={trade.selectedPosts}
                     onTopCardChange={setTopPostIndex}
                     selectColor={colors.actions.offer}
                     showLocation={true}
@@ -257,37 +277,41 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile }
                     onGestureEnd={() => setScrollEnabled(true)}
                     jumpToken={jumpToken}
                     jumpToCardIndex={jumpToIndex}
-                    querySelectedPostIndex={querySelectedPost}
+                    querySelectedPostIndex={
+                      isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
+                    }
+                    onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                     onSelectPost={(postIndex) => {
-                      if (!isSelectMode) setIsSelectMode(true);
-                      setSelectedPosts(prev =>
-                        prev.includes(postIndex)
-                          ? prev.filter(i => i !== postIndex)
-                          : [...prev, postIndex]
-                      );
+                      // Tapping a card directly arms 'offer' if it isn't
+                      // already, then toggles that card — mirrors the old
+                      // behavior of auto-entering select mode on first tap.
+                      if (trade.activeAction !== 'offer') {
+                        trade.selectAction('offer', postIndex);
+                      } else {
+                        trade.togglePost(postIndex);
+                      }
                     }}
-                    
                   />
                 </View>
               )}
 
               <View style={styles.turnsAndButtonColumn}>
-                <View style={[styles.queryRow, { marginBottom: isQueryOpen ? 4 : 0 }]}>
-                  <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+                <View style={[styles.queryRow, { marginBottom: isQueryActive ? 4 : 0 }]}>
+                  <TradeTurns turns={[]} isQueryOpen={isQueryActive} onQueryTextChange={setQueryText} />
                 </View>
                 <View style={styles.actionRow}>
                   <TradeUI
                     actions={feedActions}
                     onActionSelected={handleActionSelected}
-                    onQueryToggle={setIsQueryOpen}
-                    isSelectMode={isSelectMode}
-                    selectedCount={selectedPosts.length}
+                    activeActionType={trade.activeAction}
+                    isReady={effectiveIsReady}
+                    selectedCount={trade.selectedPosts.length}
                     topCardIsSelected={topCardIsSelected}
-                    isQueryMode={true}
-                    queryPostSelected={querySelectedPost !== null}
-                    onQueryPostSelect={() => setQuerySelectedPost(topPostIndex)}
-                    onQueryPostDeselect={() => setQuerySelectedPost(null)}
-                    onActionChange={setActiveActionType}
+                    isQueryMode={isQueryActive}
+                    queryPostSelected={isQueryActive && trade.subflowData != null}
+                    onQueryPostSelect={() => trade.setSubflowData(topPostIndex)}
+                    onQueryPostDeselect={() => trade.setSubflowData(null)}
+                    onActionChange={setScrolledActionType}
                   />
                 </View>
               </View>

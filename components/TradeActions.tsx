@@ -14,15 +14,17 @@ export interface TradeAction {
 interface TradeUIProps {
     onActionSelected: (action: TradeAction) => void;
     actions?: TradeActionConfig[];
-    isSelectMode: boolean;
+    /** The action currently armed in the trade state machine (null if nothing armed yet) */
+    activeActionType: TradeActionType | null;
+    /** Whether the armed action has everything it needs to confirm (drives the arrow) */
+    isReady: boolean;
     selectedCount: number;
-    selectionCommitted: boolean;
+    /** Whether the post currently on top of the player's deck is among the selected posts */
     topCardIsSelected: boolean;
     isQueryMode: boolean;
     queryPostSelected: boolean;
     onQueryPostSelect: () => void;
     onQueryPostDeselect: () => void;
-    onQueryToggle?: (open: boolean) => void;
     onActionChange?: (actionType: TradeActionType) => void;
 }
 
@@ -38,6 +40,7 @@ interface SelectButtonProps {
 
 const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled }) => (
     <TouchableOpacity
+        activeOpacity={1}
         style={[styles.actionButton, styles.selectButton, {
             borderColor: color,
             backgroundColor: isActive ? color : 'transparent',
@@ -64,6 +67,7 @@ interface IconButtonProps {
 
 const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false }) => (
     <TouchableOpacity
+        activeOpacity={1}
         style={[styles.actionButton, {
             borderColor: color,
             backgroundColor: fillOnActive && isActive ? color : 'transparent',
@@ -115,26 +119,35 @@ const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, dis
     );
 
     if (!onPress) return <View style={btnStyle}>{content}</View>;
-    return <TouchableOpacity style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
+    return <TouchableOpacity activeOpacity={1} style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
 };
 
-
+// Icons for the simple "arm on tap" actions. Once armed (activeActionType
+// matches), the icon swaps to a check regardless of what's listed here.
+const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: number }>> = {
+    where:  { icon: 'circle-dot' },
+    when:   { icon: 'clock' },
+    verify: { icon: 'camera-rotate', size: 22 },
+    stall:  { icon: 'circle' },
+    accept: { icon: 'circle' },
+    acceptFinal: { icon: 'circle' },
+    decline: { icon: 'circle' },
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const TradeUI: React.FC<TradeUIProps> = ({
     onActionSelected,
     actions = TRADE_ACTIONS,
-    isSelectMode = false,
+    activeActionType,
+    isReady,
     selectedCount = 0,
     topCardIsSelected = false,
     isQueryMode = false,
     queryPostSelected = false,
     onQueryPostSelect,
     onQueryPostDeselect,
-    onQueryToggle,
     onActionChange,
-    selectionCommitted,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -143,9 +156,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
-    const [playButtonState, setPlayButtonState] = useState<'idle' | 'ready' | 'played'>('idle');
-    const isActionSelected = playButtonState === 'played';
-    const [isQueryOpen, setIsQueryOpen] = useState(false);
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
 
     const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -173,45 +183,33 @@ const TradeUI: React.FC<TradeUIProps> = ({
         return i < 0 ? (i + actions.length) % actions.length : i;
     };
 
-    // Signal from an action button that it was pressed — move play button to 'ready'
-    // const markReady = () => {
-    //     setPlayButtonState(prev => prev === 'played' ? 'ready' : 'ready');
-    // };
-
     const handleQueryPress = (active: boolean) => {
         if (!active) return;
-      
+
         if (queryPostSelected) {
             onQueryPostDeselect();
         } else {
             onQueryPostSelect();
         }
 
-        onQueryToggle?.(!queryPostSelected)
-      
-        onActionSelected({
-            actionType: 'query',
-            subAction: 'write',
-        });
+        onActionSelected({ actionType: 'query', subAction: 'write' });
     };
 
     const handleActionTextPress = () => {
         const snapped = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
         scrollViewRef.current?.scrollTo({ y: snapped + ITEM_HEIGHT, animated: true });
-        if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
     };
 
     useEffect(() => {
         setCurrentActionIndex(0);
-        setPlayButtonState('idle');
         const t = setTimeout(() => scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * actions.length, animated: false }), INITIAL_SCROLL_DELAY);
         return () => clearTimeout(t);
     }, [actions]);
 
     const handleScrollBeginDrag = () => {
         isScrollingRef.current = true;
-        setPlayButtonState('idle');
-        if (isQueryOpen) { setIsQueryOpen(false); onQueryToggle?.(false); }
+        // Leaving the wheel away from an in-progress query clears the
+        // selected partner post, so a stale pick doesn't carry over.
         if (queryPostSelected) onQueryPostDeselect?.();
     };
 
@@ -220,7 +218,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
         currentOffsetRef.current = offsetY;
         const itemIndex = calculateItemIndex(offsetY);
         if (itemIndex !== currentActionIndex) {
-            setPlayButtonState('idle');
             setCurrentActionIndex(itemIndex);
             onActionChange?.(actions[itemIndex].actionType);
         }
@@ -242,46 +239,56 @@ const TradeUI: React.FC<TradeUIProps> = ({
         isScrollingRef.current = false;
     };
 
-    // For select-style buttons: arrow shows when selectedCount > 0
-    const selectButtonReady = selectedCount > 0;
-
     const renderActionButton = (action: TradeActionConfig, active: boolean) => {
         if (!action.hasButtons) return null;
         const color = currentAction?.color;
         const disabled = !active;
         const opacity = active ? 1 : 0.3;
+        const isArmed = action.actionType === activeActionType;
 
-        // Icon-only actions
-        const iconMap: Partial<Record<TradeActionType, { icon: string; size?: number; subAction: 'select' | 'write' | 'add' | 'remove' }>> = {
-            where:  { icon: 'circle-dot', subAction: 'select' },
-            when:   { icon: 'clock', subAction: 'select' },
-            verify: { icon: 'camera-rotate', size: 22, subAction: 'select' },
-            stall:  { icon: 'circle-check', subAction: 'select' },
-            accept: { icon: 'circle-check', subAction: 'select' },
-            acceptFinal: { icon: 'circle-check', subAction: 'select' },
-            decline: { icon: 'circle-check', subAction: 'select' },
-        };
-
-        if (iconMap[action.actionType]) {
+        // Multi-select: offer / barter / rescind — icon tap toggles the
+        // current top card; fills once that specific card is selected.
+        if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
             return (
-                <IconButton
+                <SelectButton
                     color={color}
-                    isActive={active}
-                    icon={iconMap[action.actionType]?.icon ?? 'circle'}
-                    onPress={() =>
-                        onActionSelected({
-                            actionType: action.actionType,
-                            subAction: 'select',
-                        })
-                    }
+                    isActive={active && isArmed && topCardIsSelected}
+                    selectedCount={selectedCount}
+                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
                     disabled={disabled}
                 />
             );
         }
 
+        // Counter: dedicated +/- buttons instead of a single icon
+        if (action.actionType === 'counter') {
+            return (
+                <>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        style={[styles.counterMinusButton, { opacity, borderColor: color }]}
+                        onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'remove' })}
+                        disabled={disabled}
+                    >
+                        <FontAwesome6 name="minus" size={22} color={color} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        style={[styles.counterPlusButton, { opacity, borderColor: color }]}
+                        onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'add' })}
+                        disabled={disabled}
+                    >
+                        <FontAwesome6 name="plus" size={22} color={color} />
+                    </TouchableOpacity>
+                </>
+            );
+        }
+
+        // Query: select a partner post, then type a question (TradeTurns)
         if (action.actionType === 'query') {
             return (
                 <TouchableOpacity
+                    activeOpacity={1}
                     style={[
                         styles.actionButton,
                         {
@@ -301,65 +308,45 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        if (action.actionType === 'offer' || action.actionType === 'barter') {
+        // Play / Wait: countdown timer display
+        if (action.actionType === 'play') {
             return (
-                <IconButton
+                <TimerButton
                     color={color}
-                    isActive={active}
-                    icon="circle"
-                    onPress={() =>
-                        onActionSelected({
-                            actionType: action.actionType,
-                            subAction: 'write',
-                        })
-                    }
+                    isActive={active && isArmed}
+                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
                     disabled={disabled}
                 />
             );
         }
+        if (action.actionType === 'wait') {
+            return <TimerButton color={color} isActive={false} disabled={true} />;
+        }
 
+        // Everything else: where, when, verify, stall, accept, acceptFinal,
+        // decline — a single icon that fills and swaps to a check once armed.
+        const mapped = SIMPLE_ICONS[action.actionType];
         return (
             <IconButton
                 color={color}
-                isActive={active}
-                icon="circle"
-                onPress={() =>
-                    onActionSelected({
-                        actionType: action.actionType,
-                        subAction: 'select',
-                    })
-                }
+                isActive={active && isArmed}
+                icon={(active && isArmed) ? 'circle-check' : (mapped?.icon ?? 'circle')}
+                iconSize={mapped?.size}
+                onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
                 disabled={disabled}
+                fillOnActive
             />
         );
     };
 
-    // Determine play button appearance
-    // For select-type actions, 'ready' is derived from selectedCount > 0, not from button press
-    const isSelectAction = ['offer', 'barter', 'rescind'].includes(currentAction?.actionType);
-    const effectivePlayState = isSelectAction
-        ? (selectedCount > 0 ? (playButtonState === 'played' ? 'played' : 'ready') : 'idle')
-        : playButtonState;
-
-    const showArrow = isSelectAction ? selectionCommitted : effectivePlayState === 'ready' || effectivePlayState === 'played';    
-    const arrowFilled = effectivePlayState === 'played';
+    // Arrow only shows once the wheel is scrolled to the action that's
+    // actually armed, and that action has everything it needs to confirm.
+    const isOnArmedAction = activeActionType !== null && activeActionType === currentAction?.actionType;
+    const showArrow = isOnArmedAction && isReady;
 
     const handlePlayPress = () => {
-        // 1. commit selection first (this enables arrow logic consistency)
-        if (isSelectAction) {
-            if (!selectionCommitted) return;
-            onActionSelected({
-                actionType: currentAction.actionType,
-                subAction: 'select',
-            });
-            return;
-        }
-    
-        // 2. normal execution path (API call, etc)
-        onActionSelected({
-            actionType: currentAction.actionType,
-            subAction: 'select',
-        });
+        if (!showArrow || !currentAction) return;
+        onActionSelected({ actionType: currentAction.actionType, subAction: 'select' });
     };
 
     return (
@@ -395,8 +382,9 @@ const TradeUI: React.FC<TradeUIProps> = ({
                 </View>
 
                 <TouchableOpacity
+                    activeOpacity={1}
                     style={[styles.playButton, {
-                        backgroundColor: arrowFilled ? currentAction?.color : 'transparent',
+                        backgroundColor: showArrow ? currentAction?.color : 'transparent',
                         borderColor: currentAction?.color,
                         shadowColor: currentAction?.color,
                     }]}
@@ -407,7 +395,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
                         <FontAwesome6
                             name="arrow-left-long"
                             size={22}
-                            color={arrowFilled ? '#000' : currentAction?.color}
+                            color="#000"
                         />
                     )}
                 </TouchableOpacity>
@@ -444,7 +432,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2, borderWidth: 3,
     },
     shimmerOverlay: {
-        position: 'absolute', top: 0, left: 0, right: 0, height: 40, overflow: 'hidden', zIndex: 10,
+        position: 'absolute', top: 0, right: 0, width: 50, height: 40, overflow: 'hidden', zIndex: 10,
         borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2,
     },
     actionButton: {

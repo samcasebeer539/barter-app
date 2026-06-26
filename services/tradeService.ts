@@ -1,3 +1,4 @@
+import { OpenTradeItem } from '@/types';
 import { getAuth } from 'firebase/auth';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -7,7 +8,7 @@ async function getAuthHeader() {
     return { Authorization: `Bearer ${token}` };
   }
 
-export async function getOpenTrade() {
+export async function getOpenTrade(): Promise<OpenTradeItem[]> {
     const headers = await getAuthHeader();
     const res = await fetch(`${BASE_URL}/dev/trades/open`, {headers});
 
@@ -31,7 +32,7 @@ export async function getClosedTrade() {
 export async function acceptTrade(tradeId: string) {
     const headers = await getAuthHeader();
     return fetch(
-        `${BASE_URL}/dev/trades/${tradeId}/accept`,
+        `${BASE_URL}/dev/trades/trade_details/accept/${tradeId}`,
         {
             method: 'POST',
             headers
@@ -42,7 +43,7 @@ export async function acceptTrade(tradeId: string) {
 export async function declineTrade(tradeId: string) {
     const headers = await getAuthHeader();
     return fetch(
-        `${BASE_URL}/dev/trades/${tradeId}/decline`,
+        `${BASE_URL}/dev/trades/trade_details/decline/${tradeId}`,
         {
             method: 'POST',
             headers
@@ -53,10 +54,13 @@ export async function declineTrade(tradeId: string) {
 export async function sendMessage(tradeId: string, message: string) {
     const headers = await getAuthHeader();
     return fetch(
-        `${BASE_URL}/dev/trades/${tradeId}/message`,
+        `${BASE_URL}/dev/trades/trade_details/message/${tradeId}`,
         {
             method: 'POST',
-            headers,
+            headers: {
+                ...headers,
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ message }),
         }
     );

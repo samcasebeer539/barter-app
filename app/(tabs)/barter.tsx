@@ -7,204 +7,216 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
+import { getOpenTrade } from '@/services/tradeService';
+import { OpenTradeItem } from '@/types'
 
 const trade1Turns: TradeTurn[] = [
-  { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-  { type: 'turnCounter', isUser: true },
-  { type: 'turnBarter',  user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
-  { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
+    { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+    { type: 'turnCounter', isUser: true },
+    { type: 'turnBarter', user: 'Jay Wilson', item: 'Bike Repair', isUser: false },
+    { type: 'turnOffer', item: 'Fantasy Books', isUser: true },
 ];
 
 const deal1Turns: TradeTurn[] = [
-  { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
-  { type: 'turnAccept',  isUser: true },
-  { type: 'turnQuery',   user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-  { type: 'turnCounter', isUser: true },
-  { type: 'turnBarter',  user: 'Jay Wilson', item: 'Bike Repair',   isUser: false },
-  { type: 'turnOffer',   item: 'Fantasy Books',                      isUser: true  },
+    { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
+    { type: 'turnAccept', isUser: true },
+    { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
+    { type: 'turnCounter', isUser: true },
+    { type: 'turnBarter', user: 'Jay Wilson', item: 'Bike Repair', isUser: false },
+    { type: 'turnOffer', item: 'Fantasy Books', isUser: true },
 ];
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
 const DECK_GAP = 16;
 
-const POSTS = [
-  {
-    name: 'Fantasy Books',
-    description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
-    photos: [
-      'https://picsum.photos/seed/book/800/400',
-      'https://picsum.photos/seed/portrait1/400/600',
-      'https://picsum.photos/seed/square1/500/500',
-    ],
-    date_posted: '11/17/24'
-  },
-  {
-    name: 'Bike Repair',
-    description:
-      'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
-    photos: [
-      'https://picsum.photos/seed/camera1/600/400',
-      'https://picsum.photos/seed/camera2/500/700',
-      'https://picsum.photos/seed/camera3/600/600',
-    ],
-    date_posted: '11/17/24'
-  },
-  {
-    name: 'Guitar Lessons',
-    description: 'Experienced guitar teacher offering beginner to intermediate lessons.',
-    photos: [
-      'https://picsum.photos/seed/guitar1/700/500',
-      'https://picsum.photos/seed/guitar2/400/600',
-      'https://picsum.photos/seed/guitar3/500/500',
-    ],
-    date_posted: '11/17/24'
-  },
-];
+// const POSTS = [
+//     {
+//         name: 'Fantasy Books',
+//         description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
+//         photos: [
+//             'https://picsum.photos/seed/book/800/400',
+//             'https://picsum.photos/seed/portrait1/400/600',
+//             'https://picsum.photos/seed/square1/500/500',
+//         ],
+//         date_posted: '11/17/24'
+//     },
+//     {
+//         name: 'Bike Repair',
+//         description:
+//             'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
+//         photos: [
+//             'https://picsum.photos/seed/camera1/600/400',
+//             'https://picsum.photos/seed/camera2/500/700',
+//             'https://picsum.photos/seed/camera3/600/600',
+//         ],
+//         date_posted: '11/17/24'
+//     },
+//     {
+//         name: 'Guitar Lessons',
+//         description: 'Experienced guitar teacher offering beginner to intermediate lessons.',
+//         photos: [
+//             'https://picsum.photos/seed/guitar1/700/500',
+//             'https://picsum.photos/seed/guitar2/400/600',
+//             'https://picsum.photos/seed/guitar3/500/500',
+//         ],
+//         date_posted: '11/17/24'
+//     },
+// ];
 
 export default function ActiveTradesTestScreen() {
-  const scrollViewRef = useRef<ScrollView>(null);
-  const scrollY = useRef(0);
-  const [resetKey, setResetKey] = useState(0);
-  const [tab, setTab] = useState<'open' | 'barter' | 'close'>('open');
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const scrollY = useRef(0);
+    const [resetKey, setResetKey] = useState(0);
+    const [tab, setTab] = useState<'open' | 'barter' | 'close'>('open');
+    const [scrollEnabled, setScrollEnabled] = useState(true);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [trades, setTrades] = useState<OpenTradeItem[]>([]);
 
-  const queriesActions = useMemo(
-    () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
-    []
-  );
-  const offersActions = useMemo(
-    () => TRADE_ACTIONS.filter(a => ['query', 'rescind'].includes(a.actionType)),
-    []
-  );
-  const tradesActions = useMemo(
-    () => TRADE_ACTIONS.filter(a =>
-      ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play'].includes(a.actionType)
-    ),
-    []
-  );
-  const dealsActions = useMemo(
-    () => TRADE_ACTIONS.filter(a =>
-      ['where', 'when', 'query', 'acceptFinal', 'decline', 'wait', 'play'].includes(a.actionType)
-    ),
-    []
-  );
+    const queriesActions = useMemo(
+        () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
+        []
+    );
+    const offersActions = useMemo(
+        () => TRADE_ACTIONS.filter(a => ['query', 'rescind'].includes(a.actionType)),
+        []
+    );
+    const tradesActions = useMemo(
+        () => TRADE_ACTIONS.filter(a =>
+            ['query', 'counter', 'stall', 'verify', 'accept', 'decline', 'wait', 'play'].includes(a.actionType)
+        ),
+        []
+    );
+    const dealsActions = useMemo(
+        () => TRADE_ACTIONS.filter(a =>
+            ['where', 'when', 'query', 'acceptFinal', 'decline', 'wait', 'play'].includes(a.actionType)
+        ),
+        []
+    );
 
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
-      setKeyboardHeight(e.endCoordinates.height);
-      scrollViewRef.current?.scrollTo({
-        y: scrollY.current + e.endCoordinates.height * 0.8,
-        animated: true,
-      });
-    });
-    const hide = Keyboard.addListener('keyboardWillHide', () => {
-      setKeyboardHeight(0);
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
+            setKeyboardHeight(e.endCoordinates.height);
+            scrollViewRef.current?.scrollTo({
+                y: scrollY.current + e.endCoordinates.height * 0.8,
+                animated: true,
+            });
+        });
+        const hide = Keyboard.addListener('keyboardWillHide', () => {
+            setKeyboardHeight(0);
+        });
+        return () => {
+            show.remove();
+            hide.remove();
+        };
+    }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      setResetKey(prev => prev + 1);
-    }, [])
-  );
+    useFocusEffect(
+        useCallback(() => {
+            setResetKey(prev => prev + 1);
+        }, [])
+    );
 
-  return (
-    <View style={styles.container}>
-      <OffersTradesDealsBar
-        onOffersPress={() => setTab('open')}
-        onTradesPress={() => setTab('barter')}
-        onDealsPress={() => setTab('close')}
-      />
+    useEffect(() => {
+        const loadTrades = async () => {
+            const data = await getOpenTrade();
+            setTrades(data);
+        };
+    
+        loadTrades();
+    }, []);
 
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.contentContainer,
-          { paddingBottom: BOTTOM_PADDING + keyboardHeight },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        scrollEnabled={scrollEnabled}
-        onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
-        scrollEventThrottle={16}
-      >
-        <View style={styles.topSpacer} />
-
-        {tab === 'open' && (
-          <View style={styles.deckList}>
-            <OfferDeck
-              posts={[]}
-              deckType="queries"
-              actions={queriesActions}
-              onHorizontalGestureStart={() => setScrollEnabled(false)}
-              onGestureEnd={() => setScrollEnabled(true)}
+    return (
+        <View style={styles.container}>
+            <OffersTradesDealsBar
+                onOffersPress={() => setTab('open')}
+                onTradesPress={() => setTab('barter')}
+                onDealsPress={() => setTab('close')}
             />
-            <OfferDeck
-              posts={[]}
-              deckType="offers"
-              actions={offersActions}
-              onHorizontalGestureStart={() => setScrollEnabled(false)}
-              onGestureEnd={() => setScrollEnabled(true)}
-            />
-            {/* <OfferDeck
+
+            <ScrollView
+                ref={scrollViewRef}
+                style={styles.scroll}
+                contentContainerStyle={[
+                    styles.contentContainer,
+                    { paddingBottom: BOTTOM_PADDING + keyboardHeight },
+                ]}
+                keyboardShouldPersistTaps="handled"
+                scrollEnabled={scrollEnabled}
+                onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
+                scrollEventThrottle={16}
+            >
+                <View style={styles.topSpacer} />
+
+                {tab === 'open' && (
+                    <View style={styles.deckList}>
+                        <OfferDeck
+                            posts={[]}
+                            deckType="queries"
+                            actions={queriesActions}
+                            onHorizontalGestureStart={() => setScrollEnabled(false)}
+                            onGestureEnd={() => setScrollEnabled(true)}
+                        />
+                        <OfferDeck
+                            posts={trades}
+                            deckType="offers"
+                            actions={offersActions}
+                            onHorizontalGestureStart={() => setScrollEnabled(false)}
+                            onGestureEnd={() => setScrollEnabled(true)}
+                        />
+                        {/* <OfferDeck
               posts={[]}
               deckType="declined"
               onHorizontalGestureStart={() => setScrollEnabled(false)}
               onGestureEnd={() => setScrollEnabled(true)}
             /> */}
-          </View>
-        )}
+                    </View>
+                )}
 
-        {tab === 'barter' && (
-          <View style={styles.deckList}>
-            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns} />
-            <TradeDeck posts={POSTS} actions={tradesActions} turns={trade1Turns} />
-          </View>
-        )}
+                {tab === 'barter' && (
+                    <View style={styles.deckList}>
+                        <TradeDeck posts={[]} actions={tradesActions} turns={trade1Turns} />
+                        <TradeDeck posts={[]} actions={tradesActions} turns={trade1Turns} />
+                    </View>
+                )}
 
-        {tab === 'close' && (
-          <View style={styles.deckList}>
-            <TradeDeck
-              posts={POSTS}
-              actions={dealsActions}
-              showDateTime={true}
-              showLocation={true}
-              turns={deal1Turns}
-            />
-            <OfferDeck
-              posts={POSTS}
-              deckType="deals"
-            />
-          </View>
-        )}
-      </ScrollView>
-    </View>
-  );
+                {tab === 'close' && (
+                    <View style={styles.deckList}>
+                        <TradeDeck
+                            posts={[]}
+                            actions={dealsActions}
+                            showDateTime={true}
+                            showLocation={true}
+                            turns={deal1Turns}
+                        />
+                        <OfferDeck
+                            posts={[]}
+                            deckType="deals"
+                        />
+                    </View>
+                )}
+            </ScrollView>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.ui.background,
-  },
-  scroll: {
-    flex: 1,
-    marginTop: 44,
-  },
-  contentContainer: {
-    flexGrow: 1,
-    paddingTop: 0,
-  },
-  topSpacer: {
-    height: TOP_PADDING,
-  },
-  deckList: {
-    gap: DECK_GAP,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: colors.ui.background,
+    },
+    scroll: {
+        flex: 1,
+        marginTop: 44,
+    },
+    contentContainer: {
+        flexGrow: 1,
+        paddingTop: 0,
+    },
+    topSpacer: {
+        height: TOP_PADDING,
+    },
+    deckList: {
+        gap: DECK_GAP,
+    },
 });

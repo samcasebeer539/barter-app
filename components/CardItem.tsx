@@ -137,7 +137,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  const displayPhotos = isEditable ? draft.photos : post.photos;
+  const displayPhotos = (isEditable ? draft.photos : post.photos) ?? [];
 
   const handlePhotoTap = () => {
     if (displayPhotos.length <= 1) return;

@@ -10,7 +10,12 @@ from routes.dev.trades.offer.route import trades_offer_bp
 from routes.dev.trades.query.route import trades_query_bp
 from routes.dev.trades.barter.route import trades_barter_bp
 from routes.dev.trades.closed.route import trades_closed_bp
-from routes.dev.trades.trade_details.route import trades_detail_bp
+from routes.dev.trades.open.route import trades_open_bp
+from routes.dev.trades.trade_details.accept.route import trades_detail_accept_bp
+from routes.dev.trades.trade_details.counter.route import trades_detail_counter_bp
+from routes.dev.trades.trade_details.decline.route import trades_detail_decline_bp
+from routes.dev.trades.trade_details.get_trade.route import trades_detail_get_trade_bp
+from routes.dev.trades.trade_details.message.route import trades_detail_message_bp
 from routes.dev.update_user.route import update_user_bp
 from routes.dev.user_data.route import user_data_bp
 from routes.dev.user_id.route import userId_bp
@@ -29,7 +34,12 @@ app.register_blueprint(trades_offer_bp)
 app.register_blueprint(trades_query_bp)
 app.register_blueprint(trades_barter_bp)
 app.register_blueprint(trades_closed_bp)
-app.register_blueprint(trades_detail_bp)
+app.register_blueprint(trades_open_bp)
+app.register_blueprint(trades_detail_accept_bp)
+app.register_blueprint(trades_detail_counter_bp)
+app.register_blueprint(trades_detail_decline_bp)
+app.register_blueprint(trades_detail_get_trade_bp)
+app.register_blueprint(trades_detail_message_bp)
 app.register_blueprint(update_user_bp)
 app.register_blueprint(user_data_bp)
 app.register_blueprint(userId_bp)

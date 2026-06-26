@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
-from backend import user_data_collection, trades_collection
-from helpers import get_uid_from_request
+from backend import user_data_collection, trades_collection, posts_collection
+from helpers import get_uid_from_request, serialize_post, serialize_trade
 
 trades_open_bp = Blueprint("trades_open", __name__)
 
@@ -21,7 +21,15 @@ def get_open_trades():
         })
     )
 
-    for t in trades:
-        t["_id"] = str(t["_id"])
+    for i in range(len(trades)):
+        trades[i] = serialize_trade(trades[i])
+        post = posts_collection.find_one({
+            "_id": trades[i].get("offered_post_id")
+        })
+        print(f"{post=}")
+        if post:
+            post["_id"] = str(post["_id"])
+            post["photos"] = [post.get("image", [])]
+            trades[i]["post"] = post
 
     return jsonify(trades), 200

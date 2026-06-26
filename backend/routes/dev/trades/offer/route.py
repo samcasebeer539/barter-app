@@ -38,7 +38,7 @@ def send_offer():
         if str(target_post["user_id"]) == str(user["_id"]):
             return jsonify({"error": "Cannot offer on your own post"}), 400
         
-        # Ensure post does not already exist
+        # Ensure trade does not already exist
         is_already_existing = trades_collection.find_one({
             "status": "open", 
             "type": "offer", 

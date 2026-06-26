@@ -191,7 +191,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
         setIsSubmittingOffer(true);
         try {
           const headers = await getAuthHeader();
-          await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/posts/offer`, {
+          await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/offer`, {
             method: 'POST',
             headers: {
               ...headers,
@@ -210,12 +210,34 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
         break;
       }
 
-      case 'query':
+      case 'query': {
+        if (typeof trade.subflowData !== 'number' || !queryText.trim()) break;
+        const targetPost = deckPosts[trade.subflowData];
+        if (!targetPost) break;
+
+        try {
+          const headers = await getAuthHeader();
+          await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/query`, {
+            method: 'POST',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              targetPostId: targetPost._id,
+              message: queryText,
+            }),
+          });
+        } catch (err) {
+          console.error('Query failed:', err);
+        }
+
         onQuerySubmit?.({
-          postIndex: typeof trade.subflowData === 'number' ? trade.subflowData : null,
+          postIndex: trade.subflowData,
           question: queryText,
         });
         break;
+      }
 
       default:
         break;

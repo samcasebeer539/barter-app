@@ -61,3 +61,15 @@ export async function sendMessage(tradeId: string, message: string) {
         }
     );
 }
+
+export async function sendQuery(targetPostId: string, message: string) {
+  const headers = await getAuthHeader();
+  return fetch(`${BASE_URL}/dev/trades/query`, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ targetPostId, message }),
+  });
+}

@@ -186,13 +186,15 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const handleQueryPress = (active: boolean) => {
         if (!active) return;
 
+        // Arm 'query' first — setSubflowData is a no-op until activeAction
+        // is already 'query', so this must come before the select/deselect call.
+        onActionSelected({ actionType: 'query', subAction: 'write' });
+
         if (queryPostSelected) {
             onQueryPostDeselect();
         } else {
             onQueryPostSelect();
         }
-
-        onActionSelected({ actionType: 'query', subAction: 'write' });
     };
 
     const handleActionTextPress = () => {

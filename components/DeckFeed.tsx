@@ -40,6 +40,8 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   const [profile, setProfile] = useState<FeedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+  const [isSubmittingQuery, setIsSubmittingQuery] = useState(false);
+
 
   const feedActions = useMemo(
     () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
@@ -188,18 +190,15 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       case 'offer': {
         if (trade.selectedPosts.length === 0 || isSubmittingOffer) break;
         const selectedPost = deckPosts[trade.selectedPosts[0]];
+
         setIsSubmittingOffer(true);
         try {
           const headers = await getAuthHeader();
           await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/offer`, {
             method: 'POST',
-            headers: {
-              ...headers,
-              'Content-Type': 'application/json',
-            },
+            headers: { ...headers, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              offeredPostId: selectedPost._id,
-              targetPostId: postId,
+              targetPostId: selectedPost._id,
             }),
           });
         } catch (err) {
@@ -211,18 +210,16 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       }
 
       case 'query': {
-        if (typeof trade.subflowData !== 'number' || !queryText.trim()) break;
+        if (typeof trade.subflowData !== 'number' || !queryText.trim() || isSubmittingQuery) break;
         const targetPost = deckPosts[trade.subflowData];
         if (!targetPost) break;
 
+        setIsSubmittingQuery(true);
         try {
           const headers = await getAuthHeader();
           await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/query`, {
             method: 'POST',
-            headers: {
-              ...headers,
-              'Content-Type': 'application/json',
-            },
+            headers: { ...headers, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               targetPostId: targetPost._id,
               message: queryText,
@@ -230,6 +227,8 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
           });
         } catch (err) {
           console.error('Query failed:', err);
+        } finally {
+          setIsSubmittingQuery(false);
         }
 
         onQuerySubmit?.({

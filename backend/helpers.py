@@ -1,7 +1,9 @@
 from flask import jsonify, request
 from firebase_admin import auth as firebase_auth
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
+from backend import games_collection
+
 
 def clean(obj):
     if isinstance(obj, ObjectId):
@@ -27,3 +29,4 @@ def get_uid_from_request():
 
 def serialize_trade(trade):
     return clean(trade)
+

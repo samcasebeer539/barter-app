@@ -32,6 +32,7 @@ export async function getOpenTrade(): Promise<OpenTradeItem[]> {
     const res = await fetch(`${BASE_URL}/dev/trades/open`, { headers });
 
     const text = await res.text();
+    console.log('open trades raw:', text);
     const data = JSON.parse(text);
     return data.map(normalizeTradeItem);
 }
@@ -95,6 +96,7 @@ export async function getQuery(): Promise<OpenTradeItem[]> {
     });
 
     const text = await res.text();
+    console.log('open trades raw:', text);
     const data = JSON.parse(text);
     return data.map(normalizeTradeItem);
 }

@@ -23,4 +23,4 @@ user_data_collection = db.user_data
 user_data_collection.create_index("firebase_uid", unique=True)
 posts_collection = db.posts
 trades_collection = db.trades
-
+games_collection = db.games

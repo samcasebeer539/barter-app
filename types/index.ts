@@ -81,5 +81,5 @@ export interface OpenTradeItem {
     tradeId: string;
     status: string;
     type: string;
-    post: Post;
+    post: Post | null;
 }

@@ -1,4 +1,4 @@
-import { OpenTradeItem } from '@/types';
+import { OpenTradeItem, Post } from '@/types';
 import { getAuth } from 'firebase/auth';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -7,16 +7,33 @@ async function getAuthHeader() {
     const token = await getAuth().currentUser?.getIdToken();
     return { Authorization: `Bearer ${token}` };
   }
+  
+function normalizePost(raw: any): Post {
+    return {
+        _id: raw._id,
+        name: raw.post_title,
+        description: raw.description,
+        photos: raw.photos ?? [],
+        date_posted: raw.date_posted,
+    };
+}
+
+function normalizeTradeItem(raw: any): OpenTradeItem {
+    return {
+        tradeId: raw._id,
+        status: raw.status,
+        type: raw.type,
+        post: raw.post ? normalizePost(raw.post) : null,
+    };
+}
 
 export async function getOpenTrade(): Promise<OpenTradeItem[]> {
     const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/open`, {headers});
+    const res = await fetch(`${BASE_URL}/dev/trades/open`, { headers });
 
-    const text = await res.text()
-    console.log(text)
-    return JSON.parse(text)
-
-    return res.json();
+    const text = await res.text();
+    const data = JSON.parse(text);
+    return data.map(normalizeTradeItem);
 }
 
 export async function getBarterTrade() {
@@ -74,15 +91,12 @@ export async function getQuery(): Promise<OpenTradeItem[]> {
     const headers = await getAuthHeader();
     const res = await fetch(`${BASE_URL}/dev/trades/query`, {
         method: 'GET',
-        headers
+        headers,
     });
 
-    const text = await res.text()
-    console.log(text)
-    return JSON.parse(text)
-
-
-    return res.json();
+    const text = await res.text();
+    const data = JSON.parse(text);
+    return data.map(normalizeTradeItem);
 }
 
 export async function sendQuery(targetPostId: string, message: string) {

@@ -87,6 +87,12 @@ export default function OfferDeck({
 
     const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 
+
+    const cardPosts: Post[] = useMemo(
+        () => posts.map(item => item.post).filter((p): p is Post => p !== null),
+        [posts]
+    );
+
     return (
         <View style={styles.modalContent} pointerEvents="box-none">
             <View style={deckStyles.column}>
@@ -103,7 +109,7 @@ export default function OfferDeck({
                 {isExpanded && (
                     <View style={deckStyles.deckWrapper}>
                         <Deck
-                            posts={posts}
+                            posts={cardPosts}
                             cardWidth={Math.min(width - 36, 400)}
                             enabled={true}
                             onHorizontalGestureStart={onHorizontalGestureStart}
@@ -114,6 +120,8 @@ export default function OfferDeck({
                             selectColor={selectColor}
                             isQueryMode={isQueryDeck}
                             querySelectedPostIndex={querySelectedPost}
+                            showUser={false}
+                            showLocation={false}
                         />
                     </View>
                 )}

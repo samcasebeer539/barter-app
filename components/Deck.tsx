@@ -27,6 +27,7 @@ interface DeckProps {
     selectColor?: string;
     showDateTime?: boolean;
     showLocation?: boolean;
+    showUser?: boolean;
     isEditMode?: boolean;
     onExitEdit?: () => void;
     onEnterEdit?: () => void;
@@ -213,7 +214,7 @@ const Deck: React.FC<DeckProps> = ({
     isSelectMode = false, selectedPosts = [],
     onTopCardChange, onTopCardTypeChange,
     selectColor = colors.actions.offer,
-    showDateTime = false, showLocation = true,
+    showDateTime = false, showLocation = true, showUser = true,
     isEditMode = false, onExitEdit, onEnterEdit,
     isUser = false, isPostEditMode = false,
     onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost,
@@ -245,11 +246,11 @@ const Deck: React.FC<DeckProps> = ({
     const userToRender = user ?? defaultUser;
 
     const cards = useMemo<DeckItem[]>(() => [
-        { type: 'user' },
+        ...(showUser ? [{ type: 'user' as const }] : []),
         ...(showDateTime ? [{ type: 'datetime' as const }] : []),
         ...(showLocation ? [{ type: 'location' as const }] : []),
         ...posts.map((post, i): DeckItem => ({ type: 'post', post, postIndex: i })),
-    ], [posts, showDateTime, showLocation]);
+    ], [posts, showDateTime, showLocation, showUser]);
 
     const cardsRef = useRef(cards);
     cardsRef.current = cards;

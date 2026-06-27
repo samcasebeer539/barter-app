@@ -10,9 +10,7 @@ def get_open_trades():
     if err:
         return err
 
-    user = user_data_collection.find_one({
-        "firebase_uid": uid
-    })
+    user = user_data_collection.find_one({"firebase_uid": uid})
 
     trades = list(
         trades_collection.find({
@@ -23,14 +21,12 @@ def get_open_trades():
     )
 
     for i in range(len(trades)):
+        offered_post_id = trades[i].get("offered_post_id")
+        post = posts_collection.find_one({"_id": offered_post_id})
+
         trades[i] = serialize_trade(trades[i])
-        post = posts_collection.find_one({
-            "_id": trades[i].get("offered_post_id")
-        })
-        print(f"{post=}")
+
         if post:
-            post["_id"] = str(post["_id"])
-            post["photos"] = [post.get("image", [])]
-            trades[i]["post"] = post
+            trades[i]["post"] = serialize_post(post)
 
     return jsonify(trades), 200

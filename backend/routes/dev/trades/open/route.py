@@ -17,6 +17,7 @@ def get_open_trades():
     trades = list(
         trades_collection.find({
             "initiator_user_id": user["_id"],
+            "type": "offer",
             "status": "open"
         })
     )

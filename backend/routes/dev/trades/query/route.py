@@ -2,9 +2,40 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, serialize_post, serialize_trade
 
 trades_query_bp = Blueprint("trades_query", __name__)
+
+@trades_query_bp.route("/dev/trades/query", methods=["GET"])
+def get_queries():
+    uid, err = get_uid_from_request()
+    if err:
+        return err
+
+    user = user_data_collection.find_one({
+        "firebase_uid": uid
+    })
+
+    queries = list(
+        trades_collection.find({
+            "initiator_user_id": user["_id"],
+            "type": "query",
+            "status": "open"
+        })
+    )
+
+    for i in range(len(queries)):
+        queries[i] = serialize_trade(queries[i])
+
+        post = posts_collection.find_one({
+            "_id": ObjectId(queries[i]["target_post_id"])
+        })
+
+        if post:
+            queries[i]["post"] = serialize_post(post)
+
+
+    return jsonify(queries), 200
 
 @trades_query_bp.route("/dev/trades/query", methods=["POST"])
 def create_query():

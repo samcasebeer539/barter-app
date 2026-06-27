@@ -12,6 +12,10 @@ export async function getOpenTrade(): Promise<OpenTradeItem[]> {
     const headers = await getAuthHeader();
     const res = await fetch(`${BASE_URL}/dev/trades/open`, {headers});
 
+    const text = await res.text()
+    console.log(text)
+    return JSON.parse(text)
+
     return res.json();
 }
 
@@ -64,6 +68,21 @@ export async function sendMessage(tradeId: string, message: string) {
             body: JSON.stringify({ message }),
         }
     );
+}
+
+export async function getQuery(): Promise<OpenTradeItem[]> {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BASE_URL}/dev/trades/query`, {
+        method: 'GET',
+        headers
+    });
+
+    const text = await res.text()
+    console.log(text)
+    return JSON.parse(text)
+
+
+    return res.json();
 }
 
 export async function sendQuery(targetPostId: string, message: string) {

@@ -26,16 +26,4 @@ def get_uid_from_request():
     return decoded_token['uid'], None
 
 def serialize_trade(trade):
-    # Ensures trades are serialized as strings
-    trade["_id"] = str(trade["_id"])
-
-    for key in [
-        "initiator_user_id",
-        "receiver_user_id",
-        "offered_post_id",
-        "target_post_id"
-    ]:
-        if key in trade and trade[key]:
-            trade[key] = str(trade[key])
-
-    return trade
+    return clean(trade)

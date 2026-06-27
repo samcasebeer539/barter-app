@@ -7,7 +7,7 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTrade } from '@/services/tradeService';
+import { getOpenTrade, getQuery } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 
 const trade1Turns: TradeTurn[] = [
@@ -72,6 +72,7 @@ export default function ActiveTradesTestScreen() {
     const [scrollEnabled, setScrollEnabled] = useState(true);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [trades, setTrades] = useState<OpenTradeItem[]>([]);
+    const [queries, setQueries] = useState<OpenTradeItem[]>([]);
 
     const queriesActions = useMemo(
         () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
@@ -126,6 +127,15 @@ export default function ActiveTradesTestScreen() {
         loadTrades();
     }, []);
 
+    useEffect(() => {
+        const loadQueries = async () => {
+            const data = await getQuery();
+            setQueries(data);
+        };
+    
+        loadQueries();
+    }, []);
+
     return (
         <View style={styles.container}>
             <OffersTradesDealsBar
@@ -151,7 +161,7 @@ export default function ActiveTradesTestScreen() {
                 {tab === 'open' && (
                     <View style={styles.deckList}>
                         <OfferDeck
-                            posts={[]}
+                            posts={queries}
                             deckType="queries"
                             actions={queriesActions}
                             onHorizontalGestureStart={() => setScrollEnabled(false)}

@@ -1,21 +1,24 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import Deck from './Deck';
+import Deck, { DeckGroup } from './Deck';
 
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TradeActionConfig, TradeActionType } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
-import { Post, Locations } from '@/types/index';
+import { Post, Locations, User } from '@/types/index';
 import { acceptTrade, declineTrade } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
 
 interface TradeDeckProps {
-  posts: Post[];
+  partnerUser: User;
+  partnerPosts: Post[];
+  playerUser: User;
+  playerPosts: Post[];
   actions: TradeActionConfig[];
   turns: TradeTurn[];
   onHorizontalGestureStart?: () => void;
@@ -29,6 +32,7 @@ interface TradeDeckProps {
   onQuerySubmit?: (payload: { postIndex: number | null; question: string }) => void;
   onLocationProposed?: (location: Locations) => void;
   onCounterSubmit?: (value: number) => void;
+  gameId?: string;
 }
 
 const DECK_WIDTH = Math.min(width - 36, 400);
@@ -36,7 +40,10 @@ const DECK_WIDTH = Math.min(width - 36, 400);
 const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
 
 export default function TradeDeck({
-  posts,
+  partnerUser,
+  partnerPosts,
+  playerUser,
+  playerPosts,
   actions,
   turns,
   showDateTime = false,
@@ -47,6 +54,7 @@ export default function TradeDeck({
   onQuerySubmit,
   onLocationProposed,
   onCounterSubmit,
+  gameId,
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
@@ -75,7 +83,15 @@ export default function TradeDeck({
   );
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
-  const itemCount = useMemo(() => posts.length, [posts]);
+
+  const partnerGroups: DeckGroup[] = useMemo(
+    () => [{ user: partnerUser, posts: partnerPosts }],
+    [partnerUser, partnerPosts]
+  );
+  const playerGroups: DeckGroup[] = useMemo(
+    () => [{ user: playerUser, posts: playerPosts }],
+    [playerUser, playerPosts]
+  );
 
   const handleSwitchDecks = () => {
     const toValue = showingPlayer ? -12 : -(DECK_WIDTH) - 38;
@@ -162,11 +178,11 @@ export default function TradeDeck({
     switch (trade.activeAction) {
       case 'accept':
       case 'acceptFinal':
-        await acceptTrade('tradeId');
+        if (gameId) await acceptTrade(gameId);
         break;
 
       case 'decline':
-        await declineTrade('tradeId');
+        if (gameId) await declineTrade(gameId);
         break;
 
       case 'query':
@@ -205,6 +221,7 @@ export default function TradeDeck({
     onGestureEnd,
     showDateTime,
     showLocation,
+    
   };
 
   return (
@@ -214,12 +231,12 @@ export default function TradeDeck({
         <View style={deckStyles.itemCountRow}>
           <TouchableOpacity style={styles.partnerBar} onPress={handleSwitchDecks}>
             <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
-            <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{itemCount}</Text>
+            <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{partnerPosts.length}</Text>
             <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
             <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
-            <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{itemCount}</Text>
+            <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{playerPosts.length}</Text>
             <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
         </View>
@@ -230,7 +247,7 @@ export default function TradeDeck({
               {/* Partner deck — query select mode */}
               <View style={{ width: DECK_WIDTH }}>
                 <Deck
-                  posts={posts}
+                  groups={partnerGroups}
                   {...sharedDeckProps}
                   isUser={false}
                   onTopCardChange={setPartnerTopPostIndex}
@@ -244,7 +261,7 @@ export default function TradeDeck({
               {/* Player deck — barter select / where select mode */}
               <View style={{ width: DECK_WIDTH }}>
                 <Deck
-                  posts={posts}
+                  groups={playerGroups}
                   {...sharedDeckProps}
                   isUser={true}
                   onTopCardChange={setPlayerTopPostIndex}

@@ -19,6 +19,8 @@ from routes.dev.trades.trade_details.message.route import trades_detail_message_
 from routes.dev.update_user.route import update_user_bp
 from routes.dev.user_data.route import user_data_bp
 from routes.dev.user_id.route import userId_bp
+from routes.dev.trades.incoming.route import trades_incoming_bp, trades_incoming_queries_bp
+
 
 app = Flask(__name__)
 
@@ -43,6 +45,10 @@ app.register_blueprint(trades_detail_message_bp)
 app.register_blueprint(update_user_bp)
 app.register_blueprint(user_data_bp)
 app.register_blueprint(userId_bp)
+app.register_blueprint(trades_incoming_bp)
+app.register_blueprint(trades_incoming_queries_bp)
+
+
 
 
 if __name__ == "__main__":

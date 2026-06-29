@@ -282,8 +282,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
               ) : (
                 <View style={deckStyles.deckWrapper}>
                   <Deck
-                    posts={deckPosts}
-                    user={deckUser}
+                    groups={deckUser ? [{ user: deckUser, posts: deckPosts, locations: externalLocations }] : []}
                     cardWidth={Math.min(width - 36, 400)}
                     enabled={true}
                     isUser={false}
@@ -293,7 +292,6 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
                     onTopCardChange={setTopPostIndex}
                     selectColor={colors.actions.offer}
                     showLocation={true}
-                    externalLocations={externalLocations}
                     onHorizontalGestureStart={() => setScrollEnabled(false)}
                     onGestureEnd={() => setScrollEnabled(true)}
                     jumpToken={jumpToken}
@@ -303,9 +301,6 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
                     }
                     onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                     onSelectPost={(postIndex) => {
-                      // Tapping a card directly arms 'offer' if it isn't
-                      // already, then toggles that card — mirrors the old
-                      // behavior of auto-entering select mode on first tap.
                       if (trade.activeAction !== 'offer') {
                         trade.selectAction('offer', postIndex);
                       } else {

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity, Animated } from 'react-native';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -152,11 +152,26 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
     const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
+    const PLAY_FILL_HOLD_MS = 400;
 
     const scrollViewRef = useRef<ScrollView>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
+
+    // Brief tactile fill on tap (held for PLAY_FILL_HOLD_MS) — purely a
+    // press-feedback flourish for fast devices/fast network conditions.
+    const [isPlayPressed, setIsPlayPressed] = useState(false);
+    const playPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // True for the entire duration of an in-flight confirm — from the
+    // moment the arrow is tapped until the parent's handleConfirm actually
+    // resolves and resets the trade state. Unlike isPlayPressed, this has
+    // no fixed timer; it's cleared only by the activeActionType/isReady
+    // reset effect below, so the fill can never "time out" before the real
+    // network call finishes — which was the root cause of the colored
+    // (unfilled) arrow flashing during slow requests.
+    const [isPlaySubmitting, setIsPlaySubmitting] = useState(false);
 
     const shimmerAnim = useRef(new Animated.Value(0)).current;
 
@@ -346,8 +361,47 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const isOnArmedAction = activeActionType !== null && activeActionType === currentAction?.actionType;
     const showArrow = isOnArmedAction && isReady;
 
+    // Keep showing a filled arrow through the entire press-hold AND
+    // in-flight-submit window, even if showArrow flips false underneath
+    // mid-fill — otherwise there's a flash of unfilled colored arrow
+    // between the fill ending and the arrow actually disappearing.
+    const arrowVisible = showArrow || isPlayPressed || isPlaySubmitting;
+    const isFilled = isPlayPressed || isPlaySubmitting;
+
+    useEffect(() => {
+        setIsPlayPressed(false);
+        setIsPlaySubmitting(false);
+        if (playPressTimeoutRef.current) {
+            clearTimeout(playPressTimeoutRef.current);
+            playPressTimeoutRef.current = null;
+        }
+    }, [activeActionType, isReady]);
+
+    useEffect(() => {
+        return () => {
+            if (playPressTimeoutRef.current) clearTimeout(playPressTimeoutRef.current);
+        };
+    }, []);
+
+    const handlePlayPressIn = () => {
+        if (!showArrow) return;
+        if (playPressTimeoutRef.current) {
+            clearTimeout(playPressTimeoutRef.current);
+            playPressTimeoutRef.current = null;
+        }
+        setIsPlayPressed(true);
+    };
+
+    const handlePlayPressOut = () => {
+        // Hold the brief tactile fill for a beat after release — onPressOut
+        // alone is too short to register visually. This is independent of
+        // isPlaySubmitting, which takes over for the actual network wait.
+        playPressTimeoutRef.current = setTimeout(() => setIsPlayPressed(false), PLAY_FILL_HOLD_MS);
+    };
+
     const handlePlayPress = () => {
-        if (!showArrow || !currentAction) return;
+        if (!showArrow || !currentAction || isPlaySubmitting) return;
+        setIsPlaySubmitting(true);
         onActionSelected({ actionType: currentAction.actionType, subAction: 'select' });
     };
 
@@ -386,18 +440,20 @@ const TradeUI: React.FC<TradeUIProps> = ({
                 <TouchableOpacity
                     activeOpacity={1}
                     style={[styles.playButton, {
-                        backgroundColor: showArrow ? currentAction?.color : 'transparent',
+                        backgroundColor: arrowVisible && isFilled ? currentAction?.color : 'transparent',
                         borderColor: currentAction?.color,
                         shadowColor: currentAction?.color,
                     }]}
                     onPress={handlePlayPress}
-                    disabled={!showArrow}
+                    onPressIn={handlePlayPressIn}
+                    onPressOut={handlePlayPressOut}
+                    disabled={!showArrow || isPlaySubmitting}
                 >
-                    {showArrow && (
+                    {arrowVisible && (
                         <FontAwesome6
                             name="arrow-left-long"
                             size={22}
-                            color="#000"
+                            color={isFilled ? '#000' : currentAction?.color}
                         />
                     )}
                 </TouchableOpacity>

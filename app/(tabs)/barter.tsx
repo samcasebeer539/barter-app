@@ -7,15 +7,8 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTrade, getQuery } from '@/services/tradeService';
-import { OpenTradeItem } from '@/types'
-
-const trade1Turns: TradeTurn[] = [
-    { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-    { type: 'turnCounter', isUser: true },
-    { type: 'turnBarter', user: 'Jay Wilson', item: 'Bike Repair', isUser: false },
-    { type: 'turnOffer', item: 'Fantasy Books', isUser: true },
-];
+import { getOpenTrade, getQuery, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { OpenTradeItem, Post } from '@/types'
 
 const deal1Turns: TradeTurn[] = [
     { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
@@ -30,39 +23,19 @@ const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
 const DECK_GAP = 16;
 
-// const POSTS = [
-//     {
-//         name: 'Fantasy Books',
-//         description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
-//         photos: [
-//             'https://picsum.photos/seed/book/800/400',
-//             'https://picsum.photos/seed/portrait1/400/600',
-//             'https://picsum.photos/seed/square1/500/500',
-//         ],
-//         date_posted: '11/17/24'
-//     },
-//     {
-//         name: 'Bike Repair',
-//         description:
-//             'Professional bike repair and maintenance services. I have over 10 years of experience fixing all types of bikes from mountain bikes to road bikes.',
-//         photos: [
-//             'https://picsum.photos/seed/camera1/600/400',
-//             'https://picsum.photos/seed/camera2/500/700',
-//             'https://picsum.photos/seed/camera3/600/600',
-//         ],
-//         date_posted: '11/17/24'
-//     },
-//     {
-//         name: 'Guitar Lessons',
-//         description: 'Experienced guitar teacher offering beginner to intermediate lessons.',
-//         photos: [
-//             'https://picsum.photos/seed/guitar1/700/500',
-//             'https://picsum.photos/seed/guitar2/400/600',
-//             'https://picsum.photos/seed/guitar3/500/500',
-//         ],
-//         date_posted: '11/17/24'
-//     },
-// ];
+const mockPosts: Post[] = [
+    {
+        _id: 'mock1',
+        name: 'Fantasy Books',
+        description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
+        photos: [
+            'https://picsum.photos/seed/book/800/400',
+            'https://picsum.photos/seed/portrait1/400/600',
+            'https://picsum.photos/seed/square1/500/500',
+        ],
+        date_posted: '11/17/24',
+    },
+];
 
 export default function ActiveTradesTestScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
@@ -73,6 +46,7 @@ export default function ActiveTradesTestScreen() {
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [trades, setTrades] = useState<OpenTradeItem[]>([]);
     const [queries, setQueries] = useState<OpenTradeItem[]>([]);
+    const [barterGames, setBarterGames] = useState<BarterGame[]>([]);
 
     const queriesActions = useMemo(
         () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
@@ -119,22 +93,19 @@ export default function ActiveTradesTestScreen() {
     );
 
     useEffect(() => {
-        const loadTrades = async () => {
-            const data = await getOpenTrade();
-            setTrades(data);
-        };
-    
-        loadTrades();
+        getOpenTrade().then(setTrades).catch(err => console.error('Failed to load open trades:', err));
     }, []);
 
     useEffect(() => {
-        const loadQueries = async () => {
-            const data = await getQuery();
-            setQueries(data);
-        };
-    
-        loadQueries();
+        getQuery().then(setQueries).catch(err => console.error('Failed to load queries:', err));
     }, []);
+
+    useEffect(() => {
+        if (tab !== 'barter') return;
+        getBarterGames()
+            .then(setBarterGames)
+            .catch(err => console.error('Failed to load barter games:', err));
+    }, [tab, resetKey]);
 
     return (
         <View style={styles.container}>
@@ -174,26 +145,40 @@ export default function ActiveTradesTestScreen() {
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
                         />
-                        {/* <OfferDeck
-              posts={[]}
-              deckType="declined"
-              onHorizontalGestureStart={() => setScrollEnabled(false)}
-              onGestureEnd={() => setScrollEnabled(true)}
-            /> */}
                     </View>
                 )}
 
                 {tab === 'barter' && (
                     <View style={styles.deckList}>
-                        <TradeDeck posts={[]} actions={tradesActions} turns={trade1Turns} />
-                        <TradeDeck posts={[]} actions={tradesActions} turns={trade1Turns} />
+                        {barterGames.map(game => (
+                            <TradeDeck
+                                key={game.gameId}
+                                gameId={game.gameId}
+                                partnerUser={game.partner.user}
+                                partnerPosts={game.partner.posts}
+                                playerUser={game.player.user}
+                                playerPosts={game.player.posts}
+                                actions={tradesActions}
+                                turns={buildTradeTurns(
+                                    game.turns,
+                                    game.player.user._id ?? '',
+                                    game.partner.user.first_name,
+                                    [...game.player.posts, ...game.partner.posts]
+                                )}
+                                onHorizontalGestureStart={() => setScrollEnabled(false)}
+                                onGestureEnd={() => setScrollEnabled(true)}
+                            />
+                        ))}
                     </View>
                 )}
 
                 {tab === 'close' && (
                     <View style={styles.deckList}>
                         <TradeDeck
-                            posts={[]}
+                            partnerUser={{} as any}
+                            partnerPosts={mockPosts}
+                            playerUser={{} as any}
+                            playerPosts={mockPosts}
                             actions={dealsActions}
                             showDateTime={true}
                             showLocation={true}
@@ -211,22 +196,9 @@ export default function ActiveTradesTestScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.ui.background,
-    },
-    scroll: {
-        flex: 1,
-        marginTop: 44,
-    },
-    contentContainer: {
-        flexGrow: 1,
-        paddingTop: 0,
-    },
-    topSpacer: {
-        height: TOP_PADDING,
-    },
-    deckList: {
-        gap: DECK_GAP,
-    },
+    container: { flex: 1, backgroundColor: colors.ui.background },
+    scroll: { flex: 1, marginTop: 44 },
+    contentContainer: { flexGrow: 1, paddingTop: 0 },
+    topSpacer: { height: TOP_PADDING },
+    deckList: { gap: DECK_GAP },
 });

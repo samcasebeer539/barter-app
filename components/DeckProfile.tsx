@@ -2,15 +2,17 @@ import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 
-import Deck from './Deck';
+import Deck, { DeckGroup } from './Deck';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
-import { TRADE_ACTIONS } from '../config/tradeConfig';
+import { TRADE_ACTIONS, TradeActionType } from '../config/tradeConfig';
 import { deckStyles, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
+import { useTradeAction } from '../hooks/useTradeAction';
 
-import { Post, User, Locations } from '@/types/index';
+import { Post, User, Locations, OffererGroup } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
+import { IncomingQuery } from '@/services/tradeService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -22,11 +24,9 @@ const trade1Turns: TradeTurn[] = [
 interface ProfileDeckProps {
   posts: Post[];
   primaryUser: User;
-  secondaryPosts?: Post[];
-  secondaryUser?: User;
+  secondaryOfferers?: OffererGroup[];
   initialLocations?: Locations[];
   onConfirmLocations?: (locations: Locations[]) => void;
-  externalLocations?: Locations[];
   onSelectLocation?: (location: Locations | null) => void;
   onToggleReveal?: () => void;
   toggleEnabled?: boolean;
@@ -34,15 +34,21 @@ interface ProfileDeckProps {
   onSaveUser?: (updated: User) => void;
   onPostsChange?: (updated: Post[]) => void;
   onTopPrimaryPostChange?: (index: number | null) => void;
+  hasIncomingOffers?: boolean;
+  // ── Confirmed-action payload callbacks ──────────────────────────────────
+  onBarterSubmit?: (gameId: string, selectedPostIds: string[]) => void;
+  onQuerySubmit?: (payload: { gameId: string; postIndex: number | null }) => void;
+  onDeclineSubmit?: (gameId: string) => void;
+  incomingQueries?: IncomingQuery[];
+  
 }
 
 export default function ProfileDeck({
   posts,
   primaryUser,
-  secondaryPosts = [],
-  secondaryUser,
+  secondaryOfferers = [],
+  initialLocations,
   onConfirmLocations,
-  externalLocations = [],
   onSelectLocation,
   onToggleReveal,
   toggleEnabled = false,
@@ -50,9 +56,14 @@ export default function ProfileDeck({
   onSaveUser,
   onPostsChange,
   onTopPrimaryPostChange,
+  hasIncomingOffers = false,
+  onBarterSubmit,
+  onQuerySubmit,
+  onDeclineSubmit,
+  incomingQueries = [],
 }: ProfileDeckProps) {
   const slideAnim = useRef(new Animated.Value(0)).current;
-
+  const hasIncomingQueries = incomingQueries.length > 0;
   const [showSecondary, setShowSecondary] = useState(false);
   const [secondaryHeight, setSecondaryHeight] = useState(0);
   const pendingOpenRef = useRef(false);
@@ -60,12 +71,11 @@ export default function ProfileDeck({
   const isDeckRevealedRef = useRef(isDeckRevealed);
   useEffect(() => { isDeckRevealedRef.current = isDeckRevealed; }, [isDeckRevealed]);
 
+  const trade = useTradeAction();
+
   const [isQueryDrawerOpen, setIsQueryDrawerOpen] = useState(false);
-  const [isTradeSelectMode, setIsTradeSelectMode] = useState(false);
-  const [selectedSecondaryPosts, setSelectedSecondaryPosts] = useState<number[]>([]);
   const [topSecondaryPostIndex, setTopSecondaryPostIndex] = useState<number | null>(null);
-  const [isTradeQueryOpen, setIsTradeQueryOpen] = useState(false);
-  const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
+  const [topSecondaryGroupIndex, setTopSecondaryGroupIndex] = useState<number | null>(null);
   const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
   const [topCardType, setTopCardType] = useState<'user' | 'post' | 'datetime' | 'location'>('user');
@@ -85,7 +95,99 @@ export default function ProfileDeck({
   }, [topCardType]);
 
   const itemCount = useMemo(() => posts.length, [posts]);
-  const offerCount = useMemo(() => secondaryPosts.length, [secondaryPosts]);
+  const offerCount = useMemo(() => secondaryOfferers.length, [secondaryOfferers]);
+
+  // One deck group per offerer — their user card, location, and posts
+  // appear together, and the existing 3-slot swipe mechanics interleave
+  // multiple offerers automatically. Each group's index lines up 1:1 with
+  // secondaryOfferers, so groupIndex -> gameId is a direct lookup.
+  const secondaryGroups: DeckGroup[] = useMemo(
+    () => secondaryOfferers.map(({ profile }) => ({
+      user: profile.user,
+      posts: profile.posts.map(p => ({
+        _id: p._id,
+        name: p.name,
+        description: p.description,
+        photos: p.photos,
+        date_posted: p.date_posted,
+      })),
+      locations: profile.user.locations ?? [],
+    })),
+    [secondaryOfferers]
+  );
+
+  const primaryGroups: DeckGroup[] = useMemo(
+    () => [{
+      user: primaryUser,
+      posts,
+      locations: (initialLocations && initialLocations.length > 0)
+        ? initialLocations
+        : (primaryUser.locations ?? []),
+    }],
+    [primaryUser, posts, initialLocations]
+  );
+
+  const tradeActions = useMemo(
+    () => TRADE_ACTIONS.filter(a => ['barter', 'query', 'decline'].includes(a.actionType)),
+    []
+  );
+
+  const secondaryTurns: TradeTurn[] = useMemo(
+    () => incomingQueries.map(q => ({
+      type: 'turnQuery' as const,
+      user: q.fromUserName,
+      item: q.question,
+      isUser: false,
+    })),
+    [incomingQueries]
+  );
+
+  // What the action wheel is currently scrolled to — distinct from
+  // trade.activeAction, which only changes on an icon tap. Select/subflow
+  // UI should disappear the instant the wheel scrolls away from the armed
+  // action, not linger until the next tap. Same pattern as FeedDeck/TradeDeck.
+  const [scrolledActionType, setScrolledActionType] = useState<TradeActionType | null>(
+    tradeActions[0]?.actionType ?? null
+  );
+
+  const isBarterActive =
+    trade.activeAction === 'barter' &&
+    scrolledActionType === 'barter' &&
+    trade.phase !== 'confirmed';
+
+  const isQueryActive =
+    trade.activeAction === 'query' &&
+    scrolledActionType === 'query' &&
+    trade.phase !== 'idle' &&
+    trade.phase !== 'confirmed';
+
+  // ── Per-user multiselect for barter ─────────────────────────────────────
+  // trade.selectedPosts holds global indices across all offerer groups.
+  // Selecting a card from a different offerer than the current selection
+  // resets the selection to just that card, rather than mixing two users'
+  // posts together.
+  const postIndexToGroupIndex = useCallback((postIndex: number) => {
+    let cursor = 0;
+    for (let g = 0; g < secondaryGroups.length; g++) {
+      const len = secondaryGroups[g].posts.length;
+      if (postIndex < cursor + len) return g;
+      cursor += len;
+    }
+    return -1;
+  }, [secondaryGroups]);
+
+  const isDifferentGroup = useCallback((postIndex: number) => {
+    if (trade.selectedPosts.length === 0) return false;
+    return postIndexToGroupIndex(postIndex) !== postIndexToGroupIndex(trade.selectedPosts[0]);
+  }, [trade.selectedPosts, postIndexToGroupIndex]);
+
+  // Flattened post objects across all groups, in the same order as the
+  // global postIndex space — lets us go from selected indices straight to
+  // the underlying post _id's for the network call.
+  const flattenedSecondaryPosts = useMemo(
+    () => secondaryGroups.flatMap(g => g.posts),
+    [secondaryGroups]
+  );
 
   const animateOpen = useCallback(() => {
     slideAnim.setValue(0);
@@ -97,14 +199,12 @@ export default function ProfileDeck({
       if (finished) {
         setShowSecondary(false);
         setSecondaryHeight(0);
-        setIsTradeSelectMode(false);
-        setSelectedSecondaryPosts([]);
-        setIsTradeQueryOpen(false);
-        setQuerySelectedPost(null);
+        trade.reset();
+        setScrolledActionType(tradeActions[0]?.actionType ?? null);
         pendingOpenRef.current = false;
       }
     });
-  }, [slideAnim]);
+  }, [slideAnim, trade, tradeActions]);
 
   useEffect(() => {
     if (isDeckRevealed) { pendingOpenRef.current = true; setShowSecondary(true); }
@@ -118,29 +218,78 @@ export default function ProfileDeck({
   };
 
   const handleTradeActionSelected = (action: TradeAction) => {
-    if (action.actionType === 'barter' && action.subAction === 'write') {
-      if (!isTradeSelectMode) {
-        setIsTradeSelectMode(true);
-        if (topSecondaryPostIndex !== null) setSelectedSecondaryPosts([topSecondaryPostIndex]);
-      } else {
-        if (topSecondaryPostIndex !== null) {
-          setSelectedSecondaryPosts(prev =>
-            prev.includes(topSecondaryPostIndex)
-              ? prev.filter(i => i !== topSecondaryPostIndex)
-              : [...prev, topSecondaryPostIndex]
-          );
-        }
-      }
+    const { actionType, subAction } = action;
+
+    // Arrow / confirm tap always sends 'select' for the currently-active action.
+    if (subAction === 'select' && trade.activeAction === actionType) {
+      handleConfirm();
+      return;
     }
+
+    if (actionType === 'barter') {
+      if (topSecondaryPostIndex !== null && isDifferentGroup(topSecondaryPostIndex)) {
+        trade.reset();
+      }
+      trade.selectAction(actionType, topSecondaryPostIndex);
+      return;
+    }
+
+    // query, decline: arm on icon tap
+    trade.selectAction(actionType);
+  };
+
+  const handleConfirm = async () => {
+    if (!trade.isReady || !trade.activeAction) return;
+
+    // Let the press-out opacity animation settle before anything disables
+    // this same button — see TradeDeck for the full explanation.
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    switch (trade.activeAction) {
+      case 'barter': {
+        if (trade.selectedPosts.length === 0) break;
+        const groupIndex = postIndexToGroupIndex(trade.selectedPosts[0]);
+        const gameId = secondaryOfferers[groupIndex]?.gameId;
+        const selectedPostIds = trade.selectedPosts
+          .map(i => flattenedSecondaryPosts[i]?._id)
+          .filter((id): id is string => !!id);
+        if (gameId && selectedPostIds.length > 0) {
+          onBarterSubmit?.(gameId, selectedPostIds);
+        }
+        break;
+      }
+
+      case 'query': {
+        const groupIndex = topSecondaryGroupIndex;
+        const gameId = groupIndex !== null ? secondaryOfferers[groupIndex]?.gameId : undefined;
+        if (gameId) {
+          onQuerySubmit?.({
+            gameId,
+            postIndex: typeof trade.subflowData === 'number' ? trade.subflowData : null,
+          });
+        }
+        break;
+      }
+
+      case 'decline': {
+        const groupIndex = topSecondaryGroupIndex;
+        const gameId = groupIndex !== null ? secondaryOfferers[groupIndex]?.gameId : undefined;
+        if (gameId) {
+          onDeclineSubmit?.(gameId);
+        }
+        break;
+      }
+
+      default:
+        break;
+    }
+
+    trade.confirm();
+    trade.reset();
   };
 
   const topSecondaryCardIsSelected =
-    topSecondaryPostIndex !== null && selectedSecondaryPosts.includes(topSecondaryPostIndex);
-
-  const tradeActions = useMemo(
-    () => TRADE_ACTIONS.filter(a => ['barter', 'query', 'decline'].includes(a.actionType)),
-    []
-  );
+    topSecondaryPostIndex !== null && trade.selectedPosts.includes(topSecondaryPostIndex);
 
   const handleSavePost = useCallback(async (updated: Post) => {
     try {
@@ -183,22 +332,42 @@ export default function ProfileDeck({
 
   const cardWidth = Math.min(width - 36, 400);
   const spacerHeight = slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, secondaryHeight + SLIDE_MARGIN] });
-  const secondaryUserName = secondaryUser?.first_name ?? 'Partner';
   const deleteDisabled = topCardType !== 'post' || topPrimaryPostIndex === null;
 
-  // check for incoming offers.
-  const topPost = topPrimaryPostIndex !== null ? posts[topPrimaryPostIndex] : null;
-  const hasIncomingOffers = (topPost?.incoming_offers?.length ?? 0) > 0;
-  
   const handleTopPrimaryPostChange = useCallback((index: number | null) => {
     setTopPrimaryPostIndex(index);
     onTopPrimaryPostChange?.(index);
   }, [onTopPrimaryPostChange]);
+
+  // Auto-close the query drawer and the offers reveal when scrolling to a
+  // post that no longer has queries/offers — both are otherwise independent
+  // toggle states with no awareness of which post is currently on top.
+  useEffect(() => {
+    if (isQueryDrawerOpen && !hasIncomingQueries) {
+      setIsQueryDrawerOpen(false);
+    }
+  }, [topPrimaryPostIndex, hasIncomingQueries]);
+
+  useEffect(() => {
+    if (isDeckRevealed && !hasIncomingOffers) {
+      onToggleReveal?.();
+    }
+  }, [topPrimaryPostIndex, hasIncomingOffers]);
+
   return (
     <View style={styles.container} pointerEvents="box-none">
       <View style={[deckStyles.itemCountRow, { marginBottom: 8 }]}>
-        <TouchableOpacity style={styles.queryButton} onPress={() => setIsQueryDrawerOpen(prev => !prev)}>
-          <Text style={[deckStyles.actionButtonText, { color: colors.ui.secondarydisabled }]}>QUERIES</Text>
+        <TouchableOpacity
+          style={styles.queryButton}
+          onPress={() => setIsQueryDrawerOpen(prev => !prev)}
+          disabled={!hasIncomingQueries}
+        >
+          <Text style={[
+            deckStyles.actionButtonText,
+            { color: hasIncomingQueries ? colors.actions.query : colors.ui.secondarydisabled }
+          ]}>
+            QUERIES
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.offerButton} onPress={onToggleReveal} disabled={!toggleEnabled || !hasIncomingOffers}>
           <Text style={[deckStyles.actionButtonText, {  color: hasIncomingOffers ? colors.actions.offer : colors.ui.secondarydisabled}]}>OFFERS</Text>
@@ -209,45 +378,56 @@ export default function ProfileDeck({
 
       <View style={styles.decksContainer}>
 
-        {/* Secondary deck — other user, query select enabled */}
-        {showSecondary && secondaryPosts.length > 0 && (
+        {/* Secondary deck — all pending offerers, query select enabled */}
+        {showSecondary && secondaryGroups.length > 0 && (
           <View
             style={styles.secondaryDeckContainer}
             onLayout={e => handleSecondaryLayout(e.nativeEvent.layout.height)}
           >
             <View style={deckStyles.deckWrapper}>
               <Deck
-                posts={secondaryPosts}
-                user={secondaryUser}
+                groups={secondaryGroups}
                 cardWidth={cardWidth}
                 enabled
-                isSelectMode={isTradeSelectMode}
-                selectedPosts={selectedSecondaryPosts}
+                isSelectMode={isBarterActive}
+                selectedPosts={trade.selectedPosts}
                 onTopCardChange={setTopSecondaryPostIndex}
+                onTopCardGroupChange={setTopSecondaryGroupIndex}
                 selectColor={colors.actions.trade}
                 isUser={false}
-                externalLocations={externalLocations}
                 onSelectLocation={onSelectLocation}
-                isQueryMode={true}
-                querySelectedPostIndex={querySelectedPost}
+                isQueryMode={isQueryActive}
+                querySelectedPostIndex={
+                  isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
+                }
+                onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
+                onSelectPost={(postIndex) => {
+                  if (trade.activeAction !== 'barter') {
+                    trade.selectAction('barter', postIndex);
+                  } else if (isDifferentGroup(postIndex)) {
+                    trade.reset();
+                    trade.selectAction('barter', postIndex);
+                  } else {
+                    trade.togglePost(postIndex);
+                  }
+                }}
               />
             </View>
             <View style={styles.turnsAndButtonColumn}>
-              <View style={[styles.queryRow, { marginBottom: isTradeQueryOpen ? 4 : 0 }]}>
-                <TradeTurns turns={[]} isQueryOpen={isTradeQueryOpen} />
-              </View>
+              
               <View style={styles.actionRow}>
                 <TradeUI
                   actions={tradeActions}
                   onActionSelected={handleTradeActionSelected}
-                  onQueryToggle={isOpen => setIsTradeQueryOpen(isOpen)}
-                  isSelectMode={isTradeSelectMode}
-                  selectedCount={selectedSecondaryPosts.length}
+                  activeActionType={trade.activeAction}
+                  isReady={trade.isReady}
+                  selectedCount={trade.selectedPosts.length}
                   topCardIsSelected={topSecondaryCardIsSelected}
-                  isQueryMode={true}
-                  queryPostSelected={querySelectedPost !== null}
-                  onQueryPostSelect={() => setQuerySelectedPost(topSecondaryPostIndex)}
-                  onQueryPostDeselect={() => setQuerySelectedPost(null)}
+                  isQueryMode={isQueryActive}
+                  queryPostSelected={isQueryActive && trade.subflowData != null}
+                  onQueryPostSelect={() => trade.setSubflowData(topSecondaryPostIndex)}
+                  onQueryPostDeselect={() => trade.setSubflowData(null)}
+                  onActionChange={setScrolledActionType}
                 />
               </View>
               <View style={styles.turnsRow}>
@@ -264,8 +444,7 @@ export default function ProfileDeck({
           <View style={styles.primaryDeckColumn}>
             <View style={[deckStyles.deckWrapper, {backgroundColor: colors.ui.background, paddingTop: 8, marginTop: -8}]}>
               <Deck
-                posts={posts}
-                user={primaryUser}
+                groups={primaryGroups}
                 cardWidth={cardWidth}
                 enabled
                 onTopCardTypeChange={setTopCardType}
@@ -279,7 +458,6 @@ export default function ProfileDeck({
                 onEnterPostEdit={() => setIsPostEditMode(true)}
                 onSaveUser={onSaveUser}
                 onSavePost={handleSavePost}
-                initialLocations={primaryUser.locations ?? []}
                 jumpToken={jumpToken}
                 jumpToCardIndex={jumpToIndex}
                 onConfirmLocations={onConfirmLocations}
@@ -287,7 +465,7 @@ export default function ProfileDeck({
             </View>
             {isQueryDrawerOpen && (
               <View style={styles.queryDrawer}>
-                <TradeTurns turns={[{ type: 'turnQuery', user: secondaryUserName, item: 'Fantasy Books', isUser: false }]} />
+                <TradeTurns turns={secondaryTurns} />
               </View>
             )}
             <View style={styles.buttonRow}>

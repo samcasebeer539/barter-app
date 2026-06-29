@@ -65,7 +65,7 @@ export default function OffersTradesDealsBar({
                         { color: active === 'close' ? '#fff' : colors.ui.secondarydisabled }
                     ]}
                 >
-                    CLOSED
+                    CLOSE
                 </Text>
             </TouchableOpacity>
         </View>

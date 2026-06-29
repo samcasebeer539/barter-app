@@ -18,7 +18,9 @@ import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
 import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfile } from '@/services/offererService';
-import { FeedProfile } from '@/types/index';
+import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery } from '@/services/tradeService';
+import { FeedProfile, OffererGroup } from '@/types/index';
+import { getAuth } from 'firebase/auth';
 
 
 const TOP_PADDING = 0;
@@ -29,45 +31,10 @@ const BOTTOM_PADDING = 20;
 // a fake id will cause ObjectId() to throw a 404 on the backend.
 const SECONDARY_USER_ID = '';
 
-// const SECONDARY_USER: User = {
-//   first_name: 'Jay',
-//   last_name: 'Wilson',
-//   pronouns: '(she/he/they)',
-//   email: 'jathwils@ucsc.edu',
-//   phone: '916123456',
-//   bio: 'Pro Smasher',
-//   profileImageUrl: 'https://picsum.photos/seed/bird/800/800',
-//   email_visible: false,
-//   phone_visible: false,
-//   locations: [],
-// };
+// Pairs an offerer's profile with the gameId of their pending offer, so
+// downstream components (ProfileDeck) never need to reverse-engineer which
+// game a given group of cards belongs to.
 
-// const SECONDARY_POSTS: Post[] = [
-//   {
-//     name: 'Web Design',
-//     description: 'Professional website design services',
-//     photos: ['https://picsum.photos/seed/web1/600/600'],
-//     date_posted: '',
-//   },
-//   {
-//     name: 'Laptop Stand',
-//     description: 'Adjustable aluminum laptop stand',
-//     photos: ['https://picsum.photos/seed/stand1/600/600'],
-//     date_posted: '',
-//   },
-//   {
-//     name: 'Tutoring',
-//     description: 'Math and science tutoring for high school',
-//     photos: ['https://picsum.photos/seed/tutor1/600/600'],
-//     date_posted: '',
-//   },
-//   {
-//     name: 'Bicycle',
-//     description: 'Mountain bike, lightly used',
-//     photos: ['https://picsum.photos/seed/bike1/600/600'],
-//     date_posted: '',
-//   },
-// ];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -79,24 +46,40 @@ export default function ProfileScreen() {
   const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
-
-  //for offerer deck
-  const [secondaryProfile, setSecondaryProfile] = useState<FeedProfile | null>(null);
+  
+  // ── Incoming offers (across all of this user's posts) ──────────────────────
+  const [incomingOffers, setIncomingOffers] = useState<IncomingOffer[]>([]);
   const [topPrimaryPostIndex, setTopPrimaryPostIndex] = useState<number | null>(null);
+  const [secondaryOfferers, setSecondaryOfferers] = useState<OffererGroup[]>([]);
+
   const topPost = topPrimaryPostIndex !== null ? primaryPosts[topPrimaryPostIndex] : null;
-  const offererUserId = topPost?.incoming_offers?.[0]?.from_user_id ?? null;
+
+  const offersForTopPost = topPost?._id
+    ? incomingOffers.filter(o => o.targetPostId === topPost._id)
+    : [];
+
   useEffect(() => {
-    if (!offererUserId) {
-      setSecondaryProfile(null);
+    getIncomingOffers()
+      .then(setIncomingOffers)
+      .catch(err => console.warn('Failed to load incoming offers:', err));
+  }, []);
+
+  useEffect(() => {
+    if (offersForTopPost.length === 0) {
+      setSecondaryOfferers([]);
       return;
     }
     let cancelled = false;
-    getOffererProfile(offererUserId)
-      .then(profile => { if (!cancelled) setSecondaryProfile(profile); })
-      .catch(err => console.warn('Failed to load offerer profile:', err));
+    Promise.all(
+      offersForTopPost.map(offer =>
+        getOffererProfile(offer.fromUserId).then(profile => ({ gameId: offer.gameId, profile }))
+      )
+    )
+      .then(groups => { if (!cancelled) setSecondaryOfferers(groups); })
+      .catch(err => console.warn('Failed to load offerer profiles:', err));
     return () => { cancelled = true; };
-  }, [offererUserId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offersForTopPost.map(o => o.gameId).join(',')]);
 
   useEffect(() => {
     const load = async () => {
@@ -162,6 +145,53 @@ export default function ProfileScreen() {
     console.log('Selected meetup location:', location);
   };
 
+  async function getAuthHeader() {
+    const token = await getAuth().currentUser?.getIdToken();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  const handleBarterSubmit = async (gameId: string, selectedPostIds: string[]) => {
+	if (!gameId || selectedPostIds.length === 0) return;
+	try {
+		const headers = await getAuthHeader();
+		await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/barter`, {
+		method: 'POST',
+		headers: { ...headers, 'Content-Type': 'application/json' },
+		body: JSON.stringify({ gameId, selectedPostIds }),
+		});
+	} catch (err) {
+		console.error('Barter failed:', err);
+		return;
+	}
+
+	removeOfferer(gameId);
+	};
+
+	const handleDeclineSubmit = async (gameId: string) => {
+		try {
+			await declineTrade(gameId);
+		} catch (err) {
+			console.error('Decline failed:', err);
+			return;
+		}
+
+		removeOfferer(gameId);
+	};
+
+	// Shared by both barter and decline — once a game leaves the deck, drop it
+	// from local state, and auto-close the reveal if that was the last offerer
+	// left, so the deck doesn't sit open showing nothing.
+	const removeOfferer = (gameId: string) => {
+	setSecondaryOfferers(prev => {
+		const next = prev.filter(o => o.gameId !== gameId);
+		if (next.length === 0) {
+		setIsDeckRevealed(false);
+		}
+		return next;
+	});
+	setIncomingOffers(prev => prev.filter(o => o.gameId !== gameId));
+	};
+
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -182,6 +212,18 @@ export default function ProfileScreen() {
     });
     return () => { show.remove(); hide.remove(); };
   }, []);
+
+  const [incomingQueries, setIncomingQueries] = useState<IncomingQuery[]>([]);
+
+	useEffect(() => {
+	getIncomingQueries()
+		.then(setIncomingQueries)
+		.catch(err => console.warn('Failed to load incoming queries:', err));
+	}, []);
+
+	const queriesForTopPost = topPost?._id
+	? incomingQueries.filter(q => q.targetPostId === topPost._id)
+	: [];
 
   if (error) return (
     <SafeAreaView style={styles.container}>
@@ -215,11 +257,9 @@ export default function ProfileScreen() {
           <DecksProfile
             posts={primaryPosts}
             primaryUser={primaryUser}
-            secondaryPosts={secondaryProfile?.posts ?? []}
-            secondaryUser={secondaryProfile?.user ?? undefined}
+            secondaryOfferers={secondaryOfferers}
             initialLocations={myLocations}
             onConfirmLocations={handleConfirmLocations}
-            externalLocations={theirLocations}
             onSelectLocation={handleSelectLocation}
             onToggleReveal={() => setIsDeckRevealed(prev => !prev)}
             toggleEnabled={true}
@@ -227,6 +267,10 @@ export default function ProfileScreen() {
             onSaveUser={handleSaveUser}
             onPostsChange={handlePostsChange}
             onTopPrimaryPostChange={setTopPrimaryPostIndex}
+            hasIncomingOffers={offersForTopPost.length > 0}
+            onBarterSubmit={handleBarterSubmit}
+			onDeclineSubmit={handleDeclineSubmit}
+			incomingQueries={queriesForTopPost}
           />
         </View>
       </ScrollView>

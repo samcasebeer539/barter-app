@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import Deck from './Deck';
+import Deck, { DeckGroup } from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
@@ -87,10 +87,14 @@ export default function OfferDeck({
 
     const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 
-
     const cardPosts: Post[] = useMemo(
         () => posts.map(item => item.post).filter((p): p is Post => p !== null),
         [posts]
+    );
+
+    const groups: DeckGroup[] = useMemo(
+        () => [{ posts: cardPosts }],
+        [cardPosts]
     );
 
     return (
@@ -109,7 +113,7 @@ export default function OfferDeck({
                 {isExpanded && (
                     <View style={deckStyles.deckWrapper}>
                         <Deck
-                            posts={cardPosts}
+                            groups={groups}
                             cardWidth={Math.min(width - 36, 400)}
                             enabled={true}
                             onHorizontalGestureStart={onHorizontalGestureStart}

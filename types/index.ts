@@ -14,6 +14,7 @@ export interface LocationEntry {
 }
 
 export interface User {
+    _id?: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -79,7 +80,15 @@ export interface PostRecord {
 
 export interface OpenTradeItem {
     tradeId: string;
-    status: string;
+    gameId: string;
     type: string;
     post: Post | null;
+}
+
+// Pairs an offerer's profile with the gameId of their pending offer, so
+// downstream components (ProfileDeck) never need to reverse-engineer which
+// game a given group of cards belongs to.
+export interface OffererGroup {
+  gameId: string;
+  profile: FeedProfile;
 }

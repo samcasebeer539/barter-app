@@ -13,9 +13,14 @@ import CardLocation from './CardMeetingLocation';
 import { Post, User, Locations } from '@/types/index';
 import { colors } from '@/styles/globalStyles';
 
-interface DeckProps {
-    posts: Post[];
+export interface DeckGroup {
     user?: User;
+    posts: Post[];
+    locations?: Locations[];
+}
+
+interface DeckProps {
+    groups: DeckGroup[];
     cardWidth?: number;
     enabled?: boolean;
     onHorizontalGestureStart?: () => void;
@@ -24,6 +29,7 @@ interface DeckProps {
     selectedPosts?: number[];
     onTopCardChange?: (postIndex: number | null) => void;
     onTopCardTypeChange?: (type: 'user' | 'post' | 'datetime' | 'location') => void;
+    onTopCardGroupChange?: (groupIndex: number) => void;
     selectColor?: string;
     showDateTime?: boolean;
     showLocation?: boolean;
@@ -39,9 +45,7 @@ interface DeckProps {
     onSavePost?: (updated: Post) => void;
     jumpToken?: number;
     jumpToCardIndex?: number;
-    initialLocations?: Locations[];
     onConfirmLocations?: (locations: Locations[]) => void;
-    externalLocations?: Locations[];
     onSelectLocation?: (location: Locations | null) => void;
     isQueryMode?: boolean;
     querySelectedPostIndex?: number | null;
@@ -55,10 +59,10 @@ interface DeckProps {
 }
 
 type DeckItem =
-  | { type: 'user' }
-  | { type: 'post'; post: Post; postIndex: number }
-  | { type: 'datetime' }
-  | { type: 'location' };
+  | { type: 'user'; groupIndex: number; user: User }
+  | { type: 'post'; groupIndex: number; post: Post; postIndex: number }
+  | { type: 'datetime'; groupIndex: number }
+  | { type: 'location'; groupIndex: number; locations: Locations[] };
 
 const SLOT_POSITIONS = [
   { x: 0,  y: 0  },
@@ -83,7 +87,6 @@ interface CardSlotProps {
   isSelectMode: boolean;
   selectedPosts: number[];
   selectColor: string;
-  user: User;
   mapActiveRef: React.MutableRefObject<boolean>;
   isEditMode: boolean;
   isPostEditMode: boolean;
@@ -93,9 +96,7 @@ interface CardSlotProps {
   onEnterPostEdit?: () => void;
   onSaveUser?: (u: User) => void;
   onSavePost?: (updated: Post) => void;
-  initialLocations?: Locations[];
   onConfirmLocations?: (locations: Locations[]) => void;
-  externalLocations?: Locations[];
   onSelectLocation?: (location: Locations | null) => void;
   isQueryMode: boolean;
   querySelectedPostIndex: number | null;
@@ -108,10 +109,10 @@ interface CardSlotProps {
 const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
   slotAnim, initialCard, initialIsFront, initialZIndex,
   screenWidth, finalCardWidth, isUser, isSelectMode, selectedPosts,
-  selectColor, user, mapActiveRef, isEditMode, isPostEditMode,
+  selectColor, mapActiveRef, isEditMode, isPostEditMode,
   onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit,
-  onSaveUser, onSavePost, initialLocations, onConfirmLocations,
-  externalLocations, onSelectLocation,
+  onSaveUser, onSavePost, onConfirmLocations,
+  onSelectLocation,
   isQueryMode, querySelectedPostIndex, onQueryPostTap,
   onSelectPost,
   isLocationSelectMode, onProposeLocation,
@@ -154,7 +155,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
         }]}
       >
         {card?.type === 'user' && (
-          <UserCard user={user} scale={1} cardWidth={finalCardWidth} isUser={isUser}
+          <UserCard user={card.user} scale={1} cardWidth={finalCardWidth} isUser={isUser}
             isEditable={isFront && isEditMode} onExitEdit={onExitEdit}
             onEnterEdit={onEnterEdit} onSave={onSaveUser} />
         )}
@@ -164,9 +165,9 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             cardWidth={finalCardWidth}
             mapActiveRef={mapActiveRef}
             isUser={isUser}
-            initialLocations={isUser ? initialLocations : undefined}
+            initialLocations={isUser ? card.locations : undefined}
             onConfirm={isUser ? onConfirmLocations : undefined}
-            externalLocations={!isUser ? externalLocations : undefined}
+            externalLocations={!isUser ? card.locations : undefined}
             onSelectLocation={!isUser ? onSelectLocation : undefined}
             isSelectMode={isUser ? isLocationSelectMode : false}
             onProposeLocation={isUser ? onProposeLocation : undefined}
@@ -209,18 +210,17 @@ const slotStyles = StyleSheet.create({
 // ─── Deck ─────────────────────────────────────────────────────────────────────
 
 const Deck: React.FC<DeckProps> = ({
-    posts, user, cardWidth, enabled = true,
+    groups, cardWidth, enabled = true,
     onHorizontalGestureStart, onGestureEnd,
     isSelectMode = false, selectedPosts = [],
-    onTopCardChange, onTopCardTypeChange,
+    onTopCardChange, onTopCardTypeChange, onTopCardGroupChange,
     selectColor = colors.actions.offer,
     showDateTime = false, showLocation = true, showUser = true,
     isEditMode = false, onExitEdit, onEnterEdit,
     isUser = false, isPostEditMode = false,
     onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost,
     jumpToken, jumpToCardIndex,
-    initialLocations = [], onConfirmLocations,
-    externalLocations = [], onSelectLocation,
+    onConfirmLocations, onSelectLocation,
     isQueryMode = false, querySelectedPostIndex = null, onSelectPost, onQueryPostTap,
     isLocationSelectMode = false, onProposeLocation,
 }) => {
@@ -235,22 +235,20 @@ const Deck: React.FC<DeckProps> = ({
     const GESTURE_THRESHOLD = 3;
     const mapActiveRef = useRef(false);
 
-    const defaultUser: User = {
-        first_name: 'Jay', last_name: 'Wilson',
-        email: 'jathwils@ucsc.edu', pronouns: '(she/he/they)',
-        bio: 'pro smasher', phone: '',
-        profileImageUrl: 'https://picsum.photos/seed/cat/400/400',
-        email_visible: false, phone_visible: false,
-        locations: [],
-    };
-    const userToRender = user ?? defaultUser;
-
-    const cards = useMemo<DeckItem[]>(() => [
-        ...(showUser ? [{ type: 'user' as const }] : []),
-        ...(showDateTime ? [{ type: 'datetime' as const }] : []),
-        ...(showLocation ? [{ type: 'location' as const }] : []),
-        ...posts.map((post, i): DeckItem => ({ type: 'post', post, postIndex: i })),
-    ], [posts, showDateTime, showLocation, showUser]);
+    const cards = useMemo<DeckItem[]>(() => {
+        let globalPostIndex = 0;
+        return groups.flatMap((group, groupIndex) => {
+            const groupCards: DeckItem[] = [];
+            if (showUser && group.user) groupCards.push({ type: 'user', groupIndex, user: group.user });
+            if (showDateTime) groupCards.push({ type: 'datetime', groupIndex });
+            if (showLocation) groupCards.push({ type: 'location', groupIndex, locations: group.locations ?? [] });
+            group.posts.forEach(post => {
+                groupCards.push({ type: 'post', groupIndex, post, postIndex: globalPostIndex });
+                globalPostIndex++;
+            });
+            return groupCards;
+        });
+    }, [groups, showDateTime, showLocation, showUser]);
 
     const cardsRef = useRef(cards);
     cardsRef.current = cards;
@@ -300,7 +298,10 @@ const Deck: React.FC<DeckProps> = ({
         const topCard = cardsRef.current[frontCardIndex];
         if (topCard?.type === 'post') onTopCardChange?.(topCard.postIndex);
         else onTopCardChange?.(null);
-        if (topCard) onTopCardTypeChange?.(topCard.type);
+        if (topCard) {
+            onTopCardTypeChange?.(topCard.type);
+            onTopCardGroupChange?.(topCard.groupIndex);
+        }
     }, [frontCardIndex, cards]);
 
     const prevJumpToken = useRef<number | undefined>(undefined);
@@ -393,9 +394,9 @@ const Deck: React.FC<DeckProps> = ({
 
     const sharedProps = {
         screenWidth, finalCardWidth, isUser, isEditMode, isPostEditMode,
-        isSelectMode, selectedPosts, selectColor, user: userToRender,
+        isSelectMode, selectedPosts, selectColor,
         onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost,
-        mapActiveRef, initialLocations, onConfirmLocations, externalLocations, onSelectLocation,
+        mapActiveRef, onConfirmLocations, onSelectLocation,
         isQueryMode, querySelectedPostIndex, onSelectPost, onQueryPostTap,
         isLocationSelectMode, onProposeLocation,
     };

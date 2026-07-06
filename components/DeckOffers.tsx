@@ -106,7 +106,7 @@ export default function OfferDeck({
                             {label.text}
                         </Text>
                         <Text style={deckStyles.countText}>0{itemCount}</Text>
-                        <FontAwesome6 name='arrows-rotate' size={22} color={colors.ui.secondarydisabled} />
+                        <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
                     </View>
                 </View>
 

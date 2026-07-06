@@ -61,9 +61,9 @@ bottomCap: {
     borderBottomRightRadius: 25,
 },
 topCap: {
-    borderTopLeftRadius: 25,
+    borderTopLeftRadius: 22,
     borderBottomLeftRadius: 2,
-    borderTopRightRadius: 25,
+    borderTopRightRadius: 22,
     borderBottomRightRadius: 2,
 },
 };

@@ -47,7 +47,7 @@ export const colors = {
     secondarydisabled: '#8779ee',
     cardsecondary: '#8779ee',
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
-    background: '#000',    // Main app background
+    background: '#000000',    // Main app background
   },
 
   // Text Colors

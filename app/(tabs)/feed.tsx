@@ -6,7 +6,7 @@ import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
 import { getFeedPosts, getFeedProfile, FeedItem, FeedProfile } from '@/services/feedService';
 import { FontAwesome6 } from '@expo/vector-icons';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function FeedScreen() {
@@ -24,6 +24,7 @@ export default function FeedScreen() {
   const { width } = useWindowDimensions();
   // Each column is half the screen minus padding/gap
   const columnWidth = (width - 24 - 4) / 2;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     getFeedPosts()
@@ -151,8 +152,8 @@ export default function FeedScreen() {
       />
 
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={[styles.scrollView, { marginTop: insets.top }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: 52}]}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -184,13 +185,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginTop: 44,
-    marginBottom: 60,
+    
   },
   scrollContent: {
-    padding: 12,
-    paddingTop: 56,
-    
+    paddingLeft: 12,
+    paddingRight: 12,
   },
   columnsContainer: {
     flexDirection: 'row',

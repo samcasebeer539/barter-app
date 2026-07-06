@@ -9,6 +9,7 @@ import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import { getOpenTrade, getQuery, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem, Post } from '@/types'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const deal1Turns: TradeTurn[] = [
     { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
@@ -47,6 +48,7 @@ export default function ActiveTradesTestScreen() {
     const [trades, setTrades] = useState<OpenTradeItem[]>([]);
     const [queries, setQueries] = useState<OpenTradeItem[]>([]);
     const [barterGames, setBarterGames] = useState<BarterGame[]>([]);
+    const insets = useSafeAreaInsets();
 
     const queriesActions = useMemo(
         () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
@@ -120,7 +122,7 @@ export default function ActiveTradesTestScreen() {
                 style={styles.scroll}
                 contentContainerStyle={[
                     styles.contentContainer,
-                    { paddingBottom: BOTTOM_PADDING + keyboardHeight },
+                    { paddingTop: insets.top, paddingBottom: BOTTOM_PADDING + keyboardHeight },
                 ]}
                 keyboardShouldPersistTaps="handled"
                 scrollEnabled={scrollEnabled}
@@ -197,7 +199,7 @@ export default function ActiveTradesTestScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.ui.background },
-    scroll: { flex: 1, marginTop: 44 },
+    scroll: { flex: 1},
     contentContainer: { flexGrow: 1, paddingTop: 0 },
     topSpacer: { height: TOP_PADDING },
     deckList: { gap: DECK_GAP },

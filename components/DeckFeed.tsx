@@ -15,10 +15,10 @@ import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
 import { getAuth } from 'firebase/auth';
 import { useTradeAction } from '../hooks/useTradeAction';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 const BOTTOM_BASE = 140;
-const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - 60;
 
 interface FeedDeckProps {
   postId: string | null;
@@ -41,6 +41,8 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
   const [isSubmittingQuery, setIsSubmittingQuery] = useState(false);
+  const insets = useSafeAreaInsets();
+  const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - insets.top;
 
 
   const feedActions = useMemo(

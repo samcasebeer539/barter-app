@@ -2,6 +2,7 @@ import { View, StyleSheet, TouchableOpacity, Animated, TextInput } from 'react-n
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import { globalFonts, colors } from '../styles/globalStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FeedBarProps {
   showLocation: boolean;
@@ -12,6 +13,7 @@ interface FeedBarProps {
 export default function FeedBar({ headerTranslateY }: FeedBarProps) {
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef<TextInput>(null);
+  const insets = useSafeAreaInsets();
 
   const handleSearchBarPress = () => {
     searchInputRef.current?.focus();
@@ -29,7 +31,7 @@ export default function FeedBar({ headerTranslateY }: FeedBarProps) {
       <Animated.View
         style={[
           styles.topIconsContainer,
-          { transform: [{ translateY: headerTranslateY }] }
+          { paddingTop: insets.top, transform: [{ translateY: headerTranslateY }] }
         ]}
       >
         <TouchableOpacity
@@ -66,7 +68,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     zIndex: 10,
     paddingBottom: 8,
-    paddingTop: 48,
   },
 
   topGradientContainer: {

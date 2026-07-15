@@ -26,7 +26,7 @@ const DECK_LABELS: Record<OfferDeckType, { text: string; color: string }> = {
     queries: { text: 'MY QUERIES', color: colors.actions.query },
     offers: { text: 'MY OFFERS', color: colors.actions.offer },
     declined: { text: 'DECLINED', color: colors.actions.decline },
-    deals: { text: 'DEALS', color: colors.actions.accept },
+    deals: { text: 'ACCEPTED', color: colors.actions.accept },
 };
 
 const HAS_ACTIONS: Record<OfferDeckType, boolean> = {
@@ -53,7 +53,6 @@ export default function OfferDeck({
     const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
     const [isQueryOpen, setIsQueryOpen] = useState(false);
     const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
-
     const itemCount = useMemo(() => posts.length, [posts]);
     const label = DECK_LABELS[deckType];
     const hasActions = HAS_ACTIONS[deckType];

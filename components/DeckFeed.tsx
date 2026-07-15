@@ -16,6 +16,7 @@ import { Post, User, Locations } from '@/types/index';
 import { getAuth } from 'firebase/auth';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 const BOTTOM_BASE = 140;
@@ -44,7 +45,6 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   const insets = useSafeAreaInsets();
   const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - insets.top;
 
-
   const feedActions = useMemo(
     () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
     []
@@ -52,16 +52,10 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
 
   const trade = useTradeAction();
 
-  // What the action wheel is currently scrolled to — distinct from
-  // trade.activeAction, which only changes on an icon tap. Select/subflow
-  // UI should disappear as soon as the wheel scrolls away, not linger
-  // until the next tap. See TradeDeck for the same pattern.
   const [scrolledActionType, setScrolledActionType] = useState<TradeActionType | null>(
     feedActions[0]?.actionType ?? null
   );
 
-  // The typed question lives outside the hook, same reasoning as in
-  // TradeDeck: subflowData for 'query' holds the selected post index.
   const [queryText, setQueryText] = useState('');
 
   const isOfferActive =
@@ -134,12 +128,12 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       backdropOpacity.setValue(0);
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: 0, useNativeDriver: true, duration: 440 }),
-        Animated.timing(backdropOpacity, { toValue: 0.88, duration: 400, useNativeDriver: true }),
+        Animated.timing(backdropOpacity, { toValue: 1, duration: 700, useNativeDriver: false }),
       ]).start();
     } else {
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),
+        Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: false }),
       ]).start(() => {
         setIsRendered(false);
         setKeyboardHeight(0);
@@ -159,14 +153,13 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
     Keyboard.dismiss();
     Animated.parallel([
       Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
-      Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: true }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: false }),
     ]).start(() => onClose());
   };
 
   const handleActionSelected = (action: TradeAction) => {
     const { actionType, subAction } = action;
 
-    // Arrow / confirm tap always sends 'select' for the currently-active action.
     if (subAction === 'select' && trade.activeAction === actionType) {
       handleConfirm();
       return;
@@ -177,15 +170,12 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       return;
     }
 
-    // query: arm the subflow on icon tap
     trade.selectAction(actionType);
   };
 
   const handleConfirm = async () => {
     if (!effectiveIsReady || !trade.activeAction) return;
 
-    // Let the press-out opacity animation settle before anything disables
-    // this same button — see TradeDeck for the full explanation.
     await new Promise(resolve => setTimeout(resolve, 0));
 
     switch (trade.activeAction) {
@@ -253,7 +243,15 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-        <Animated.View style={[styles.modalBackground, { opacity: backdropOpacity }]} pointerEvents="none" />
+        <Animated.View style={[styles.modalBackground, { opacity: backdropOpacity }]} pointerEvents="none">
+          <LinearGradient
+            colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, .7)', 'rgba(0, 0, 0, 1)']}
+            locations={[0, .17, .2]}
+            start={{ x: 0.5, y: 1 }}
+            end={{ x: 0.5, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
         <TouchableOpacity style={styles.closeStrip} activeOpacity={1} onPress={handleCloseModal} />
         <Animated.View style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}>
           <ScrollView
@@ -342,7 +340,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
 }
 
 const styles = StyleSheet.create({
-  modalBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.ui.background },
+  modalBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   closeStrip: { position: 'absolute', bottom: 0, left: 0, right: 0, height: BOTTOM_BASE },
   animatedContainer: { position: 'absolute', bottom: BOTTOM_BASE, left: 0, right: 0, alignItems: 'center' },
   scrollContent: { flexGrow: 1 },

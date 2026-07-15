@@ -190,6 +190,10 @@ export default function ActiveTradesTestScreen() {
                             posts={[]}
                             deckType="deals"
                         />
+                        <OfferDeck
+                            posts={[]}
+                            deckType="declined"
+                        />
                     </View>
                 )}
             </ScrollView>

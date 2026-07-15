@@ -28,9 +28,10 @@ def send_offer():
         if target_post["user_id"] == user["_id"]:
             return jsonify({"error": "Cannot offer on your own post"}), 400
 
-        # Only one offer per player per post — duplicates are silently ignored
+        # Only one offer per player per post — duplicates are silently
+        # ignored. Note: trade docs use actor_id, not initiator_user_id.
         existing_offer = trades_collection.find_one({
-            "initiator_user_id": user["_id"],
+            "actor_id": user["_id"],
             "type": "offer",
             "target_post_id": target_post_id,
             "game_id": {"$exists": True},

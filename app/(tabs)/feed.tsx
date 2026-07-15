@@ -108,7 +108,7 @@ export default function FeedScreen() {
             {loadingPostId === item.id && (
               <View style={styles.imageLoadingOverlay}>
                 {/* <ActivityIndicator size="large" color={colors.actions.trade} /> */}
-                <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
+                <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
               </View>
             )}
           </View>

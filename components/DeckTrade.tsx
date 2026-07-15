@@ -58,7 +58,7 @@ export default function TradeDeck({
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showingPlayer, setShowingPlayer] = useState(false);
 
   // Partner deck (left) — the other user's posts, query-selectable
@@ -357,5 +357,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     zIndex: 10,
+    marginBottom: 6,
   },
 });

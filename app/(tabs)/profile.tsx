@@ -234,7 +234,7 @@ export default function ProfileScreen() {
   if (!primaryUser) return (
     <View style={styles.loadingContainer}>
       <View style={styles.loadingIconContainer}>
-        <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
+        <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
       </View>
     </View>
   );

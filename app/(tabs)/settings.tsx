@@ -124,7 +124,7 @@ export default function SettingsScreen() {
 
             <ScrollView style={styles.scrollView}>
                 {/* Account Section */}
-                <View style={styles.section}>
+                {/* <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account</Text>
 
                     <TouchableOpacity style={styles.settingItem}>
@@ -134,7 +134,6 @@ export default function SettingsScreen() {
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                     </TouchableOpacity>
-                    {/*
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
                             <FontAwesome6 name="lock" size={22} color="#fff" />
@@ -150,8 +149,7 @@ export default function SettingsScreen() {
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                     </TouchableOpacity>
-                    */}
-                </View>
+                </View> */}
 
                 {/* Preferences Section */}
                 <View style={styles.section}>

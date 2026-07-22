@@ -17,9 +17,37 @@ export default function SettingsScreen() {
     const router = useRouter();
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
     const [locationEnabled, setLocationEnabled] = React.useState(true);
+    const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+    React.useEffect(() => {
+        loadSettings();
+    }, []);
+    
+    const loadSettings = async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+    
+        const token = await user.getIdToken();
+    
+        const response = await fetch(`${BASE_URL}/settings`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        // console.log(BASE_URL)
+        // console.log(response.status)
+
+        // const text = await response.text();
+        // console.log(text)
+    
+        const data = await response.json();
+    
+        setLocationEnabled(data.is_location_allowed);
+        setNotificationsEnabled(data.notifications_enabled);
+    };
 
     const handleBackPress = () => {
-        router.push('/profiledeck');
+        router.push('/profile');
     };
 
     const handleSignOut = async () => {
@@ -27,6 +55,56 @@ export default function SettingsScreen() {
             await signOut(auth);
         } catch (error) {
             console.log("Sign out error: ", error);
+        }
+    };
+
+    const updateLocationSetting = async (value: boolean) => {
+        setLocationEnabled(value);
+    
+        try {
+            const user = auth.currentUser;
+            if (!user) return;
+    
+            const token = await user.getIdToken();
+    
+            await fetch(`${BASE_URL}/dev/update_user`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    is_location_allowed: value,
+                }),
+            });
+        } catch (err) {
+            console.log(err);
+            setLocationEnabled(!value); // optionally revert on failure
+        }
+    };
+
+    const updateNotificationsSetting = async (value: boolean) => {
+        setNotificationsEnabled(value);
+    
+        try {
+            const user = auth.currentUser;
+            if (!user) return;
+    
+            const token = await user.getIdToken();
+    
+            await fetch(`${BASE_URL}/dev/update_user`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    is_notifications_allowed: value,
+                }),
+            });
+        } catch (err) {
+            console.log(err);
+            setNotificationsEnabled(!value); // optionally revert on failure
         }
     };
 
@@ -58,7 +136,7 @@ export default function SettingsScreen() {
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                     </TouchableOpacity>
-
+                    {/*
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
                             <FontAwesome6 name="lock" size={22} color="#fff" />
@@ -66,7 +144,7 @@ export default function SettingsScreen() {
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                     </TouchableOpacity>
-
+                    
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
                             <FontAwesome6 name="shield-halved" size={22} color="#fff" />
@@ -74,6 +152,7 @@ export default function SettingsScreen() {
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                     </TouchableOpacity>
+                    */}
                 </View>
 
                 {/* Preferences Section */}
@@ -87,8 +166,8 @@ export default function SettingsScreen() {
                         </View>
                         <Switch
                             value={notificationsEnabled}
-                            onValueChange={setNotificationsEnabled}
-                            trackColor={{ false: '#3e3e3e', true: '#30C759' }}
+                            onValueChange={updateNotificationsSetting}
+                            trackColor={{ false: '#808080', true: '#30C759' }}
                             thumbColor="#fff"
                         />
                     </View>
@@ -100,12 +179,12 @@ export default function SettingsScreen() {
                         </View>
                         <Switch
                             value={locationEnabled}
-                            onValueChange={setLocationEnabled}
+                            onValueChange={updateLocationSetting}
                             trackColor={{ false: '#3e3e3e', true: '#30C759' }}
                             thumbColor="#fff"
                         />
                     </View>
-
+                    {/*
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
                             <FontAwesome6 name="globe" size={22} color="#fff" />
@@ -116,6 +195,7 @@ export default function SettingsScreen() {
                             <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                         </View>
                     </TouchableOpacity>
+                    */}
                 </View>
 
                 {/* Support Section */}

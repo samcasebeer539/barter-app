@@ -14,11 +14,14 @@ import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 
 export default function SettingsScreen() {
+    const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
     const router = useRouter();
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
     const [locationEnabled, setLocationEnabled] = React.useState(true);
-    const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
+    const [helpExpanded, setHelpExpanded] = React.useState(false);
+    const [aboutExpanded, setAboutExpanded] = React.useState(false);
+    const [termsExpanded, setTermsExpanded] = React.useState(false);
+    
     React.useEffect(() => {
         loadSettings();
     }, []);
@@ -34,11 +37,6 @@ export default function SettingsScreen() {
                 Authorization: `Bearer ${token}`,
             },
         });
-        // console.log(BASE_URL)
-        // console.log(response.status)
-
-        // const text = await response.text();
-        // console.log(text)
     
         const data = await response.json();
     
@@ -167,7 +165,7 @@ export default function SettingsScreen() {
                         <Switch
                             value={notificationsEnabled}
                             onValueChange={updateNotificationsSetting}
-                            trackColor={{ false: '#808080', true: '#30C759' }}
+                            trackColor={{ false: '#3e3e3e', true: '#30C759' }}
                             thumbColor="#fff"
                         />
                     </View>
@@ -202,29 +200,94 @@ export default function SettingsScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Support</Text>
 
-                    <TouchableOpacity style={styles.settingItem}>
+                    <TouchableOpacity
+                        style={styles.settingItem}
+                        onPress={() => setHelpExpanded(!helpExpanded)}
+                    >
                         <View style={styles.settingLeft}>
                             <FontAwesome6 name="circle-question" size={22} color="#fff" />
                             <Text style={styles.settingText}>Help Center</Text>
                         </View>
-                        <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
-                    </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.settingItem}>
+                        <FontAwesome6
+                            name={helpExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={colors.ui.secondarydisabled}
+                        />
+                    </TouchableOpacity>
+                    {helpExpanded && (
+                        <View style={styles.dropdownContainer}>
+                            <Text style={styles.dropdownText}>
+                                Need help? Email us anytime at{" "}
+                                <Text style={styles.linkText}>
+                                    example@gmail.com
+                                </Text>
+                                {"\n\n"}
+                                We'd be happy to answer any questions or help resolve issues.
+                            </Text>
+                        </View>
+                    )}
+                    <TouchableOpacity
+                        style={styles.settingItem}
+                        onPress={() => setAboutExpanded(!aboutExpanded)}
+                    >
                         <View style={styles.settingLeft}>
                             <FontAwesome6 name="circle-info" size={22} color="#fff" />
                             <Text style={styles.settingText}>About</Text>
                         </View>
-                        <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
+
+                        <FontAwesome6
+                            name={aboutExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={colors.ui.secondarydisabled}
+                        />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.settingItem}>
-                        <View style={styles.settingLeft}>
-                            <FontAwesome6 name="scale-balanced" size={22} color="#fff" />
-                            <Text style={styles.settingText}>Terms & Conditions</Text>
+                    {aboutExpanded && (
+                        <View style={styles.dropdownContainer}>
+                            <Text style={styles.dropdownText}>
+                                Win-Win is a community marketplace that helps people exchange goods
+                                through bartering instead of buying and selling. Our goal is to make
+                                trading simple, sustainable, and local.
+                            </Text>
                         </View>
-                        <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
+                    )}
+                    <TouchableOpacity
+                        style={styles.settingItem}
+                        onPress={() => setTermsExpanded(!termsExpanded)}
+                    >
+                        <View style={styles.settingLeft}>
+                            <FontAwesome6 name="circle-info" size={22} color="#fff" />
+                            <Text style={styles.settingText}>Terms and Conditions</Text>
+                        </View>
+
+                        <FontAwesome6
+                            name={aboutExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={colors.ui.secondarydisabled}
+                        />
                     </TouchableOpacity>
+
+                    {termsExpanded && (
+                        <View style={styles.dropdownContainer}>
+                            <Text style={styles.Termsheading}>1. Acceptance</Text>
+                            <Text style={styles.Termsbody}>
+                                By using Win-Win, you agree to these Terms & Conditions.
+                            </Text>
+
+                            <Text style={styles.Termsheading}>2. User Responsibilities</Text>
+                            <Text style={styles.Termsbody}>
+                                Users are responsible for the accuracy of their listings and for
+                                communicating honestly with other users.
+                            </Text>
+
+                            <Text style={styles.Termsheading}>3. Trades</Text>
+                            <Text style={styles.Termsbody}>
+                                Win-Win facilitates trades between users but is not responsible
+                                for the condition, quality, legality, or outcome of any trade.
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
                 {/* Logout Button */}
@@ -357,5 +420,35 @@ const styles = StyleSheet.create({
     },
     bottomSpacer: {
         height: 80,
+    },
+    dropdownContainer: {
+        paddingLeft: 40,
+        paddingRight: 12,
+        paddingBottom: 12,
+    },
+    
+    dropdownText: {
+        color: "#fff",
+        fontSize: 15,
+        lineHeight: 22,
+        fontFamily: globalFonts.regular,
+    },
+    
+    linkText: {
+        color: "#4DA3FF",
+        textDecorationLine: "underline",
+    },
+    Termsheading: {
+        color: "#fff",
+        fontSize: 18,
+        fontFamily: globalFonts.bold,
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    Termsbody: {
+        color: "#ddd",
+        fontSize: 16,
+        lineHeight: 24,
+        fontFamily: globalFonts.regular,
     },
 });

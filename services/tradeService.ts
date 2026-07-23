@@ -19,13 +19,26 @@ function normalizePost(raw: any): Post {
     };
 }
 
+function normalizeMessage(raw: any): QueryMessage {
+    return {
+        message: raw.message,
+        senderId: raw.sender_id,
+        createdAt: raw.created_at,
+    };
+}
+
 function normalizeTradeItem(raw: any): OpenTradeItem {
     return {
         tradeId: raw._id,
         gameId: raw.game_id,
         type: raw.type,
         post: raw.post ? normalizePost(raw.post) : null,
+        actorId: raw.actor_id,
+        messages: (raw.messages ?? []).map(normalizeMessage),
     };
+}
+export function getCurrentUserId(): string | undefined {
+  return getAuth().currentUser?.uid;
 }
 
 export async function getOpenTrade(): Promise<OpenTradeItem[]> {
@@ -116,7 +129,7 @@ export async function getQuery(): Promise<OpenTradeItem[]> {
     const text = await res.text();
     console.log('queries raw:', text);
     const data = JSON.parse(text);
-    return data.map(normalizeTradeItem);
+    return groupQueryItems(data.map(normalizeTradeItem));
 }
 
 export async function sendQuery(targetPostId: string, message: string) {
@@ -262,4 +275,46 @@ export async function getIncomingQueries(): Promise<IncomingQuery[]> {
   const res = await fetch(`${BASE_URL}/dev/trades/incoming_queries`, { headers });
   const text = await res.text();
   return JSON.parse(text);
+}
+
+export function buildQueryTurns(item: OpenTradeItem): TradeTurn[] {
+  const postName = item.post?.name ?? '';
+  const messages = item.messages ?? [];
+
+  return messages.map((m): TradeTurn => ({
+    type: 'turnQuery',
+    item: m.message,
+    question: undefined,
+    isUser: m.senderId === item.actorId,
+  }))
+  .reverse();
+}
+
+function groupQueryItems(items: OpenTradeItem[]): OpenTradeItem[] {
+  const byGameId = new Map<string, OpenTradeItem>();
+
+  for (const item of items) {
+    const existing = byGameId.get(item.gameId);
+    if (!existing) {
+      byGameId.set(item.gameId, { ...item, messages: [...(item.messages ?? [])] });
+    } else {
+      existing.messages = [...(existing.messages ?? []), ...(item.messages ?? [])];
+    }
+  }
+
+  return Array.from(byGameId.values()).map(item => ({
+    ...item,
+    messages: [...(item.messages ?? [])].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    ),
+  }));
+}
+
+export function buildOfferTurns(item: OpenTradeItem): TradeTurn[] {
+  const postName = item.post?.name ?? '';
+  return [{
+    type: 'turnOffer',
+    item: postName,
+    isUser: true,
+  }];
 }

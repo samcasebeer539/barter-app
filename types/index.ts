@@ -83,6 +83,8 @@ export interface OpenTradeItem {
     gameId: string;
     type: string;
     post: Post | null;
+    actorId?: string;
+    messages?: QueryMessage[];
 }
 
 // Pairs an offerer's profile with the gameId of their pending offer, so
@@ -91,4 +93,10 @@ export interface OpenTradeItem {
 export interface OffererGroup {
   gameId: string;
   profile: FeedProfile;
+}
+
+export interface QueryMessage {
+  message: string;
+  senderId: string;
+  createdAt: string;
 }

@@ -12,10 +12,14 @@ import { useRouter } from 'expo-router';
 import { colors, globalFonts } from '@/styles/globalStyles';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const HEADER_HEIGHT = 44;
 
 export default function SettingsScreen() {
     const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
     const [locationEnabled, setLocationEnabled] = React.useState(true);
     const [helpExpanded, setHelpExpanded] = React.useState(false);
@@ -109,7 +113,7 @@ export default function SettingsScreen() {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.topBarContainer}>
+            <View style={[styles.topBarContainer, { paddingTop: insets.top }]}>
                 <TouchableOpacity
                     style={styles.settingsButton}
                     onPress={handleBackPress}
@@ -122,7 +126,7 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={[styles.scrollView, { marginTop: insets.top + HEADER_HEIGHT }]}>
                 {/* Account Section */}
                 {/* <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account</Text>
@@ -157,7 +161,9 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="bell" size={22} color="#fff" />
+                            <View style={styles.iconWrapper}>
+                                <FontAwesome6 name="bell" size={22} color="#fff" />
+                            </View>
                             <Text style={styles.settingText}>Notifications</Text>
                         </View>
                         <Switch
@@ -170,7 +176,9 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="location-dot" size={22} color="#fff" />
+                            <View style={styles.iconWrapper}>
+                                <FontAwesome6 name="location-dot" size={22} color="#fff" />
+                            </View>
                             <Text style={styles.settingText}>Location Services</Text>
                         </View>
                         <Switch
@@ -203,14 +211,16 @@ export default function SettingsScreen() {
                         onPress={() => setHelpExpanded(!helpExpanded)}
                     >
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="circle-question" size={22} color="#fff" />
+                            <View style={styles.iconWrapper}>
+                                <FontAwesome6 name="circle-question" size={22} color="#fff" />
+                            </View>
                             <Text style={styles.settingText}>Help Center</Text>
                         </View>
 
                         <FontAwesome6
                             name={helpExpanded ? "circle-chevron-up" : "circle-chevron-right"}
                             size={22}
-                            color={colors.ui.secondarydisabled}
+                            color={helpExpanded ? colors.text.primary : colors.ui.secondarydisabled}
                         />
                     </TouchableOpacity>
                     {helpExpanded && (
@@ -230,14 +240,16 @@ export default function SettingsScreen() {
                         onPress={() => setAboutExpanded(!aboutExpanded)}
                     >
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="circle-info" size={22} color="#fff" />
+                            <View style={styles.iconWrapper}>
+                                <FontAwesome6 name="circle-info" size={22} color="#fff" />
+                            </View>
                             <Text style={styles.settingText}>About</Text>
                         </View>
 
                         <FontAwesome6
                             name={aboutExpanded ? "circle-chevron-up" : "circle-chevron-right"}
                             size={22}
-                            color={colors.ui.secondarydisabled}
+                            color={aboutExpanded ? colors.text.primary : colors.ui.secondarydisabled}
                         />
                     </TouchableOpacity>
 
@@ -255,14 +267,16 @@ export default function SettingsScreen() {
                         onPress={() => setTermsExpanded(!termsExpanded)}
                     >
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="circle-info" size={22} color="#fff" />
+                            <View style={styles.iconWrapper}>
+                                <FontAwesome6 name="file-contract" size={22} color="#fff" />
+                            </View>
                             <Text style={styles.settingText}>Terms and Conditions</Text>
                         </View>
 
                         <FontAwesome6
-                            name={aboutExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            name={termsExpanded ? "circle-chevron-up" : "circle-chevron-right"}
                             size={22}
-                            color={colors.ui.secondarydisabled}
+                            color={termsExpanded ? colors.text.primary : colors.ui.secondarydisabled}
                         />
                     </TouchableOpacity>
 
@@ -290,11 +304,13 @@ export default function SettingsScreen() {
 
                 {/* Logout Button */}
                 <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
-                    <FontAwesome6
-                        name="right-from-bracket"
-                        size={22}
-                        color={colors.actions.decline}
-                    />
+                    <View style={styles.iconWrapper}>
+                        <FontAwesome6
+                            name="right-from-bracket"
+                            size={22}
+                            color={colors.actions.decline}
+                        />
+                    </View>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
 
@@ -319,8 +335,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 12,
         zIndex: 10,
-        paddingBottom: 4,
-        paddingTop: 48,
         gap: 4,
     },
     settingsButton: {
@@ -347,7 +361,6 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-        marginTop: 92,
 
     },
     section: {
@@ -379,10 +392,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
     },
+    // Fixed-width slot for the leading icon in each settingItem. FontAwesome6
+    // glyphs aren't all the same rendered width at a given `size`, so without
+    // this the text after a wider glyph (e.g. file-circle-check) starts
+    // further right than text after a narrower one (e.g. bell). 24px + the
+    // existing 16px gap = 40px, matching dropdownContainer's paddingLeft so
+    // titles and expanded descriptions line up on the same left edge.
+    iconWrapper: {
+        width: 24,
+        alignItems: 'center',
+    },
     settingText: {
         fontSize: 18,
         color: '#fff',
-        fontFamily: globalFonts.regular,
+        fontFamily: globalFonts.bold,
     },
     settingRight: {
         flexDirection: 'row',
@@ -397,11 +420,12 @@ const styles = StyleSheet.create({
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 12,
+        justifyContent: 'flex-start',
+        gap: 16,
         height: 44,
         marginHorizontal: 12,
         marginTop: 8,
+        paddingHorizontal: 16,
 
 
         borderTopLeftRadius: 2,
@@ -427,7 +451,7 @@ const styles = StyleSheet.create({
     
     dropdownText: {
         color: "#fff",
-        fontSize: 15,
+        fontSize: 16,
         lineHeight: 22,
         fontFamily: globalFonts.regular,
     },

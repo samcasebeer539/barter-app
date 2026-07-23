@@ -245,8 +245,8 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         <Animated.View style={[styles.modalBackground, { opacity: backdropOpacity }]} pointerEvents="none">
           <LinearGradient
-            colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, .7)', 'rgba(0, 0, 0, 1)']}
-            locations={[0, .17, .2]}
+            colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, .8)', 'rgba(0, 0, 0, 1)']}
+            locations={[0, .16, .24]}
             start={{ x: 0.5, y: 1 }}
             end={{ x: 0.5, y: 0 }}
             style={StyleSheet.absoluteFill}

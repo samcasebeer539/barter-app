@@ -9,6 +9,7 @@ import { TradeActionConfig } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post } from '@/types/index';
 import { OpenTradeItem } from '@/types'
+import { buildQueryTurns, buildOfferTurns } from '@/services/tradeService';
 
 const { width } = Dimensions.get('window');
 
@@ -36,10 +37,6 @@ const HAS_ACTIONS: Record<OfferDeckType, boolean> = {
     deals: false,
 };
 
-const trade1Turns: TradeTurn[] = [
-    { type: 'turnQuery', isUser: true },
-];
-
 export default function OfferDeck({
     posts,
     deckType,
@@ -53,10 +50,21 @@ export default function OfferDeck({
     const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
     const [isQueryOpen, setIsQueryOpen] = useState(false);
     const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
-    const itemCount = useMemo(() => posts.length, [posts]);
     const label = DECK_LABELS[deckType];
     const hasActions = HAS_ACTIONS[deckType];
     const isQueryDeck = deckType === 'queries';
+    const isOffersDeck = deckType === 'offers';
+
+    // Filter once so that `itemsWithPost`, `cardPosts`, and the turns lookup
+    // all share the exact same indices as what Deck reports via
+    // onTopCardChange. Filtering `cardPosts` independently of `posts` could
+    // desync topPostIndex from the source item whenever a null post existed
+    // anywhere but the end of the array.
+    const itemsWithPost = useMemo(
+        () => posts.filter((item): item is OpenTradeItem & { post: Post } => item.post !== null),
+        [posts]
+    );
+    const itemCount = itemsWithPost.length;
 
     const selectColor = useMemo(
         () => actions.find(a => a.hasButtons)?.color ?? colors.actions.offer,
@@ -87,14 +95,28 @@ export default function OfferDeck({
     const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
 
     const cardPosts: Post[] = useMemo(
-        () => posts.map(item => item.post).filter((p): p is Post => p !== null),
-        [posts]
+        () => itemsWithPost.map(item => item.post),
+        [itemsWithPost]
     );
 
     const groups: DeckGroup[] = useMemo(
         () => [{ posts: cardPosts }],
         [cardPosts]
     );
+
+    // Live thread/turn for whichever card is currently on top. Queries get
+    // a full merged thread (buildQueryTurns); offers get a single
+    // turnOffer entry since duplicate offers aren't allowed and offer
+    // documents carry no message thread. Other deck types keep an empty
+    // turns row, same as before.
+    const topTurns: TradeTurn[] = useMemo(() => {
+        if (topPostIndex === null) return [];
+        const topItem = itemsWithPost[topPostIndex];
+        if (!topItem) return [];
+        if (isQueryDeck) return buildQueryTurns(topItem);
+        if (isOffersDeck) return buildOfferTurns(topItem);
+        return [];
+    }, [isQueryDeck, isOffersDeck, topPostIndex, itemsWithPost]);
 
     return (
         <View style={styles.modalContent} pointerEvents="box-none">
@@ -151,7 +173,7 @@ export default function OfferDeck({
                             </View>
                         )}
                         <View style={styles.turnsRow}>
-                            <TradeTurns turns={trade1Turns} />
+                            <TradeTurns turns={topTurns} />
                         </View>
                     </View>
                 )}

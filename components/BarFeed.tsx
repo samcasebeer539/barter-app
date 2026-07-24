@@ -5,133 +5,153 @@ import { globalFonts, colors } from '../styles/globalStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FeedBarProps {
-  showLocation: boolean;
-  onLocationPress: () => void;
-  headerTranslateY: Animated.Value;
-  onSearchSubmit: (query: string) => void;
+    showLocation: boolean;
+    onLocationPress: () => void;
+    headerTranslateY: Animated.Value;
+    onSearchSubmit: (query: string) => void;
+    onSearchClear: () => void;
 }
 
-export default function FeedBar({ headerTranslateY, onSearchSubmit }: FeedBarProps) {
-  const [searchText, setSearchText] = useState('');
-  const searchInputRef = useRef<TextInput>(null);
-  const insets = useSafeAreaInsets();
-  
-  const handleSearchSubmit = () => {
-    const query = searchText.trim();
-    if (query.length > 0) {
-        onSearchSubmit(query);
+export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClear }: FeedBarProps) {
+    const [searchText, setSearchText] = useState('');
+    const [searchActive, setSearchActive] = useState(false);
+    const searchInputRef = useRef<TextInput>(null);
+    const insets = useSafeAreaInsets();
+
+    const handleSearchSubmit = () => {
+        const query = searchText.trim();
+        if (query.length > 0) {
+            setSearchActive(true);
+            onSearchSubmit(query);
+        }
     }
-  }
+    const clearSearch = () => {
+        setSearchText("");
+        setSearchActive(false);
+        searchInputRef.current?.blur()
+        onSearchClear();
+    }
 
-  const handleSearchBarPress = () => {
-    searchInputRef.current?.focus();
-  };
+    const handleSearchBarPress = () => {
+        searchInputRef.current?.focus();
+    };
 
-  const handleSearchChange = (text: string) => {
-    setSearchText(text);
-    console.log('Search text:', text);
-  };
 
-  return (
-    <>
-      {/* Top Gradient Overlay */}
+    return (
+        <>
+            {/* Top Gradient Overlay */}
 
-      <Animated.View
-        style={[
-          styles.topIconsContainer,
-          { paddingTop: insets.top, transform: [{ translateY: headerTranslateY }] }
-        ]}
-      >
-        <TouchableOpacity
-          style={styles.searchBar}
-          onPress={handleSearchBarPress}
-          activeOpacity={1}
-        >
-          <TextInput
-            ref={searchInputRef}
-            style={styles.searchInput}
-            placeholder="Search"
-            placeholderTextColor={colors.ui.secondarydisabled}
-            value={searchText}
-            onChangeText={setSearchText}
-            returnKeyType="search"
-            onSubmitEditing={handleSearchSubmit}
-          />
-          <FontAwesome6 name='magnifying-glass' size={22} color='#FFFFFF' />
-        </TouchableOpacity>
-      </Animated.View>
-    </>
-  );
+            <Animated.View
+                style={[
+                    styles.topIconsContainer,
+                    { paddingTop: insets.top, transform: [{ translateY: headerTranslateY }] }
+                ]}
+            >
+                <TouchableOpacity
+                    style={styles.searchBar}
+                    onPress={handleSearchBarPress}
+                    activeOpacity={1}
+                >
+                    <TextInput
+                        ref={searchInputRef}
+                        style={styles.searchInput}
+                        placeholder="Search"
+                        placeholderTextColor={colors.ui.secondarydisabled}
+                        value={searchText}
+                        onChangeText={setSearchText}
+                        returnKeyType="search"
+                        onSubmitEditing={handleSearchSubmit}
+                    />
+                    {/* If there something being searched, show the X, else show magnifying glass */}
+                    {searchActive ? (
+                        <TouchableOpacity onPress={clearSearch}>
+                            <FontAwesome6
+                                name="circle-xmark"
+                                size={22}
+                                color={colors.ui.secondarydisabled}
+                            />
+                        </TouchableOpacity>
+                    ) : (
+                        <FontAwesome6
+                            name="magnifying-glass"
+                            size={22}
+                            color="#FFFFFF"
+                        />
+                    )}
+                </TouchableOpacity>
+            </Animated.View>
+        </>
+    );
 }
 
 const styles = StyleSheet.create({
-  topIconsContainer: {
-    backgroundColor: colors.ui.background,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    zIndex: 10,
-    paddingBottom: 8,
-  },
+    topIconsContainer: {
+        backgroundColor: colors.ui.background,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 4,
+        paddingHorizontal: 12,
+        zIndex: 10,
+        paddingBottom: 8,
+    },
 
-  topGradientContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 40,
-    zIndex: 5,
-    pointerEvents: 'none',
-  },
-  topGradient: {
-    flex: 1,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: globalFonts.regular,
-  },
+    topGradientContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 40,
+        zIndex: 5,
+        pointerEvents: 'none',
+    },
+    topGradient: {
+        flex: 1,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#FFFFFF',
+        fontFamily: globalFonts.regular,
+    },
 
-  saveButton: {
-    width: 50,
-    height: 44,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  locationButton: {
-    width: 50,
-    height: 44,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchBar: {
-    flex: 1,
-    height: 44,
-    borderTopLeftRadius: 25,
-    borderBottomLeftRadius: 2,
-    borderTopRightRadius: 25,
-    borderBottomRightRadius: 2,
-    backgroundColor: colors.ui.secondary,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-  },
+    saveButton: {
+        width: 50,
+        height: 44,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    locationButton: {
+        width: 50,
+        height: 44,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    searchBar: {
+        flex: 1,
+        height: 44,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderTopRightRadius: 25,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 14,
+    },
 });

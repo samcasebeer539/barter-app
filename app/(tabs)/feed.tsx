@@ -17,6 +17,7 @@ export default function FeedScreen() {
     const [prefetchedProfile, setPrefetchedProfile] = useState<FeedProfile | null>(null);
     const [showDeck, setShowDeck] = useState(false);
     // const [showSaved, setShowSaved] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
     const [showLocation, setShowLocation] = useState(true);
     const scrollY = useRef(0);
     const headerTranslateY = useRef(new Animated.Value(0)).current;
@@ -25,6 +26,7 @@ export default function FeedScreen() {
     // Each column is half the screen minus padding/gap
     const columnWidth = (width - 24 - 4) / 2;
     const insets = useSafeAreaInsets();
+
 
     useEffect(() => {
         getFeedPosts()
@@ -140,6 +142,7 @@ export default function FeedScreen() {
     };
 
     const handleSearch = async (query: string) => {
+        setSearchQuery(query);
         try {
             const results = await searchFeedPosts(query);
             setFeedItems(results);
@@ -148,6 +151,18 @@ export default function FeedScreen() {
             console.log(err);
         }
     };
+
+    const clearSearch = async () => {
+        setSearchQuery("");
+
+        try {
+            const posts = await getFeedPosts();
+            setFeedItems(posts);
+        }
+        catch (err) {
+            console.log(err)
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -160,6 +175,7 @@ export default function FeedScreen() {
                 // onSavePress={() => setShowSaved(prev => !prev)}
                 headerTranslateY={headerTranslateY}
                 onSearchSubmit={handleSearch}
+                onSearchClear={clearSearch}
             />
 
             <ScrollView
@@ -169,14 +185,23 @@ export default function FeedScreen() {
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
             >
-                <View style={styles.columnsContainer}>
-                    <View style={styles.column}>
-                        {leftColumn.map(renderItem)}
+                {feedItems.length === 0 && searchQuery.length > 0 && (
+                    <View style={styles.noResultsContainer}>
+                        <Text style={styles.noResultsText}>
+                            There were no posts found under "{searchQuery}"
+                        </Text>
                     </View>
-                    <View style={styles.column}>
-                        {rightColumn.map(renderItem)}
+                )}
+                {feedItems.length > 0 && (
+                    <View style={styles.columnsContainer}>
+                        <View style={styles.column}>
+                            {leftColumn.map(renderItem)}
+                        </View>
+                        <View style={styles.column}>
+                            {rightColumn.map(renderItem)}
                     </View>
                 </View>
+                )}
             </ScrollView>
 
             <FeedDeck
@@ -270,5 +295,16 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
         flexShrink: 0,
         letterSpacing: -0.3,
+    },
+    noResultsContainer: {
+        paddingVertical: 32,
+        alignItems: "center",
+    },
+    
+    noResultsText: {
+        color: colors.ui.secondarydisabled,
+        fontSize: 16,
+        fontFamily: globalFonts.regular,
+        textAlign: "center",
     },
 });

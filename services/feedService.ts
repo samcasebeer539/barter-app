@@ -88,3 +88,28 @@ export async function getFeedProfile(postId: string): Promise<FeedProfile> {
 export async function getOffererProfile(offeredPostId: string): Promise<FeedProfile> {
   return getFeedProfile(offeredPostId);
 }
+
+export async function searchFeedPosts( query: string ): Promise<FeedItem[]> {
+
+    const headers = await getAuthHeader();
+
+    const res = await fetch(
+        `${BASE_URL}/dev/feed/search?q=${encodeURIComponent(query)}`,
+        {
+            headers,
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    return data.map((p: any): FeedItem => ({
+        id: p._id,
+        title: p.post_title,
+        image: p.photos?.[0] ?? '',
+        date_posted: p.date_posted ?? '',
+    }));
+}

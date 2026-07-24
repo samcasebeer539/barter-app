@@ -4,260 +4,271 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
-import { getFeedPosts, getFeedProfile, FeedItem, FeedProfile } from '@/services/feedService';
+import { getFeedPosts, getFeedProfile, FeedItem, FeedProfile, searchFeedPosts } from '@/services/feedService';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function FeedScreen() {
-  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
-  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-  const [loadingPostId, setLoadingPostId] = useState<string | null>(null);
-  const [prefetchedProfile, setPrefetchedProfile] = useState<FeedProfile | null>(null);
-  const [showDeck, setShowDeck] = useState(false);
-  // const [showSaved, setShowSaved] = useState(true);
-  const [showLocation, setShowLocation] = useState(true);
-  const scrollY = useRef(0);
-  const headerTranslateY = useRef(new Animated.Value(0)).current;
-  const [showHeader, setShowHeader] = useState(true);
-  const { width } = useWindowDimensions();
-  // Each column is half the screen minus padding/gap
-  const columnWidth = (width - 24 - 4) / 2;
-  const insets = useSafeAreaInsets();
+    const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+    const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
+    const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+    const [loadingPostId, setLoadingPostId] = useState<string | null>(null);
+    const [prefetchedProfile, setPrefetchedProfile] = useState<FeedProfile | null>(null);
+    const [showDeck, setShowDeck] = useState(false);
+    // const [showSaved, setShowSaved] = useState(true);
+    const [showLocation, setShowLocation] = useState(true);
+    const scrollY = useRef(0);
+    const headerTranslateY = useRef(new Animated.Value(0)).current;
+    const [showHeader, setShowHeader] = useState(true);
+    const { width } = useWindowDimensions();
+    // Each column is half the screen minus padding/gap
+    const columnWidth = (width - 24 - 4) / 2;
+    const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    getFeedPosts()
-      .then(setFeedItems)
-      .catch(err => console.error('Feed load error:', err));
-  }, []);
+    useEffect(() => {
+        getFeedPosts()
+            .then(setFeedItems)
+            .catch(err => console.error('Feed load error:', err));
+    }, []);
 
-  // When a new image URI is known, measure its natural dimensions
-  useEffect(() => {
-    feedItems.forEach(item => {
-      if (!item.image || imageHeights[item.id] !== undefined) return;
-      Image.getSize(
-        item.image,
-        (w, h) => {
-          const aspectRatio = h / w;
-          setImageHeights(prev => ({ ...prev, [item.id]: columnWidth * aspectRatio }));
-        },
-        () => {
-          // Fallback height if getSize fails
-          setImageHeights(prev => ({ ...prev, [item.id]: columnWidth }));
+    // When a new image URI is known, measure its natural dimensions
+    useEffect(() => {
+        feedItems.forEach(item => {
+            if (!item.image || imageHeights[item.id] !== undefined) return;
+            Image.getSize(
+                item.image,
+                (w, h) => {
+                    const aspectRatio = h / w;
+                    setImageHeights(prev => ({ ...prev, [item.id]: columnWidth * aspectRatio }));
+                },
+                () => {
+                    // Fallback height if getSize fails
+                    setImageHeights(prev => ({ ...prev, [item.id]: columnWidth }));
+                }
+            );
+        });
+    }, [feedItems, columnWidth]);
+
+    const leftColumn = feedItems.filter((_, i) => i % 2 === 0);
+    const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
+
+    const handleScroll = (event: any) => {
+        const currentScrollY = event.nativeEvent.contentOffset.y;
+        const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
+        const scrollingUp = currentScrollY < scrollY.current;
+
+        if (scrollingDown && showHeader) {
+            setShowHeader(false);
+            Animated.timing(headerTranslateY, {
+                toValue: -110,
+                duration: 200,
+                useNativeDriver: true,
+            }).start();
+        } else if (scrollingUp && !showHeader) {
+            setShowHeader(true);
+            Animated.timing(headerTranslateY, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: true,
+            }).start();
         }
-      );
-    });
-  }, [feedItems, columnWidth]);
+        scrollY.current = currentScrollY;
+    };
 
-  const leftColumn = feedItems.filter((_, i) => i % 2 === 0);
-  const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
+    const renderItem = (item: FeedItem) => {
+        // Use measured height, or a placeholder while loading
+        const imgHeight = imageHeights[item.id];
+        return (
+            <View key={item.id} style={styles.cardWrapper}>
+                <TouchableOpacity
+                    style={styles.card}
+                    onPress={() => {
+                        setLoadingPostId(item.id);
+                        getFeedProfile(item.id)
+                            .then(profile => {
+                                setPrefetchedProfile(profile);
+                                setSelectedPostId(item.id);
+                                setShowDeck(true);
+                            })
+                            .catch(err => console.error('Feed prefetch error:', err))
+                            .finally(() => setLoadingPostId(null));
+                    }}
+                >
+                    <View style={[styles.imageContainer, { height: imgHeight ?? columnWidth }]}>
+                        {item.image ? (
+                            <Image
+                                source={{ uri: item.image }}
+                                style={styles.image}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View style={styles.imagePlaceholder} />
+                        )}
+                        {loadingPostId === item.id && (
+                            <View style={styles.imageLoadingOverlay}>
+                                {/* <ActivityIndicator size="large" color={colors.actions.trade} /> */}
+                                <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
+                            </View>
+                        )}
+                    </View>
+                </TouchableOpacity>
+                <TouchableOpacity
 
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
-    const scrollingUp = currentScrollY < scrollY.current;
+                    onPress={() => {
+                        setLoadingPostId(item.id);
+                        getFeedProfile(item.id)
+                            .then(profile => {
+                                setPrefetchedProfile(profile);
+                                setSelectedPostId(item.id);
+                                setShowDeck(true);
+                            })
+                            .catch(err => console.error('Feed prefetch error:', err))
+                            .finally(() => setLoadingPostId(null));
+                    }}
+                >
+                    <View style={styles.itemTitleWrapper}>
+                        <Text style={styles.itemTitle}>
+                            {item.title}
 
-    if (scrollingDown && showHeader) {
-      setShowHeader(false);
-      Animated.timing(headerTranslateY, {
-        toValue: -110,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    } else if (scrollingUp && !showHeader) {
-      setShowHeader(true);
-      Animated.timing(headerTranslateY, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-    scrollY.current = currentScrollY;
-  };
+                        </Text>
+                        <Text style={styles.itemDistance}>3.5{'\u00A0'}mi</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        );
+    };
 
-  const renderItem = (item: FeedItem) => {
-    // Use measured height, or a placeholder while loading
-    const imgHeight = imageHeights[item.id];
+    const handleSearch = async (query: string) => {
+        try {
+            const results = await searchFeedPosts(query);
+            setFeedItems(results);
+        }
+        catch (err) {
+            console.log(err);
+        }
+    };
+
     return (
-      <View key={item.id} style={styles.cardWrapper}>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => {
-            setLoadingPostId(item.id);
-            getFeedProfile(item.id)
-              .then(profile => {
-                setPrefetchedProfile(profile);
-                setSelectedPostId(item.id);
-                setShowDeck(true);
-              })
-              .catch(err => console.error('Feed prefetch error:', err))
-              .finally(() => setLoadingPostId(null));
-          }}
-        >
-          <View style={[styles.imageContainer, { height: imgHeight ?? columnWidth }]}>
-            {item.image ? (
-              <Image
-                source={{ uri: item.image }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.imagePlaceholder} />
-            )}
-            {loadingPostId === item.id && (
-              <View style={styles.imageLoadingOverlay}>
-                {/* <ActivityIndicator size="large" color={colors.actions.trade} /> */}
-                <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          
-          onPress={() => {
-            setLoadingPostId(item.id);
-            getFeedProfile(item.id)
-              .then(profile => {
-                setPrefetchedProfile(profile);
-                setSelectedPostId(item.id);
-                setShowDeck(true);
-              })
-              .catch(err => console.error('Feed prefetch error:', err))
-              .finally(() => setLoadingPostId(null));
-          }}
-        >
-        <View style={styles.itemTitleWrapper}>
-          <Text style={styles.itemTitle}>
-            {item.title}
-            
-          </Text>
-          <Text style={styles.itemDistance}>3.5{'\u00A0'}mi</Text>
+        <View style={styles.container}>
+            <StatusBar style="light" />
+
+            <FeedBar
+                showLocation={showLocation}
+                // showSaved={showSaved}
+                onLocationPress={() => setShowLocation(prev => !prev)}
+                // onSavePress={() => setShowSaved(prev => !prev)}
+                headerTranslateY={headerTranslateY}
+                onSearchSubmit={handleSearch}
+            />
+
+            <ScrollView
+                style={[styles.scrollView, { marginTop: insets.top }]}
+                contentContainerStyle={[styles.scrollContent, { paddingTop: 52 }]}
+                showsVerticalScrollIndicator={false}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+            >
+                <View style={styles.columnsContainer}>
+                    <View style={styles.column}>
+                        {leftColumn.map(renderItem)}
+                    </View>
+                    <View style={styles.column}>
+                        {rightColumn.map(renderItem)}
+                    </View>
+                </View>
+            </ScrollView>
+
+            <FeedDeck
+                postId={selectedPostId}
+                visible={showDeck}
+                onClose={() => setShowDeck(false)}
+                prefetchedProfile={prefetchedProfile}
+            />
         </View>
-        </TouchableOpacity>
-      </View>
     );
-  };
-
-  return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-
-      <FeedBar
-        showLocation={showLocation}
-        // showSaved={showSaved}
-        onLocationPress={() => setShowLocation(prev => !prev)}
-        // onSavePress={() => setShowSaved(prev => !prev)}
-        headerTranslateY={headerTranslateY}
-      />
-
-      <ScrollView
-        style={[styles.scrollView, { marginTop: insets.top }]}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: 52}]}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <View style={styles.columnsContainer}>
-          <View style={styles.column}>
-            {leftColumn.map(renderItem)}
-          </View>
-          <View style={styles.column}>
-            {rightColumn.map(renderItem)}
-          </View>
-        </View>
-      </ScrollView>
-
-      <FeedDeck
-        postId={selectedPostId}
-        visible={showDeck}
-        onClose={() => setShowDeck(false)}
-        prefetchedProfile={prefetchedProfile}
-      />
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.ui.background,
-  },
-  scrollView: {
-    flex: 1,
-    
-  },
-  scrollContent: {
-    paddingLeft: 12,
-    paddingRight: 12,
-  },
-  columnsContainer: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  column: {
-    flex: 1,
-    gap: 8,
-  },
-  cardWrapper: {
-    marginBottom: 0,
-  },
-  card: {
-    backgroundColor: colors.ui.secondary,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderBottomLeftRadius: 2,
-    overflow: 'hidden',
-  },
-  imageContainer: {
-    width: '100%',
-    backgroundColor: colors.ui.secondary,
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageLoadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.ui.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: colors.ui.secondary,
-  },
-  itemTitleWrapper: {
-    backgroundColor: colors.ui.secondary,
-    marginTop: 4,
-    paddingVertical: 8,
-    paddingLeft: 12,
-    paddingRight: 12,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 2,
-    minHeight: 36,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    borderBottomRightRadius: 2,
-    borderBottomLeftRadius: 2,
-  
-  },
-  itemTitle: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontFamily: globalFonts.bold,
-    flex: 1,
-    minWidth: 0,
-  },
-  itemDistance: {
-    fontSize: 16,
-    color: colors.ui.secondarydisabled,
-    fontFamily: globalFonts.regular,
-    flexShrink: 0,
-    letterSpacing: -0.3,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: colors.ui.background,
+    },
+    scrollView: {
+        flex: 1,
+
+    },
+    scrollContent: {
+        paddingLeft: 12,
+        paddingRight: 12,
+    },
+    columnsContainer: {
+        flexDirection: 'row',
+        gap: 4,
+    },
+    column: {
+        flex: 1,
+        gap: 8,
+    },
+    cardWrapper: {
+        marginBottom: 0,
+    },
+    card: {
+        backgroundColor: colors.ui.secondary,
+        borderTopLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 2,
+        borderBottomLeftRadius: 2,
+        overflow: 'hidden',
+    },
+    imageContainer: {
+        width: '100%',
+        backgroundColor: colors.ui.secondary,
+        position: 'relative',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    imageLoadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: colors.ui.secondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    imagePlaceholder: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: colors.ui.secondary,
+    },
+    itemTitleWrapper: {
+        backgroundColor: colors.ui.secondary,
+        marginTop: 4,
+        paddingVertical: 8,
+        paddingLeft: 12,
+        paddingRight: 12,
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 2,
+        minHeight: 36,
+        borderTopLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 2,
+        borderBottomLeftRadius: 2,
+
+    },
+    itemTitle: {
+        fontSize: 18,
+        color: '#FFFFFF',
+        fontFamily: globalFonts.bold,
+        flex: 1,
+        minWidth: 0,
+    },
+    itemDistance: {
+        fontSize: 16,
+        color: colors.ui.secondarydisabled,
+        fontFamily: globalFonts.regular,
+        flexShrink: 0,
+        letterSpacing: -0.3,
+    },
 });

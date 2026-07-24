@@ -8,12 +8,20 @@ interface FeedBarProps {
   showLocation: boolean;
   onLocationPress: () => void;
   headerTranslateY: Animated.Value;
+  onSearchSubmit: (query: string) => void;
 }
 
-export default function FeedBar({ headerTranslateY }: FeedBarProps) {
+export default function FeedBar({ headerTranslateY, onSearchSubmit }: FeedBarProps) {
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
+  
+  const handleSearchSubmit = () => {
+    const query = searchText.trim();
+    if (query.length > 0) {
+        onSearchSubmit(query);
+    }
+  }
 
   const handleSearchBarPress = () => {
     searchInputRef.current?.focus();
@@ -45,8 +53,9 @@ export default function FeedBar({ headerTranslateY }: FeedBarProps) {
             placeholder="Search"
             placeholderTextColor={colors.ui.secondarydisabled}
             value={searchText}
-            onChangeText={handleSearchChange}
+            onChangeText={setSearchText}
             returnKeyType="search"
+            onSubmitEditing={handleSearchSubmit}
           />
           <FontAwesome6 name='magnifying-glass' size={22} color='#FFFFFF' />
         </TouchableOpacity>

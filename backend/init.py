@@ -11,6 +11,7 @@ from routes.dev.trades.query.route import trades_query_bp
 from routes.dev.trades.barter.route import trades_barter_bp
 from routes.dev.trades.closed.route import trades_closed_bp
 from routes.dev.trades.open.route import trades_open_bp
+from routes.dev.trades.rescind.route import trades_rescind_bp
 from routes.dev.trades.trade_details.accept.route import trades_detail_accept_bp
 from routes.dev.trades.trade_details.counter.route import trades_detail_counter_bp
 from routes.dev.trades.trade_details.decline.route import trades_detail_decline_bp
@@ -51,6 +52,7 @@ app.register_blueprint(trades_incoming_bp)
 app.register_blueprint(trades_incoming_queries_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(feed_search_bp)
+app.register_blueprint(trades_rescind_bp)
 
 
 

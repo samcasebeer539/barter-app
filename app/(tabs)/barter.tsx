@@ -94,13 +94,33 @@ export default function ActiveTradesTestScreen() {
         }, [])
     );
 
-    useEffect(() => {
+    // Centralized so both the initial load and post-action refreshes go
+    // through the same functions — avoids the two getting out of sync.
+    const refreshTrades = useCallback(() => {
         getOpenTrade().then(setTrades).catch(err => console.error('Failed to load open trades:', err));
     }, []);
 
-    useEffect(() => {
+    const refreshQueries = useCallback(() => {
         getQuery().then(setQueries).catch(err => console.error('Failed to load queries:', err));
     }, []);
+
+    // Fired by OfferDeck after a successful submit. An 'offer' submission
+    // changes the trades list; a 'query' submission changes the queries
+    // list — either deck can fire either one, so both decks pass this same
+    // handler and it dispatches based on actionType.
+    const handleActionComplete = useCallback((actionType: 'offer' | 'query' | 'rescind') => {
+        if (actionType === 'offer') refreshTrades();
+        if (actionType === 'query') refreshQueries();
+        if (actionType === 'rescind') refreshTrades();
+    }, [refreshTrades, refreshQueries]);
+
+    useEffect(() => {
+        refreshTrades();
+    }, [refreshTrades]);
+
+    useEffect(() => {
+        refreshQueries();
+    }, [refreshQueries]);
 
     useEffect(() => {
         if (tab !== 'barter') return;
@@ -139,6 +159,7 @@ export default function ActiveTradesTestScreen() {
                             actions={queriesActions}
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
+                            onActionComplete={handleActionComplete}
                         />
                         <OfferDeck
                             posts={trades}
@@ -146,6 +167,7 @@ export default function ActiveTradesTestScreen() {
                             actions={offersActions}
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
+                            onActionComplete={handleActionComplete}
                         />
                     </View>
                 )}

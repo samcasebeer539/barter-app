@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck, { DeckGroup } from './Deck';
@@ -10,10 +10,13 @@ import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/d
 import { Post } from '@/types/index';
 import { OpenTradeItem } from '@/types'
 import { buildQueryTurns, buildOfferTurns } from '@/services/tradeService';
+import { useTradeAction } from '../hooks/useTradeAction';
+import { getAuth } from 'firebase/auth';
 
 const { width } = Dimensions.get('window');
 
 export type OfferDeckType = 'queries' | 'offers' | 'declined' | 'deals';
+type CompletedActionType = 'offer' | 'query' | 'rescind';
 
 interface OfferDeckProps {
     posts: OpenTradeItem[];
@@ -21,6 +24,7 @@ interface OfferDeckProps {
     actions?: TradeActionConfig[];
     onHorizontalGestureStart?: () => void;
     onGestureEnd?: () => void;
+    onActionComplete?: (actionType: CompletedActionType) => void;
 }
 
 const DECK_LABELS: Record<OfferDeckType, { text: string; color: string }> = {
@@ -43,56 +47,179 @@ export default function OfferDeck({
     actions = [],
     onHorizontalGestureStart,
     onGestureEnd,
+    onActionComplete,
 }: OfferDeckProps) {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isSelectMode, setIsSelectMode] = useState(false);
-    const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
     const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
-    const [isQueryOpen, setIsQueryOpen] = useState(false);
-    const [querySelectedPost, setQuerySelectedPost] = useState<number | null>(null);
     const label = DECK_LABELS[deckType];
     const hasActions = HAS_ACTIONS[deckType];
     const isQueryDeck = deckType === 'queries';
     const isOffersDeck = deckType === 'offers';
 
-    // Filter once so that `itemsWithPost`, `cardPosts`, and the turns lookup
-    // all share the exact same indices as what Deck reports via
-    // onTopCardChange. Filtering `cardPosts` independently of `posts` could
-    // desync topPostIndex from the source item whenever a null post existed
-    // anywhere but the end of the array.
+    const trade = useTradeAction();
+    const [queryText, setQueryText] = useState('');
+    const [scrolledActionType, setScrolledActionType] = useState(actions[0]?.actionType ?? null);
+    const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+    const [isSubmittingQuery, setIsSubmittingQuery] = useState(false);
+    const [isSubmittingRescind, setIsSubmittingRescind] = useState(false);
+
+    const isOfferActive =
+        trade.activeAction === 'offer' &&
+        scrolledActionType === 'offer' &&
+        trade.phase !== 'confirmed';
+
+    const isQueryActive =
+        trade.activeAction === 'query' &&
+        scrolledActionType === 'query' &&
+        trade.phase !== 'idle' &&
+        trade.phase !== 'confirmed';
+
+    const effectiveIsReady =
+        trade.activeAction === 'query'
+            ? trade.isReady || queryText.trim().length > 0
+            : trade.isReady;
+
+    useEffect(() => {
+        if (!isQueryActive) setQueryText('');
+    }, [isQueryActive]);
+
+    useEffect(() => {
+        if (!isExpanded) {
+            trade.reset();
+            setQueryText('');
+            setScrolledActionType(actions[0]?.actionType ?? null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isExpanded]);
+
+    
+
+    
+
     const itemsWithPost = useMemo(
         () => posts.filter((item): item is OpenTradeItem & { post: Post } => item.post !== null),
         [posts]
     );
     const itemCount = itemsWithPost.length;
 
-    const selectColor = useMemo(
-        () => actions.find(a => a.hasButtons)?.color ?? colors.actions.offer,
-        [actions]
-    );
+    useEffect(() => {
+    setTopPostIndex(prev => {
+        if (itemCount === 0) return null;
+        if (prev === null || prev >= itemCount) return 0;
+        return prev;
+    });
+}, [itemCount]);
 
     const handleActionSelected = (action: TradeAction) => {
-        if (action.subAction === 'write') {
-            if (!isSelectMode) {
-                setIsSelectMode(true);
-                if (topPostIndex !== null) setSelectedPosts([topPostIndex]);
-            } else {
-                if (topPostIndex !== null) {
-                    setSelectedPosts(prev =>
-                        prev.includes(topPostIndex)
-                            ? prev.filter(i => i !== topPostIndex)
-                            : [...prev, topPostIndex]
-                    );
-                }
-            }
+        const { actionType, subAction } = action;
+
+        if (subAction === 'select' && trade.activeAction === actionType) {
+            handleConfirm();
+            return;
         }
-        if (action.subAction === 'select') {
-            setIsSelectMode(false);
-            setSelectedPosts([]);
+
+        if (actionType === 'offer' || actionType === 'rescind') {
+            trade.selectAction(actionType, topPostIndex);
+            return;
         }
+
+        trade.selectAction(actionType);
     };
 
-    const topCardIsSelected = topPostIndex !== null && selectedPosts.includes(topPostIndex);
+    async function getAuthHeader() {
+        const token = await getAuth().currentUser?.getIdToken();
+        return { Authorization: `Bearer ${token}` };
+    }
+
+    const handleConfirm = async () => {
+        if (!effectiveIsReady || !trade.activeAction) return;
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        switch (trade.activeAction) {
+            case 'offer': {
+                if (trade.selectedPosts.length === 0 || isSubmittingOffer) break;
+                const selectedItem = itemsWithPost[trade.selectedPosts[0]];
+                if (!selectedItem) break;
+
+                setIsSubmittingOffer(true);
+                try {
+                    const headers = await getAuthHeader();
+                    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/offer`, {
+                        method: 'POST',
+                        headers: { ...headers, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            targetPostId: selectedItem.post._id,
+                        }),
+                    });
+                    onActionComplete?.('offer');
+                } catch (err) {
+                    console.error('Offer failed:', err);
+                } finally {
+                    setIsSubmittingOffer(false);
+                }
+                break;
+            }
+
+            case 'query': {
+                if (typeof trade.subflowData !== 'number' || !queryText.trim() || isSubmittingQuery) break;
+                const targetItem = itemsWithPost[trade.subflowData];
+                if (!targetItem) break;
+
+                setIsSubmittingQuery(true);
+                try {
+                    const headers = await getAuthHeader();
+                    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/query`, {
+                        method: 'POST',
+                        headers: { ...headers, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            targetPostId: targetItem.post._id,
+                            message: queryText,
+                        }),
+                    });
+                    onActionComplete?.('query');
+                } catch (err) {
+                    console.error('Query failed:', err);
+                } finally {
+                    setIsSubmittingQuery(false);
+                }
+                break;
+            }
+
+            case 'rescind': {
+                if (trade.selectedPosts.length === 0 || isSubmittingRescind) break;
+                const selectedItem = itemsWithPost[trade.selectedPosts[0]];
+                if (!selectedItem) break;
+
+                setIsSubmittingRescind(true);
+                try {
+                    const headers = await getAuthHeader();
+                    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/rescind`, {
+                        method: 'POST',
+                        headers: { ...headers, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            targetPostId: selectedItem.post._id,
+                        }),
+                        
+                    });
+                    onActionComplete?.('rescind');
+                } catch (err) {
+                    console.error('Rescind failed:', err);
+                } finally {
+                    setIsSubmittingRescind(false);
+                }
+                break;
+            }
+
+            default:
+                break;
+        }
+
+        trade.confirm();
+        trade.reset();
+    };
+
+    const topCardIsSelected = topPostIndex !== null && trade.selectedPosts.includes(topPostIndex);
 
     const cardPosts: Post[] = useMemo(
         () => itemsWithPost.map(item => item.post),
@@ -104,11 +231,6 @@ export default function OfferDeck({
         [cardPosts]
     );
 
-    // Live thread/turn for whichever card is currently on top. Queries get
-    // a full merged thread (buildQueryTurns); offers get a single
-    // turnOffer entry since duplicate offers aren't allowed and offer
-    // documents carry no message thread. Other deck types keep an empty
-    // turns row, same as before.
     const topTurns: TradeTurn[] = useMemo(() => {
         if (topPostIndex === null) return [];
         const topItem = itemsWithPost[topPostIndex];
@@ -139,12 +261,22 @@ export default function OfferDeck({
                             enabled={true}
                             onHorizontalGestureStart={onHorizontalGestureStart}
                             onGestureEnd={onGestureEnd}
-                            isSelectMode={isSelectMode}
-                            selectedPosts={selectedPosts}
+                            isSelectMode={isOfferActive}
+                            selectedPosts={trade.selectedPosts}
                             onTopCardChange={setTopPostIndex}
-                            selectColor={selectColor}
-                            isQueryMode={isQueryDeck}
-                            querySelectedPostIndex={querySelectedPost}
+                            selectColor={colors.actions.offer}
+                            isQueryMode={isQueryActive}
+                            querySelectedPostIndex={
+                                isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
+                            }
+                            onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
+                            onSelectPost={(postIndex) => {
+                                if (trade.activeAction !== 'offer') {
+                                    trade.selectAction('offer', postIndex);
+                                } else {
+                                    trade.togglePost(postIndex);
+                                }
+                            }}
                             showUser={false}
                             showLocation={false}
                         />
@@ -153,22 +285,23 @@ export default function OfferDeck({
 
                 {isExpanded && (
                     <View style={styles.turnsAndButtonColumn}>
-                        <View style={[styles.queryRow, { marginBottom: isQueryOpen ? 4 : 0 }]}>
-                            <TradeTurns turns={[]} isQueryOpen={isQueryOpen} />
+                        <View style={[styles.queryRow, { marginBottom: isQueryActive ? 4 : 0 }]}>
+                            <TradeTurns turns={[]} isQueryOpen={isQueryActive} onQueryTextChange={setQueryText} />
                         </View>
                         {hasActions && (
                             <View style={styles.actionRow}>
                                 <TradeUI
                                     actions={actions}
                                     onActionSelected={handleActionSelected}
-                                    onQueryToggle={setIsQueryOpen}
-                                    isSelectMode={isSelectMode}
-                                    selectedCount={selectedPosts.length}
+                                    activeActionType={trade.activeAction}
+                                    isReady={effectiveIsReady}
+                                    selectedCount={trade.selectedPosts.length}
                                     topCardIsSelected={topCardIsSelected}
-                                    isQueryMode={isQueryDeck}
-                                    queryPostSelected={querySelectedPost !== null}
-                                    onQueryPostSelect={() => setQuerySelectedPost(topPostIndex)}
-                                    onQueryPostDeselect={() => setQuerySelectedPost(null)}
+                                    isQueryMode={isQueryActive}
+                                    queryPostSelected={isQueryActive && trade.subflowData != null}
+                                    onQueryPostSelect={() => trade.setSubflowData(topPostIndex)}
+                                    onQueryPostDeselect={() => trade.setSubflowData(null)}
+                                    onActionChange={setScrolledActionType}
                                 />
                             </View>
                         )}

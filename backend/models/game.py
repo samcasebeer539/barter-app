@@ -35,11 +35,13 @@ class Game:
             "query": "open",
             "offer": "offer_pending",
             "decline": "declined",
+            
         },
         "offer_pending": {
             "query": "offer_pending",
             "barter": "barter",
             "decline": "declined",
+            "rescind": "open"
         },
         "barter": {
             "query": "barter",

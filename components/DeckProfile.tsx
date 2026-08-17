@@ -12,14 +12,12 @@ import { useTradeAction } from '../hooks/useTradeAction';
 
 import { Post, User, Locations, OffererGroup } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
-import { IncomingQuery } from '@/services/tradeService';
+import { IncomingQuery, IncomingOffer, resolvePostName } from '@/services/tradeService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
 
-const trade1Turns: TradeTurn[] = [
-  { type: 'turnOffer', user: 'Jay Wilson', item: 'iPad 6th gen', isUser: false },
-];
+
 
 interface ProfileDeckProps {
   posts: Post[];
@@ -40,7 +38,8 @@ interface ProfileDeckProps {
   onQuerySubmit?: (payload: { gameId: string; postIndex: number | null }) => void;
   onDeclineSubmit?: (gameId: string) => void;
   incomingQueries?: IncomingQuery[];
-  
+  incomingOffers?: IncomingOffer[];
+
 }
 
 export default function ProfileDeck({
@@ -61,6 +60,7 @@ export default function ProfileDeck({
   onQuerySubmit,
   onDeclineSubmit,
   incomingQueries = [],
+  incomingOffers = [],
 }: ProfileDeckProps) {
   const slideAnim = useRef(new Animated.Value(0)).current;
   const hasIncomingQueries = incomingQueries.length > 0;
@@ -76,7 +76,6 @@ export default function ProfileDeck({
   const [isQueryDrawerOpen, setIsQueryDrawerOpen] = useState(false);
   const [topSecondaryPostIndex, setTopSecondaryPostIndex] = useState<number | null>(null);
   const [topSecondaryGroupIndex, setTopSecondaryGroupIndex] = useState<number | null>(null);
-  const [tradeTurns, setTradeTurns] = useState<TradeTurn[]>(trade1Turns);
 
   const [topCardType, setTopCardType] = useState<'user' | 'post' | 'datetime' | 'location'>('user');
   const [topPrimaryPostIndex, setTopPrimaryPostIndex] = useState<number | null>(null);
@@ -141,6 +140,23 @@ export default function ProfileDeck({
     })),
     [incomingQueries]
   );
+
+  const offerTurnsByGroup: TradeTurn[][] = useMemo(
+    () => secondaryOfferers.map(({ gameId }) => {
+      const offer = incomingOffers.find(o => o.gameId === gameId);
+     if (!offer) return [];
+      return [{
+        type: 'turnOffer' as const,
+        user: offer.fromUserName,
+        item: resolvePostName(offer.targetPostId, posts),
+        isUser: false,
+      }];
+    }),
+    [secondaryOfferers, incomingOffers, posts]
+  );
+
+  const currentOfferTurns =
+    topSecondaryGroupIndex !== null ? (offerTurnsByGroup[topSecondaryGroupIndex] ?? []) : [];
 
   // What the action wheel is currently scrolled to — distinct from
   // trade.activeAction, which only changes on an icon tap. Select/subflow
@@ -431,7 +447,7 @@ export default function ProfileDeck({
                 />
               </View>
               <View style={styles.turnsRow}>
-                <TradeTurns turns={tradeTurns} />
+                <TradeTurns turns={currentOfferTurns} />
               </View>
             </View>
           </View>

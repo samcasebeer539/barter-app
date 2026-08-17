@@ -326,16 +326,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
         }
 
         // Play / Wait: countdown timer display
-        if (action.actionType === 'play') {
-            return (
-                <TimerButton
-                    color={color}
-                    isActive={active && isArmed}
-                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled}
-                />
-            );
-        }
+        
         if (action.actionType === 'wait') {
             return <TimerButton color={color} isActive={false} disabled={true} />;
         }

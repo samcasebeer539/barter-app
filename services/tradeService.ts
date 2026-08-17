@@ -176,7 +176,7 @@ export async function getBarterGames(): Promise<BarterGame[]> {
   return JSON.parse(text);
 }
 
-function resolvePostName(postId: string | undefined, posts: Post[]): string {
+export function resolvePostName(postId: string | undefined, posts: Post[]): string {
   if (!postId) return '';
   return posts.find(p => p._id === postId)?.name ?? '';
 }

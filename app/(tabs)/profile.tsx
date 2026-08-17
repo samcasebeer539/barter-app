@@ -269,8 +269,9 @@ export default function ProfileScreen() {
             onTopPrimaryPostChange={setTopPrimaryPostIndex}
             hasIncomingOffers={offersForTopPost.length > 0}
             onBarterSubmit={handleBarterSubmit}
-			onDeclineSubmit={handleDeclineSubmit}
-			incomingQueries={queriesForTopPost}
+            onDeclineSubmit={handleDeclineSubmit}
+            incomingQueries={queriesForTopPost}
+            incomingOffers={offersForTopPost}
           />
         </View>
       </ScrollView>

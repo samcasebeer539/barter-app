@@ -13,7 +13,6 @@ export type TradeActionType =
   | 'where'
   | 'when'
   | 'wait'
-  | 'play'
   | 'rescind';
 
 export type TradeTurnType =
@@ -131,12 +130,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     hasButtons: true,
     actionType: 'wait',
   },
-  {
-    text: 'PLAY',
-    color: colors.ui.secondarydisabled,
-    hasButtons: true,
-    actionType: 'play',
-  },
+ 
   {
     text: 'RESCIND',
     color: colors.actions.rescind,

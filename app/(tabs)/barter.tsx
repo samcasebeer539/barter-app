@@ -1,6 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Keyboard, KeyboardEvent } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
@@ -88,11 +87,13 @@ export default function ActiveTradesTestScreen() {
         };
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
+    useEffect(() => {
+        const unsubscribe = () => {
             setResetKey(prev => prev + 1);
-        }, [])
-    );
+        };
+
+        return unsubscribe;
+    }, []);
 
     // Centralized so both the initial load and post-action refreshes go
     // through the same functions — avoids the two getting out of sync.

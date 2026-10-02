@@ -126,7 +126,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
   },
   {
     text: 'WAIT',
-    color: colors.ui.secondary,
+    color: colors.ui.secondarydisabled,
     hasButtons: true,
     actionType: 'wait',
   },

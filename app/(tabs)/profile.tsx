@@ -18,9 +18,8 @@ import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
 import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfile } from '@/services/offererService';
-import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery } from '@/services/tradeService';
+import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
 import { FeedProfile, OffererGroup } from '@/types/index';
-import { getAuth } from 'firebase/auth';
 
 
 const TOP_PADDING = 0;
@@ -145,20 +144,10 @@ export default function ProfileScreen() {
     console.log('Selected meetup location:', location);
   };
 
-  async function getAuthHeader() {
-    const token = await getAuth().currentUser?.getIdToken();
-    return { Authorization: `Bearer ${token}` };
-  }
-
   const handleBarterSubmit = async (gameId: string, selectedPostIds: string[]) => {
 	if (!gameId || selectedPostIds.length === 0) return;
 	try {
-		const headers = await getAuthHeader();
-		await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/barter`, {
-		method: 'POST',
-		headers: { ...headers, 'Content-Type': 'application/json' },
-		body: JSON.stringify({ gameId, selectedPostIds }),
-		});
+		await sendBarter(gameId, selectedPostIds);
 	} catch (err) {
 		console.error('Barter failed:', err);
 		return;

@@ -13,7 +13,7 @@ import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/d
 import { getFeedProfile } from '@/services/feedService';
 import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
-import { getAuth } from 'firebase/auth';
+import { sendOffer, sendQuery } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -144,11 +144,6 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
     }
   }, [visible]);
 
-  async function getAuthHeader() {
-    const token = await getAuth().currentUser?.getIdToken();
-    return { Authorization: `Bearer ${token}` };
-  }
-
   const handleCloseModal = () => {
     Keyboard.dismiss();
     Animated.parallel([
@@ -182,17 +177,11 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       case 'offer': {
         if (trade.selectedPosts.length === 0 || isSubmittingOffer) break;
         const selectedPost = deckPosts[trade.selectedPosts[0]];
+        if (!selectedPost?._id) break;
 
         setIsSubmittingOffer(true);
         try {
-          const headers = await getAuthHeader();
-          await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/offer`, {
-            method: 'POST',
-            headers: { ...headers, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              targetPostId: selectedPost._id,
-            }),
-          });
+          await sendOffer(selectedPost._id);
         } catch (err) {
           console.error('Offer failed:', err);
         } finally {
@@ -204,29 +193,20 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       case 'query': {
         if (typeof trade.subflowData !== 'number' || !queryText.trim() || isSubmittingQuery) break;
         const targetPost = deckPosts[trade.subflowData];
-        if (!targetPost) break;
+        if (!targetPost?._id) break;
 
         setIsSubmittingQuery(true);
         try {
-          const headers = await getAuthHeader();
-          await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/query`, {
-            method: 'POST',
-            headers: { ...headers, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              targetPostId: targetPost._id,
-              message: queryText,
-            }),
+          await sendQuery(targetPost._id, queryText);
+          onQuerySubmit?.({
+            postIndex: trade.subflowData,
+            question: queryText,
           });
         } catch (err) {
           console.error('Query failed:', err);
         } finally {
           setIsSubmittingQuery(false);
         }
-
-        onQuerySubmit?.({
-          postIndex: trade.subflowData,
-          question: queryText,
-        });
         break;
       }
 

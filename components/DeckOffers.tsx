@@ -9,9 +9,8 @@ import { TradeActionConfig } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post } from '@/types/index';
 import { OpenTradeItem } from '@/types'
-import { buildQueryTurns, buildOfferTurns } from '@/services/tradeService';
+import { buildQueryTurns, buildOfferTurns, sendOffer, sendQuery, rescindOffer } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
-import { getAuth } from 'firebase/auth';
 
 const { width } = Dimensions.get('window');
 
@@ -126,11 +125,6 @@ export default function OfferDeck({
         trade.selectAction(actionType);
     };
 
-    async function getAuthHeader() {
-        const token = await getAuth().currentUser?.getIdToken();
-        return { Authorization: `Bearer ${token}` };
-    }
-
     const handleConfirm = async () => {
         if (!effectiveIsReady || !trade.activeAction) return;
 
@@ -140,18 +134,11 @@ export default function OfferDeck({
             case 'offer': {
                 if (trade.selectedPosts.length === 0 || isSubmittingOffer) break;
                 const selectedItem = itemsWithPost[trade.selectedPosts[0]];
-                if (!selectedItem) break;
+                if (!selectedItem?.post._id) break;
 
                 setIsSubmittingOffer(true);
                 try {
-                    const headers = await getAuthHeader();
-                    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/offer`, {
-                        method: 'POST',
-                        headers: { ...headers, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            targetPostId: selectedItem.post._id,
-                        }),
-                    });
+                    await sendOffer(selectedItem.post._id);
                     onActionComplete?.('offer');
                 } catch (err) {
                     console.error('Offer failed:', err);
@@ -164,19 +151,11 @@ export default function OfferDeck({
             case 'query': {
                 if (typeof trade.subflowData !== 'number' || !queryText.trim() || isSubmittingQuery) break;
                 const targetItem = itemsWithPost[trade.subflowData];
-                if (!targetItem) break;
+                if (!targetItem?.post._id) break;
 
                 setIsSubmittingQuery(true);
                 try {
-                    const headers = await getAuthHeader();
-                    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/query`, {
-                        method: 'POST',
-                        headers: { ...headers, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            targetPostId: targetItem.post._id,
-                            message: queryText,
-                        }),
-                    });
+                    await sendQuery(targetItem.post._id, queryText);
                     onActionComplete?.('query');
                 } catch (err) {
                     console.error('Query failed:', err);
@@ -189,19 +168,11 @@ export default function OfferDeck({
             case 'rescind': {
                 if (trade.selectedPosts.length === 0 || isSubmittingRescind) break;
                 const selectedItem = itemsWithPost[trade.selectedPosts[0]];
-                if (!selectedItem) break;
+                if (!selectedItem?.post._id) break;
 
                 setIsSubmittingRescind(true);
                 try {
-                    const headers = await getAuthHeader();
-                    await fetch(`${process.env.EXPO_PUBLIC_API_URL}/dev/trades/rescind`, {
-                        method: 'POST',
-                        headers: { ...headers, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            targetPostId: selectedItem.post._id,
-                        }),
-                        
-                    });
+                    await rescindOffer(selectedItem.post._id);
                     onActionComplete?.('rescind');
                 } catch (err) {
                     console.error('Rescind failed:', err);

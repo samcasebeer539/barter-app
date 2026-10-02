@@ -8,7 +8,41 @@ async function getAuthHeader() {
     const token = await getAuth().currentUser?.getIdToken();
     return { Authorization: `Bearer ${token}` };
   }
-  
+
+export interface TradeWriteResult {
+    success: boolean;
+    gameId: string;
+    tradeId?: string;
+}
+
+// Shared POST for every trade write: attaches auth, sends JSON, and throws on a
+// non-2xx response so callers' catch blocks see failed transitions (400s etc.).
+async function postTrade(path: string, body: unknown): Promise<TradeWriteResult> {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BASE_URL}${path}`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error(data?.error ?? `${path} failed with status ${res.status}`);
+    }
+    return data as TradeWriteResult;
+}
+
+export function sendOffer(targetPostId: string) {
+    return postTrade('/dev/trades/offer', { targetPostId });
+}
+
+export function rescindOffer(targetPostId: string) {
+    return postTrade('/dev/trades/rescind', { targetPostId });
+}
+
+export function sendBarter(gameId: string, selectedPostIds: string[]) {
+    return postTrade('/dev/trades/barter', { gameId, selectedPostIds });
+}
+
 function normalizePost(raw: any): Post {
     return {
         _id: raw._id,
@@ -65,34 +99,12 @@ export async function getClosedTrade() {
     return res.json();
 }
 
-export async function acceptTrade(gameId: string) {
-    const headers = await getAuthHeader();
-    return fetch(
-        `${BASE_URL}/dev/trades/trade_details/accept`,
-        {
-            method: 'POST',
-            headers: {
-                ...headers,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ gameId }),
-        }
-    );
+export function acceptTrade(gameId: string) {
+    return postTrade('/dev/trades/trade_details/accept', { gameId });
 }
 
-export async function declineTrade(gameId: string) {
-    const headers = await getAuthHeader();
-    return fetch(
-        `${BASE_URL}/dev/trades/trade_details/decline`,
-        {
-            method: 'POST',
-            headers: {
-                ...headers,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ gameId }),
-        }
-    );
+export function declineTrade(gameId: string) {
+    return postTrade('/dev/trades/trade_details/decline', { gameId });
 }
 
 export async function getGame(gameId: string) {
@@ -132,16 +144,8 @@ export async function getQuery(): Promise<OpenTradeItem[]> {
     return groupQueryItems(data.map(normalizeTradeItem));
 }
 
-export async function sendQuery(targetPostId: string, message: string) {
-  const headers = await getAuthHeader();
-  return fetch(`${BASE_URL}/dev/trades/query`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ targetPostId, message }),
-  });
+export function sendQuery(targetPostId: string, message: string) {
+  return postTrade('/dev/trades/query', { targetPostId, message });
 }
 
 // ── Incoming offers (for ProfileScreen) ─────────────────────────────────────

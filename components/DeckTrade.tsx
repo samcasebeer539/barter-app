@@ -178,11 +178,21 @@ export default function TradeDeck({
     switch (trade.activeAction) {
       case 'accept':
       case 'acceptFinal':
-        if (gameId) await acceptTrade(gameId);
+        if (!gameId) break;
+        try {
+          await acceptTrade(gameId);
+        } catch (err) {
+          console.error('Accept failed:', err);
+        }
         break;
 
       case 'decline':
-        if (gameId) await declineTrade(gameId);
+        if (!gameId) break;
+        try {
+          await declineTrade(gameId);
+        } catch (err) {
+          console.error('Decline failed:', err);
+        }
         break;
 
       case 'query':

@@ -95,6 +95,7 @@ export default function ProfileDeck({
 
   const itemCount = useMemo(() => posts.length, [posts]);
   const offerCount = useMemo(() => secondaryOfferers.length, [secondaryOfferers]);
+  const queryCount = incomingQueries.length;
 
   // One deck group per offerer — their user card, location, and posts
   // appear together, and the existing 3-slot swipe mechanics interleave
@@ -384,11 +385,12 @@ export default function ProfileDeck({
           ]}>
             QUERIES
           </Text>
+          <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{queryCount}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.offerButton} onPress={onToggleReveal} disabled={!toggleEnabled || !hasIncomingOffers}>
           <Text style={[deckStyles.actionButtonText, {  color: hasIncomingOffers ? colors.actions.offer : colors.ui.secondarydisabled}]}>OFFERS</Text>
           <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{offerCount}</Text>
-          <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
+          
         </TouchableOpacity>
       </View>
 
@@ -529,13 +531,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8,
   },
   offerButton: {
-    flex: 1, paddingLeft: 16, paddingRight: 16, height: 36, ...barRadius.rightCap,
+    flex: 1, paddingLeft: 12, paddingRight: 12, height: 36, ...barRadius.rightCap,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: colors.ui.secondary, gap: 8,
   },
   queryButton: {
-    flexShrink: 0, paddingLeft: 16, paddingRight: 12, height: 36, ...barRadius.leftCap,
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: colors.ui.secondary,
+    flex: 1, paddingLeft: 12, paddingRight: 12, height: 36, ...barRadius.leftCap,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: colors.ui.secondary, gap: 8,
   },
   deleteButton: { ...makeIconButton('flat') },
   editButton: { ...makeIconButton('flat') },

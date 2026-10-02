@@ -26,6 +26,8 @@ interface TradeUIProps {
     onQueryPostSelect: () => void;
     onQueryPostDeselect: () => void;
     onActionChange?: (actionType: TradeActionType) => void;
+    /** ISO timestamp the active player's turn runs out; drives the DECLINE and WAIT timers. */
+    turnDeadline?: string | null;
 }
 
 // ─── Button pattern helpers ───────────────────────────────────────────────────
@@ -84,28 +86,32 @@ interface TimerButtonProps {
     isActive: boolean;
     onPress?: () => void;
     disabled: boolean;
+    /** ISO timestamp the active player's turn runs out (from the server). */
+    deadline?: string | null;
 }
 
-const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
+const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches Game.TURN_TIME_LIMIT
 
-const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled }) => {
-    // In real usage, startTime would come from props/store. We simulate a fixed 2-day countdown from now.
-    const [remaining, setRemaining] = useState(TIMER_DURATION_MS);
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline }) => {
+    // With a deadline, count down to it. Without one (decks with no live
+    // game behind them), fall back to a 2-day countdown from mount.
+    const [endsAt] = useState(() => Date.now() + TIMER_DURATION_MS);
+    const target = deadline ? Date.parse(deadline) : endsAt;
+    const [now, setNow] = useState(Date.now());
 
     useEffect(() => {
-        const tick = setInterval(() => {
-            setRemaining(prev => Math.max(0, prev - 1000));
-        }, 1000);
+        const tick = setInterval(() => setNow(Date.now()), 1000);
         return () => clearInterval(tick);
     }, []);
 
+    const remaining = Math.max(0, target - now);
     const totalSecs = Math.floor(remaining / 1000);
     const hours = Math.floor(totalSecs / 3600);
     const mins = Math.floor((totalSecs % 3600) / 60);
     const secs = totalSecs % 60;
-    const label = hours > 0
-        ? `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
-        : `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const label = `${pad2(hours)}:${pad2(mins)}:${pad2(secs)}`;
 
     const filled = isActive && !!onPress;
 
@@ -148,6 +154,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
     onQueryPostSelect,
     onQueryPostDeselect,
     onActionChange,
+    turnDeadline = null,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -325,14 +332,27 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        // Play / Wait: countdown timer display
-        
+        // Wait: display-only countdown of the other player's remaining time.
         if (action.actionType === 'wait') {
-            return <TimerButton color={color} isActive={false} disabled={true} />;
+            return <TimerButton color={color} isActive={false} disabled={true} deadline={turnDeadline} />;
         }
 
-        // Everything else: where, when, verify, stall, accept, acceptFinal,
-        // decline — a single icon that fills and swaps to a check once armed.
+        // Decline: shows your own remaining time (when it runs out the game
+        // auto-declines); tap to arm, fills once armed.
+        if (action.actionType === 'decline') {
+            return (
+                <TimerButton
+                    color={color}
+                    isActive={active && isArmed}
+                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+                    disabled={disabled}
+                    deadline={turnDeadline}
+                />
+            );
+        }
+
+        // Everything else: where, when, verify, stall, accept, acceptFinal —
+        // a single icon that fills and swaps to a check once armed.
         const mapped = SIMPLE_ICONS[action.actionType];
         return (
             <IconButton

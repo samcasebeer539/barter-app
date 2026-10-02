@@ -6,10 +6,10 @@ import Deck, { DeckGroup } from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
-import { TradeActionConfig, TradeActionType } from '../config/tradeConfig';
+import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -26,18 +26,35 @@ interface TradeDeckProps {
   showDateTime?: boolean;
   showLocation?: boolean;
   // ── Confirmed-action payload callbacks ──────────────────────────────────
-  // TradeDeck only owns the network calls that already existed (accept/decline).
+  // TradeDeck owns the one-tap game moves (accept/decline/stall).
   // Everything else hands its payload up to whatever screen embeds this deck.
   onBarterSubmit?: (postIndexes: number[]) => void;
   onQuerySubmit?: (payload: { postIndex: number | null; question: string }) => void;
   onLocationProposed?: (location: Locations) => void;
   onCounterSubmit?: (value: number) => void;
+  // Fired after a move this deck sent succeeds, so the screen can refetch
+  // the game (new turn owner, new phase, new turn in the log).
+  onActionComplete?: (actionType: TradeActionType) => void;
   gameId?: string;
+  // Whose move it is. When false, the wheel shows only WAIT. Defaults to
+  // true so decks without live game data (e.g. mock decks) stay usable.
+  isMyTurn?: boolean;
+  // ISO timestamp the active player's turn runs out. Shown on DECLINE / WAIT.
+  turnDeadline?: string | null;
+  // Fired once the deadline has passed. The server auto-declines overdue
+  // games when they're next loaded, so the screen should refetch.
+  onTurnExpired?: () => void;
 }
+
+// Wait this long past the deadline before refetching, so a phone clock
+// running slightly fast doesn't ask the server before it agrees time is up.
+const EXPIRY_GRACE_MS = 2000;
 
 const DECK_WIDTH = Math.min(width - 36, 400);
 
 const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
+
+const WAIT_ACTION = getActionConfig('wait');
 
 export default function TradeDeck({
   partnerUser,
@@ -54,9 +71,19 @@ export default function TradeDeck({
   onQuerySubmit,
   onLocationProposed,
   onCounterSubmit,
+  onActionComplete,
   gameId,
+  isMyTurn = true,
+  turnDeadline = null,
+  onTurnExpired,
 }: TradeDeckProps) {
   const trade = useTradeAction();
+
+  // On your turn: every action except WAIT. Off your turn: WAIT only.
+  const visibleActions = useMemo(() => {
+    if (isMyTurn) return actions.filter(a => a.actionType !== 'wait');
+    return WAIT_ACTION ? [WAIT_ACTION] : [];
+  }, [actions, isMyTurn]);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showingPlayer, setShowingPlayer] = useState(false);
@@ -79,8 +106,34 @@ export default function TradeDeck({
   // mode) should disappear as soon as the wheel scrolls away, not linger
   // until the next tap.
   const [scrolledActionType, setScrolledActionType] = useState<TradeActionType | null>(
-    actions[0]?.actionType ?? null
+    visibleActions[0]?.actionType ?? null
   );
+
+  // Refetch once the turn deadline passes (checked each second rather than
+  // one long setTimeout, which React Native warns about on Android).
+  useEffect(() => {
+    if (!turnDeadline || !onTurnExpired) return;
+    const expiresAt = Date.parse(turnDeadline) + EXPIRY_GRACE_MS;
+    if (Number.isNaN(expiresAt)) return;
+    let fired = false;
+    const check = () => {
+      if (!fired && Date.now() >= expiresAt) {
+        fired = true;
+        onTurnExpired();
+      }
+    };
+    check();
+    const tick = setInterval(check, 1000);
+    return () => clearInterval(tick);
+  }, [turnDeadline, onTurnExpired]);
+
+  // When the turn changes hands the wheel gets a different action list:
+  // drop any half-built move and point at the new list's first action.
+  // (TradeUI scrolls itself back to the top whenever its actions change.)
+  useEffect(() => {
+    trade.reset();
+    setScrolledActionType(visibleActions[0]?.actionType ?? null);
+  }, [visibleActions, trade.reset]);
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
 
@@ -137,6 +190,10 @@ export default function TradeDeck({
   const handleActionSelected = (action: TradeAction) => {
     const { actionType, subAction } = action;
 
+    // Off-turn the wheel only shows WAIT, which is display-only. This guard
+    // backs that up in case anything else tries to arm a move.
+    if (!isMyTurn) return;
+
     // Arrow / confirm tap always sends 'select' for the currently-active action.
     if (subAction === 'select' && trade.activeAction === actionType) {
       handleConfirm();
@@ -167,7 +224,7 @@ export default function TradeDeck({
   };
 
   const handleConfirm = async () => {
-    if (!effectiveIsReady || !trade.activeAction) return;
+    if (!isMyTurn || !effectiveIsReady || !trade.activeAction) return;
 
     // Let the current touch's press-out / opacity-restore finish before
     // anything disables this same button — flipping `disabled` on a
@@ -181,6 +238,7 @@ export default function TradeDeck({
         if (!gameId) break;
         try {
           await acceptTrade(gameId);
+          onActionComplete?.(trade.activeAction);
         } catch (err) {
           console.error('Accept failed:', err);
         }
@@ -190,8 +248,19 @@ export default function TradeDeck({
         if (!gameId) break;
         try {
           await declineTrade(gameId);
+          onActionComplete?.('decline');
         } catch (err) {
           console.error('Decline failed:', err);
+        }
+        break;
+
+      case 'stall':
+        if (!gameId) break;
+        try {
+          await stallTrade(gameId);
+          onActionComplete?.('stall');
+        } catch (err) {
+          console.error('Stall failed:', err);
         }
         break;
 
@@ -298,7 +367,7 @@ export default function TradeDeck({
             </View>
             <View style={styles.actionRow}>
               <TradeUI
-                actions={actions}
+                actions={visibleActions}
                 onActionSelected={handleActionSelected}
                 activeActionType={trade.activeAction}
                 isReady={effectiveIsReady}
@@ -309,6 +378,7 @@ export default function TradeDeck({
                 onQueryPostSelect={() => trade.setSubflowData(partnerTopPostIndex)}
                 onQueryPostDeselect={() => trade.setSubflowData(null)}
                 onActionChange={setScrolledActionType}
+                turnDeadline={turnDeadline}
               />
             </View>
             <View style={styles.turnsRow}>

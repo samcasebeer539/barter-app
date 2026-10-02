@@ -6,7 +6,7 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTrade, getQuery, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { getOpenTrade, getQuery, getBarterGames, getDeclinedTrades, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem, Post } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -47,6 +47,7 @@ export default function ActiveTradesTestScreen() {
     const [trades, setTrades] = useState<OpenTradeItem[]>([]);
     const [queries, setQueries] = useState<OpenTradeItem[]>([]);
     const [barterGames, setBarterGames] = useState<BarterGame[]>([]);
+    const [declined, setDeclined] = useState<OpenTradeItem[]>([]);
     const insets = useSafeAreaInsets();
 
     const queriesActions = useMemo(
@@ -123,12 +124,29 @@ export default function ActiveTradesTestScreen() {
         refreshQueries();
     }, [refreshQueries]);
 
-    useEffect(() => {
-        if (tab !== 'barter') return;
+    const refreshBarterGames = useCallback(() => {
         getBarterGames()
             .then(setBarterGames)
             .catch(err => console.error('Failed to load barter games:', err));
-    }, [tab, resetKey]);
+    }, []);
+
+    useEffect(() => {
+        if (tab !== 'barter') return;
+        refreshBarterGames();
+    }, [tab, resetKey, refreshBarterGames]);
+
+    const refreshDeclined = useCallback(() => {
+        getDeclinedTrades()
+            .then(setDeclined)
+            .catch(err => console.error('Failed to load declined trades:', err));
+    }, []);
+
+    // Reloaded each time the close tab opens, so games declined (or timed
+    // out) on the trades tab show up without a restart.
+    useEffect(() => {
+        if (tab !== 'close') return;
+        refreshDeclined();
+    }, [tab, resetKey, refreshDeclined]);
 
     return (
         <View style={styles.container}>
@@ -179,6 +197,10 @@ export default function ActiveTradesTestScreen() {
                             <TradeDeck
                                 key={game.gameId}
                                 gameId={game.gameId}
+                                isMyTurn={game.myTurn}
+                                turnDeadline={game.turnDeadline}
+                                onActionComplete={refreshBarterGames}
+                                onTurnExpired={refreshBarterGames}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}
                                 playerUser={game.player.user}
@@ -214,8 +236,10 @@ export default function ActiveTradesTestScreen() {
                             deckType="deals"
                         />
                         <OfferDeck
-                            posts={[]}
+                            posts={declined}
                             deckType="declined"
+                            onHorizontalGestureStart={() => setScrollEnabled(false)}
+                            onGestureEnd={() => setScrollEnabled(true)}
                         />
                     </View>
                 )}

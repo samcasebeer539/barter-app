@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
 from helpers import get_uid_from_request, serialize_post, serialize_trade
-from models.game import Game
+from models.game import Game, iso_utc
 
 trades_barter_bp = Blueprint("trades_barter", __name__)
 
@@ -117,6 +117,15 @@ def get_barter_games():
 
     results = []
     for game in games:
+        # Decline any game whose active player ran out of time, and leave it
+        # out of the list (it's no longer in the barter phase).
+        game_obj = Game.from_doc(game)
+        if game_obj.expire_if_overdue():
+            continue
+        if "turn_started_at" not in game:
+            game_obj.save()  # start the clock for games from before turn timers
+        deadline = game_obj.turn_deadline()
+
         is_initiator = game["initiator_user_id"] == user["_id"]
 
         my_user_id = user["_id"]
@@ -133,6 +142,7 @@ def get_barter_games():
             "gameId": str(game["_id"]),
             "turnUserId": str(game["turn_user_id"]),
             "myTurn": game["turn_user_id"] == my_user_id,
+            "turnDeadline": iso_utc(deadline),
             "player": {
                 "user": _serialize_user(user),
                 "posts": _resolve_posts(game["cards"].get(my_role, [])),

@@ -23,6 +23,8 @@ def get_trade():
     if not game.is_participant(user["_id"]):
         return jsonify({"error": "Unauthorized"}), 403
 
+    game.expire_if_overdue()
+
     result = game.to_json()
     result["turns"] = [
         serialize_trade(t) for t in

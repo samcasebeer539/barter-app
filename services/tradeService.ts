@@ -92,6 +92,16 @@ export async function getBarterTrade() {
     return res.json();
 }
 
+// Every post that isn't yours from all your declined games, one card per
+// post, most recently declined first.
+export async function getDeclinedTrades(): Promise<OpenTradeItem[]> {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BASE_URL}/dev/trades/declined`, { headers });
+    if (!res.ok) throw new Error(`Failed to load declined trades (${res.status})`);
+    const data = await res.json();
+    return data.map(normalizeTradeItem);
+}
+
 export async function getClosedTrade() {
     const headers = await getAuthHeader();
     const res = await fetch(`${BASE_URL}/dev/trades/closed`, {headers});
@@ -105,6 +115,11 @@ export function acceptTrade(gameId: string) {
 
 export function declineTrade(gameId: string) {
     return postTrade('/dev/trades/trade_details/decline', { gameId });
+}
+
+// Skip your turn: the game stays in its phase and the turn passes to the partner.
+export function stallTrade(gameId: string) {
+    return postTrade('/dev/trades/stall', { gameId });
 }
 
 export async function getGame(gameId: string) {
@@ -168,6 +183,8 @@ export interface BarterGame {
   gameId: string;
   turnUserId: string;
   myTurn: boolean;
+  /** ISO timestamp the active player's turn runs out; the game auto-declines after. */
+  turnDeadline: string | null;
   player: { user: User; posts: Post[] };
   partner: { user: User; posts: Post[] };
   turns: any[];

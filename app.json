@@ -29,8 +29,8 @@
         }
       ],
       "expo-font",
-      "expo-router",
-      "expo-status-bar"
+      "expo-router"
+      
     ]
   }
 }

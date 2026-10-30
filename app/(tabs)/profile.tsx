@@ -3,12 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   Keyboard,
   KeyboardEvent,
+  Platform,
 } from 'react-native';
+import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import DecksProfile from '@/components/DeckProfile';
 import { colors } from '@/styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -24,6 +25,8 @@ import { FeedProfile, OffererGroup } from '@/types/index';
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 20;
+
+const SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['top', 'right', 'bottom', 'left'];
 
 // TODO: replace with the real secondary user's MongoDB _id from routing/auth.
 // Leave empty to skip the secondary locations fetch until you have a real id —
@@ -215,7 +218,7 @@ export default function ProfileScreen() {
 	: [];
 
   if (error) return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
       <Text style={{ color: 'red', padding: 20 }}>Error: {error}</Text>
     </SafeAreaView>
   );
@@ -229,7 +232,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
       <ScrollView
         ref={scrollViewRef}
         style={styles.scroll}

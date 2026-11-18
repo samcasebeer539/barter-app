@@ -13,7 +13,6 @@ export default function RootLayout() {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            // console.log('onAuthStateChanged', user);
             setUser(user);
             if (initializing) setInitializing(false);
         });
@@ -23,16 +22,17 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (initializing) return;
-        console.log('nav:', segments.join('/'), '| user:', !!user, '| initializing:', initializing);
 
         const inAuthGroup = segments[0] === '(auth)';
         const inTabsGroup = segments[0] === '(tabs)';
-
+        const atRoot = (segments as string[]).length === 0;
+        
+        // If user is not logged in or currently not in an authorization tab, send to auth tab
         if (!user && !inAuthGroup) {
             router.replace('/login');
         } 
-        else if (user && inAuthGroup) {
-            console.log('segments:', segments, 'user:', !!user);
+        // if user is logged in and (on login page OR at the root (/)), send to feed
+        else if (user && (inAuthGroup || atRoot)) {
             router.replace('/feed');
         }
 

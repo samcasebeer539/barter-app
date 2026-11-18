@@ -84,19 +84,6 @@ export default function RootLayout() {
             },
             }}
         >
-            {/* <Tabs.Screen
-            name="index"
-            options={{
-                href: null,
-            }}
-            /> */}
-            <Tabs
-                screenListeners={{
-                    focus: (e) => console.log('FOCUS', e.target, new Error().stack?.split('\n').slice(1, 8).join('\n')),
-                    state: (e) => console.log('TAB STATE', JSON.stringify(e.data.state.routes.map((r: any) => r.name)), 'index:', e.data.state.index),
-                }}
-                screenOptions={{}}
-            ></Tabs>
             <Tabs.Screen
             name="feed"
             options={{

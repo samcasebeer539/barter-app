@@ -273,7 +273,6 @@ export default function ProfileScreen() {
           style={styles.settingsButton}
           onPress={() => {
             router.push('/settings');
-            console.log("it was pressed")
         }}
         >
           <FontAwesome6 name="gear" size={22} color={colors.ui.secondarydisabled} />

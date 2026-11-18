@@ -49,7 +49,7 @@ export default function SettingsScreen() {
     };
 
     const handleBackPress = () => {
-        router.push('/profile');
+        router.back();
     };
 
     const handleSignOut = async () => {

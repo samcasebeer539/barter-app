@@ -56,3 +56,4 @@ logs/
 bartervenv/
 __pycache__/
 *.pyc
+winwinvenv/

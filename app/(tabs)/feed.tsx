@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
-import { getFeedPosts, getFeedProfile, FeedItem, FeedProfile, searchFeedPosts } from '@/services/feedService';
+import { getFeedPosts, getFeedProfile, searchFeedPosts } from '@/services/feedService';
+import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

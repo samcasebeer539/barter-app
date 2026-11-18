@@ -23,6 +23,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (initializing) return;
+        console.log('nav:', segments.join('/'), '| user:', !!user, '| initializing:', initializing);
 
         const inAuthGroup = segments[0] === '(auth)';
         const inTabsGroup = segments[0] === '(tabs)';
@@ -30,7 +31,8 @@ export default function RootLayout() {
         if (!user && !inAuthGroup) {
             router.replace('/login');
         } 
-        else if (user && !inTabsGroup) {
+        else if (user && inAuthGroup) {
+            console.log('segments:', segments, 'user:', !!user);
             router.replace('/feed');
         }
 

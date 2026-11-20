@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 
 import Deck, { DeckGroup } from './Deck';
@@ -330,7 +330,7 @@ export default function ProfileDeck({
         onPostsChange?.([emptyPost, ...posts]);
     }, [posts, onPostsChange]);
 
-    const handleDeleteTopPost = useCallback(async () => {
+    const performDelete = useCallback(async () => {
         if (topCardType !== 'post' || topPrimaryPostIndex === null) return;
         const postToDelete = posts[topPrimaryPostIndex];
         const updated = posts.filter((_, i) => i !== topPrimaryPostIndex);
@@ -346,6 +346,22 @@ export default function ProfileDeck({
             catch (err) { console.error('Failed to delete post:', err); onPostsChange?.(posts); }
         }
     }, [topCardType, topPrimaryPostIndex, posts, onPostsChange]);
+
+    // When the delete button on a post is pressed, shows an alert before calling performDelete function to delete post
+    const handleDeleteTopPost = useCallback(() => {
+        if (topCardType !== 'post' || topPrimaryPostIndex === null) return;
+        const post = posts[topPrimaryPostIndex];
+
+        Alert.alert(
+            'Delete post?',
+            `Are you sure you want to delete "${post?.name || 'this post'}"? This can't be undone.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: performDelete },
+            ],
+            { cancelable: true }
+        );
+    }, [topCardType, topPrimaryPostIndex, posts, performDelete]);
 
     const cardWidth = Math.min(width - 36, 400);
     const spacerHeight = slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, secondaryHeight + SLIDE_MARGIN] });

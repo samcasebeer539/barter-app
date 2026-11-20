@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView, Edges } from 'react-native-safe-area-context';
-import DecksProfile from '@/components/DeckProfile';
+import ProfileDeck from "@/components/DeckProfile";
 import { colors } from '@/styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -246,7 +246,7 @@ export default function ProfileScreen() {
       >
         <View style={styles.topSpacer} />
         <View style={styles.deckWrapper}>
-          <DecksProfile
+          <ProfileDeck
             posts={primaryPosts}
             primaryUser={primaryUser}
             secondaryOfferers={secondaryOfferers}

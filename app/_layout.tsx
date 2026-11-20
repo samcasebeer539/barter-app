@@ -24,7 +24,7 @@ export default function RootLayout() {
         if (initializing) return;
 
         const inAuthGroup = segments[0] === '(auth)';
-        const inTabsGroup = segments[0] === '(tabs)';
+        // const inTabsGroup = segments[0] === '(tabs)';
         const atRoot = (segments as string[]).length === 0;
         
         // If user is not logged in or currently not in an authorization tab, send to auth tab

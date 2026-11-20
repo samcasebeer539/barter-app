@@ -8,6 +8,7 @@ import { getFeedPosts, getFeedProfile, searchFeedPosts } from '@/services/feedSe
 import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RefreshControl, Platform } from 'react-native';
 
 
 export default function FeedScreen() {
@@ -57,7 +58,7 @@ export default function FeedScreen() {
     const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
 
     const handleScroll = (event: any) => {
-        const currentScrollY = event.nativeEvent.contentOffset.y;
+        const currentScrollY = event.nativeEvent.contentOffset.y + HEADER_HEIGHT;
         const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
         const scrollingUp = currentScrollY < scrollY.current;
 
@@ -165,6 +166,23 @@ export default function FeedScreen() {
         }
     }
 
+    const HEADER_HEIGHT = 52;
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            const posts = searchQuery.length > 0
+                ? await searchFeedPosts(searchQuery)   // re-run the active search
+                : await getFeedPosts();
+            setFeedItems(posts);
+        } catch (err) {
+            console.error('Feed refresh error:', err);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [searchQuery]);
+
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
@@ -181,7 +199,20 @@ export default function FeedScreen() {
 
             <ScrollView
                 style={[styles.scrollView, { marginTop: insets.top }]}
-                contentContainerStyle={[styles.scrollContent, { paddingTop: 52 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    Platform.OS === 'android' && { paddingTop: HEADER_HEIGHT },
+                ]}
+                contentInset={{ top: HEADER_HEIGHT }}                 // iOS
+                contentOffset={{ x: 0, y: -HEADER_HEIGHT }}           // iOS: start at the first row
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={colors.ui.secondarydisabled}
+                        progressViewOffset={HEADER_HEIGHT}            // Android
+                    />
+                }
                 showsVerticalScrollIndicator={false}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}

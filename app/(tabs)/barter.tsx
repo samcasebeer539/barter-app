@@ -114,12 +114,7 @@ export default function ActiveTradesTestScreen() {
 
     const refreshBarterGames = useCallback(() => {
         getBarterGames()
-            .then(games => {
-                console.log('barter games:', JSON.stringify(games.map(g => ({
-                    gameId: g.gameId, myTurn: g.myTurn, pendingQuery: g.pendingQuery,
-                }))));
-                setBarterGames(keepIfSame(games));
-            })
+            .then(games => setBarterGames(keepIfSame(games)))
             .catch(err => console.error('Failed to load barter games:', err));
     }, []);
 
@@ -131,12 +126,7 @@ export default function ActiveTradesTestScreen() {
 
     const refreshCloseGames = useCallback(() => {
         getCloseGames()
-            .then(games => {
-                console.log('close games:', JSON.stringify(games.map(g => ({
-                    gameId: g.gameId, myTurn: g.myTurn, pendingQuery: g.pendingQuery,
-                }))));
-                setCloseGames(keepIfSame(games));
-            })
+            .then(games => setCloseGames(keepIfSame(games)))
             .catch(err => console.error('Failed to load close games:', err));
     }, []);
 

@@ -493,7 +493,12 @@ export default function ProfileDeck({
                         {isQueryDrawerOpen && (
                             <View style={styles.queryDrawer}>
                                 {incomingQueries.map(q => (
-                                    <QueryAnswer key={q.tradeId} query={q} onAnswered={onQueryAnswered} />
+                                    <QueryAnswer
+                                        key={q.tradeId}
+                                        queryId={q.tradeId}
+                                        questionTurn={{ type: 'turnQuery', user: q.fromUserName, item: q.question, isUser: false }}
+                                        onAnswered={() => onQueryAnswered?.(q)}
+                                    />
                                 ))}
                             </View>
                         )}

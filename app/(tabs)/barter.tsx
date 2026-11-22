@@ -114,7 +114,12 @@ export default function ActiveTradesTestScreen() {
 
     const refreshBarterGames = useCallback(() => {
         getBarterGames()
-            .then(games => setBarterGames(keepIfSame(games)))
+            .then(games => {
+                console.log('barter games:', JSON.stringify(games.map(g => ({
+                    gameId: g.gameId, myTurn: g.myTurn, pendingQuery: g.pendingQuery,
+                }))));
+                setBarterGames(keepIfSame(games));
+            })
             .catch(err => console.error('Failed to load barter games:', err));
     }, []);
 

@@ -6,10 +6,11 @@ import Deck, { DeckGroup } from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
+import QueryAnswer from './QueryAnswer';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery, answerQuery } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -48,7 +49,8 @@ interface TradeDeckProps {
   // games when they're next loaded, so the screen should refetch.
   onTurnExpired?: () => void;
   // A question the partner asked that the player must answer before their
-  // turn begins. While set (and it's their turn), the wheel offers only ANSWER.
+  // turn begins. While set, the main wheel stays on WAIT and the ANSWER wheel
+  // appears under the question in the log.
   pendingQuery?: { tradeId: string; message: string } | null;
 }
 
@@ -61,7 +63,6 @@ const DECK_WIDTH = Math.min(width - 36, 400);
 const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
 
 const WAIT_ACTION = getActionConfig('wait');
-const ANSWER_ACTION = getActionConfig('answer');
 
 export default function TradeDeck({
   partnerUser,
@@ -88,15 +89,21 @@ export default function TradeDeck({
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
-  // On your turn: every action except WAIT — unless the partner asked a
-  // question, which you must ANSWER before the rest of your turn opens up.
-  // Off your turn: WAIT only.
+  // Your turn begins once any question the partner asked is answered. Until
+  // then (and whenever it's not your turn) the wheel shows WAIT only.
   const mustAnswer = isMyTurn && !!pendingQuery;
+  const canPlay = isMyTurn && !mustAnswer;
   const visibleActions = useMemo(() => {
-    if (mustAnswer) return ANSWER_ACTION ? [ANSWER_ACTION] : [];
-    if (isMyTurn) return actions.filter(a => a.actionType !== 'wait' && a.actionType !== 'answer');
+    if (canPlay) return actions.filter(a => a.actionType !== 'wait' && a.actionType !== 'answer');
     return WAIT_ACTION ? [WAIT_ACTION] : [];
-  }, [actions, isMyTurn, mustAnswer]);
+  }, [actions, canPlay]);
+
+  // Where the pending question sits in the log (newest first). Only the
+  // player who has to answer gets the ANSWER wheel under it.
+  const pendingTurnIndex = useMemo(
+    () => (mustAnswer ? turns.findIndex(t => t.type === 'turnQuery' && !t.isUser) : -1),
+    [mustAnswer, turns]
+  );
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showingPlayer, setShowingPlayer] = useState(false);
@@ -179,11 +186,6 @@ export default function TradeDeck({
     scrolledActionType === 'query' &&
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
-  const isAnswerActive =
-    trade.activeAction === 'answer' &&
-    scrolledActionType === 'answer' &&
-    trade.phase !== 'idle' &&
-    trade.phase !== 'confirmed';
   const isWhereActive =
     trade.activeAction === 'where' &&
     scrolledActionType === 'where' &&
@@ -193,24 +195,23 @@ export default function TradeDeck({
   // A query needs a typed question (queryText, kept local — see note above).
   // Selecting a partner post is optional: it just tags what the question is
   // about. The hook only knows about the post selection, so this overrides it.
-  // An answer shares the same text box and works the same way.
   const effectiveIsReady =
-    trade.activeAction === 'query' || trade.activeAction === 'answer'
+    trade.activeAction === 'query'
       ? queryText.trim().length > 0
       : trade.isReady;
 
   // Clear the locally-held question text whenever the query subflow ends,
   // so a stale draft doesn't leak into the next query attempt.
   useEffect(() => {
-    if (!isQueryActive && !isAnswerActive) setQueryText('');
-  }, [isQueryActive, isAnswerActive]);
+    if (!isQueryActive) setQueryText('');
+  }, [isQueryActive]);
 
   const handleActionSelected = (action: TradeAction) => {
     const { actionType, subAction } = action;
 
     // Off-turn the wheel only shows WAIT, which is display-only. This guard
     // backs that up in case anything else tries to arm a move.
-    if (!isMyTurn) return;
+    if (!canPlay) return;
 
     // Arrow / confirm tap always sends 'select' for the currently-active action.
     if (subAction === 'select' && trade.activeAction === actionType) {
@@ -242,7 +243,7 @@ export default function TradeDeck({
   };
 
   const handleConfirm = async () => {
-    if (!isMyTurn || !effectiveIsReady || !trade.activeAction) return;
+    if (!canPlay || !effectiveIsReady || !trade.activeAction) return;
 
     // Let the current touch's press-out / opacity-restore finish before
     // anything disables this same button — flipping `disabled` on a
@@ -300,19 +301,6 @@ export default function TradeDeck({
           }
         }
         onQuerySubmit?.({ postIndex, question });
-        break;
-      }
-
-      case 'answer': {
-        const answer = queryText.trim();
-        if (!pendingQuery || !answer) break;
-        try {
-          await answerQuery(pendingQuery.tradeId, answer);
-          onActionComplete?.('answer');
-        } catch (err) {
-          console.error('Answer failed:', err);
-          onActionFailed?.('answer', err);
-        }
         break;
       }
 
@@ -403,12 +391,11 @@ export default function TradeDeck({
         {/* Actions + turns */}
         {isExpanded && (
           <View style={styles.turnsAndButtonColumn}>
-            <View style={[styles.queryRow, { marginBottom: isQueryActive || isAnswerActive ? 4 : 0 }]}>
+            <View style={[styles.queryRow, { marginBottom: isQueryActive ? 4 : 0 }]}>
               <TradeTurns
                 turns={[]}
-                isQueryOpen={isQueryActive || isAnswerActive}
+                isQueryOpen={isQueryActive}
                 onQueryTextChange={setQueryText}
-                queryPlaceholder={isAnswerActive ? 'Answer to begin your turn' : undefined}
               />
             </View>
             <View style={styles.actionRow}>
@@ -428,7 +415,31 @@ export default function TradeDeck({
               />
             </View>
             <View style={styles.turnsRow}>
-              <TradeTurns turns={turns} />
+              {pendingTurnIndex >= 0 && pendingQuery ? (
+                <>
+                  {/* Newer turns, then the pending question with the ANSWER
+                      wheel under it, then the rest of the log. */}
+                  {pendingTurnIndex > 0 && (
+                    <View style={styles.logGap}>
+                      <TradeTurns turns={turns.slice(0, pendingTurnIndex)} />
+                    </View>
+                  )}
+                  <QueryAnswer
+                    queryId={pendingQuery.tradeId}
+                    questionTurn={turns[pendingTurnIndex]}
+                    placeholder="Answer to begin your turn"
+                    onAnswered={() => onActionComplete?.('answer')}
+                    onFailed={err => onActionFailed?.('answer', err)}
+                  />
+                  {pendingTurnIndex < turns.length - 1 && (
+                    <View style={styles.answerGap}>
+                      <TradeTurns turns={turns.slice(pendingTurnIndex + 1)} />
+                    </View>
+                  )}
+                </>
+              ) : (
+                <TradeTurns turns={turns} />
+              )}
             </View>
           </View>
         )}
@@ -454,6 +465,9 @@ const styles = StyleSheet.create({
   queryRow: {},
   actionRow: {marginBottom: -2},
   turnsRow: {},
+  // 4px between list elements, matching TradeTurns' own gap.
+  logGap: { marginBottom: 4 },
+  answerGap: { marginTop: 4 },
   partnerBar: {
     ...makeCountBar('leftCap', 'flex-start'),
   },

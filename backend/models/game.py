@@ -93,6 +93,10 @@ class Game:
     # Either player can walk away at any time.
     TURN_EXEMPT_ACTIONS = {"decline"}
 
+    # Moves that change what's on the table. Any *accept made before one of
+    # these was for a different deal, so it's cleared.
+    DEAL_CHANGING_ACTIONS = {"counter"}
+
     # How long the active player has to move in a turn-enforced phase before
     # the game auto-declines on their behalf.
     TURN_TIME_LIMIT = timedelta(hours=48)
@@ -197,9 +201,36 @@ class Game:
         next_phase = self.next_phase(action_type)
         if actor_id is not None:
             self.check_turn(actor_id, action_type)
+        if action_type in self.DEAL_CHANGING_ACTIONS:
+            self.reset_accepts()
         self.advance(next_phase, next_turn_user_id=next_turn_user_id)
 
-        
+    def accept(self, actor_id: ObjectId) -> bool:
+        """Record actor_id's *accept and pass the turn.
+
+        The phase only moves on once BOTH players have accepted; until then
+        the game stays put and the other player gets the turn so they can
+        accept (or keep bartering). Returns True if the phase advanced.
+
+        Raises ValueError / NotYourTurnError like apply_transition."""
+        next_phase = self.next_phase("accept")
+        self.check_turn(actor_id, "accept")
+
+        self.accepts[self.role_of(actor_id)] = True
+        other = self.other_user(actor_id)
+
+        if all(self.accepts.values()):
+            self.reset_accepts()  # fresh slate for the next phase
+            self.advance(next_phase, next_turn_user_id=other)
+            return True
+
+        self.advance(self.phase, next_turn_user_id=other)
+        return False
+
+    def reset_accepts(self):
+        self.accepts = {"initiator": False, "receiver": False}
+
+
     # ── domain logic ─────────────────────────────────────────────────────
 
     def other_user(self, actor_id: ObjectId) -> ObjectId:

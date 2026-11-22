@@ -97,28 +97,23 @@ def _resolve_posts(post_ids):
             posts.append(_serialize_post(post))
     return posts
 
-@trades_barter_bp.route("/dev/trades/barter", methods=["GET"])
-def get_barter_games():
-    uid, err = get_uid_from_request()
-    if err:
-        return err
-
-    user = user_data_collection.find_one({"firebase_uid": uid})
-
+def games_in_phase_for_user(user, phase):
+    """Every game the user is in that's in `phase`, shaped for a TradeDeck.
+    Shared by the barter and close tabs."""
     games = list(
         games_collection.find({
             "$or": [
                 {"initiator_user_id": user["_id"]},
                 {"receiver_user_id": user["_id"]},
             ],
-            "phase": "barter",
+            "phase": phase,
         })
     )
 
     results = []
     for game in games:
         # Decline any game whose active player ran out of time, and leave it
-        # out of the list (it's no longer in the barter phase).
+        # out of the list (it's no longer in this phase).
         game_obj = Game.from_doc(game)
         if game_obj.expire_if_overdue():
             continue
@@ -154,4 +149,17 @@ def get_barter_games():
             "turns": [serialize_trade(t) for t in turns],
         })
 
-    return jsonify(results), 200
+    return results
+
+
+@trades_barter_bp.route("/dev/trades/barter", methods=["GET"])
+def get_barter_games():
+    uid, err = get_uid_from_request()
+    if err:
+        return err
+
+    user = user_data_collection.find_one({"firebase_uid": uid})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify(games_in_phase_for_user(user, "barter")), 200

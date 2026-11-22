@@ -197,6 +197,14 @@ export async function getBarterGames(): Promise<BarterGame[]> {
   return JSON.parse(text);
 }
 
+// Games where both players *accepted in barter; same shape as barter games.
+export async function getCloseGames(): Promise<BarterGame[]> {
+  const headers = await getAuthHeader();
+  const res = await fetch(`${BASE_URL}/dev/trades/close`, { headers });
+  if (!res.ok) throw new Error(`Failed to load close games (${res.status})`);
+  return res.json();
+}
+
 export function resolvePostName(postId: string | undefined, posts: Post[]): string {
   if (!postId) return '';
   return posts.find(p => p._id === postId)?.name ?? '';

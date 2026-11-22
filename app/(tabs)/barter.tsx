@@ -6,36 +6,13 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTrade, getQuery, getBarterGames, getDeclinedTrades, BarterGame, buildTradeTurns } from '@/services/tradeService';
-import { OpenTradeItem, Post } from '@/types'
+import { getOpenTrade, getQuery, getBarterGames, getCloseGames, getDeclinedTrades, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const deal1Turns: TradeTurn[] = [
-    { type: 'turnAccept', user: 'Jay Wilson', isUser: false },
-    { type: 'turnAccept', isUser: true },
-    { type: 'turnQuery', user: 'Jay Wilson', item: 'Fantasy Books', isUser: false },
-    { type: 'turnCounter', isUser: true },
-    { type: 'turnBarter', user: 'Jay Wilson', item: 'Bike Repair', isUser: false },
-    { type: 'turnOffer', item: 'Fantasy Books', isUser: true },
-];
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
 const DECK_GAP = 16;
-
-const mockPosts: Post[] = [
-    {
-        _id: 'mock1',
-        name: 'Fantasy Books',
-        description: 'Includes LOTR, ASOIAF, Earthsea, Narnia',
-        photos: [
-            'https://picsum.photos/seed/book/800/400',
-            'https://picsum.photos/seed/portrait1/400/600',
-            'https://picsum.photos/seed/square1/500/500',
-        ],
-        date_posted: '11/17/24',
-    },
-];
 
 export default function ActiveTradesTestScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
@@ -47,6 +24,7 @@ export default function ActiveTradesTestScreen() {
     const [trades, setTrades] = useState<OpenTradeItem[]>([]);
     const [queries, setQueries] = useState<OpenTradeItem[]>([]);
     const [barterGames, setBarterGames] = useState<BarterGame[]>([]);
+    const [closeGames, setCloseGames] = useState<BarterGame[]>([]);
     const [declined, setDeclined] = useState<OpenTradeItem[]>([]);
     const insets = useSafeAreaInsets();
 
@@ -141,12 +119,19 @@ export default function ActiveTradesTestScreen() {
             .catch(err => console.error('Failed to load declined trades:', err));
     }, []);
 
+    const refreshCloseGames = useCallback(() => {
+        getCloseGames()
+            .then(setCloseGames)
+            .catch(err => console.error('Failed to load close games:', err));
+    }, []);
+
     // Reloaded each time the close tab opens, so games declined (or timed
     // out) on the trades tab show up without a restart.
     useEffect(() => {
         if (tab !== 'close') return;
+        refreshCloseGames();
         refreshDeclined();
-    }, [tab, resetKey, refreshDeclined]);
+    }, [tab, resetKey, refreshCloseGames, refreshDeclined]);
 
     return (
         <View style={styles.container}>
@@ -221,16 +206,31 @@ export default function ActiveTradesTestScreen() {
 
                 {tab === 'close' && (
                     <View style={styles.deckList}>
-                        <TradeDeck
-                            partnerUser={{} as any}
-                            partnerPosts={mockPosts}
-                            playerUser={{} as any}
-                            playerPosts={mockPosts}
-                            actions={dealsActions}
-                            showDateTime={true}
-                            showLocation={true}
-                            turns={deal1Turns}
-                        />
+                        {closeGames.map(game => (
+                            <TradeDeck
+                                key={game.gameId}
+                                gameId={game.gameId}
+                                isMyTurn={game.myTurn}
+                                turnDeadline={game.turnDeadline}
+                                onActionComplete={refreshCloseGames}
+                                onTurnExpired={() => { refreshCloseGames(); refreshDeclined(); }}
+                                partnerUser={game.partner.user}
+                                partnerPosts={game.partner.posts}
+                                playerUser={game.player.user}
+                                playerPosts={game.player.posts}
+                                actions={dealsActions}
+                                showDateTime={true}
+                                showLocation={true}
+                                turns={buildTradeTurns(
+                                    game.turns,
+                                    game.player.user._id ?? '',
+                                    game.partner.user.first_name,
+                                    [...game.player.posts, ...game.partner.posts]
+                                )}
+                                onHorizontalGestureStart={() => setScrollEnabled(false)}
+                                onGestureEnd={() => setScrollEnabled(true)}
+                            />
+                        ))}
                         <OfferDeck
                             posts={[]}
                             deckType="deals"

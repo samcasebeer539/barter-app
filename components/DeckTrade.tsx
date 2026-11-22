@@ -9,7 +9,7 @@ import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -172,13 +172,12 @@ export default function TradeDeck({
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
 
-  // query's readiness can come from either of two independent signals —
-  // a partner post selected (trade.subflowData, inside the hook) or a
-  // question typed (queryText, kept local — see note above). The hook
-  // only knows about the first; this folds in the second.
+  // A query needs a typed question (queryText, kept local — see note above).
+  // Selecting a partner post is optional: it just tags what the question is
+  // about. The hook only knows about the post selection, so this overrides it.
   const effectiveIsReady =
     trade.activeAction === 'query'
-      ? trade.isReady || queryText.trim().length > 0
+      ? queryText.trim().length > 0
       : trade.isReady;
 
   // Clear the locally-held question text whenever the query subflow ends,
@@ -264,12 +263,22 @@ export default function TradeDeck({
         }
         break;
 
-      case 'query':
-        onQuerySubmit?.({
-          postIndex: typeof trade.subflowData === 'number' ? trade.subflowData : null,
-          question: queryText,
-        });
+      case 'query': {
+        const postIndex = typeof trade.subflowData === 'number' ? trade.subflowData : null;
+        const question = queryText.trim();
+        if (gameId) {
+          if (!question) break;
+          try {
+            await sendGameQuery(gameId, question, postIndex !== null ? partnerPosts[postIndex]?._id : undefined);
+            onActionComplete?.('query');
+          } catch (err) {
+            console.error('Query failed:', err);
+            break;
+          }
+        }
+        onQuerySubmit?.({ postIndex, question });
         break;
+      }
 
       case 'where':
         if (trade.subflowData) onLocationProposed?.(trade.subflowData as Locations);

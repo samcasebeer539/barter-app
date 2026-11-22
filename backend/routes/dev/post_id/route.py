@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post
+from helpers import get_uid_from_request, serialize_post, public_user
 
 postId_bp = Blueprint('postId', __name__)
 
@@ -32,11 +32,8 @@ def get_feed_profile(post_id):
         owner_posts = list(posts_collection.find({"user_id": post["user_id"]}))
         owner_posts = [serialize_post(p) for p in owner_posts]
 
-        owner["_id"] = str(owner["_id"])
-        owner["posts"] = [str(p) for p in owner.get("posts", [])]
-
         return jsonify({
-            "user": owner,
+            "user": public_user(owner),
             "posts": owner_posts,
             "tapped_post_id": post_id,
         }), 200

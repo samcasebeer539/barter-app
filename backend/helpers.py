@@ -27,6 +27,23 @@ def get_uid_from_request():
     decoded_token = firebase_auth.verify_id_token(id_token)
     return decoded_token['uid'], None
 
+# Never sent to anyone but the account owner.
+_PRIVATE_USER_FIELDS = {"firebase_uid", "email", "phone"}
+
+
+def public_user(user):
+    """A user record as other players may see it: firebase_uid is always
+    removed, and email/phone only appear if the owner made them visible."""
+    if not user:
+        return None
+    out = {k: v for k, v in user.items() if k not in _PRIVATE_USER_FIELDS}
+    if user.get("email_visible"):
+        out["email"] = user.get("email", "")
+    if user.get("phone_visible"):
+        out["phone"] = user.get("phone", "")
+    return clean(out)
+
+
 def serialize_trade(trade):
     return clean(trade)
 

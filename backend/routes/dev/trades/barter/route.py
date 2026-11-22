@@ -62,7 +62,8 @@ def send_barter():
     return jsonify({"success": True, "gameId": str(game_id)}), 201
 
 
-def _serialize_user(user_doc):
+def _serialize_user(user_doc, is_self=False):
+    """is_self=False hides email unless the user made it visible."""
     if not user_doc:
         return None
     return {
@@ -72,7 +73,7 @@ def _serialize_user(user_doc):
         "pronouns": user_doc.get("pronouns", ""),
         "bio": user_doc.get("bio", ""),
         "profileImageUrl": user_doc.get("profile_photo", ""),
-        "email": user_doc.get("email", ""),
+        "email": user_doc.get("email", "") if is_self or user_doc.get("email_visible") else "",
         "email_visible": user_doc.get("email_visible", False),
         "phone_visible": user_doc.get("phone_visible", False),
         "locations": user_doc.get("locations", []),
@@ -139,7 +140,7 @@ def games_in_phase_for_user(user, phase):
             "myTurn": game["turn_user_id"] == my_user_id,
             "turnDeadline": iso_utc(deadline),
             "player": {
-                "user": _serialize_user(user),
+                "user": _serialize_user(user, is_self=True),
                 "posts": _resolve_posts(game["cards"].get(my_role, [])),
             },
             "partner": {

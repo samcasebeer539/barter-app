@@ -163,6 +163,12 @@ export function sendQuery(targetPostId: string, message: string) {
   return postTrade('/dev/trades/query', { targetPostId, message });
 }
 
+// A query played as a turn inside a game (trade deck). Passes the turn to the
+// partner. targetPostId, if given, must be one of the partner's cards.
+export function sendGameQuery(gameId: string, message: string, targetPostId?: string) {
+  return postTrade('/dev/trades/query', { gameId, message, targetPostId });
+}
+
 // ── Incoming offers (for ProfileScreen) ─────────────────────────────────────
 
 export interface IncomingOffer {
@@ -222,14 +228,16 @@ export function buildTradeTurns(
       const user = isUser ? undefined : partnerFirstName;
 
       switch (t.type) {
-        case 'query':
+        case 'query': {
+            const question = t.messages?.[0]?.message ?? '';
+            const about = resolvePostName(t.target_post_id, allPosts);
             return {
                 type: 'turnQuery',
                 user,
-                item: t.messages?.[0]?.message ?? '',
-                
+                item: about ? `${question} (${about})` : question,
                 isUser,
             };
+        }
         case 'offer':
           return {
             type: 'turnOffer',

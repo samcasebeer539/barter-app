@@ -1,3 +1,4 @@
+import re
 from flask import Blueprint, jsonify, request
 from backend import posts_collection
 from firebase_admin import auth as firebase_auth
@@ -24,6 +25,9 @@ def search_feed():
 
     if not query:
         return jsonify([])
+
+    # Match the text literally; raw input would be treated as a regex.
+    query = re.escape(query[:100])
 
     results = posts_collection.find(
         {

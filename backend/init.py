@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from routes.dev.create_user.route import create_user_bp
 from routes.dev.feed.route import feed_bp
@@ -64,4 +65,7 @@ app.register_blueprint(trades_close_bp)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    # The Werkzeug debugger lets anyone who can reach the server run code on it,
+    # so it's opt-in: FLASK_DEBUG=1 python3 backend/init.py
+    debug = os.getenv("FLASK_DEBUG") == "1"
+    app.run(host="0.0.0.0", port=5001, debug=debug)

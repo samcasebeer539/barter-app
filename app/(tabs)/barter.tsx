@@ -131,7 +131,12 @@ export default function ActiveTradesTestScreen() {
 
     const refreshCloseGames = useCallback(() => {
         getCloseGames()
-            .then(games => setCloseGames(keepIfSame(games)))
+            .then(games => {
+                console.log('close games:', JSON.stringify(games.map(g => ({
+                    gameId: g.gameId, myTurn: g.myTurn, pendingQuery: g.pendingQuery,
+                }))));
+                setCloseGames(keepIfSame(games));
+            })
             .catch(err => console.error('Failed to load close games:', err));
     }, []);
 

@@ -534,7 +534,9 @@ const styles = StyleSheet.create({
     queryRow: {},
     actionRow: { marginBottom: -2 },
     turnsRow: { marginBottom: 8 },
-    queryDrawer: { width: DECK_BAR_WIDTH, gap: 8 },
+    // 4px between cards, like every list in the trade UI; the column's own
+    // 8px gap separates the drawer from the deck and the bottom bar.
+    queryDrawer: { width: DECK_BAR_WIDTH, gap: 4 },
     buttonRow: { width: DECK_BAR_WIDTH, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 4 },
     myItemCountBar: {
         height: 44, flexDirection: 'row', flex: 1, gap: 8, ...barRadius.bottomRightCap,

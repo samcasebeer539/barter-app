@@ -9,10 +9,20 @@ import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import { getOpenTrade, getQuery, getBarterGames, getCloseGames, getDeclinedTrades, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
 const DECK_GAP = 16;
+// How often the barter/close lists recheck the server for the other
+// player's moves while you're looking at them.
+const POLL_MS = 5000;
+
+// Only swap in fresh data when something changed, so polling doesn't
+// re-render every deck (and reset its swipe position) every few seconds.
+function keepIfSame<T>(next: T) {
+    return (prev: T) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next);
+}
 
 export default function ActiveTradesTestScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
@@ -104,34 +114,45 @@ export default function ActiveTradesTestScreen() {
 
     const refreshBarterGames = useCallback(() => {
         getBarterGames()
-            .then(setBarterGames)
+            .then(games => setBarterGames(keepIfSame(games)))
             .catch(err => console.error('Failed to load barter games:', err));
     }, []);
 
-    useEffect(() => {
-        if (tab !== 'barter') return;
-        refreshBarterGames();
-    }, [tab, resetKey, refreshBarterGames]);
-
     const refreshDeclined = useCallback(() => {
         getDeclinedTrades()
-            .then(setDeclined)
+            .then(items => setDeclined(keepIfSame(items)))
             .catch(err => console.error('Failed to load declined trades:', err));
     }, []);
 
     const refreshCloseGames = useCallback(() => {
         getCloseGames()
-            .then(setCloseGames)
+            .then(games => setCloseGames(keepIfSame(games)))
             .catch(err => console.error('Failed to load close games:', err));
     }, []);
 
-    // Reloaded each time the close tab opens, so games declined (or timed
-    // out) on the trades tab show up without a restart.
+    // Whether this screen is the visible app tab. Tabs stay mounted when you
+    // leave them, so without this the lists would only reload on a sub-tab
+    // switch and would miss the other player's moves.
+    const [isFocused, setIsFocused] = useState(false);
+    useFocusEffect(useCallback(() => {
+        setIsFocused(true);
+        return () => setIsFocused(false);
+    }, []));
+
+    // Load the barter/close lists when their sub-tab opens or the screen
+    // comes back into view, then keep polling while it stays visible so the
+    // other player's moves (a new question, their turn ending) show up.
     useEffect(() => {
-        if (tab !== 'close') return;
-        refreshCloseGames();
-        refreshDeclined();
-    }, [tab, resetKey, refreshCloseGames, refreshDeclined]);
+        if (!isFocused) return;
+        const refresh =
+            tab === 'barter' ? refreshBarterGames :
+            tab === 'close' ? () => { refreshCloseGames(); refreshDeclined(); } :
+            null;
+        if (!refresh) return;
+        refresh();
+        const poll = setInterval(refresh, POLL_MS);
+        return () => clearInterval(poll);
+    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined]);
 
     return (
         <View style={styles.container}>
@@ -186,6 +207,7 @@ export default function ActiveTradesTestScreen() {
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshBarterGames}
+                                onActionFailed={refreshBarterGames}
                                 onTurnExpired={refreshBarterGames}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}
@@ -215,6 +237,7 @@ export default function ActiveTradesTestScreen() {
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshCloseGames}
+                                onActionFailed={refreshCloseGames}
                                 onTurnExpired={() => { refreshCloseGames(); refreshDeclined(); }}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}

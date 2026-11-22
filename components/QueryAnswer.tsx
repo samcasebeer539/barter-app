@@ -97,6 +97,8 @@ export default function QueryAnswer({ query, onAnswered }: QueryAnswerProps) {
 const styles = StyleSheet.create({
     container: { width: '100%' },
     questionRow: { marginBottom: 4 },
-    // Matches TradeDeck's actionRow.
-    actionRow: { marginBottom: -2 },
+    // The wheel's 46px window leaves 6px of empty space under its 40px
+    // buttons; -6 cancels it so the card ends at the button's edge and the
+    // drawer's gaps (4px between cards, 8px to the bottom bar) are exact.
+    actionRow: { marginBottom: -6 },
 });

@@ -35,6 +35,9 @@ interface TradeDeckProps {
   // Fired after a move this deck sent succeeds, so the screen can refetch
   // the game (new turn owner, new phase, new turn in the log).
   onActionComplete?: (actionType: TradeActionType) => void;
+  // Fired when the server refuses a move (e.g. the game moved on since this
+  // screen last loaded), so the screen can refetch the real state.
+  onActionFailed?: (actionType: TradeActionType, err: unknown) => void;
   gameId?: string;
   // Whose move it is. When false, the wheel shows only WAIT. Defaults to
   // true so decks without live game data (e.g. mock decks) stay usable.
@@ -76,6 +79,7 @@ export default function TradeDeck({
   onLocationProposed,
   onCounterSubmit,
   onActionComplete,
+  onActionFailed,
   gameId,
   isMyTurn = true,
   turnDeadline = null,
@@ -255,6 +259,7 @@ export default function TradeDeck({
           onActionComplete?.(trade.activeAction);
         } catch (err) {
           console.error('Accept failed:', err);
+          onActionFailed?.(trade.activeAction ?? 'accept', err);
         }
         break;
 
@@ -265,6 +270,7 @@ export default function TradeDeck({
           onActionComplete?.('decline');
         } catch (err) {
           console.error('Decline failed:', err);
+          onActionFailed?.('decline', err);
         }
         break;
 
@@ -275,6 +281,7 @@ export default function TradeDeck({
           onActionComplete?.('stall');
         } catch (err) {
           console.error('Stall failed:', err);
+          onActionFailed?.('stall', err);
         }
         break;
 
@@ -288,6 +295,7 @@ export default function TradeDeck({
             onActionComplete?.('query');
           } catch (err) {
             console.error('Query failed:', err);
+          onActionFailed?.('query', err);
             break;
           }
         }
@@ -303,6 +311,7 @@ export default function TradeDeck({
           onActionComplete?.('answer');
         } catch (err) {
           console.error('Answer failed:', err);
+          onActionFailed?.('answer', err);
         }
         break;
       }

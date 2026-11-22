@@ -62,6 +62,7 @@ def get_incoming_queries():
         trades_collection.find({
             "game_id": {"$in": list(game_ids_by_id.keys())},
             "type": "query",
+            "answered_at": None,
         }).sort("created_at", 1)
     )
 
@@ -72,6 +73,7 @@ def get_incoming_queries():
         target_post = posts_collection.find_one({"_id": q.get("target_post_id")})
 
         results.append({
+            "tradeId": str(q["_id"]),
             "gameId": str(q["game_id"]),
             "targetPostId": str(q.get("target_post_id")),
             "fromUserId": str(game["initiator_user_id"]),

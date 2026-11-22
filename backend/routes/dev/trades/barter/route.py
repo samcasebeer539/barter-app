@@ -134,11 +134,19 @@ def games_in_phase_for_user(user, phase):
 
         turns = list(trades_collection.find({"game_id": game["_id"]}).sort("created_at", 1))
 
+        # A question the partner asked that this user must answer before
+        # their turn can begin.
+        pending = game_obj.pending_query_for(my_user_id)
+
         results.append({
             "gameId": str(game["_id"]),
             "turnUserId": str(game["turn_user_id"]),
             "myTurn": game["turn_user_id"] == my_user_id,
             "turnDeadline": iso_utc(deadline),
+            "pendingQuery": {
+                "tradeId": str(pending["_id"]),
+                "message": (pending.get("messages") or [{}])[0].get("message", ""),
+            } if pending else None,
             "player": {
                 "user": _serialize_user(user, is_self=True),
                 "posts": _resolve_posts(game["cards"].get(my_role, [])),

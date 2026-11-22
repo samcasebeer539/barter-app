@@ -134,6 +134,7 @@ const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: numbe
     where:  { icon: 'circle-dot' },
     when:   { icon: 'clock' },
     verify: { icon: 'camera-rotate', size: 22 },
+    answer: { icon: 'circle' },
     stall:  { icon: 'circle' },
     accept: { icon: 'circle' },
     acceptFinal: { icon: 'circle' },
@@ -351,7 +352,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        // Everything else: where, when, verify, stall, accept, acceptFinal —
+        // Everything else: answer, where, when, verify, stall, accept, acceptFinal —
         // a single icon that fills and swaps to a check once armed.
         const mapped = SIMPLE_ICONS[action.actionType];
         return (

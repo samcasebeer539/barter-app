@@ -163,6 +163,12 @@ export function sendQuery(targetPostId: string, message: string) {
   return postTrade('/dev/trades/query', { targetPostId, message });
 }
 
+// Answer a question the other player asked. For an in-game question this
+// unlocks your turn (it doesn't use it up).
+export function answerQuery(queryId: string, message: string) {
+  return postTrade('/dev/trades/answer', { queryId, message });
+}
+
 // A query played as a turn inside a game (trade deck). Passes the turn to the
 // partner. targetPostId, if given, must be one of the partner's cards.
 export function sendGameQuery(gameId: string, message: string, targetPostId?: string) {
@@ -191,6 +197,8 @@ export interface BarterGame {
   myTurn: boolean;
   /** ISO timestamp the active player's turn runs out; the game auto-declines after. */
   turnDeadline: string | null;
+  /** A question the partner asked that you must answer before your turn begins. */
+  pendingQuery: { tradeId: string; message: string } | null;
   player: { user: User; posts: Post[] };
   partner: { user: User; posts: Post[] };
   turns: any[];
@@ -223,7 +231,7 @@ export function buildTradeTurns(
   allPosts: Post[]
 ): TradeTurn[] {
   return rawTurns
-    .map((t): TradeTurn | null => {
+    .map((t): TradeTurn | TradeTurn[] | null => {
       const isUser = t.actor_id === currentUserId;
       const user = isUser ? undefined : partnerFirstName;
 
@@ -231,12 +239,23 @@ export function buildTradeTurns(
         case 'query': {
             const question = t.messages?.[0]?.message ?? '';
             const about = resolvePostName(t.target_post_id, allPosts);
-            return {
+            const asked: TradeTurn = {
                 type: 'turnQuery',
                 user,
                 item: about ? `${question} (${about})` : question,
                 isUser,
             };
+            // The answer, if any, is the next message in the thread, from
+            // the other player.
+            const answer = (t.messages ?? []).slice(1).find((m: any) => m.sender_id !== t.actor_id);
+            if (!answer) return asked;
+            const answeredByUser = answer.sender_id === currentUserId;
+            return [asked, {
+                type: 'turnAnswer',
+                user: answeredByUser ? undefined : partnerFirstName,
+                item: answer.message,
+                isUser: answeredByUser,
+            }];
         }
         case 'offer':
           return {
@@ -293,12 +312,15 @@ export function buildTradeTurns(
           return null;
       }
     })
+    .flat()
     .filter((t): t is TradeTurn => t !== null)
     .reverse();
 }
 
 
 export interface IncomingQuery {
+  /** The query's id; pass to answerQuery. */
+  tradeId: string;
   gameId: string;
   targetPostId: string;
   fromUserId: string;
@@ -318,12 +340,12 @@ export function buildQueryTurns(item: OpenTradeItem): TradeTurn[] {
   const postName = item.post?.name ?? '';
   const messages = item.messages ?? [];
 
-  return messages.map((m): TradeTurn => ({
-    type: 'turnQuery',
-    item: m.message,
-    question: undefined,
-    isUser: m.senderId === item.actorId,
-  }))
+  return messages.map((m): TradeTurn => {
+    const asked = m.senderId === item.actorId;
+    return asked
+      ? { type: 'turnQuery', item: m.message, isUser: true }
+      : { type: 'turnAnswer', user: 'They', item: m.message, isUser: false };
+  })
   .reverse();
 }
 

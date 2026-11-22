@@ -186,6 +186,25 @@ class Game:
             raise NotYourTurnError(
                 f"It's not your turn (action '{action_type}' in phase '{self.phase}')"
             )
+        if self.pending_query_for(actor_id):
+            raise NotYourTurnError("Answer the other player's question to begin your turn")
+
+    def pending_query_for(self, user_id: ObjectId) -> Optional[dict]:
+        """The other player's unanswered in-game question to user_id, if any.
+        Until it's answered, user_id's turn can't begin. Queries asked before
+        the game reached a turn-based phase don't block anything."""
+        if self._id is None:
+            return None
+        return trades_collection.find_one(
+            {
+                "game_id": self._id,
+                "type": "query",
+                "actor_id": self.other_user(user_id),
+                "in_turn": True,
+                "answered_at": None,
+            },
+            sort=[("created_at", -1)],
+        )
 
     def apply_transition(
         self,

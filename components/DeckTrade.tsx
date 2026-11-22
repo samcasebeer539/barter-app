@@ -9,7 +9,7 @@ import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery, answerQuery } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -44,6 +44,9 @@ interface TradeDeckProps {
   // Fired once the deadline has passed. The server auto-declines overdue
   // games when they're next loaded, so the screen should refetch.
   onTurnExpired?: () => void;
+  // A question the partner asked that the player must answer before their
+  // turn begins. While set (and it's their turn), the wheel offers only ANSWER.
+  pendingQuery?: { tradeId: string; message: string } | null;
 }
 
 // Wait this long past the deadline before refetching, so a phone clock
@@ -55,6 +58,7 @@ const DECK_WIDTH = Math.min(width - 36, 400);
 const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
 
 const WAIT_ACTION = getActionConfig('wait');
+const ANSWER_ACTION = getActionConfig('answer');
 
 export default function TradeDeck({
   partnerUser,
@@ -76,14 +80,19 @@ export default function TradeDeck({
   isMyTurn = true,
   turnDeadline = null,
   onTurnExpired,
+  pendingQuery = null,
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
-  // On your turn: every action except WAIT. Off your turn: WAIT only.
+  // On your turn: every action except WAIT — unless the partner asked a
+  // question, which you must ANSWER before the rest of your turn opens up.
+  // Off your turn: WAIT only.
+  const mustAnswer = isMyTurn && !!pendingQuery;
   const visibleActions = useMemo(() => {
-    if (isMyTurn) return actions.filter(a => a.actionType !== 'wait');
+    if (mustAnswer) return ANSWER_ACTION ? [ANSWER_ACTION] : [];
+    if (isMyTurn) return actions.filter(a => a.actionType !== 'wait' && a.actionType !== 'answer');
     return WAIT_ACTION ? [WAIT_ACTION] : [];
-  }, [actions, isMyTurn]);
+  }, [actions, isMyTurn, mustAnswer]);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showingPlayer, setShowingPlayer] = useState(false);
@@ -166,6 +175,11 @@ export default function TradeDeck({
     scrolledActionType === 'query' &&
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
+  const isAnswerActive =
+    trade.activeAction === 'answer' &&
+    scrolledActionType === 'answer' &&
+    trade.phase !== 'idle' &&
+    trade.phase !== 'confirmed';
   const isWhereActive =
     trade.activeAction === 'where' &&
     scrolledActionType === 'where' &&
@@ -175,16 +189,17 @@ export default function TradeDeck({
   // A query needs a typed question (queryText, kept local — see note above).
   // Selecting a partner post is optional: it just tags what the question is
   // about. The hook only knows about the post selection, so this overrides it.
+  // An answer shares the same text box and works the same way.
   const effectiveIsReady =
-    trade.activeAction === 'query'
+    trade.activeAction === 'query' || trade.activeAction === 'answer'
       ? queryText.trim().length > 0
       : trade.isReady;
 
   // Clear the locally-held question text whenever the query subflow ends,
   // so a stale draft doesn't leak into the next query attempt.
   useEffect(() => {
-    if (!isQueryActive) setQueryText('');
-  }, [isQueryActive]);
+    if (!isQueryActive && !isAnswerActive) setQueryText('');
+  }, [isQueryActive, isAnswerActive]);
 
   const handleActionSelected = (action: TradeAction) => {
     const { actionType, subAction } = action;
@@ -280,6 +295,18 @@ export default function TradeDeck({
         break;
       }
 
+      case 'answer': {
+        const answer = queryText.trim();
+        if (!pendingQuery || !answer) break;
+        try {
+          await answerQuery(pendingQuery.tradeId, answer);
+          onActionComplete?.('answer');
+        } catch (err) {
+          console.error('Answer failed:', err);
+        }
+        break;
+      }
+
       case 'where':
         if (trade.subflowData) onLocationProposed?.(trade.subflowData as Locations);
         break;
@@ -367,11 +394,12 @@ export default function TradeDeck({
         {/* Actions + turns */}
         {isExpanded && (
           <View style={styles.turnsAndButtonColumn}>
-            <View style={[styles.queryRow, { marginBottom: isQueryActive ? 4 : 0 }]}>
+            <View style={[styles.queryRow, { marginBottom: isQueryActive || isAnswerActive ? 4 : 0 }]}>
               <TradeTurns
                 turns={[]}
-                isQueryOpen={isQueryActive}
+                isQueryOpen={isQueryActive || isAnswerActive}
                 onQueryTextChange={setQueryText}
+                queryPlaceholder={isAnswerActive ? 'Answer to begin your turn' : undefined}
               />
             </View>
             <View style={styles.actionRow}>

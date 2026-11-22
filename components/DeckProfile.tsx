@@ -4,6 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 
 import Deck, { DeckGroup } from './Deck';
 import TradeTurns, { TradeTurn } from './TradeTurns';
+import QueryAnswer from './QueryAnswer';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS, TradeActionType } from '../config/tradeConfig';
@@ -39,6 +40,7 @@ interface ProfileDeckProps {
     onDeclineSubmit?: (gameId: string) => void;
     incomingQueries?: IncomingQuery[];
     incomingOffers?: IncomingOffer[];
+    onQueryAnswered?: (query: IncomingQuery) => void;
 
 }
 
@@ -61,6 +63,7 @@ export default function ProfileDeck({
     onDeclineSubmit,
     incomingQueries = [],
     incomingOffers = [],
+    onQueryAnswered,
 }: ProfileDeckProps) {
     const slideAnim = useRef(new Animated.Value(0)).current;
     const hasIncomingQueries = incomingQueries.length > 0;
@@ -130,16 +133,6 @@ export default function ProfileDeck({
     const tradeActions = useMemo(
         () => TRADE_ACTIONS.filter(a => ['barter', 'query', 'decline'].includes(a.actionType)),
         []
-    );
-
-    const secondaryTurns: TradeTurn[] = useMemo(
-        () => incomingQueries.map(q => ({
-            type: 'turnQuery' as const,
-            user: q.fromUserName,
-            item: q.question,
-            isUser: false,
-        })),
-        [incomingQueries]
     );
 
     const offerTurnsByGroup: TradeTurn[][] = useMemo(
@@ -499,7 +492,9 @@ export default function ProfileDeck({
                         </View>
                         {isQueryDrawerOpen && (
                             <View style={styles.queryDrawer}>
-                                <TradeTurns turns={secondaryTurns} />
+                                {incomingQueries.map(q => (
+                                    <QueryAnswer key={q.tradeId} query={q} onAnswered={onQueryAnswered} />
+                                ))}
                             </View>
                         )}
                         <View style={styles.buttonRow}>
@@ -539,7 +534,7 @@ const styles = StyleSheet.create({
     queryRow: {},
     actionRow: { marginBottom: -2 },
     turnsRow: { marginBottom: 8 },
-    queryDrawer: { width: DECK_BAR_WIDTH },
+    queryDrawer: { width: DECK_BAR_WIDTH, gap: 12 },
     buttonRow: { width: DECK_BAR_WIDTH, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 4 },
     myItemCountBar: {
         height: 44, flexDirection: 'row', flex: 1, gap: 8, ...barRadius.bottomRightCap,

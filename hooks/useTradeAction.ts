@@ -7,7 +7,7 @@ const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
 
 // Actions that need an intermediate step (typed text, a picked location, etc.)
 // before they're ready to confirm
-const SUBFLOW_ACTIONS: TradeActionType[] = ['query', 'where', 'when'];
+const SUBFLOW_ACTIONS: TradeActionType[] = ['query', 'answer', 'where', 'when'];
 
 // Actions with their own +/- adjustment instead of post-selection
 const COUNTER_ACTIONS: TradeActionType[] = ['counter'];

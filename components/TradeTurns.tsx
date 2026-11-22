@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Keyboard } from 'react-native';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TextInput, Keyboard } from 'react-native';
 import { colors, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 
@@ -19,12 +18,17 @@ interface TradeTurnsProps {
   isQueryOpen?: boolean;
   /** Fires on every keystroke in the active "ask a question" input while isQueryOpen is true */
   onQueryTextChange?: (text: string) => void;
+  /** Placeholder for that input, e.g. "Answer to begin your turn" when answering. */
+  queryPlaceholder?: string;
 }
 
-const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, onQueryTextChange }) => {
-  const [queryAnswers, setQueryAnswers] = useState<Record<number, string>>({});
+const TradeTurns: React.FC<TradeTurnsProps> = ({
+  turns,
+  isQueryOpen = false,
+  onQueryTextChange,
+  queryPlaceholder = 'Ask a question…',
+}) => {
   const [activeQueryText, setActiveQueryText] = useState('');
-  const internalInputRefs = useRef<Record<number, TextInput | null>>({});
   const activeQueryInputRef = useRef<TextInput | null>(null);
 
   // Auto-focus the top query input when it opens
@@ -53,7 +57,6 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, onQ
     const parts = line.split('{action}');
     const hasAction = parts.length > 1;
     const isQuery = turn.type === 'turnQuery';
-    const answerValue = queryAnswers[index] ?? '';
 
     return (
       <View key={index} style={styles.turnWrapper}>
@@ -81,45 +84,6 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, onQ
           </Text>
         </View>
 
-        {isQuery && !turn.isUser && (
-          <View style={styles.answerRowUser}>
-            <TextInput
-              ref={el => { internalInputRefs.current[index] = el; }}
-              style={styles.answerInput}
-              placeholder="Answer"
-              placeholderTextColor={colors.actions.query}
-              value={answerValue}
-              onChangeText={text => setQueryAnswers(prev => ({ ...prev, [index]: text }))}
-              multiline
-              returnKeyType="done"
-              onSubmitEditing={() => Keyboard.dismiss()}
-              blurOnSubmit
-              keyboardAppearance="dark" 
-            />
-            <TouchableOpacity onPress={() => Keyboard.dismiss()}>
-              <FontAwesome6 name="arrow-left-long" size={26} color={colors.actions.query} />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {isQuery && turn.isUser && (
-          <View style={styles.answerRowPartner}>
-            <TextInput
-              ref={el => { internalInputRefs.current[index] = el; }}
-              style={styles.answerInput}
-              placeholder="..."
-              placeholderTextColor={colors.actions.query}
-              value={answerValue}
-              onChangeText={text => setQueryAnswers(prev => ({ ...prev, [index]: text }))}
-              multiline
-              returnKeyType="done"
-              onSubmitEditing={() => Keyboard.dismiss()}
-              blurOnSubmit
-              keyboardAppearance="dark" 
-            />
-     
-          </View>
-        )}
       </View>
     );
   };
@@ -131,7 +95,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({ turns, isQueryOpen = false, onQ
           <TextInput
             ref={activeQueryInputRef}
             style={styles.answerInput}
-            placeholder="Ask a question…"
+            placeholder={queryPlaceholder}
             placeholderTextColor={colors.actions.query}
             value={activeQueryText}
             onChangeText={handleActiveQueryChange}

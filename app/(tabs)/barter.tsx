@@ -184,6 +184,7 @@ export default function ActiveTradesTestScreen() {
                                 gameId={game.gameId}
                                 isMyTurn={game.myTurn}
                                 turnDeadline={game.turnDeadline}
+                                pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshBarterGames}
                                 onTurnExpired={refreshBarterGames}
                                 partnerUser={game.partner.user}
@@ -212,6 +213,7 @@ export default function ActiveTradesTestScreen() {
                                 gameId={game.gameId}
                                 isMyTurn={game.myTurn}
                                 turnDeadline={game.turnDeadline}
+                                pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshCloseGames}
                                 onTurnExpired={() => { refreshCloseGames(); refreshDeclined(); }}
                                 partnerUser={game.partner.user}

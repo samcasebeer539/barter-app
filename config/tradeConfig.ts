@@ -4,6 +4,7 @@ export type TradeActionType =
   | 'offer'
   | 'barter'
   | 'query'
+  | 'answer'
   | 'counter'
   | 'stall'
   | 'verify'
@@ -20,6 +21,7 @@ export type TradeTurnType =
   | 'turnBarter'
   | 'turnCounter'
   | 'turnQuery'
+  | 'turnAnswer'
   | 'turnAccept'
   | 'turnAcceptFinal'
   | 'turnStall'
@@ -67,6 +69,13 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     hasButtons: true,
     actionType: 'query',
     turnType: 'turnQuery',
+  },
+  {
+    text: 'ANSWER',
+    color: colors.actions.query,
+    hasButtons: true,
+    actionType: 'answer',
+    turnType: 'turnAnswer',
   },
   {
     text: 'COUNTER',
@@ -168,6 +177,13 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     colorStyle: { color: colors.actions.query, fontFamily: globalFonts.extrabold },
     templateUser: 'You asked: {item}',
     templatePartner: '{user} asked: {item}',
+    isSent: false,
+  },
+  turnAnswer: {
+    actionText: 'ANSWER',
+    colorStyle: { color: colors.actions.query, fontFamily: globalFonts.extrabold },
+    templateUser: 'You answered: {item}',
+    templatePartner: '{user} answered: {item}',
     isSent: false,
   },
   turnVerify: {

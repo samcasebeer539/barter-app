@@ -140,6 +140,7 @@ def _query_in_game(user, data):
         "type": "query",
         "actor_id": user["_id"],
         "target_post_id": target_post_id,
+        "in_turn": True,  # the other player must answer before their turn begins
         "created_at": now,
         "messages": [{"sender_id": user["_id"], "message": message, "created_at": now}],
     })

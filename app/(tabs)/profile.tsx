@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -207,11 +207,15 @@ export default function ProfileScreen() {
 
   const [incomingQueries, setIncomingQueries] = useState<IncomingQuery[]>([]);
 
-	useEffect(() => {
-	getIncomingQueries()
-		.then(setIncomingQueries)
-		.catch(err => console.warn('Failed to load incoming queries:', err));
-	}, []);
+  const refreshIncomingQueries = useCallback(() => {
+    getIncomingQueries()
+      .then(setIncomingQueries)
+      .catch(err => console.warn('Failed to load incoming queries:', err));
+  }, []);
+
+  useEffect(() => {
+    refreshIncomingQueries();
+  }, [refreshIncomingQueries]);
 
 	const queriesForTopPost = topPost?._id
 	? incomingQueries.filter(q => q.targetPostId === topPost._id)
@@ -263,6 +267,7 @@ export default function ProfileScreen() {
             onBarterSubmit={handleBarterSubmit}
             onDeclineSubmit={handleDeclineSubmit}
             incomingQueries={queriesForTopPost}
+            onQueryAnswered={refreshIncomingQueries}
             incomingOffers={offersForTopPost}
           />
         </View>

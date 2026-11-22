@@ -62,15 +62,19 @@ export default function QueryAnswer({ query, onAnswered }: QueryAnswerProps) {
 
     return (
         <View style={styles.container}>
-            <TradeTurns turns={questionTurn} />
-            {isAnswerActive && (
+            <View style={styles.questionRow}>
+                <TradeTurns turns={questionTurn} />
+            </View>
+            {/* Same structure as TradeDeck's queryRow: the box only takes
+                space (and its 4px gap) while it's open. */}
+            <View style={{ marginBottom: isAnswerActive ? 4 : 0 }}>
                 <TradeTurns
                     turns={[]}
-                    isQueryOpen
+                    isQueryOpen={isAnswerActive}
                     onQueryTextChange={setAnswerText}
                     queryPlaceholder="Write your answer…"
                 />
-            )}
+            </View>
             <View style={styles.actionRow}>
                 <TradeUI
                     actions={actions}
@@ -91,6 +95,8 @@ export default function QueryAnswer({ query, onAnswered }: QueryAnswerProps) {
 }
 
 const styles = StyleSheet.create({
-    container: { width: '100%', gap: 4 },
+    container: { width: '100%' },
+    questionRow: { marginBottom: 4 },
+    // Matches TradeDeck's actionRow.
     actionRow: { marginBottom: -2 },
 });

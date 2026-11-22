@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     queryRow: {},
     actionRow: { marginBottom: -2 },
     turnsRow: { marginBottom: 8 },
-    queryDrawer: { width: DECK_BAR_WIDTH, gap: 12 },
+    queryDrawer: { width: DECK_BAR_WIDTH, gap: 8 },
     buttonRow: { width: DECK_BAR_WIDTH, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 4 },
     myItemCountBar: {
         height: 44, flexDirection: 'row', flex: 1, gap: 8, ...barRadius.bottomRightCap,

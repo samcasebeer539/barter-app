@@ -74,6 +74,16 @@ def create_query():
         target_post_id=target_post_id,
     )
 
+    # Once a game is past the offer stage, questions are turns: send them
+    # through the in-game path so they're turn-gated and lock the other
+    # player's turn until answered, wherever in the app they were asked.
+    if game.phase in Game.TURN_ENFORCED_PHASES:
+        return _query_in_game(user, {
+            "gameId": str(game._id),
+            "message": message,
+            "targetPostId": str(target_post_id),
+        })
+
     trade = {
         "game_id": game._id,
         "type": "query",

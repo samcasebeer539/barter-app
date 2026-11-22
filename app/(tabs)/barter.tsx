@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Keyboard, KeyboardEvent } from 'react-native';
+import { View, StyleSheet, ScrollView, Keyboard, KeyboardEvent, Alert } from 'react-native';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
@@ -130,6 +130,14 @@ export default function ActiveTradesTestScreen() {
             .catch(err => console.error('Failed to load close games:', err));
     }, []);
 
+    // A refused move means this screen was out of date (or the move was
+    // invalid): say why, then reload so the wheel matches the server.
+    const handleActionFailed = useCallback((refresh: () => void) => (_action: unknown, err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        Alert.alert("That move didn't go through", message);
+        refresh();
+    }, []);
+
     // Whether this screen is the visible app tab. Tabs stay mounted when you
     // leave them, so without this the lists would only reload on a sub-tab
     // switch and would miss the other player's moves.
@@ -207,7 +215,7 @@ export default function ActiveTradesTestScreen() {
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshBarterGames}
-                                onActionFailed={refreshBarterGames}
+                                onActionFailed={handleActionFailed(refreshBarterGames)}
                                 onTurnExpired={refreshBarterGames}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}
@@ -237,7 +245,7 @@ export default function ActiveTradesTestScreen() {
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshCloseGames}
-                                onActionFailed={refreshCloseGames}
+                                onActionFailed={handleActionFailed(refreshCloseGames)}
                                 onTurnExpired={() => { refreshCloseGames(); refreshDeclined(); }}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}

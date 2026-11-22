@@ -1,6 +1,6 @@
 import re
 from flask import Blueprint, jsonify, request
-from backend import posts_collection
+from backend import posts_collection, user_data_collection
 from firebase_admin import auth as firebase_auth
 from helpers import serialize_post
 
@@ -18,7 +18,8 @@ def search_feed():
 
     token = auth_header.split(" ")[1]
 
-    firebase_auth.verify_id_token(token)
+    uid = firebase_auth.verify_id_token(token)["uid"]
+    user = user_data_collection.find_one({"firebase_uid": uid})
 
 
     query = request.args.get("q", "")
@@ -31,6 +32,8 @@ def search_feed():
 
     results = posts_collection.find(
         {
+            # Everyone's posts but your own.
+            **({"user_id": {"$ne": user["_id"]}} if user else {}),
             "$or": [
                 {
                     "post_title": {

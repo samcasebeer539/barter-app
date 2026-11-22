@@ -15,8 +15,8 @@ def get_feed():
         user = user_data_collection.find_one({"firebase_uid": uid})
         exclude_user_id = user["_id"] if user else None
 
-        # query = {"user_id": {"$ne": exclude_user_id}} if exclude_user_id else {}
-        query = {}
+        # Everyone's posts but your own.
+        query = {"user_id": {"$ne": exclude_user_id}} if exclude_user_id else {}
         posts = list(posts_collection.find(query).sort("date_posted", -1))
         posts = [serialize_post(p) for p in posts]
         return jsonify(posts), 200

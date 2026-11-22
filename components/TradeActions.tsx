@@ -88,13 +88,15 @@ interface TimerButtonProps {
     disabled: boolean;
     /** ISO timestamp the active player's turn runs out (from the server). */
     deadline?: string | null;
+    /** Flip the button's shape top-to-bottom (used by WAIT). */
+    flipped?: boolean;
 }
 
 const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches Game.TURN_TIME_LIMIT
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline }) => {
+const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline, flipped = false }) => {
     // With a deadline, count down to it. Without one (decks with no live
     // game behind them), fall back to a 2-day countdown from mount.
     const [endsAt] = useState(() => Date.now() + TIMER_DURATION_MS);
@@ -115,7 +117,7 @@ const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, dis
 
     const filled = isActive && !!onPress;
 
-    const btnStyle = [styles.actionButton, { borderColor: color, backgroundColor: filled ? color : 'transparent', gap: 6 }];
+    const btnStyle = [styles.actionButton, flipped && styles.actionButtonFlipped, { borderColor: color, backgroundColor: filled ? color : 'transparent', gap: 6 }];
     const iconColor = filled ? '#000' : color;
     const content = (
         <>
@@ -335,7 +337,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Wait: display-only countdown of the other player's remaining time.
         if (action.actionType === 'wait') {
-            return <TimerButton color={color} isActive={false} disabled={true} deadline={turnDeadline} />;
+            return <TimerButton color={color} isActive={false} disabled={true} deadline={turnDeadline} flipped />;
         }
 
         // Decline: shows your own remaining time (when it runs out the game
@@ -378,6 +380,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
     // mid-fill — otherwise there's a flash of unfilled colored arrow
     // between the fill ending and the arrow actually disappearing.
     const arrowVisible = showArrow || isPlayPressed || isPlaySubmitting;
+    // WAIT's buttons are the other buttons' shapes flipped top-to-bottom.
+    const isWaitShape = currentAction?.actionType === 'wait';
     const isFilled = isPlayPressed || isPlaySubmitting;
 
     useEffect(() => {
@@ -451,7 +455,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
                 <TouchableOpacity
                     activeOpacity={1}
-                    style={[styles.playButton, {
+                    style={[styles.playButton, isWaitShape && styles.playButtonFlipped, {
                         backgroundColor: arrowVisible && isFilled ? currentAction?.color : 'transparent',
                         borderColor: currentAction?.color,
                         shadowColor: currentAction?.color,
@@ -471,7 +475,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
                 </TouchableOpacity>
             </View>
 
-            <View pointerEvents="none" style={styles.shimmerOverlay}>
+            <View pointerEvents="none" style={[styles.shimmerOverlay, isWaitShape && styles.playButtonFlipped]}>
                 <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: shimmerTranslate }, { skewX: '315deg' }] }]}>
                     <LinearGradient
                         colors={[currentAction?.color + '00', currentAction?.color + '50', currentAction?.color + '00']}
@@ -501,6 +505,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center', alignItems: 'center', height: 40, width: 50,
         borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2, borderWidth: 3,
     },
+    // Up-down flip of playButton: top and bottom corners swap.
+    playButtonFlipped: {
+        borderTopLeftRadius: 25, borderBottomLeftRadius: 2, borderTopRightRadius: 2, borderBottomRightRadius: 25,
+    },
     shimmerOverlay: {
         position: 'absolute', top: 0, right: 0, width: 50, height: 40, overflow: 'hidden', zIndex: 10,
         borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2,
@@ -509,6 +517,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end', alignItems: 'center', flexDirection: 'row', paddingHorizontal: 4,
         height: 40, flex: 1, bottom: 12, borderWidth: 3,
         borderTopRightRadius: 25, borderBottomRightRadius: 25, borderTopLeftRadius: 2, borderBottomLeftRadius: 25,
+    },
+    // Up-down flip of actionButton: top and bottom corners swap.
+    actionButtonFlipped: {
+        borderTopLeftRadius: 25, borderBottomLeftRadius: 2, borderTopRightRadius: 25, borderBottomRightRadius: 25,
     },
     selectButton: { gap: 4 },
     counterMinusButton: {

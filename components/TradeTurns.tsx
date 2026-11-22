@@ -57,20 +57,25 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
     const parts = line.split('{action}');
     const hasAction = parts.length > 1;
     const isQuery = turn.type === 'turnQuery';
+    // Answers sit under their question as an outlined box (bottom-right
+    // corner rounded) rather than a filled row.
+    const isAnswer = turn.type === 'turnAnswer';
 
     return (
       <View key={index} style={styles.turnWrapper}>
         <View
           style={[
-            turn.isUser ? styles.rowUser : styles.rowPartner,
-            {
-              backgroundColor: config.colorStyle.color,
-              borderColor: config.colorStyle.color,
-              shadowColor: config.colorStyle.color,
-            },
+            isAnswer ? styles.answerBox : turn.isUser ? styles.rowUser : styles.rowPartner,
+            isAnswer
+              ? { borderColor: config.colorStyle.color }
+              : {
+                  backgroundColor: config.colorStyle.color,
+                  borderColor: config.colorStyle.color,
+                  shadowColor: config.colorStyle.color,
+                },
           ]}
         >
-          <Text style={styles.text}>
+          <Text style={[styles.text, isAnswer && { color: config.colorStyle.color }]}>
             {hasAction ? (
               <>
                 {parts[0]}
@@ -147,6 +152,15 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 2,
     borderBottomLeftRadius: 2,
     borderTopRightRadius: 2,
+    minHeight: 32,
+  },
+  answerBox: {
+    ...rowBase,
+    borderWidth: 3,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 25,
     minHeight: 32,
   },
   activeQueryRow: {

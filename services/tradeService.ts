@@ -250,12 +250,14 @@ export function buildTradeTurns(
             const answer = (t.messages ?? []).slice(1).find((m: any) => m.sender_id !== t.actor_id);
             if (!answer) return asked;
             const answeredByUser = answer.sender_id === currentUserId;
-            return [asked, {
+            // Listed answer-first because the log is reversed to newest-first
+            // below; this keeps the answer directly under its question.
+            return [{
                 type: 'turnAnswer',
                 user: answeredByUser ? undefined : partnerFirstName,
                 item: answer.message,
                 isUser: answeredByUser,
-            }];
+            }, asked];
         }
         case 'offer':
           return {
@@ -340,13 +342,17 @@ export function buildQueryTurns(item: OpenTradeItem): TradeTurn[] {
   const postName = item.post?.name ?? '';
   const messages = item.messages ?? [];
 
-  return messages.map((m): TradeTurn => {
-    const asked = m.senderId === item.actorId;
-    return asked
-      ? { type: 'turnQuery', item: m.message, isUser: true }
-      : { type: 'turnAnswer', user: 'They', item: m.message, isUser: false };
-  })
-  .reverse();
+  // Group each question with the answer that follows it, then put the
+  // newest question first. The answer stays directly under its question.
+  const groups: TradeTurn[][] = [];
+  for (const m of messages) {
+    if (m.senderId === item.actorId) {
+      groups.push([{ type: 'turnQuery', item: m.message, isUser: true }]);
+    } else if (groups.length > 0) {
+      groups[groups.length - 1].push({ type: 'turnAnswer', user: 'They', item: m.message, isUser: false });
+    }
+  }
+  return groups.reverse().flat();
 }
 
 function groupQueryItems(items: OpenTradeItem[]): OpenTradeItem[] {

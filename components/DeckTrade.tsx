@@ -572,28 +572,23 @@ export default function TradeDeck({
             <View style={styles.turnsRow}>
               {isAgreed && (
                 <View style={styles.dealBox}>
-                  <Text style={styles.dealTitle}>Deal agreed</Text>
+                  <Text style={styles.dealLine}>Deal agreed</Text>
                   <Text style={styles.dealLine}>
-                    <Text style={styles.dealLabel}>You give: </Text>
-                    {playerPosts.map(p => p.name).join(', ') || '—'}
+                    You give: {playerPosts.map(p => p.name).join(', ') || '—'}
                   </Text>
                   <Text style={styles.dealLine}>
-                    <Text style={styles.dealLabel}>You get: </Text>
-                    {partnerPosts.map(p => p.name).join(', ') || '—'}
+                    You get: {partnerPosts.map(p => p.name).join(', ') || '—'}
                   </Text>
                   <Text style={styles.dealLine}>
-                    <Text style={styles.dealLabel}>Where: </Text>
-                    {proposals.where
+                    Where: {proposals.where
                       ? `${proposals.where.location.name}${proposals.where.location.description ? ` (${proposals.where.location.description})` : ''}`
                       : '—'}
                   </Text>
                   <Text style={styles.dealLine}>
-                    <Text style={styles.dealLabel}>When: </Text>
-                    {proposals.when?.label ?? '—'}
+                    When: {proposals.when?.label ?? '—'}
                   </Text>
                   <Text style={styles.dealLine}>
-                    <Text style={styles.dealLabel}>With: </Text>
-                    {[partnerUser.first_name, partnerUser.last_name].filter(Boolean).join(' ')}
+                    With: {[partnerUser.first_name, partnerUser.last_name].filter(Boolean).join(' ')}
                   </Text>
                 </View>
               )}
@@ -670,20 +665,10 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 4,
   },
-  dealTitle: {
-    color: colors.text.white,
-    fontFamily: globalFonts.extrabold,
-    fontSize: 18,
-    marginBottom: 2,
-  },
   dealLine: {
     color: colors.text.white,
-    fontFamily: globalFonts.bold,
+    fontFamily: globalFonts.regular,
     fontSize: 16,
-  },
-  dealLabel: {
-    color: colors.text.white,
-    fontFamily: globalFonts.extrabold,
   },
   // 4px between list elements, matching TradeTurns' own gap.
   logGap: { marginBottom: 4 },

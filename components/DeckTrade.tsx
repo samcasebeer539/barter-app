@@ -657,17 +657,19 @@ const styles = StyleSheet.create({
   turnsRow: {},
   // Deal summary atop the log once both players accept the meetup:
   // rectangular, in the app's main color, white text.
+  // Same padding and text as TradeTurns' rows (bold 16, 10px sides), in
+  // white on the app's main color.
   dealBox: {
     backgroundColor: colors.ui.secondary,
     borderRadius: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 4,
+    paddingHorizontal: 10,
+    paddingTop: 5,
+    paddingBottom: 10,
     marginBottom: 4,
   },
   dealLine: {
     color: colors.text.white,
-    fontFamily: globalFonts.regular,
+    fontFamily: globalFonts.bold,
     fontSize: 16,
   },
   // 4px between list elements, matching TradeTurns' own gap.

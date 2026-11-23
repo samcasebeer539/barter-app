@@ -32,7 +32,6 @@ interface TradeDeckProps {
   onBarterSubmit?: (postIndexes: number[]) => void;
   onQuerySubmit?: (payload: { postIndex: number | null; question: string }) => void;
   onLocationProposed?: (location: Locations) => void;
-  onCounterSubmit?: (value: number) => void;
   // Fired after a move this deck sent succeeds, so the screen can refetch
   // the game (new turn owner, new phase, new turn in the log).
   onActionComplete?: (actionType: TradeActionType) => void;
@@ -78,7 +77,6 @@ export default function TradeDeck({
   onBarterSubmit,
   onQuerySubmit,
   onLocationProposed,
-  onCounterSubmit,
   onActionComplete,
   onActionFailed,
   gameId,
@@ -230,19 +228,6 @@ export default function TradeDeck({
       return;
     }
 
-    if (actionType === 'counter') {
-      if (subAction === 'add') {
-        trade.selectAction(actionType);
-        trade.adjustCounter(1);
-      } else if (subAction === 'remove') {
-        trade.selectAction(actionType);
-        trade.adjustCounter(-1);
-      } else {
-        trade.selectAction(actionType);
-      }
-      return;
-    }
-
     if (MULTI_SELECT_ACTIONS.includes(actionType)) {
       trade.selectAction(actionType, playerTopPostIndex);
       return;
@@ -254,7 +239,7 @@ export default function TradeDeck({
       return;
     }
 
-    // Simple actions (accept, acceptFinal, decline, stall, wait, play)
+    // Simple actions (accept, acceptFinal, add, subtract, decline, stall, wait, play)
     // and subflow actions (query, where, when) both just arm on icon tap.
     trade.selectAction(actionType);
   };
@@ -337,10 +322,6 @@ export default function TradeDeck({
         onLocationProposed?.(location);
         break;
       }
-
-      case 'counter':
-        onCounterSubmit?.(trade.counterValue);
-        break;
 
       case 'offer':
       case 'barter':

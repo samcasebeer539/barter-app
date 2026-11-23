@@ -136,6 +136,8 @@ const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: numbe
     where:  { icon: 'circle-dot' },
     when:   { icon: 'clock' },
     answer: { icon: 'circle' },
+    add:    { icon: 'plus', size: 22 },
+    subtract: { icon: 'minus', size: 22 },
     stall:  { icon: 'circle' },
     accept: { icon: 'circle' },
     acceptFinal: { icon: 'circle' },
@@ -286,30 +288,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        // Counter: dedicated +/- buttons instead of a single icon
-        if (action.actionType === 'counter') {
-            return (
-                <>
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        style={[styles.counterMinusButton, { opacity, borderColor: color }]}
-                        onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'remove' })}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6 name="minus" size={22} color={color} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        style={[styles.counterPlusButton, { opacity, borderColor: color }]}
-                        onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'add' })}
-                        disabled={disabled}
-                    >
-                        <FontAwesome6 name="plus" size={22} color={color} />
-                    </TouchableOpacity>
-                </>
-            );
-        }
-
         // Query: select a partner post, then type a question (TradeTurns)
         if (action.actionType === 'query') {
             return (
@@ -353,7 +331,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        // Everything else: answer, where, when, stall, accept, acceptFinal —
+        // Everything else: answer, add, subtract, where, when, stall, accept, acceptFinal —
         // a single icon that fills and swaps to a check once armed.
         const mapped = SIMPLE_ICONS[action.actionType];
         return (
@@ -522,16 +500,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 25, borderBottomLeftRadius: 2, borderTopRightRadius: 25, borderBottomRightRadius: 25,
     },
     selectButton: { gap: 4 },
-    counterMinusButton: {
-        justifyContent: 'center', alignItems: 'center', flex: 1, height: 40, bottom: 12, borderWidth: 3,
-        borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderBottomRightRadius: 2, borderTopRightRadius: 2,
-        borderColor: colors.actions.counter,
-    },
-    counterPlusButton: {
-        justifyContent: 'center', alignItems: 'center', flex: 1, height: 40, bottom: 12, borderWidth: 3,
-        borderTopLeftRadius: 2, borderBottomLeftRadius: 2, borderBottomRightRadius: 25, borderTopRightRadius: 25,
-        borderColor: colors.actions.counter,
-    },
     timerText: { fontSize: 20, fontFamily: globalFonts.bold },
 });
 

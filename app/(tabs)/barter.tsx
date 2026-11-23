@@ -48,7 +48,7 @@ export default function ActiveTradesTestScreen() {
     );
     const tradesActions = useMemo(
         () => TRADE_ACTIONS.filter(a =>
-            ['query', 'counter', 'stall', 'accept', 'decline', 'wait', 'play'].includes(a.actionType)
+            ['query', 'add', 'subtract', 'stall', 'accept', 'decline', 'wait', 'play'].includes(a.actionType)
         ),
         []
     );

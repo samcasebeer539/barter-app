@@ -5,7 +5,8 @@ export type TradeActionType =
   | 'barter'
   | 'query'
   | 'answer'
-  | 'counter'
+  | 'add'
+  | 'subtract'
   | 'stall'
   | 'accept'
   | 'acceptFinal'
@@ -18,7 +19,6 @@ export type TradeActionType =
 export type TradeTurnType =
   | 'turnOffer'
   | 'turnBarter'
-  | 'turnCounter'
   | 'turnQuery'
   | 'turnAnswer'
   | 'turnAccept'
@@ -75,12 +75,18 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'answer',
     turnType: 'turnAnswer',
   },
+  // ADD / SUBTRACT replace COUNTER. Not wired to the backend yet.
   {
-    text: 'COUNTER',
+    text: 'ADD',
+    color: colors.actions.verify,
+    hasButtons: true,
+    actionType: 'add',
+  },
+  {
+    text: 'SUBTRACT',
     color: colors.actions.counter,
     hasButtons: true,
-    actionType: 'counter',
-    turnType: 'turnCounter',
+    actionType: 'subtract',
   },
   {
     text: 'STALL',
@@ -155,13 +161,6 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     templateUser: 'You proposed trade for {item}',
     templatePartner: '{user} proposed trade for {item}',
     isSent: false,
-  },
-  turnCounter: {
-    actionText: 'COUNTER',
-    colorStyle: { color: colors.actions.counter, fontFamily: globalFonts.extrabold },
-    templateUser: 'You countered with {item}',
-    templatePartner: '{user} countered with {item}',
-    isSent: true,
   },
   turnQuery: {
     actionText: 'QUERY',

@@ -284,17 +284,6 @@ export function buildTradeTurns(
                 isUser,
             };
 
-        case 'counter':
-          return {
-            type: 'turnCounter',
-            user,
-            item: (t.selected_post_ids ?? [])
-              .map((id: string) => resolvePostName(id, allPosts))
-              .filter(Boolean)
-              .join(', '),
-            isUser,
-          };
-
         case 'stall':
           return { type: 'turnStall', user, isUser };
 

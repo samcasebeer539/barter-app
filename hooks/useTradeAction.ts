@@ -9,9 +9,6 @@ const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
 // before they're ready to confirm
 const SUBFLOW_ACTIONS: TradeActionType[] = ['query', 'answer', 'where', 'when'];
 
-// Actions with their own +/- adjustment instead of post-selection
-const COUNTER_ACTIONS: TradeActionType[] = ['counter'];
-
 export type TradePhase = 'idle' | 'subflow' | 'ready' | 'confirmed';
 
 export interface TradeActionState {
@@ -19,14 +16,12 @@ export interface TradeActionState {
   phase: TradePhase;
   selectedPosts: number[];
   subflowData: unknown;
-  counterValue: number;
 }
 
 type Event =
   | { type: 'SELECT_ACTION'; actionType: TradeActionType; topPostIndex: number | null }
   | { type: 'TOGGLE_POST'; postIndex: number }
   | { type: 'SET_SUBFLOW_DATA'; data: unknown }
-  | { type: 'ADJUST_COUNTER'; delta: number }
   | { type: 'CONFIRM' }
   | { type: 'RESET' };
 
@@ -35,7 +30,6 @@ const initialState: TradeActionState = {
   phase: 'idle',
   selectedPosts: [],
   subflowData: null,
-  counterValue: 0,
 };
 
 function isReady(state: TradeActionState): boolean {
@@ -46,10 +40,7 @@ function isReady(state: TradeActionState): boolean {
   if (SUBFLOW_ACTIONS.includes(state.activeAction)) {
     return state.subflowData != null && state.subflowData !== '';
   }
-  if (COUNTER_ACTIONS.includes(state.activeAction)) {
-    return state.counterValue !== 0;
-  }
-  // Simple one-tap actions: accept, acceptFinal, decline, stall, wait, play
+  // Simple one-tap actions: accept, acceptFinal, add, subtract, decline, stall, wait, play
   return true;
 }
 
@@ -78,10 +69,6 @@ function reducer(state: TradeActionState, event: Event): TradeActionState {
         return { ...base, phase: 'subflow' };
       }
 
-      if (COUNTER_ACTIONS.includes(event.actionType)) {
-        return { ...base, phase: isReady(base) ? 'ready' : 'idle' };
-      }
-
       // Simple action: one tap is enough to arm the confirm arrow
       return { ...base, phase: 'ready' };
     }
@@ -104,14 +91,6 @@ function reducer(state: TradeActionState, event: Event): TradeActionState {
       }
       const next = { ...state, subflowData: event.data };
       return { ...next, phase: isReady(next) ? 'ready' : 'subflow' };
-    }
-
-    case 'ADJUST_COUNTER': {
-      if (!state.activeAction || !COUNTER_ACTIONS.includes(state.activeAction)) {
-        return state;
-      }
-      const next = { ...state, counterValue: state.counterValue + event.delta };
-      return { ...next, phase: isReady(next) ? 'ready' : 'idle' };
     }
 
     case 'CONFIRM':
@@ -145,11 +124,6 @@ export function useTradeAction() {
     []
   );
 
-  const adjustCounter = useCallback(
-    (delta: number) => dispatch({ type: 'ADJUST_COUNTER', delta }),
-    []
-  );
-
   const confirm = useCallback(() => dispatch({ type: 'CONFIRM' }), []);
   const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
 
@@ -158,14 +132,12 @@ export function useTradeAction() {
     phase: state.phase,
     selectedPosts: state.selectedPosts,
     subflowData: state.subflowData,
-    counterValue: state.counterValue,
     isReady: state.phase === 'ready',
     isSubflow: state.phase === 'subflow',
     isConfirmed: state.phase === 'confirmed',
     selectAction,
     togglePost,
     setSubflowData,
-    adjustCounter,
     confirm,
     reset,
   };

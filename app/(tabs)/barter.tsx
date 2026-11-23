@@ -124,11 +124,26 @@ export default function ActiveTradesTestScreen() {
             .catch(err => console.error('Failed to load declined trades:', err));
     }, []);
 
+    // A close game that drops out of the list was declined (or timed out),
+    // which is the only time the declined list changes, so reload it then.
+    const closeGameCount = useRef<number | null>(null);
     const refreshCloseGames = useCallback(() => {
         getCloseGames()
-            .then(games => setCloseGames(keepIfSame(games)))
+            .then(games => {
+                if (closeGameCount.current !== null && games.length < closeGameCount.current) {
+                    refreshDeclined();
+                }
+                closeGameCount.current = games.length;
+                setCloseGames(keepIfSame(games));
+            })
             .catch(err => console.error('Failed to load close games:', err));
-    }, []);
+    }, [refreshDeclined]);
+
+    // Stable, so the decks' turn-timer effects don't restart on every render.
+    const handleCloseTurnExpired = useCallback(() => {
+        refreshCloseGames();
+        refreshDeclined();
+    }, [refreshCloseGames, refreshDeclined]);
 
     // A refused move means this screen was out of date (or the move was
     // invalid): say why, then reload so the wheel matches the server.
@@ -147,18 +162,34 @@ export default function ActiveTradesTestScreen() {
         return () => setIsFocused(false);
     }, []));
 
+    // Latest lists, readable from the poll timer without restarting it.
+    const barterGamesRef = useRef(barterGames);
+    barterGamesRef.current = barterGames;
+    const closeGamesRef = useRef(closeGames);
+    closeGamesRef.current = closeGames;
+
     // Load the barter/close lists when their sub-tab opens or the screen
-    // comes back into view, then keep polling while it stays visible so the
-    // other player's moves (a new question, their turn ending) show up.
+    // comes back into view. After that, poll only while you're waiting on
+    // the other player in at least one game: on your own turn nothing they
+    // do can change the list, so there's nothing to check for. (Your own
+    // moves refresh the list directly.) The declined list loads with the
+    // close tab and again only when a close game drops out.
     useEffect(() => {
         if (!isFocused) return;
-        const refresh =
-            tab === 'barter' ? refreshBarterGames :
-            tab === 'close' ? () => { refreshCloseGames(); refreshDeclined(); } :
-            null;
-        if (!refresh) return;
-        refresh();
-        const poll = setInterval(refresh, POLL_MS);
+        if (tab === 'barter') {
+            refreshBarterGames();
+        } else if (tab === 'close') {
+            refreshCloseGames();
+            refreshDeclined();
+        } else {
+            return;
+        }
+        const poll = setInterval(() => {
+            const games = tab === 'barter' ? barterGamesRef.current : closeGamesRef.current;
+            if (!games.some(g => !g.myTurn)) return;
+            if (tab === 'barter') refreshBarterGames();
+            else refreshCloseGames();
+        }, POLL_MS);
         return () => clearInterval(poll);
     }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined]);
 
@@ -246,7 +277,7 @@ export default function ActiveTradesTestScreen() {
                                 pendingQuery={game.pendingQuery}
                                 onActionComplete={refreshCloseGames}
                                 onActionFailed={handleActionFailed(refreshCloseGames)}
-                                onTurnExpired={() => { refreshCloseGames(); refreshDeclined(); }}
+                                onTurnExpired={handleCloseTurnExpired}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}
                                 playerUser={game.player.user}

@@ -70,6 +70,7 @@ class Game:
         "barter": {
             "query": "barter",
             "counter": "barter",
+            "subtract": "barter",
             "stall": "barter",
             "accept": "close",
             "decline": "declined",
@@ -94,7 +95,7 @@ class Game:
 
     # Moves that change what's on the table. Any *accept made before one of
     # these was for a different deal, so it's cleared.
-    DEAL_CHANGING_ACTIONS = {"counter", "where", "when"}
+    DEAL_CHANGING_ACTIONS = {"counter", "subtract", "where", "when"}
 
     # How long the active player has to move in a turn-enforced phase before
     # the game auto-declines on their behalf.

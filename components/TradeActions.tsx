@@ -137,7 +137,6 @@ const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: numbe
     when:   { icon: 'clock' },
     answer: { icon: 'circle' },
     add:    { icon: 'plus', size: 22 },
-    subtract: { icon: 'minus', size: 22 },
     stall:  { icon: 'circle' },
     accept: { icon: 'circle' },
     acceptFinal: { icon: 'circle' },
@@ -276,7 +275,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Multi-select: offer / barter / rescind — icon tap toggles the
         // current top card; fills once that specific card is selected.
-        if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
+        if (['offer', 'barter', 'rescind', 'subtract'].includes(action.actionType)) {
             return (
                 <SelectButton
                     color={color}
@@ -331,7 +330,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        // Everything else: answer, add, subtract, where, when, stall, accept, acceptFinal —
+        // Everything else: answer, add, where, when, stall, accept, acceptFinal —
         // a single icon that fills and swaps to a check once armed.
         const mapped = SIMPLE_ICONS[action.actionType];
         return (

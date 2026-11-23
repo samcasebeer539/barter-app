@@ -3,7 +3,10 @@ import { useReducer, useCallback } from 'react';
 import { TradeActionType } from '../config/tradeConfig';
 
 // Actions where progress is "select N of my own posts"
-const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
+const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', 'subtract'];
+
+// Select actions that pick exactly one post: selecting another replaces it.
+const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['subtract'];
 
 // Actions that need an intermediate step (typed text, a picked location, etc.)
 // before they're ready to confirm
@@ -40,7 +43,7 @@ function isReady(state: TradeActionState): boolean {
   if (SUBFLOW_ACTIONS.includes(state.activeAction)) {
     return state.subflowData != null && state.subflowData !== '';
   }
-  // Simple one-tap actions: accept, acceptFinal, add, subtract, decline, stall, wait, play
+  // Simple one-tap actions: accept, acceptFinal, add, decline, stall, wait, play
   return true;
 }
 
@@ -60,7 +63,9 @@ function reducer(state: TradeActionState, event: Event): TradeActionState {
         const exists = base.selectedPosts.includes(event.topPostIndex);
         const selectedPosts = exists
           ? base.selectedPosts.filter(i => i !== event.topPostIndex)
-          : [...base.selectedPosts, event.topPostIndex];
+          : SINGLE_SELECT_ACTIONS.includes(event.actionType)
+            ? [event.topPostIndex]
+            : [...base.selectedPosts, event.topPostIndex];
         const next = { ...base, selectedPosts };
         return { ...next, phase: isReady(next) ? 'ready' : 'idle' };
       }
@@ -80,7 +85,9 @@ function reducer(state: TradeActionState, event: Event): TradeActionState {
       const exists = state.selectedPosts.includes(event.postIndex);
       const selectedPosts = exists
         ? state.selectedPosts.filter(i => i !== event.postIndex)
-        : [...state.selectedPosts, event.postIndex];
+        : SINGLE_SELECT_ACTIONS.includes(state.activeAction)
+          ? [event.postIndex]
+          : [...state.selectedPosts, event.postIndex];
       const next = { ...state, selectedPosts };
       return { ...next, phase: isReady(next) ? 'ready' : 'idle' };
     }

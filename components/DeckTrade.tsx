@@ -10,7 +10,7 @@ import QueryAnswer from './QueryAnswer';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, subtractPost } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -59,7 +59,7 @@ const EXPIRY_GRACE_MS = 2000;
 
 const DECK_WIDTH = Math.min(width - 36, 400);
 
-const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind'];
+const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', 'subtract'];
 
 const WAIT_ACTION = getActionConfig('wait');
 
@@ -92,9 +92,16 @@ export default function TradeDeck({
   const mustAnswer = isMyTurn && !!pendingQuery;
   const canPlay = isMyTurn && !mustAnswer;
   const visibleActions = useMemo(() => {
-    if (canPlay) return actions.filter(a => a.actionType !== 'wait' && a.actionType !== 'answer');
+    if (canPlay) {
+      return actions.filter(a =>
+        a.actionType !== 'wait' &&
+        a.actionType !== 'answer' &&
+        // SUBTRACT only when you'd still have an item left in the trade.
+        (a.actionType !== 'subtract' || playerPosts.length > 1)
+      );
+    }
     return WAIT_ACTION ? [WAIT_ACTION] : [];
-  }, [actions, canPlay]);
+  }, [actions, canPlay, playerPosts.length]);
 
   // Where the pending question sits in the log (newest first). Only the
   // player who has to answer gets the ANSWER wheel under it.
@@ -228,6 +235,13 @@ export default function TradeDeck({
       return;
     }
 
+    if (actionType === 'subtract') {
+      // Picks from your own deck: show it, then toggle its top card.
+      if (!showingPlayer) slideToDeck(true);
+      trade.selectAction(actionType, playerTopPostIndex);
+      return;
+    }
+
     if (MULTI_SELECT_ACTIONS.includes(actionType)) {
       trade.selectAction(actionType, playerTopPostIndex);
       return;
@@ -303,6 +317,19 @@ export default function TradeDeck({
           }
         }
         onQuerySubmit?.({ postIndex, question });
+        break;
+      }
+
+      case 'subtract': {
+        const postId = playerPosts[trade.selectedPosts[0]]?._id;
+        if (!gameId || !postId) break;
+        try {
+          await subtractPost(gameId, postId);
+          onActionComplete?.('subtract');
+        } catch (err) {
+          console.error('Subtract failed:', err);
+          onActionFailed?.('subtract', err);
+        }
         break;
       }
 
@@ -390,7 +417,7 @@ export default function TradeDeck({
                   onTopCardChange={setPlayerTopPostIndex}
                   isSelectMode={isBarterActive}
                   selectedPosts={trade.selectedPosts}
-                  selectColor={colors.actions.trade}
+                  selectColor={trade.activeAction === 'subtract' ? colors.actions.counter : colors.actions.trade}
                   isLocationSelectMode={isWhereActive}
                   jumpToken={playerJumpToken}
                   jumpToCardIndex={playerLocationCardIndex}

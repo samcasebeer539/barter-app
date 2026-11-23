@@ -169,6 +169,12 @@ export function answerQuery(queryId: string, message: string) {
   return postTrade('/dev/trades/answer', { queryId, message });
 }
 
+// SUBTRACT: take one of your own items out of the trade (barter phase).
+// Passes the turn to the partner.
+export function subtractPost(gameId: string, postId: string) {
+  return postTrade('/dev/trades/subtract', { gameId, postId });
+}
+
 // WHERE: propose one of your saved locations as the meeting spot (close
 // phase). Passes the turn to the partner.
 export function proposeLocation(gameId: string, locationId: string) {
@@ -286,6 +292,9 @@ export function buildTradeTurns(
 
         case 'stall':
           return { type: 'turnStall', user, isUser };
+
+        case 'subtract':
+          return { type: 'turnSubtract', user, item: t.post_name ?? '', isUser };
 
         case 'accept':
           return { type: 'turnAccept', user, isUser };

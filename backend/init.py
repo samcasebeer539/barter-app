@@ -18,6 +18,7 @@ from routes.dev.trades.declined.route import trades_declined_bp
 from routes.dev.trades.close.route import trades_close_bp
 from routes.dev.trades.answer.route import trades_answer_bp
 from routes.dev.trades.where.route import trades_where_bp
+from routes.dev.trades.subtract.route import trades_subtract_bp
 from routes.dev.trades.trade_details.accept.route import trades_detail_accept_bp
 from routes.dev.trades.trade_details.counter.route import trades_detail_counter_bp
 from routes.dev.trades.trade_details.decline.route import trades_detail_decline_bp
@@ -64,6 +65,7 @@ app.register_blueprint(trades_declined_bp)
 app.register_blueprint(trades_close_bp)
 app.register_blueprint(trades_answer_bp)
 app.register_blueprint(trades_where_bp)
+app.register_blueprint(trades_subtract_bp)
 
 
 

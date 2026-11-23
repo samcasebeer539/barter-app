@@ -30,11 +30,13 @@ def send_offer():
 
         # Only one offer per player per post — duplicates are silently
         # ignored. Note: trade docs use actor_id, not initiator_user_id.
+        game = Game.get_or_create(user["_id"], target_post["user_id"], target_post_id)
+
+        # One offer per ongoing game; offers in ended games are history.
         existing_offer = trades_collection.find_one({
             "actor_id": user["_id"],
             "type": "offer",
-            "target_post_id": target_post_id,
-            "game_id": {"$exists": True},
+            "game_id": game._id,
         })
         if existing_offer:
             return jsonify({
@@ -43,7 +45,6 @@ def send_offer():
                 "gameId": str(existing_offer["game_id"]),
             }), 200
 
-        game = Game.get_or_create(user["_id"], target_post["user_id"], target_post_id)
 
         trade = {
             "game_id": game._id,

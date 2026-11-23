@@ -152,14 +152,26 @@ class Game:
         doc = games_collection.find_one({"_id": game_id})
         return cls.from_doc(doc) if doc else None
 
+    CLOSED_PHASES = ["declined", "completed"]
+
     @classmethod
-    def get_or_create(cls, initiator_id: ObjectId, receiver_id: ObjectId, target_post_id: ObjectId) -> "Game":
+    def find_active(cls, initiator_id: ObjectId, target_post_id: ObjectId) -> "Game | None":
+        """This player's ongoing game for this post, if any. Ended games
+        (declined / completed) don't count: they stay as history."""
         doc = games_collection.find_one({
             "initiator_user_id": initiator_id,
             "target_post_id": target_post_id,
+            "phase": {"$nin": cls.CLOSED_PHASES},
         })
-        if doc:
-            return cls.from_doc(doc)
+        return cls.from_doc(doc) if doc else None
+
+    @classmethod
+    def get_or_create(cls, initiator_id: ObjectId, receiver_id: ObjectId, target_post_id: ObjectId) -> "Game":
+        """The ongoing game for this player and post, or a fresh one. After a
+        game ends, a new offer or question starts over in a new game."""
+        existing = cls.find_active(initiator_id, target_post_id)
+        if existing:
+            return existing
 
         game = cls(initiator_id, receiver_id, target_post_id)
         result = games_collection.insert_one(game.to_doc())

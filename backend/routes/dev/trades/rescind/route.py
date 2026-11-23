@@ -27,12 +27,14 @@ def rescind_offer():
             print("RESCIND 404: post not found for id", target_post_id)
             return jsonify({"error": "Post not found"}), 404
 
+        # The offer in this player's ongoing game for the post (offers in
+        # ended games are history and can't be rescinded).
+        active_game = Game.find_active(user["_id"], target_post_id)
         offer = trades_collection.find_one({
             "actor_id": user["_id"],
             "type": "offer",
-            "target_post_id": target_post_id,
-            "game_id": {"$exists": True},
-        })
+            "game_id": active_game._id,
+        }) if active_game else None
         if not offer:
             print("RESCIND 404: no offer found for actor", user["_id"], "post", target_post_id)
             return jsonify({"error": "Offer not found"}), 404

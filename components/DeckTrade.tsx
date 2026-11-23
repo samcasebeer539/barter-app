@@ -572,7 +572,7 @@ export default function TradeDeck({
             <View style={styles.turnsRow}>
               {isAgreed && (
                 <View style={styles.dealBox}>
-                  <Text style={styles.dealLine}>Deal agreed</Text>
+                  
                   <Text style={styles.dealLine}>
                     You give: {playerPosts.map(p => p.name).join(', ') || '—'}
                   </Text>

@@ -18,17 +18,17 @@ export const colors = {
     offer: '#FFA600',  
     trade: '#ff3a86',  
     query: '#1f8bff',     //ab57ff  ff3a86 ff31dd
-    counter: '#a057ff',  
+    counter: '#ff7513',  
     
     decline: '#ff3232',    
     accept: '#00e582',     
     location: '#ff31dd',
     time: '#00e4e8', 
-    verify: '#ff8d0a',
+    verify: '#a662ff',
     wait: '#372788',
     stall: '#fb4921',
     rescind: '#ff3232',
-    review: '#ffd23f',
+    review: '#FFA600',
   },
 
 

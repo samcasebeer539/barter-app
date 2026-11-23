@@ -219,8 +219,8 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
   turnAcceptFinal: {
     actionText: 'ACCEPT',
     colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    templateUser: 'You accepted the meetup',
-    templatePartner: '{user} accepted the meetup',
+    templateUser: 'You accepted',
+    templatePartner: '{user} accepted',
     isSent: true,
   },
   turnDecline: {

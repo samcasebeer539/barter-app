@@ -248,8 +248,9 @@ export default function TradeDeck({
     }
 
     if (actionType === 'where') {
-      trade.selectAction(actionType);
-      showPlayerLocationCard();
+      const wasArmed = trade.activeAction === 'where';
+      trade.selectAction(actionType); // a second tap disarms
+      if (!wasArmed) showPlayerLocationCard();
       return;
     }
 

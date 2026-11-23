@@ -8,6 +8,11 @@ const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', '
 // Select actions that pick exactly one post: selecting another replaces it.
 const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['subtract'];
 
+// Actions whose button tap toggles something other than the action itself
+// (QUERY's button toggles the post the question is about), so tapping it
+// again doesn't disarm.
+const NON_TOGGLE_ACTIONS: TradeActionType[] = ['query'];
+
 // Actions that need an intermediate step (typed text, a picked location, etc.)
 // before they're ready to confirm
 const SUBFLOW_ACTIONS: TradeActionType[] = ['query', 'answer', 'where', 'when'];
@@ -51,6 +56,16 @@ function reducer(state: TradeActionState, event: Event): TradeActionState {
   switch (event.type) {
     case 'SELECT_ACTION': {
       const isNewAction = state.activeAction !== event.actionType;
+
+      // Tapping an armed action's button again disarms it. Select actions
+      // are the exception: their button toggles the top card instead.
+      if (
+        !isNewAction &&
+        !MULTI_SELECT_ACTIONS.includes(event.actionType) &&
+        !NON_TOGGLE_ACTIONS.includes(event.actionType)
+      ) {
+        return initialState;
+      }
       const base: TradeActionState = isNewAction
         ? { ...initialState, activeAction: event.actionType }
         : state;

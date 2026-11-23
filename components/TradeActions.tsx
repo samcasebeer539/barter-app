@@ -136,7 +136,7 @@ const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: numbe
     where:  { icon: 'circle-dot' },
     when:   { icon: 'clock' },
     answer: { icon: 'circle' },
-    add:    { icon: 'plus', size: 22 },
+    add:    { icon: 'circle-plus' },
     stall:  { icon: 'circle' },
     accept: { icon: 'circle' },
     acceptFinal: { icon: 'circle' },
@@ -275,7 +275,23 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Multi-select: offer / barter / rescind — icon tap toggles the
         // current top card; fills once that specific card is selected.
-        if (['offer', 'barter', 'rescind', 'subtract'].includes(action.actionType)) {
+        // Subtract: picks exactly one of your posts, so no count — just a
+        // minus that turns into a check once the top card is selected.
+        if (action.actionType === 'subtract') {
+            const selected = active && isArmed && topCardIsSelected;
+            return (
+                <IconButton
+                    color={color}
+                    isActive={selected}
+                    icon={selected ? 'circle-check' : 'circle-minus'}
+                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+                    disabled={disabled}
+                    fillOnActive
+                />
+            );
+        }
+
+        if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
             return (
                 <SelectButton
                     color={color}

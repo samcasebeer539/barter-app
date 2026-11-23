@@ -224,15 +224,15 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
   turnWhere: {
     actionText: 'WHERE',
     colorStyle: { color: colors.actions.location, fontFamily: globalFonts.extrabold },
-    templateUser: 'You suggested {item}',
-    templatePartner: '{user} suggested {item}',
+    templateUser: 'You set location: {item}',
+    templatePartner: '{user} set location: {item}',
     isSent: true,
   },
   turnWhen: {
     actionText: 'WHEN',
     colorStyle: { color: colors.actions.time, fontFamily: globalFonts.extrabold },
-    templateUser: 'You suggested {item}',
-    templatePartner: '{user} suggested {item}',
+    templateUser: 'You set time: {item}',
+    templatePartner: '{user} set time: {item}',
     isSent: true,
   },
 };

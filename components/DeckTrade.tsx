@@ -10,7 +10,7 @@ import QueryAnswer from './QueryAnswer';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -157,19 +157,30 @@ export default function TradeDeck({
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
 
+  // Each player's saved locations feed their deck's location card.
   const partnerGroups: DeckGroup[] = useMemo(
-    () => [{ user: partnerUser, posts: partnerPosts }],
+    () => [{ user: partnerUser, posts: partnerPosts, locations: partnerUser.locations ?? [] }],
     [partnerUser, partnerPosts]
   );
   const playerGroups: DeckGroup[] = useMemo(
-    () => [{ user: playerUser, posts: playerPosts }],
+    () => [{ user: playerUser, posts: playerPosts, locations: playerUser.locations ?? [] }],
     [playerUser, playerPosts]
   );
 
-  const handleSwitchDecks = () => {
-    const toValue = showingPlayer ? -12 : -(DECK_WIDTH) - 38;
+  const slideToDeck = (toPlayer: boolean) => {
+    const toValue = toPlayer ? -(DECK_WIDTH) - 38 : -12;
     Animated.spring(slideAnim, { toValue, useNativeDriver: true, tension: 60, friction: 10 }).start();
-    setShowingPlayer(prev => !prev);
+    setShowingPlayer(toPlayer);
+  };
+  const handleSwitchDecks = () => slideToDeck(!showingPlayer);
+
+  // WHERE brings the player's location card to the top of their deck. Deck
+  // order is user card, date card (if shown), location card, then posts.
+  const playerLocationCardIndex = (playerUser ? 1 : 0) + (showDateTime ? 1 : 0);
+  const [playerJumpToken, setPlayerJumpToken] = useState<number | undefined>(undefined);
+  const showPlayerLocationCard = () => {
+    if (!showingPlayer) slideToDeck(true);
+    setPlayerJumpToken(t => (t ?? 0) + 1);
   };
 
   const topPostIndex = showingPlayer ? playerTopPostIndex : partnerTopPostIndex;
@@ -234,6 +245,12 @@ export default function TradeDeck({
 
     if (MULTI_SELECT_ACTIONS.includes(actionType)) {
       trade.selectAction(actionType, playerTopPostIndex);
+      return;
+    }
+
+    if (actionType === 'where') {
+      trade.selectAction(actionType);
+      showPlayerLocationCard();
       return;
     }
 
@@ -304,9 +321,22 @@ export default function TradeDeck({
         break;
       }
 
-      case 'where':
-        if (trade.subflowData) onLocationProposed?.(trade.subflowData as Locations);
+      case 'where': {
+        const location = trade.subflowData as Locations | null;
+        if (!location) break;
+        if (gameId) {
+          try {
+            await proposeLocation(gameId, location.id);
+            onActionComplete?.('where');
+          } catch (err) {
+            console.error('Where failed:', err);
+            onActionFailed?.('where', err);
+            break;
+          }
+        }
+        onLocationProposed?.(location);
         break;
+      }
 
       case 'counter':
         onCounterSubmit?.(trade.counterValue);
@@ -381,6 +411,8 @@ export default function TradeDeck({
                   selectedPosts={trade.selectedPosts}
                   selectColor={colors.actions.trade}
                   isLocationSelectMode={isWhereActive}
+                  jumpToken={playerJumpToken}
+                  jumpToCardIndex={playerLocationCardIndex}
                   onProposeLocation={(location) => trade.setSubflowData(location)}
                 />
               </View>

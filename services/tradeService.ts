@@ -169,6 +169,12 @@ export function answerQuery(queryId: string, message: string) {
   return postTrade('/dev/trades/answer', { queryId, message });
 }
 
+// WHERE: propose one of your saved locations as the meeting spot (close
+// phase). Passes the turn to the partner.
+export function proposeLocation(gameId: string, locationId: string) {
+  return postTrade('/dev/trades/where', { gameId, locationId });
+}
+
 // A query played as a turn inside a game (trade deck). Passes the turn to the
 // partner. targetPostId, if given, must be one of the partner's cards.
 export function sendGameQuery(gameId: string, message: string, targetPostId?: string) {

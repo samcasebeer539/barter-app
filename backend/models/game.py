@@ -95,7 +95,7 @@ class Game:
 
     # Moves that change what's on the table. Any *accept made before one of
     # these was for a different deal, so it's cleared.
-    DEAL_CHANGING_ACTIONS = {"counter"}
+    DEAL_CHANGING_ACTIONS = {"counter", "where", "when"}
 
     # How long the active player has to move in a turn-enforced phase before
     # the game auto-declines on their behalf.

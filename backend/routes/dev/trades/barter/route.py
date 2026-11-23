@@ -77,6 +77,8 @@ def _serialize_user(user_doc, is_self=False):
         "email_visible": user_doc.get("email_visible", False),
         "phone_visible": user_doc.get("phone_visible", False),
         "locations": user_doc.get("locations", []),
+        "rating": user_doc.get("rating"),
+        "reviewCount": user_doc.get("reviewCount", 0),
     }
 
 def _serialize_post(post_doc):

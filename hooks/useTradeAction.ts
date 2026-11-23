@@ -15,7 +15,7 @@ const NON_TOGGLE_ACTIONS: TradeActionType[] = ['query'];
 
 // Actions that need an intermediate step (typed text, a picked location, etc.)
 // before they're ready to confirm
-const SUBFLOW_ACTIONS: TradeActionType[] = ['query', 'answer', 'where', 'when'];
+const SUBFLOW_ACTIONS: TradeActionType[] = ['query', 'answer', 'where', 'when', 'review'];
 
 export type TradePhase = 'idle' | 'subflow' | 'ready' | 'confirmed';
 

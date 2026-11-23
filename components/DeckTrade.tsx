@@ -7,13 +7,14 @@ import { colors, globalFonts } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import QueryAnswer from './QueryAnswer';
+import StarPicker from './StarPicker';
 import FeedDeck from './DeckFeed';
 import { getFeedProfile } from '@/services/feedService';
 import { FeedProfile } from '@/types/index';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost, getLatestProposals } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost, getLatestProposals, submitReview } from '@/services/tradeService';
 import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
 
@@ -124,8 +125,17 @@ export default function TradeDeck({
   );
   const hasPlaceAndTime = !!proposals.where && !!proposals.when;
 
+  // Each player reviews once; after that it's WAIT until the other does.
+  const hasReviewed = useMemo(
+    () => (rawTurns ?? []).some(t => t.type === 'review' && t.actor_id === playerUser._id),
+    [rawTurns, playerUser._id]
+  );
+
   const visibleActions = useMemo(() => {
-    if (isAgreed) return REVIEW_ACTION ? [REVIEW_ACTION] : [];
+    if (isAgreed) {
+      const action = hasReviewed ? WAIT_ACTION : REVIEW_ACTION;
+      return action ? [action] : [];
+    }
     if (canPlay) {
       return actions.filter(a =>
         a.actionType !== 'wait' &&
@@ -138,7 +148,7 @@ export default function TradeDeck({
       );
     }
     return WAIT_ACTION ? [WAIT_ACTION] : [];
-  }, [actions, canPlay, isAgreed, playerPosts.length, hasPlaceAndTime]);
+  }, [actions, canPlay, isAgreed, hasReviewed, playerPosts.length, hasPlaceAndTime]);
 
   // Where the pending question sits in the log (newest first). Only the
   // player who has to answer gets the ANSWER wheel under it.
@@ -267,6 +277,13 @@ export default function TradeDeck({
     scrolledActionType === 'query' &&
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
+  // REVIEW: stars (trade.subflowData, 1-5) plus optional text (queryText).
+  const isReviewActive =
+    trade.activeAction === 'review' &&
+    scrolledActionType === 'review' &&
+    trade.phase !== 'idle' &&
+    trade.phase !== 'confirmed';
+  const reviewRating = isReviewActive && typeof trade.subflowData === 'number' ? trade.subflowData : null;
   const isWhenActive =
     trade.activeAction === 'when' &&
     scrolledActionType === 'when' &&
@@ -289,8 +306,8 @@ export default function TradeDeck({
   // Clear the locally-held question text whenever the query subflow ends,
   // so a stale draft doesn't leak into the next query attempt.
   useEffect(() => {
-    if (!isQueryActive) setQueryText('');
-  }, [isQueryActive]);
+    if (!isQueryActive && !isReviewActive) setQueryText('');
+  }, [isQueryActive, isReviewActive]);
 
   const openAddDeck = async () => {
     const anyPartnerPostId = partnerPostIds[0];
@@ -430,6 +447,18 @@ export default function TradeDeck({
         break;
       }
 
+      case 'review': {
+        if (!gameId || typeof trade.subflowData !== 'number') break;
+        try {
+          await submitReview(gameId, trade.subflowData, queryText.trim());
+          onActionComplete?.('review');
+        } catch (err) {
+          console.error('Review failed:', err);
+          onActionFailed?.('review', err);
+        }
+        break;
+      }
+
       case 'when': {
         const time = trade.subflowData as ProposedTime | null;
         if (!gameId || !time) break;
@@ -552,11 +581,18 @@ export default function TradeDeck({
         {/* Actions + turns */}
         {isExpanded && (
           <View style={styles.turnsAndButtonColumn}>
-            <View style={[styles.queryRow, { marginBottom: isQueryActive ? 4 : 0 }]}>
+            <View style={[styles.queryRow, { marginBottom: isQueryActive || isReviewActive ? 4 : 0 }]}>
+              {isReviewActive && (
+                <View style={styles.starGap}>
+                  <StarPicker rating={reviewRating} onChange={n => trade.setSubflowData(n)} />
+                </View>
+              )}
               <TradeTurns
                 turns={[]}
-                isQueryOpen={isQueryActive}
+                isQueryOpen={isQueryActive || isReviewActive}
                 onQueryTextChange={setQueryText}
+                queryPlaceholder={isReviewActive ? 'Write a review (optional)' : undefined}
+                queryColor={isReviewActive ? colors.actions.review : undefined}
               />
             </View>
             <View style={styles.actionRow}>
@@ -574,6 +610,7 @@ export default function TradeDeck({
                 onActionChange={setScrolledActionType}
                 turnDeadline={turnDeadline}
                 filledActionType={isAddPressed ? 'add' : null}
+                noTurnClock={isAgreed}
               />
             </View>
             <View style={styles.turnsRow}>
@@ -679,6 +716,8 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold,
     fontSize: 16,
   },
+  // 4px between the star box and the review text box.
+  starGap: { marginBottom: 4 },
   // 4px between list elements, matching TradeTurns' own gap.
   logGap: { marginBottom: 4 },
   answerGap: { marginTop: 4 },

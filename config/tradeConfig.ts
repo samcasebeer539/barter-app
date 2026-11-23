@@ -23,6 +23,7 @@ export type TradeTurnType =
   | 'turnQuery'
   | 'turnSubtract'
   | 'turnAdd'
+  | 'turnReview'
   | 'turnAnswer'
   | 'turnAccept'
   | 'turnAcceptFinal'
@@ -135,12 +136,13 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'when',
     turnType: 'turnWhen',
   },
-  // After the deal is agreed. Not wired to the backend yet.
+  // After the deal is agreed: rate the other player.
   {
     text: 'REVIEW',
     color: colors.actions.review,
     hasButtons: true,
     actionType: 'review',
+    turnType: 'turnReview',
   },
   {
     text: 'WAIT',
@@ -180,6 +182,13 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     templateUser: 'You asked: {item}',
     templatePartner: '{user} asked: {item}',
     isSent: false,
+  },
+  turnReview: {
+    actionText: 'REVIEW',
+    colorStyle: { color: colors.actions.review, fontFamily: globalFonts.extrabold },
+    templateUser: 'You reviewed: {item}',
+    templatePartner: '{user} reviewed: {item}',
+    isSent: true,
   },
   turnAdd: {
     actionText: 'ADD',

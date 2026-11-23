@@ -30,6 +30,8 @@ interface TradeUIProps {
     turnDeadline?: string | null;
     /** An action to show filled regardless of selection, e.g. ADD while its feed deck is open. */
     filledActionType?: TradeActionType | null;
+    /** No turn clock applies (e.g. an agreed deal): WAIT shows its icon without a countdown. */
+    noTurnClock?: boolean;
 }
 
 // ─── Button pattern helpers ───────────────────────────────────────────────────
@@ -92,13 +94,15 @@ interface TimerButtonProps {
     deadline?: string | null;
     /** Flip the button's shape top-to-bottom (used by WAIT). */
     flipped?: boolean;
+    /** Show just the clock icon, no countdown. */
+    hideLabel?: boolean;
 }
 
 const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches Game.TURN_TIME_LIMIT
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline, flipped = false }) => {
+const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline, flipped = false, hideLabel = false }) => {
     // With a deadline, count down to it. Without one (decks with no live
     // game behind them), fall back to a 2-day countdown from mount.
     const [endsAt] = useState(() => Date.now() + TIMER_DURATION_MS);
@@ -123,7 +127,7 @@ const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, dis
     const iconColor = filled ? '#000' : color;
     const content = (
         <>
-            <Text style={[styles.timerText, { color: iconColor }]}>{label}</Text>
+            {!hideLabel && <Text style={[styles.timerText, { color: iconColor }]}>{label}</Text>}
             <FontAwesome6 name="clock" size={26} color={iconColor} />
         </>
     );
@@ -161,6 +165,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
     onActionChange,
     turnDeadline = null,
     filledActionType = null,
+    noTurnClock = false,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -335,7 +340,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Wait: display-only countdown of the other player's remaining time.
         if (action.actionType === 'wait') {
-            return <TimerButton color={color} isActive={false} disabled={true} deadline={turnDeadline} flipped />;
+            return <TimerButton color={color} isActive={false} disabled={true} deadline={turnDeadline} flipped hideLabel={noTurnClock} />;
         }
 
         // Decline: shows your own remaining time (when it runs out the game

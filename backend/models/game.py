@@ -86,7 +86,8 @@ class Game:
             "decline": "declined",
         },
         # Deal agreed: items, place and time are settled. Not turn-based,
-        # and no turn timer. REVIEW isn't wired up yet.
+        # and no turn timer. Each player reviews the other once; the review
+        # route completes the game after both have (see there).
         "agreed": {
             "review": "completed",
         },

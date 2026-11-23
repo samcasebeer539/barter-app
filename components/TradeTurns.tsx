@@ -20,6 +20,8 @@ interface TradeTurnsProps {
   onQueryTextChange?: (text: string) => void;
   /** Placeholder for that input, e.g. "Answer to begin your turn" when answering. */
   queryPlaceholder?: string;
+  /** Color of that input's border and text (defaults to the query color). */
+  queryColor?: string;
 }
 
 const TradeTurns: React.FC<TradeTurnsProps> = ({
@@ -27,6 +29,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
   isQueryOpen = false,
   onQueryTextChange,
   queryPlaceholder = 'Ask a question…',
+  queryColor = colors.actions.query,
 }) => {
   const [activeQueryText, setActiveQueryText] = useState('');
   const activeQueryInputRef = useRef<TextInput | null>(null);
@@ -99,12 +102,12 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
   return (
     <View style={styles.container}>
       {isQueryOpen && (
-        <View style={styles.activeQueryRow}>
+        <View style={[styles.activeQueryRow, { borderColor: queryColor }]}>
           <TextInput
             ref={activeQueryInputRef}
-            style={styles.answerInput}
+            style={[styles.answerInput, { color: queryColor }]}
             placeholder={queryPlaceholder}
-            placeholderTextColor={colors.actions.query}
+            placeholderTextColor={queryColor}
             value={activeQueryText}
             onChangeText={handleActiveQueryChange}
             multiline

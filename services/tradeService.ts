@@ -169,6 +169,12 @@ export function answerQuery(queryId: string, message: string) {
   return postTrade('/dev/trades/answer', { queryId, message });
 }
 
+// REVIEW: rate the other player 1-5 stars (text optional) once the deal is
+// agreed. When both players have reviewed, the trade is completed.
+export function submitReview(gameId: string, rating: number, text: string) {
+  return postTrade('/dev/trades/review', { gameId, rating, text });
+}
+
 // ADD: bring one of the partner's posts into the trade (barter phase).
 // Passes the turn to the partner.
 export function addPost(gameId: string, postId: string) {
@@ -330,6 +336,11 @@ export function buildTradeTurns(
 
         case 'add':
           return { type: 'turnAdd', user, item: t.post_name ?? '', isUser };
+
+        case 'review': {
+          const stars = '★'.repeat(t.rating ?? 0) + '☆'.repeat(5 - (t.rating ?? 0));
+          return { type: 'turnReview', user, item: t.text ? `${stars} "${t.text}"` : stars, isUser };
+        }
 
         case 'accept':
           // The close-phase ACCEPT is marked final; barter's is *ACCEPT.

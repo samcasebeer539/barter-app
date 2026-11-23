@@ -340,6 +340,23 @@ class Game:
         })
         return sum(1 for doc in docs if cls.from_doc(doc).expire_if_overdue())
 
+    # Phases where a player's cards are committed to a trade.
+    ACTIVE_PHASES = {"offer_pending", "barter", "close", "agreed"}
+
+    @classmethod
+    def locked_post_ids_for(cls, user_id: ObjectId) -> set:
+        """The user's own posts that are in an active trade (on their side of
+        any game in ACTIVE_PHASES). These can't be edited."""
+        locked = set()
+        docs = games_collection.find({
+            "$or": [{"initiator_user_id": user_id}, {"receiver_user_id": user_id}],
+            "phase": {"$in": list(cls.ACTIVE_PHASES)},
+        })
+        for doc in docs:
+            role = "initiator" if doc["initiator_user_id"] == user_id else "receiver"
+            locked.update(doc.get("cards", {}).get(role, []))
+        return locked
+
     def post_ids(self) -> list:
         """Every post in this game: both players' cards plus the target post."""
         ids = [self.target_post_id, *self.cards.get("initiator", []), *self.cards.get("receiver", [])]

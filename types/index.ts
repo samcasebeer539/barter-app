@@ -4,6 +4,8 @@ export interface Post {
     description: string;
     photos: string[];
     date_posted: string;
+    /** Your post is in an active trade, so it can't be edited. */
+    inTrade?: boolean;
 }
 export interface LocationEntry {
     id: string;
@@ -76,6 +78,7 @@ export interface PostRecord {
     date_posted: string;
     trade_history: object;
     incoming_offers: any[];
+    in_trade?: boolean;
 }
 
 export interface OpenTradeItem {

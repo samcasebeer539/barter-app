@@ -3,6 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
 from helpers import get_uid_from_request, serialize_post
+from models.game import Game
 
 posts_bp = Blueprint('posts', __name__)
 
@@ -18,7 +19,9 @@ def get_posts():
 
         user_id = user["_id"]
         posts = list(posts_collection.find({"user_id": user_id}))
-        posts = [serialize_post(p) for p in posts]
+        # Posts in an active trade are locked (not editable).
+        locked = Game.locked_post_ids_for(user_id)
+        posts = [{**serialize_post(p), "in_trade": p["_id"] in locked} for p in posts]
         return jsonify(posts), 200
 
     except Exception as e:

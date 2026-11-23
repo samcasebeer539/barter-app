@@ -200,7 +200,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             isSelectMode={isFront && isSelectMode}
             isSelected={selectedPosts.includes(card.postIndex)}
             selectColor={selectColor} isUser={isUser}
-            isEditable={isFront && isPostEditMode}
+            isEditable={isFront && isPostEditMode && !card.post.inTrade}
             onEnterEdit={onEnterPostEdit} onExitEdit={onExitPostEdit} onSave={onSavePost}
             isQueryMode={isFront && isQueryMode}
             isQuerySelected={isQuerySelected}

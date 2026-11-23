@@ -24,6 +24,9 @@ interface OfferDeckProps {
     onHorizontalGestureStart?: () => void;
     onGestureEnd?: () => void;
     onActionComplete?: (actionType: CompletedActionType) => void;
+    // Optional: let the screen control open/closed (e.g. one deck open at a time).
+    expanded?: boolean;
+    onToggleExpanded?: () => void;
 }
 
 const DECK_LABELS: Record<OfferDeckType, { text: string; color: string }> = {
@@ -47,8 +50,12 @@ export default function OfferDeck({
     onHorizontalGestureStart,
     onGestureEnd,
     onActionComplete,
+    expanded,
+    onToggleExpanded,
 }: OfferDeckProps) {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [internalExpanded, setInternalExpanded] = useState(false);
+    const isExpanded = expanded ?? internalExpanded;
+    const toggleExpanded = () => (onToggleExpanded ? onToggleExpanded() : setInternalExpanded(prev => !prev));
     const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
     const label = DECK_LABELS[deckType];
     const hasActions = HAS_ACTIONS[deckType];
@@ -284,7 +291,7 @@ export default function OfferDeck({
 
                 <TouchableOpacity
                     style={styles.collapseBar}
-                    onPress={() => setIsExpanded(prev => !prev)}
+                    onPress={toggleExpanded}
                     disabled={itemCount === 0}
                 >
                     <FontAwesome6

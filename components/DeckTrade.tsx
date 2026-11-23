@@ -65,6 +65,9 @@ interface TradeDeckProps {
   // turn begins. While set, the main wheel stays on WAIT and the ANSWER wheel
   // appears under the question in the log.
   pendingQuery?: { tradeId: string; message: string } | null;
+  // Optional: let the screen control open/closed (e.g. one deck open at a time).
+  expanded?: boolean;
+  onToggleExpanded?: () => void;
 }
 
 // Wait this long past the deadline before refetching, so a phone clock
@@ -101,6 +104,8 @@ export default function TradeDeck({
   pendingQuery = null,
   rawTurns,
   phase,
+  expanded,
+  onToggleExpanded,
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
@@ -155,7 +160,9 @@ export default function TradeDeck({
     [partnerPosts]
   );
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const isExpanded = expanded ?? internalExpanded;
+  const toggleExpanded = () => (onToggleExpanded ? onToggleExpanded() : setInternalExpanded(prev => !prev));
   const [showingPlayer, setShowingPlayer] = useState(false);
 
   // Partner deck (left) — the other user's posts, query-selectable
@@ -636,7 +643,7 @@ export default function TradeDeck({
 
         <TouchableOpacity
           style={styles.collapseBar}
-          onPress={() => setIsExpanded(prev => !prev)}
+          onPress={toggleExpanded}
         >
           <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
         </TouchableOpacity>

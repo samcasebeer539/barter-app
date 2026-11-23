@@ -4,6 +4,7 @@ import traceback
 from firebase_admin import storage as firebase_storage
 from backend import user_data_collection, posts_collection
 from helpers import get_uid_from_request
+from models.game import Game
 
 posts_post_id_bp = Blueprint('posts_post_id', __name__)
 
@@ -23,6 +24,9 @@ def update_post(post_id):
 
         if not update:
             return jsonify({"error": "No valid fields to update"}), 400
+
+        if ObjectId(post_id) in Game.locked_post_ids_for(user["_id"]):
+            return jsonify({"error": "This item is in an active trade and can't be edited"}), 409
 
         posts_collection.update_one(
             {"_id": ObjectId(post_id), "user_id": user["_id"]},

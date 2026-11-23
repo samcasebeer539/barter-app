@@ -20,11 +20,12 @@ function toPost(record: PostRecord): Post {
     _id: record._id,
     date_posted: record.date_posted,
     incoming_offers: record.incoming_offers ?? [],
+    inTrade: record.in_trade ?? false,
   };
 }
 
 function toPayload(post: Partial<Post>): Record<string, any> {
-  const { name, _id, ...rest } = post as any;
+  const { name, _id, inTrade, ...rest } = post as any;
   return {
     ...rest,
     ...(name !== undefined && { post_title: name }),

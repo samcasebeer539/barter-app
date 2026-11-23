@@ -224,7 +224,9 @@ const PostCard: React.FC<PostCardProps> = ({
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                 </>
-              ) : isUser ? (
+              ) : isUser && onEnterEdit && !post.inTrade ? (
+                // No edit button in decks that can't edit (e.g. the trade
+                // deck) or for posts in an active trade.
                 <TouchableOpacity style={styles.iconContainer} onPress={onEnterEdit}>
                   <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>

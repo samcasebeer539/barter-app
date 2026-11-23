@@ -13,7 +13,7 @@ import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
 import { colors } from '@/styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Post, User, Locations } from '@/types/index';
 import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
@@ -82,6 +82,28 @@ export default function ProfileScreen() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offersForTopPost.map(o => o.gameId).join(',')]);
+
+  // Posts can join or leave trades while you're elsewhere in the app, so
+  // recheck which are locked each time the profile comes into view. Only
+  // the lock flags change (and only if they differ), so the deck keeps its
+  // place and any unsaved new post stays put.
+  useFocusEffect(useCallback(() => {
+    getUserPosts()
+      .then(fresh => {
+        const lockById = new Map(fresh.map(p => [p._id, !!p.inTrade]));
+        setPrimaryPosts(prev => {
+          let changed = false;
+          const next = prev.map(p => {
+            const locked = p._id ? lockById.get(p._id) : undefined;
+            if (locked === undefined || locked === !!p.inTrade) return p;
+            changed = true;
+            return { ...p, inTrade: locked };
+          });
+          return changed ? next : prev;
+        });
+      })
+      .catch(err => console.warn('Failed to refresh post lock state:', err));
+  }, []));
 
   useEffect(() => {
     const load = async () => {

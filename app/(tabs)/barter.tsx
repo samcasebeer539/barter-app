@@ -38,6 +38,13 @@ export default function ActiveTradesTestScreen() {
     const [barterGames, setBarterGames] = useState<BarterGame[]>([]);
     const [closeGames, setCloseGames] = useState<BarterGame[]>([]);
     const [declined, setDeclined] = useState<OpenTradeItem[]>([]);
+    // Only one deck open at a time across the whole screen. Opening one
+    // closes whichever was open; tapping the open one closes it.
+    const [openDeckKey, setOpenDeckKey] = useState<string | null>(null);
+    const deckExpansion = (key: string) => ({
+        expanded: openDeckKey === key,
+        onToggleExpanded: () => setOpenDeckKey(prev => (prev === key ? null : key)),
+    });
     const insets = useSafeAreaInsets();
 
     const queriesActions = useMemo(
@@ -250,6 +257,7 @@ export default function ActiveTradesTestScreen() {
                         <OfferDeck
                             posts={queries}
                             deckType="queries"
+                            {...deckExpansion('queries')}
                             actions={queriesActions}
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
@@ -258,6 +266,7 @@ export default function ActiveTradesTestScreen() {
                         <OfferDeck
                             posts={trades}
                             deckType="offers"
+                            {...deckExpansion('offers')}
                             actions={offersActions}
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
@@ -271,6 +280,7 @@ export default function ActiveTradesTestScreen() {
                         {barterGames.map(game => (
                             <TradeDeck
                                 key={game.gameId}
+                                {...deckExpansion(`game:${game.gameId}`)}
                                 gameId={game.gameId}
                                 isMyTurn={game.myTurn}
                                 turnDeadline={game.turnDeadline}
@@ -303,6 +313,7 @@ export default function ActiveTradesTestScreen() {
                         {closeGames.map(game => (
                             <TradeDeck
                                 key={game.gameId}
+                                {...deckExpansion(`game:${game.gameId}`)}
                                 gameId={game.gameId}
                                 isMyTurn={game.myTurn}
                                 turnDeadline={game.turnDeadline}
@@ -332,10 +343,12 @@ export default function ActiveTradesTestScreen() {
                         <OfferDeck
                             posts={[]}
                             deckType="deals"
+                            {...deckExpansion('deals')}
                         />
                         <OfferDeck
                             posts={declined}
                             deckType="declined"
+                            {...deckExpansion('declined')}
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
                         />

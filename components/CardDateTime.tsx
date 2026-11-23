@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -10,25 +10,35 @@ import {
 import { FontAwesome6 } from '@expo/vector-icons';
 import { globalFonts, colors } from '../styles/globalStyles';
 
-const MAX_DATES = 5;
-
-interface TimeSpan {
-  id: string;
-  start: string;
-  end: string;
+/** A proposed meetup time, as sent with the WHEN action. */
+export interface ProposedTime {
+  /** The moment, as an ISO timestamp (UTC). */
+  proposedAt: string;
+  /** How it reads to people, e.g. "Mon, Nov 24 at 3:00 PM". */
+  label: string;
 }
 
-interface DateEntry {
-  id: string;
-  date: string;
-  times: TimeSpan[];
+interface UpcomingDate {
+  label: string;      // "Mon, Nov 24"
+  year: number;
+  month: number;      // 0-11
+  day: number;
+}
+
+interface PickedTime {
+  date: UpcomingDate;
+  time: string;       // "3:00 PM"
 }
 
 interface MeetupCardProps {
   scale?: number;
   cardWidth?: number;
-  initialDates?: DateEntry[];
-  onConfirm?: (dates: DateEntry[]) => void;
+  /** Your own card is editable; the other player's is read-only. */
+  isUser?: boolean;
+  /** While true (WHEN is armed), a complete date + time is proposed. */
+  isSelectMode?: boolean;
+  /** Fires with the date + time once both are set (null if cleared) while isSelectMode is true. */
+  onProposeTime?: (time: ProposedTime | null) => void;
 }
 
 const TIME_OPTIONS = [
@@ -37,83 +47,69 @@ const TIME_OPTIONS = [
   '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
 ];
 
-function getUpcomingDates(count: number): string[] {
-  const dates: string[] = [];
-  const d = new Date();
+function getUpcomingDates(count: number): UpcomingDate[] {
   const formatter = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  for (let i = 1; i <= count * 3 && dates.length < count; i++) {
+  const dates: UpcomingDate[] = [];
+  const d = new Date();
+  for (let i = 0; i < count; i++) {
     d.setDate(d.getDate() + 1);
-    dates.push(formatter.format(new Date(d)));
+    dates.push({ label: formatter.format(d), year: d.getFullYear(), month: d.getMonth(), day: d.getDate() });
   }
   return dates;
 }
 
-const uid = () => Math.random().toString(36).slice(2, 8);
+/** "3:00 PM" on a picked day -> the moment it names, in the phone's time zone. */
+function toProposedTime({ date, time }: PickedTime): ProposedTime {
+  const [, h, m, ampm] = time.match(/^(\d+):(\d+) (AM|PM)$/) ?? [];
+  let hours = Number(h) % 12;
+  if (ampm === 'PM') hours += 12;
+  const moment = new Date(date.year, date.month, date.day, hours, Number(m));
+  return { proposedAt: moment.toISOString(), label: `${date.label} at ${time}` };
+}
 
 const MeetupCard: React.FC<MeetupCardProps> = ({
   scale = 1,
   cardWidth,
-  initialDates = [],
-  onConfirm,
+  isUser = true,
+  isSelectMode = false,
+  onProposeTime,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
   const cardHeight = finalCardWidth * (3.5 / 2.5);
 
-  const [dates, setDates] = useState<DateEntry[]>(initialDates);
+  // One date and one time. Picking goes date -> time.
+  const [picked, setPicked] = useState<PickedTime | null>(null);
+  const [pendingDate, setPendingDate] = useState<UpcomingDate | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState<{ dateId: string; field: 'start' | 'end' } | null>(null);
-  const [pendingTime, setPendingTime] = useState<Partial<TimeSpan>>({});
 
-  const availableDates = getUpcomingDates(20);
-  const usedDates = dates.map(d => d.date);
+  const availableDates = useMemo(() => getUpcomingDates(20), []);
 
-  const addDate = (dateStr: string) => {
-    if (dates.length >= MAX_DATES) return;
-    setDates(prev => [...prev, { id: uid(), date: dateStr, times: [] }]);
+  // While WHEN is armed, hand the full date + time up (or null) whenever it
+  // changes, including a time that was already set when WHEN was tapped.
+  useEffect(() => {
+    if (!isSelectMode) return;
+    onProposeTime?.(picked ? toProposedTime(picked) : null);
+  }, [isSelectMode, picked]);
+
+  const chooseDate = (date: UpcomingDate) => {
+    setPendingDate(date);
     setShowDatePicker(false);
   };
 
-  const removeDate = (dateId: string) => {
-    setDates(prev => prev.filter(d => d.id !== dateId));
-  };
-
-  const startAddingTime = (dateId: string) => {
-    setPendingTime({});
-    setShowTimePicker({ dateId, field: 'start' });
-  };
-
-  const selectTime = (time: string) => {
-    if (!showTimePicker) return;
-    if (showTimePicker.field === 'start') {
-      setPendingTime({ start: time });
-      setShowTimePicker({ dateId: showTimePicker.dateId, field: 'end' });
-    } else {
-      const span: TimeSpan = { id: uid(), start: pendingTime.start!, end: time };
-      setDates(prev => prev.map(d =>
-        d.id === showTimePicker.dateId
-          ? { ...d, times: [...d.times, span] }
-          : d
-      ));
-      setShowTimePicker(null);
-      setPendingTime({});
-    }
-  };
-
-  const removeTime = (dateId: string, timeId: string) => {
-    setDates(prev => prev.map(d =>
-      d.id === dateId ? { ...d, times: d.times.filter(t => t.id !== timeId) } : d
-    ));
+  const chooseTime = (time: string) => {
+    if (!pendingDate) return;
+    setPicked({ date: pendingDate, time });
+    setPendingDate(null);
   };
 
   const cancelPicker = () => {
     setShowDatePicker(false);
-    setShowTimePicker(null);
-    setPendingTime({});
+    setPendingDate(null);
   };
 
-  // ---- Date picker overlay ----
+  // ---- Date picker ----
   if (showDatePicker) {
     return (
       <View style={[styles.container, { transform: [{ scale }] }]}>
@@ -125,37 +121,31 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.pickerScroll} showsVerticalScrollIndicator={false}>
-            {availableDates
-              .filter(d => !usedDates.includes(d))
-              .map(d => (
-                <TouchableOpacity key={d} style={styles.pickerRow} onPress={() => addDate(d)}>
-                  <Text style={styles.pickerRowText}>{d}</Text>
-                </TouchableOpacity>
-              ))}
+            {availableDates.map(d => (
+              <TouchableOpacity key={d.label} style={styles.pickerRow} onPress={() => chooseDate(d)}>
+                <Text style={styles.pickerRowText}>{d.label}</Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
       </View>
     );
   }
 
-  // ---- Time picker overlay ----
-  if (showTimePicker) {
-    const isEnd = showTimePicker.field === 'end';
-    const startIdx = isEnd ? TIME_OPTIONS.indexOf(pendingTime.start!) + 1 : 0;
+  // ---- Time picker (after a date) ----
+  if (pendingDate) {
     return (
       <View style={[styles.container, { transform: [{ scale }] }]}>
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
           <View style={styles.header}>
-            <Text style={styles.headerText}>
-              {isEnd ? `End time (after ${pendingTime.start})` : 'Start time'}
-            </Text>
+            <Text style={styles.headerText}>Time on {pendingDate.label}</Text>
             <TouchableOpacity onPress={cancelPicker}>
               <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.pickerScroll} showsVerticalScrollIndicator={false}>
-            {TIME_OPTIONS.slice(startIdx).map(t => (
-              <TouchableOpacity key={t} style={styles.pickerRow} onPress={() => selectTime(t)}>
+            {TIME_OPTIONS.map(t => (
+              <TouchableOpacity key={t} style={styles.pickerRow} onPress={() => chooseTime(t)}>
                 <Text style={styles.pickerRowText}>{t}</Text>
               </TouchableOpacity>
             ))}
@@ -171,57 +161,34 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
       style={[styles.container, { transform: [{ scale }] }]}
       onStartShouldSetResponder={() => true}
     >
-      <View style={[styles.container, { transform: [{ scale }] }]}>
-        <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-          <View style={styles.header}>
-            <Text style={styles.headerText}>Propose Meetup Times</Text>
-            <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
-          </View>
-
-          <ScrollView style={styles.dateList} showsVerticalScrollIndicator={false}>
-            {dates.map(dateEntry => (
-              <View key={dateEntry.id} style={styles.dateBlock}>
-                <View style={styles.dateRow}>
-                  <Text style={styles.dateText}>{dateEntry.date}</Text>
-                  <TouchableOpacity onPress={() => removeDate(dateEntry.id)}>
-                    <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.timeList}>
-                  {dateEntry.times.map(span => (
-                    <View key={span.id} style={styles.timeRow}>
-                      <View style={styles.timeChip}>
-                        <TouchableOpacity onPress={() => removeTime(dateEntry.id, span.id)}>
-                          <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
-                        </TouchableOpacity>
-                        <Text style={styles.timeText}>{span.start} – {span.end}</Text>
-                      </View>
-                    </View>
-                  ))}
-
-                  <TouchableOpacity style={styles.addTimeBtn} onPress={() => startAddingTime(dateEntry.id)}>
-                    <FontAwesome6 name="circle-plus" size={22} color={colors.ui.cardsecondary} />
-                    <Text style={styles.timeText}>Time span</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-
-            {dates.length < MAX_DATES && (
-              <TouchableOpacity style={styles.addDateBtn} onPress={() => setShowDatePicker(true)}>
-                <FontAwesome6 name="circle-plus" size={22} color={colors.actions.time} />
-                <Text style={[styles.addDateText, { color: colors.actions.time }]}>Date</Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
-
-          {dates.length > 0 && onConfirm && (
-            <TouchableOpacity style={styles.confirmBtn} onPress={() => onConfirm(dates)}>
-              <Text style={styles.confirmText}>Send Proposal</Text>
-            </TouchableOpacity>
-          )}
+      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>{isUser ? 'Propose a Meetup Time' : 'Meetup Time'}</Text>
+          <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
         </View>
+
+        {picked ? (
+          <View style={styles.timeRow}>
+            <Text style={styles.timeText}>{picked.date.label} at {picked.time}</Text>
+            <View style={styles.rowIcons}>
+              {isSelectMode && (
+                <FontAwesome6 name="circle-check" size={22} color={colors.actions.time} />
+              )}
+              {isUser && (
+                <TouchableOpacity onPress={() => setPicked(null)} hitSlop={8}>
+                  <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ) : isUser ? (
+          <TouchableOpacity style={styles.addDateBtn} onPress={() => setShowDatePicker(true)}>
+            <FontAwesome6 name="circle-plus" size={22} color={colors.actions.time} />
+            <Text style={[styles.addDateText, { color: colors.actions.time }]}>Date</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.emptyText}>No time proposed yet</Text>
+        )}
       </View>
     </View>
   );
@@ -255,44 +222,28 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold,
     color: '#000',
   },
-  dateList: {
-    flex: 1,
-  },
-  dateBlock: {
-    marginBottom: 12,
-  },
-  dateRow: {
+  timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    paddingVertical: 8,
   },
-  dateText: {
+  timeText: {
     fontSize: 16,
     fontFamily: globalFonts.bold,
     color: '#000',
+    flex: 1,
+    paddingRight: 8,
   },
-  timeList: {
-    flexDirection: 'column',
-    flexWrap: 'wrap',
-  },
-  timeRow: {},
-  timeChip: {
+  rowIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingBottom: 4,
+    gap: 8,
   },
-  timeText: {
+  emptyText: {
     fontSize: 15,
     fontFamily: globalFonts.regular,
     color: colors.ui.cardsecondary,
-  },
-  addTimeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
   },
   addDateBtn: {
     flexDirection: 'row',
@@ -304,18 +255,6 @@ const styles = StyleSheet.create({
   addDateText: {
     fontSize: 15,
     fontFamily: globalFonts.bold,
-  },
-  confirmBtn: {
-    backgroundColor: colors.actions.accept,
-    borderRadius: 4,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  confirmText: {
-    color: '#fff',
-    fontFamily: globalFonts.bold,
-    fontSize: 16,
   },
   pickerScroll: {
     flex: 1,

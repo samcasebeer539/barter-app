@@ -13,7 +13,8 @@ import { FeedProfile } from '@/types/index';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, subtractPost } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost } from '@/services/tradeService';
+import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -197,10 +198,14 @@ export default function TradeDeck({
 
   // WHERE brings the player's location card to the top of their deck. Deck
   // order is user card, date card (if shown), location card, then posts.
-  const playerLocationCardIndex = (playerUser ? 1 : 0) + (showDateTime ? 1 : 0);
+  // WHEN does the same with the date/time card, which comes just before it.
+  const playerDateTimeCardIndex = playerUser ? 1 : 0;
+  const playerLocationCardIndex = playerDateTimeCardIndex + (showDateTime ? 1 : 0);
   const [playerJumpToken, setPlayerJumpToken] = useState<number | undefined>(undefined);
-  const showPlayerLocationCard = () => {
+  const [playerJumpIndex, setPlayerJumpIndex] = useState(playerLocationCardIndex);
+  const showPlayerCard = (index: number) => {
     if (!showingPlayer) slideToDeck(true);
+    setPlayerJumpIndex(index);
     setPlayerJumpToken(t => (t ?? 0) + 1);
   };
 
@@ -216,6 +221,11 @@ export default function TradeDeck({
   const isQueryActive =
     trade.activeAction === 'query' &&
     scrolledActionType === 'query' &&
+    trade.phase !== 'idle' &&
+    trade.phase !== 'confirmed';
+  const isWhenActive =
+    trade.activeAction === 'when' &&
+    scrolledActionType === 'when' &&
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
   const isWhereActive =
@@ -287,10 +297,12 @@ export default function TradeDeck({
       return;
     }
 
-    if (actionType === 'where') {
-      const wasArmed = trade.activeAction === 'where';
+    if (actionType === 'where' || actionType === 'when') {
+      const wasArmed = trade.activeAction === actionType;
       trade.selectAction(actionType); // a second tap disarms
-      if (!wasArmed) showPlayerLocationCard();
+      if (!wasArmed) {
+        showPlayerCard(actionType === 'where' ? playerLocationCardIndex : playerDateTimeCardIndex);
+      }
       return;
     }
 
@@ -370,6 +382,19 @@ export default function TradeDeck({
         } catch (err) {
           console.error('Subtract failed:', err);
           onActionFailed?.('subtract', err);
+        }
+        break;
+      }
+
+      case 'when': {
+        const time = trade.subflowData as ProposedTime | null;
+        if (!gameId || !time) break;
+        try {
+          await proposeTime(gameId, time.proposedAt, time.label);
+          onActionComplete?.('when');
+        } catch (err) {
+          console.error('When failed:', err);
+          onActionFailed?.('when', err);
         }
         break;
       }
@@ -460,8 +485,10 @@ export default function TradeDeck({
                   selectedPosts={trade.selectedPosts}
                   selectColor={trade.activeAction === 'subtract' ? colors.actions.counter : colors.actions.trade}
                   isLocationSelectMode={isWhereActive}
+                  isTimeSelectMode={isWhenActive}
+                  onProposeTime={(time) => trade.setSubflowData(time)}
                   jumpToken={playerJumpToken}
-                  jumpToCardIndex={playerLocationCardIndex}
+                  jumpToCardIndex={playerJumpIndex}
                   onProposeLocation={(location) => trade.setSubflowData(location)}
                 />
               </View>

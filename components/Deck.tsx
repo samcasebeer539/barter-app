@@ -8,7 +8,7 @@ import {
 import PostCard from './CardItem';
 import UserCard from './CardUser';
 import BlankCard from './CardBlank';
-import CardDateTime from './CardDateTime';
+import CardDateTime, { ProposedTime } from './CardDateTime';
 import CardLocation from './CardMeetingLocation';
 import { Post, User, Locations } from '@/types/index';
 import { colors } from '@/styles/globalStyles';
@@ -56,6 +56,11 @@ interface DeckProps {
     isLocationSelectMode?: boolean;
     /** Fires with the chosen location (or null on deselect) while isLocationSelectMode is true */
     onProposeLocation?: (location: Locations | null) => void;
+    // ── Trade "when" subflow ────────────────────────────────────────────────
+    /** When true (and isUser), the player's own date/time card proposes its time */
+    isTimeSelectMode?: boolean;
+    /** Fires with the set date + time (or null) while isTimeSelectMode is true */
+    onProposeTime?: (time: ProposedTime | null) => void;
 }
 
 type DeckItem =
@@ -104,6 +109,8 @@ interface CardSlotProps {
   onSelectPost?: (postIndex: number) => void;
   isLocationSelectMode: boolean;
   onProposeLocation?: (location: Locations | null) => void;
+  isTimeSelectMode: boolean;
+  onProposeTime?: (time: ProposedTime | null) => void;
 }
 
 const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
@@ -116,6 +123,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
   isQueryMode, querySelectedPostIndex, onQueryPostTap,
   onSelectPost,
   isLocationSelectMode, onProposeLocation,
+  isTimeSelectMode, onProposeTime,
 }, ref) => {
   const [card, setCardState] = useState<DeckItem | null>(initialCard);
   const [isFront, setIsFront] = useState(initialIsFront);
@@ -159,7 +167,14 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             isEditable={isFront && isEditMode} onExitEdit={onExitEdit}
             onEnterEdit={onEnterEdit} onSave={onSaveUser} />
         )}
-        {card?.type === 'datetime' && <CardDateTime cardWidth={finalCardWidth} />}
+        {card?.type === 'datetime' && (
+          <CardDateTime
+            cardWidth={finalCardWidth}
+            isUser={isUser}
+            isSelectMode={isUser ? isTimeSelectMode : false}
+            onProposeTime={isUser ? onProposeTime : undefined}
+          />
+        )}
         {card?.type === 'location' && (
           <CardLocation
             cardWidth={finalCardWidth}
@@ -223,6 +238,7 @@ const Deck: React.FC<DeckProps> = ({
     onConfirmLocations, onSelectLocation,
     isQueryMode = false, querySelectedPostIndex = null, onSelectPost, onQueryPostTap,
     isLocationSelectMode = false, onProposeLocation,
+    isTimeSelectMode = false, onProposeTime,
 }) => {
     const screenWidth = Dimensions.get('window').width;
     const defaultCardWidth = Math.min(screenWidth - 38, 290);
@@ -399,6 +415,7 @@ const Deck: React.FC<DeckProps> = ({
         mapActiveRef, onConfirmLocations, onSelectLocation,
         isQueryMode, querySelectedPostIndex, onSelectPost, onQueryPostTap,
         isLocationSelectMode, onProposeLocation,
+        isTimeSelectMode, onProposeTime,
     };
 
     return (

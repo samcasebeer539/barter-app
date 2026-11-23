@@ -181,6 +181,13 @@ export function subtractPost(gameId: string, postId: string) {
   return postTrade('/dev/trades/subtract', { gameId, postId });
 }
 
+// WHEN: propose a meetup date and time (close phase). proposedAt is an ISO
+// timestamp; label is how it reads, e.g. "Mon, Nov 24 at 3:00 PM". Passes
+// the turn to the partner.
+export function proposeTime(gameId: string, proposedAt: string, label: string) {
+  return postTrade('/dev/trades/when', { gameId, proposedAt, label });
+}
+
 // WHERE: propose one of your saved locations as the meeting spot (close
 // phase). Passes the turn to the partner.
 export function proposeLocation(gameId: string, locationId: string) {

@@ -3,10 +3,10 @@ import { useReducer, useCallback } from 'react';
 import { TradeActionType } from '../config/tradeConfig';
 
 // Actions where progress is "select N of my own posts"
-const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', 'subtract'];
+const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', 'add', 'subtract'];
 
 // Select actions that pick exactly one post: selecting another replaces it.
-const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['subtract'];
+const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['add', 'subtract'];
 
 // Actions whose button tap toggles something other than the action itself
 // (QUERY's button toggles the post the question is about), so tapping it
@@ -48,7 +48,7 @@ function isReady(state: TradeActionState): boolean {
   if (SUBFLOW_ACTIONS.includes(state.activeAction)) {
     return state.subflowData != null && state.subflowData !== '';
   }
-  // Simple one-tap actions: accept, acceptFinal, add, decline, stall, wait, play
+  // Simple one-tap actions: accept, acceptFinal, decline, stall, wait, play
   return true;
 }
 

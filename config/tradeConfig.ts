@@ -21,6 +21,7 @@ export type TradeTurnType =
   | 'turnBarter'
   | 'turnQuery'
   | 'turnSubtract'
+  | 'turnAdd'
   | 'turnAnswer'
   | 'turnAccept'
   | 'turnAcceptFinal'
@@ -76,12 +77,13 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'answer',
     turnType: 'turnAnswer',
   },
-  // ADD / SUBTRACT replace COUNTER. ADD isn't wired to the backend yet.
+  // ADD / SUBTRACT replace COUNTER.
   {
     text: 'ADD',
     color: colors.actions.verify,
     hasButtons: true,
     actionType: 'add',
+    turnType: 'turnAdd',
   },
   {
     text: 'SUBTRACT',
@@ -170,6 +172,13 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     templateUser: 'You asked: {item}',
     templatePartner: '{user} asked: {item}',
     isSent: false,
+  },
+  turnAdd: {
+    actionText: 'ADD',
+    colorStyle: { color: colors.actions.verify, fontFamily: globalFonts.extrabold },
+    templateUser: 'You added {item}',
+    templatePartner: '{user} added {item}',
+    isSent: true,
   },
   turnSubtract: {
     actionText: 'SUBTRACT',

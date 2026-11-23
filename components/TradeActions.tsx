@@ -136,7 +136,6 @@ const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: numbe
     where:  { icon: 'circle-dot' },
     when:   { icon: 'clock' },
     answer: { icon: 'circle' },
-    add:    { icon: 'circle-plus' },
     stall:  { icon: 'circle' },
     accept: { icon: 'circle' },
     acceptFinal: { icon: 'circle' },
@@ -275,15 +274,16 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Multi-select: offer / barter / rescind — icon tap toggles the
         // current top card; fills once that specific card is selected.
-        // Subtract: picks exactly one of your posts, so no count — just a
+        // Add / subtract pick exactly one post, so no count — just a plus or
         // minus that turns into a check once the top card is selected.
-        if (action.actionType === 'subtract') {
+        if (action.actionType === 'add' || action.actionType === 'subtract') {
             const selected = active && isArmed && topCardIsSelected;
+            const idleIcon = action.actionType === 'add' ? 'circle-plus' : 'circle-minus';
             return (
                 <IconButton
                     color={color}
                     isActive={selected}
-                    icon={selected ? 'circle-check' : 'circle-minus'}
+                    icon={selected ? 'circle-check' : idleIcon}
                     onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
                     disabled={disabled}
                     fillOnActive
@@ -346,7 +346,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        // Everything else: answer, add, where, when, stall, accept, acceptFinal —
+        // Everything else: answer, where, when, stall, accept, acceptFinal —
         // a single icon that fills and swaps to a check once armed.
         const mapped = SIMPLE_ICONS[action.actionType];
         return (

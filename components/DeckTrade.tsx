@@ -7,6 +7,7 @@ import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import QueryAnswer from './QueryAnswer';
+import FeedDeck from './DeckFeed';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
@@ -108,6 +109,13 @@ export default function TradeDeck({
   const pendingTurnIndex = useMemo(
     () => (mustAnswer ? turns.findIndex(t => t.type === 'turnQuery' && !t.isUser) : -1),
     [mustAnswer, turns]
+  );
+
+  // ADD opens the partner's feed deck, where you pick one of their posts.
+  const [isAddDeckOpen, setIsAddDeckOpen] = useState(false);
+  const partnerPostIds = useMemo(
+    () => partnerPosts.map(p => p._id).filter((id): id is string => !!id),
+    [partnerPosts]
   );
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -232,6 +240,12 @@ export default function TradeDeck({
     // Arrow / confirm tap always sends 'select' for the currently-active action.
     if (subAction === 'select' && trade.activeAction === actionType) {
       handleConfirm();
+      return;
+    }
+
+    if (actionType === 'add') {
+      // Played from the partner's feed deck, not this wheel.
+      setIsAddDeckOpen(true);
       return;
     }
 
@@ -483,6 +497,19 @@ export default function TradeDeck({
               )}
             </View>
           </View>
+        )}
+
+        {gameId && (
+          <FeedDeck
+            // Any of the partner's posts loads their profile and every post.
+            postId={isAddDeckOpen ? partnerPostIds[0] ?? null : null}
+            visible={isAddDeckOpen}
+            onClose={() => setIsAddDeckOpen(false)}
+            addGameId={gameId}
+            excludePostIds={partnerPostIds}
+            onAdded={() => onActionComplete?.('add')}
+            onAddFailed={err => onActionFailed?.('add', err)}
+          />
         )}
 
         <TouchableOpacity

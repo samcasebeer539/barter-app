@@ -13,7 +13,7 @@ import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/d
 import { getFeedProfile } from '@/services/feedService';
 import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
-import { sendOffer, sendQuery } from '@/services/tradeService';
+import { sendOffer, sendQuery, addPost } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,9 +27,21 @@ interface FeedDeckProps {
   onClose: () => void;
   prefetchedProfile?: FeedProfile | null;
   onQuerySubmit?: (payload: { postIndex: number | null; question: string }) => void;
+  // ── ADD mode (opened from a trade deck) ─────────────────────────────────
+  // With addGameId set, the wheel shows only ADD: select one of this
+  // person's posts and play adds it to that game.
+  addGameId?: string;
+  /** Posts to leave out of the deck, e.g. ones already in the trade. */
+  excludePostIds?: string[];
+  /** Fired after ADD succeeds (the deck then closes itself). */
+  onAdded?: () => void;
+  onAddFailed?: (err: unknown) => void;
 }
 
-export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, onQuerySubmit }: FeedDeckProps) {
+export default function FeedDeck({
+  postId, visible, onClose, prefetchedProfile, onQuerySubmit,
+  addGameId, excludePostIds, onAdded, onAddFailed,
+}: FeedDeckProps) {
   const deckTranslateY = useRef(new Animated.Value(height)).current;
   const [isRendered, setIsRendered] = useState(false);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -45,9 +57,10 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   const insets = useSafeAreaInsets();
   const MAX_SCROLL_HEIGHT = height - BOTTOM_BASE - insets.top;
 
+  const isAddMode = !!addGameId;
   const feedActions = useMemo(
-    () => TRADE_ACTIONS.filter(a => ['offer', 'query'].includes(a.actionType)),
-    []
+    () => TRADE_ACTIONS.filter(a => (isAddMode ? ['add'] : ['offer', 'query']).includes(a.actionType)),
+    [isAddMode]
   );
 
   const trade = useTradeAction();
@@ -61,6 +74,11 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   const isOfferActive =
     trade.activeAction === 'offer' &&
     scrolledActionType === 'offer' &&
+    trade.phase !== 'confirmed';
+
+  const isAddActive =
+    trade.activeAction === 'add' &&
+    scrolledActionType === 'add' &&
     trade.phase !== 'confirmed';
 
   const isQueryActive =
@@ -79,11 +97,14 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
   }, [isQueryActive]);
 
   const deckUser: User | undefined = profile?.user;
+  const excluded = useMemo(() => new Set(excludePostIds ?? []), [excludePostIds]);
   const deckPosts: Post[] = profile
-    ? profile.posts.map(p => ({
-        _id: p._id, name: p.name, description: p.description,
-        photos: p.photos, date_posted: p.date_posted,
-      }))
+    ? profile.posts
+        .filter(p => !p._id || !excluded.has(p._id))
+        .map(p => ({
+          _id: p._id, name: p.name, description: p.description,
+          photos: p.photos, date_posted: p.date_posted,
+        }))
     : [];
   const externalLocations: Locations[] = profile?.user?.locations ?? [];
   const postCount = deckPosts.length;
@@ -96,7 +117,8 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
     if (!postId) return;
     const applyProfile = (data: FeedProfile) => {
       setProfile(data);
-      const idx = data.posts.findIndex(p => p._id === data.tappedPostId);
+      const shown = data.posts.filter(p => !p._id || !excluded.has(p._id));
+      const idx = shown.findIndex(p => p._id === data.tappedPostId);
       jumpCounterRef.current += 1;
       setJumpToIndex(idx >= 0 ? 2 + idx : 2);
       setJumpToken(jumpCounterRef.current);
@@ -160,7 +182,7 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
       return;
     }
 
-    if (actionType === 'offer') {
+    if (actionType === 'offer' || actionType === 'add') {
       trade.selectAction(actionType, topPostIndex);
       return;
     }
@@ -186,6 +208,20 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
           console.error('Offer failed:', err);
         } finally {
           setIsSubmittingOffer(false);
+        }
+        break;
+      }
+
+      case 'add': {
+        const selectedPost = deckPosts[trade.selectedPosts[0]];
+        if (!addGameId || !selectedPost?._id) break;
+        try {
+          await addPost(addGameId, selectedPost._id);
+          onAdded?.();
+          handleCloseModal();
+        } catch (err) {
+          console.error('Add failed:', err);
+          onAddFailed?.(err);
         }
         break;
       }
@@ -266,11 +302,11 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
                     cardWidth={Math.min(width - 36, 400)}
                     enabled={true}
                     isUser={false}
-                    isSelectMode={isOfferActive}
+                    isSelectMode={isOfferActive || isAddActive}
                     isQueryMode={isQueryActive}
                     selectedPosts={trade.selectedPosts}
                     onTopCardChange={setTopPostIndex}
-                    selectColor={colors.actions.offer}
+                    selectColor={isAddMode ? colors.actions.verify : colors.actions.offer}
                     showLocation={true}
                     onHorizontalGestureStart={() => setScrollEnabled(false)}
                     onGestureEnd={() => setScrollEnabled(true)}
@@ -281,8 +317,9 @@ export default function FeedDeck({ postId, visible, onClose, prefetchedProfile, 
                     }
                     onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                     onSelectPost={(postIndex) => {
-                      if (trade.activeAction !== 'offer') {
-                        trade.selectAction('offer', postIndex);
+                      const selectType = isAddMode ? 'add' : 'offer';
+                      if (trade.activeAction !== selectType) {
+                        trade.selectAction(selectType, postIndex);
                       } else {
                         trade.togglePost(postIndex);
                       }

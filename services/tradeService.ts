@@ -169,6 +169,12 @@ export function answerQuery(queryId: string, message: string) {
   return postTrade('/dev/trades/answer', { queryId, message });
 }
 
+// ADD: bring one of the partner's posts into the trade (barter phase).
+// Passes the turn to the partner.
+export function addPost(gameId: string, postId: string) {
+  return postTrade('/dev/trades/add', { gameId, postId });
+}
+
 // SUBTRACT: take one of your own items out of the trade (barter phase).
 // Passes the turn to the partner.
 export function subtractPost(gameId: string, postId: string) {
@@ -295,6 +301,9 @@ export function buildTradeTurns(
 
         case 'subtract':
           return { type: 'turnSubtract', user, item: t.post_name ?? '', isUser };
+
+        case 'add':
+          return { type: 'turnAdd', user, item: t.post_name ?? '', isUser };
 
         case 'accept':
           return { type: 'turnAccept', user, isUser };

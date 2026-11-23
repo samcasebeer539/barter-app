@@ -91,8 +91,9 @@ class Game:
     # first while turn_user_id still defaults to the receiver.
     TURN_ENFORCED_PHASES = {"barter", "close"}
 
-    # Either player can walk away at any time.
-    TURN_EXEMPT_ACTIONS = {"decline"}
+    # Actions allowed out of turn in turn-based phases. None: even DECLINE
+    # is only on your own turn (the app shows WAIT only off-turn).
+    TURN_EXEMPT_ACTIONS = set()
 
     # Moves that change what's on the table. Any *accept made before one of
     # these was for a different deal, so it's cleared.

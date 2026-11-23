@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, trades_collection
 from helpers import get_uid_from_request
-from models.game import Game
+from models.game import Game, NotYourTurnError
 
 trades_detail_decline_bp = Blueprint("trades_detail_decline", __name__)
 
@@ -33,7 +33,10 @@ def decline_trade():
         return jsonify({"success": True, "gameId": str(game._id)}), 200
 
     try:
-        game.apply_transition("decline")
+        # actor_id enforces turn order in barter/close (no-op before then).
+        game.apply_transition("decline", actor_id=user["_id"])
+    except NotYourTurnError as e:
+        return jsonify({"error": str(e)}), 403
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 

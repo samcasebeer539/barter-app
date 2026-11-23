@@ -14,9 +14,11 @@ import { useFocusEffect } from 'expo-router';
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
 const DECK_GAP = 16;
-// How often the barter/close lists recheck the server for the other
-// player's moves while you're looking at them.
-const POLL_MS = 5000;
+// While you're waiting on the other player, the barter/close lists recheck
+// the server: every 5s right after something changes (when a reply is most
+// likely), doubling each time nothing has, up to once a minute.
+const POLL_MIN_MS = 5000;
+const POLL_MAX_MS = 60000;
 
 // Only swap in fresh data when something changed, so polling doesn't
 // re-render every deck (and reset its swipe position) every few seconds.
@@ -112,10 +114,24 @@ export default function ActiveTradesTestScreen() {
         refreshQueries();
     }, [refreshQueries]);
 
+    // Current poll delay. Any change to a list (the partner's move, or your
+    // own) resets it to the fastest rate.
+    const pollDelay = useRef(POLL_MIN_MS);
+    const lastBarterJson = useRef('');
+    const lastCloseJson = useRef('');
+
+    // Resolves true if the list changed.
     const refreshBarterGames = useCallback(() => {
-        getBarterGames()
-            .then(games => setBarterGames(keepIfSame(games)))
-            .catch(err => console.error('Failed to load barter games:', err));
+        return getBarterGames()
+            .then(games => {
+                const json = JSON.stringify(games);
+                const changed = json !== lastBarterJson.current;
+                lastBarterJson.current = json;
+                if (changed) pollDelay.current = POLL_MIN_MS;
+                setBarterGames(keepIfSame(games));
+                return changed;
+            })
+            .catch(err => { console.error('Failed to load barter games:', err); return false; });
     }, []);
 
     const refreshDeclined = useCallback(() => {
@@ -128,15 +144,20 @@ export default function ActiveTradesTestScreen() {
     // which is the only time the declined list changes, so reload it then.
     const closeGameCount = useRef<number | null>(null);
     const refreshCloseGames = useCallback(() => {
-        getCloseGames()
+        return getCloseGames()
             .then(games => {
                 if (closeGameCount.current !== null && games.length < closeGameCount.current) {
                     refreshDeclined();
                 }
                 closeGameCount.current = games.length;
+                const json = JSON.stringify(games);
+                const changed = json !== lastCloseJson.current;
+                lastCloseJson.current = json;
+                if (changed) pollDelay.current = POLL_MIN_MS;
                 setCloseGames(keepIfSame(games));
+                return changed;
             })
-            .catch(err => console.error('Failed to load close games:', err));
+            .catch(err => { console.error('Failed to load close games:', err); return false; });
     }, [refreshDeclined]);
 
     // Stable, so the decks' turn-timer effects don't restart on every render.
@@ -169,11 +190,12 @@ export default function ActiveTradesTestScreen() {
     closeGamesRef.current = closeGames;
 
     // Load the barter/close lists when their sub-tab opens or the screen
-    // comes back into view. After that, poll only while you're waiting on
-    // the other player in at least one game: on your own turn nothing they
-    // do can change the list, so there's nothing to check for. (Your own
-    // moves refresh the list directly.) The declined list loads with the
-    // close tab and again only when a close game drops out.
+    // comes back into view. After that, check only while you're waiting on
+    // the other player in at least one game: on your own turn they can't
+    // move, so nothing can change. (Your own moves refresh the list
+    // directly.) Checks back off while nothing changes; see POLL_MIN_MS.
+    // The declined list loads with the close tab and again only when a
+    // close game drops out.
     useEffect(() => {
         if (!isFocused) return;
         if (tab === 'barter') {
@@ -184,13 +206,20 @@ export default function ActiveTradesTestScreen() {
         } else {
             return;
         }
-        const poll = setInterval(() => {
+        pollDelay.current = POLL_MIN_MS;
+
+        let cancelled = false;
+        let timer: ReturnType<typeof setTimeout>;
+        const tick = async () => {
             const games = tab === 'barter' ? barterGamesRef.current : closeGamesRef.current;
-            if (!games.some(g => !g.myTurn)) return;
-            if (tab === 'barter') refreshBarterGames();
-            else refreshCloseGames();
-        }, POLL_MS);
-        return () => clearInterval(poll);
+            if (games.some(g => !g.myTurn)) {
+                const changed = await (tab === 'barter' ? refreshBarterGames() : refreshCloseGames());
+                if (!changed) pollDelay.current = Math.min(pollDelay.current * 2, POLL_MAX_MS);
+            }
+            if (!cancelled) timer = setTimeout(tick, pollDelay.current);
+        };
+        timer = setTimeout(tick, pollDelay.current);
+        return () => { cancelled = true; clearTimeout(timer); };
     }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined]);
 
     return (

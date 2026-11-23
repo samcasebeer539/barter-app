@@ -8,6 +8,8 @@ import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import QueryAnswer from './QueryAnswer';
 import FeedDeck from './DeckFeed';
+import { getFeedProfile } from '@/services/feedService';
+import { FeedProfile } from '@/types/index';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
@@ -112,7 +114,11 @@ export default function TradeDeck({
   );
 
   // ADD opens the partner's feed deck, where you pick one of their posts.
+  // Like the feed screen, their posts load first and the deck slides up
+  // already filled, so cards don't pop in mid-animation.
   const [isAddDeckOpen, setIsAddDeckOpen] = useState(false);
+  const [addProfile, setAddProfile] = useState<FeedProfile | null>(null);
+  const isLoadingAddProfile = useRef(false);
   const partnerPostIds = useMemo(
     () => partnerPosts.map(p => p._id).filter((id): id is string => !!id),
     [partnerPosts]
@@ -230,6 +236,22 @@ export default function TradeDeck({
     if (!isQueryActive) setQueryText('');
   }, [isQueryActive]);
 
+  const openAddDeck = async () => {
+    const anyPartnerPostId = partnerPostIds[0];
+    if (!anyPartnerPostId || isLoadingAddProfile.current) return;
+    isLoadingAddProfile.current = true;
+    try {
+      // Any of the partner's posts loads their profile and every post.
+      setAddProfile(await getFeedProfile(anyPartnerPostId));
+      setIsAddDeckOpen(true);
+    } catch (err) {
+      console.error('Loading partner posts failed:', err);
+      onActionFailed?.('add', err);
+    } finally {
+      isLoadingAddProfile.current = false;
+    }
+  };
+
   const handleActionSelected = (action: TradeAction) => {
     const { actionType, subAction } = action;
 
@@ -245,7 +267,7 @@ export default function TradeDeck({
 
     if (actionType === 'add') {
       // Played from the partner's feed deck, not this wheel.
-      setIsAddDeckOpen(true);
+      openAddDeck();
       return;
     }
 
@@ -501,8 +523,8 @@ export default function TradeDeck({
 
         {gameId && (
           <FeedDeck
-            // Any of the partner's posts loads their profile and every post.
-            postId={isAddDeckOpen ? partnerPostIds[0] ?? null : null}
+            postId={addProfile ? partnerPostIds[0] ?? null : null}
+            prefetchedProfile={addProfile}
             visible={isAddDeckOpen}
             onClose={() => setIsAddDeckOpen(false)}
             addGameId={gameId}

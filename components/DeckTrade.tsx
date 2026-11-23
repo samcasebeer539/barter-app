@@ -13,7 +13,7 @@ import { FeedProfile } from '@/types/index';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post, Locations, User } from '@/types/index';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost } from '@/services/tradeService';
+import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost, getLatestProposals } from '@/services/tradeService';
 import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
 
@@ -28,8 +28,15 @@ interface TradeDeckProps {
   turns: TradeTurn[];
   onHorizontalGestureStart?: () => void;
   onGestureEnd?: () => void;
+  // Whether this deck can show date / location cards at all (the close tab).
+  // Within that, a player's card only appears while they hold the latest
+  // WHEN / WHERE proposal, or while they're picking one.
   showDateTime?: boolean;
   showLocation?: boolean;
+  // The game's raw turns, used to find the standing WHERE / WHEN proposals.
+  // Pass the same array reference between renders (it feeds the decks'
+  // card lists, and a new array would reset their swipe positions).
+  rawTurns?: any[];
   // ── Confirmed-action payload callbacks ──────────────────────────────────
   // TradeDeck owns the one-tap game moves (accept/decline/stall).
   // Everything else hands its payload up to whatever screen embeds this deck.
@@ -88,6 +95,7 @@ export default function TradeDeck({
   turnDeadline = null,
   onTurnExpired,
   pendingQuery = null,
+  rawTurns,
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
@@ -179,14 +187,28 @@ export default function TradeDeck({
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
 
-  // Each player's saved locations feed their deck's location card.
+  // Standing proposals: the latest WHERE and the latest WHEN, whoever made
+  // them. Each shows only on its maker's card.
+  const proposals = useMemo(
+    () => getLatestProposals(rawTurns ?? [], playerUser._id ?? ''),
+    [rawTurns, playerUser._id]
+  );
+  const myLocation = proposals.where?.isUser ? proposals.where.location : null;
+  const theirLocation = proposals.where && !proposals.where.isUser ? proposals.where.location : null;
+  const myTime = proposals.when?.isUser ? proposals.when.label : null;
+  const theirTime = proposals.when && !proposals.when.isUser ? proposals.when.label : null;
+
+  // Your saved locations are what WHERE picks from.
   const partnerGroups: DeckGroup[] = useMemo(
-    () => [{ user: partnerUser, posts: partnerPosts, locations: partnerUser.locations ?? [] }],
-    [partnerUser, partnerPosts]
+    () => [{ user: partnerUser, posts: partnerPosts, proposedLocation: theirLocation, proposedTime: theirTime }],
+    [partnerUser, partnerPosts, theirLocation, theirTime]
   );
   const playerGroups: DeckGroup[] = useMemo(
-    () => [{ user: playerUser, posts: playerPosts, locations: playerUser.locations ?? [] }],
-    [playerUser, playerPosts]
+    () => [{
+      user: playerUser, posts: playerPosts, locations: playerUser.locations ?? [],
+      proposedLocation: myLocation, proposedTime: myTime,
+    }],
+    [playerUser, playerPosts, myLocation, myTime]
   );
 
   const slideToDeck = (toPlayer: boolean) => {
@@ -199,10 +221,11 @@ export default function TradeDeck({
   // WHERE brings the player's location card to the top of their deck. Deck
   // order is user card, date card (if shown), location card, then posts.
   // WHEN does the same with the date/time card, which comes just before it.
+  // These are positions once the action is armed (its card is then shown).
   const playerDateTimeCardIndex = playerUser ? 1 : 0;
-  const playerLocationCardIndex = playerDateTimeCardIndex + (showDateTime ? 1 : 0);
+  const playerLocationCardIndex = playerDateTimeCardIndex + (showDateTime && myTime ? 1 : 0);
   const [playerJumpToken, setPlayerJumpToken] = useState<number | undefined>(undefined);
-  const [playerJumpIndex, setPlayerJumpIndex] = useState(playerLocationCardIndex);
+  const [playerJumpIndex, setPlayerJumpIndex] = useState(playerDateTimeCardIndex);
   const showPlayerCard = (index: number) => {
     if (!showingPlayer) slideToDeck(true);
     setPlayerJumpIndex(index);
@@ -430,14 +453,19 @@ export default function TradeDeck({
     trade.reset();
   };
 
+  // A player's date / location card shows only while they hold the latest
+  // proposal of that kind; yours also shows while you're picking one.
+  const playerShowsDateTime = showDateTime && (isWhenActive || !!myTime);
+  const playerShowsLocation = showLocation && (isWhereActive || !!myLocation);
+  const partnerShowsDateTime = showDateTime && !!theirTime;
+  const partnerShowsLocation = showLocation && !!theirLocation;
+
   const sharedDeckProps = {
     cardWidth: DECK_WIDTH,
     enabled: true,
     onHorizontalGestureStart,
     onGestureEnd,
-    showDateTime,
-    showLocation,
-    
+
   };
 
   return (
@@ -465,6 +493,8 @@ export default function TradeDeck({
                 <Deck
                   groups={partnerGroups}
                   {...sharedDeckProps}
+                  showDateTime={partnerShowsDateTime}
+                  showLocation={partnerShowsLocation}
                   isUser={false}
                   onTopCardChange={setPartnerTopPostIndex}
                   isQueryMode={isQueryActive}
@@ -479,6 +509,8 @@ export default function TradeDeck({
                 <Deck
                   groups={playerGroups}
                   {...sharedDeckProps}
+                  showDateTime={playerShowsDateTime}
+                  showLocation={playerShowsLocation}
                   isUser={true}
                   onTopCardChange={setPlayerTopPostIndex}
                   isSelectMode={isBarterActive}

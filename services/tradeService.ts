@@ -1,4 +1,4 @@
-import { OpenTradeItem, Post, User } from '@/types';
+import { OpenTradeItem, Post, User, Locations } from '@/types';
 import { getAuth } from 'firebase/auth';
 import { TradeTurn } from '@/components/TradeTurns';
 
@@ -242,6 +242,23 @@ export async function getCloseGames(): Promise<BarterGame[]> {
   const res = await fetch(`${BASE_URL}/dev/trades/close`, { headers });
   if (!res.ok) throw new Error(`Failed to load close games (${res.status})`);
   return res.json();
+}
+
+// The standing WHERE / WHEN proposals in a game: only the latest of each
+// counts, whoever made it. A newer proposal replaces the older one.
+export interface LatestProposals {
+  where: { isUser: boolean; location: Locations } | null;
+  when: { isUser: boolean; label: string } | null;
+}
+
+export function getLatestProposals(rawTurns: any[], currentUserId: string): LatestProposals {
+  const latest: LatestProposals = { where: null, when: null };
+  for (const t of rawTurns) {   // oldest first, so later ones overwrite
+    const isUser = t.actor_id === currentUserId;
+    if (t.type === 'where' && t.location) latest.where = { isUser, location: t.location };
+    if (t.type === 'when' && t.proposed_time) latest.when = { isUser, label: t.proposed_time };
+  }
+  return latest;
 }
 
 export function resolvePostName(postId: string | undefined, posts: Post[]): string {

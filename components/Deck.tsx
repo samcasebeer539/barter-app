@@ -17,6 +17,10 @@ export interface DeckGroup {
     user?: User;
     posts: Post[];
     locations?: Locations[];
+    /** This player's standing WHERE proposal; their location card shows it. */
+    proposedLocation?: Locations | null;
+    /** This player's standing WHEN proposal (its label); their date card shows it. */
+    proposedTime?: string | null;
 }
 
 interface DeckProps {
@@ -66,8 +70,8 @@ interface DeckProps {
 type DeckItem =
   | { type: 'user'; groupIndex: number; user: User }
   | { type: 'post'; groupIndex: number; post: Post; postIndex: number }
-  | { type: 'datetime'; groupIndex: number }
-  | { type: 'location'; groupIndex: number; locations: Locations[] };
+  | { type: 'datetime'; groupIndex: number; proposedTime: string | null }
+  | { type: 'location'; groupIndex: number; locations: Locations[]; proposedLocation: Locations | null };
 
 const SLOT_POSITIONS = [
   { x: 0,  y: 0  },
@@ -173,6 +177,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             isUser={isUser}
             isSelectMode={isUser ? isTimeSelectMode : false}
             onProposeTime={isUser ? onProposeTime : undefined}
+            proposedTime={card.proposedTime}
           />
         )}
         {card?.type === 'location' && (
@@ -186,6 +191,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             onSelectLocation={!isUser ? onSelectLocation : undefined}
             isSelectMode={isUser ? isLocationSelectMode : false}
             onProposeLocation={isUser ? onProposeLocation : undefined}
+            proposedLocation={card.proposedLocation}
           />
         )}
         {card?.type === 'post' && (
@@ -256,8 +262,12 @@ const Deck: React.FC<DeckProps> = ({
         return groups.flatMap((group, groupIndex) => {
             const groupCards: DeckItem[] = [];
             if (showUser && group.user) groupCards.push({ type: 'user', groupIndex, user: group.user });
-            if (showDateTime) groupCards.push({ type: 'datetime', groupIndex });
-            if (showLocation) groupCards.push({ type: 'location', groupIndex, locations: group.locations ?? [] });
+            if (showDateTime) groupCards.push({ type: 'datetime', groupIndex, proposedTime: group.proposedTime ?? null });
+            if (showLocation) groupCards.push({
+                type: 'location', groupIndex,
+                locations: group.locations ?? [],
+                proposedLocation: group.proposedLocation ?? null,
+            });
             group.posts.forEach(post => {
                 groupCards.push({ type: 'post', groupIndex, post, postIndex: globalPostIndex });
                 globalPostIndex++;

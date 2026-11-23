@@ -274,6 +274,7 @@ export default function ActiveTradesTestScreen() {
                                 isMyTurn={game.myTurn}
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
+                                rawTurns={game.turns}
                                 onActionComplete={refreshBarterGames}
                                 onActionFailed={handleActionFailed(refreshBarterGames)}
                                 onTurnExpired={refreshBarterGames}
@@ -304,6 +305,7 @@ export default function ActiveTradesTestScreen() {
                                 isMyTurn={game.myTurn}
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
+                                rawTurns={game.turns}
                                 onActionComplete={refreshCloseGames}
                                 onActionFailed={handleActionFailed(refreshCloseGames)}
                                 onTurnExpired={handleCloseTurnExpired}

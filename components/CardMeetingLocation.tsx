@@ -34,6 +34,9 @@ interface CardLocationProps {
   isSelectMode?: boolean;
   /** Fires with the chosen location (or null on deselect) while isSelectMode is true */
   onProposeLocation?: (location: Locations | null) => void;
+  // ── Standing proposal ─────────────────────────────────────────────────────
+  /** A standing WHERE proposal to display (read-only, with a check) when not selecting */
+  proposedLocation?: Locations | null;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 8);
@@ -49,6 +52,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
   onSelectLocation,
   isSelectMode = false,
   onProposeLocation,
+  proposedLocation = null,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
@@ -85,7 +89,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
 
   // ── Handlers: user mode ───────────────────────────────────────────────────
   const handleMapPress = (event: MapPressEvent) => {
-    if (!isUser || isNaming || isSelectMode) return;
+    if (!isUser || isNaming || isSelectMode || (proposedLocation && !isSelectMode)) return;
     const { coordinate } = event.nativeEvent;
     setPendingPin(coordinate);
   };
@@ -144,7 +148,11 @@ const CardLocation: React.FC<CardLocationProps> = ({
   // ── Derived ───────────────────────────────────────────────────────────────
   const pinReady = !!pendingPin && !isNaming && !isSelectMode;
   const canAddMore = locations.length < MAX_LOCATIONS;
-  const displayLocations = isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
+  // A standing proposal (when not picking a new one) shows just that spot.
+  const showProposal = !!proposedLocation && !isSelectMode;
+  const displayLocations = showProposal
+    ? [proposedLocation!]
+    : isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
 
   return (
     <View
@@ -161,7 +169,11 @@ const CardLocation: React.FC<CardLocationProps> = ({
         >
           <MapView
             style={StyleSheet.absoluteFill}
-            initialRegion={initialRegion}
+            initialRegion={
+              showProposal
+                ? { latitude: proposedLocation!.latitude, longitude: proposedLocation!.longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 }
+                : initialRegion
+            }
             onPress={handleMapPress}
             scrollEnabled={true}
             zoomEnabled={true}
@@ -174,6 +186,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 key={loc.id}
                 coordinate={{ latitude: loc.latitude, longitude: loc.longitude }}
                 pinColor={
+                  showProposal ||
                   (isSelectMode && loc.id === selectedLocationId) ||
                   (!isUser && loc.id === selectedId)
                     ? colors.actions.location
@@ -197,13 +210,29 @@ const CardLocation: React.FC<CardLocationProps> = ({
         >
           <View style={styles.titleRow}>
             <Text style={styles.footerTitle}>
-              {isUser ? 'Your Safe Exchange Locations' : 'Safe Exchange Locations'}
+              {showProposal ? 'Meetup Location' : isUser ? 'Your Safe Exchange Locations' : 'Safe Exchange Locations'}
             </Text>
             <FontAwesome6 name="circle-dot" size={24} color={colors.ui.cardsecondary} />
           </View>
 
+          {/* ── Standing proposal: just that spot, with a check ── */}
+          {showProposal && (
+            <View style={styles.locationRow}>
+              <View style={styles.locationInfo}>
+                <Text style={styles.locationName}>{proposedLocation!.name}</Text>
+                {proposedLocation!.description ? (
+                  <Text style={styles.locationDesc}>{proposedLocation!.description}</Text>
+                ) : null}
+                <Text style={styles.coordText}>
+                  {proposedLocation!.latitude.toFixed(4)}, {proposedLocation!.longitude.toFixed(4)}
+                </Text>
+              </View>
+              <FontAwesome6 name="circle-check" size={24} color={colors.actions.location} />
+            </View>
+          )}
+
           {/* ── User mode: editable / selectable list ── */}
-          {isUser && locations.map(loc => (
+          {!showProposal && isUser && locations.map(loc => (
             <View key={loc.id} style={styles.locationRow}>
               <View style={styles.locationInfo}>
                 <Text style={styles.locationName}>{loc.name}</Text>
@@ -235,7 +264,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             </View>
           ))}
 
-          {isUser && canAddMore && !isNaming && !isSelectMode && (
+          {!showProposal && isUser && canAddMore && !isNaming && !isSelectMode && (
             <TouchableOpacity
               style={styles.addLocationBtn}
               onPress={handleAddLocationPress}
@@ -256,7 +285,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             </TouchableOpacity>
           )}
 
-          {isUser && isNaming && !isSelectMode && (
+          {!showProposal && isUser && isNaming && !isSelectMode && (
             <View style={styles.namingBlock}>
               <View style={styles.nameRow}>
                 <TextInput
@@ -292,7 +321,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
           )}
 
           {/* ── Read-only mode: selectable list (other user's locations) ── */}
-          {!isUser && externalLocations.slice(0, MAX_LOCATIONS).map(loc => {
+          {!showProposal && !isUser && externalLocations.slice(0, MAX_LOCATIONS).map(loc => {
             const isSelected = loc.id === selectedId;
             return (
               <View key={loc.id} style={styles.locationRow}>

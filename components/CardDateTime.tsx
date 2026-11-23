@@ -39,6 +39,8 @@ interface MeetupCardProps {
   isSelectMode?: boolean;
   /** Fires with the date + time once both are set (null if cleared) while isSelectMode is true. */
   onProposeTime?: (time: ProposedTime | null) => void;
+  /** A standing WHEN proposal to display (read-only, with a check) when not editing. */
+  proposedTime?: string | null;
 }
 
 const TIME_OPTIONS = [
@@ -73,6 +75,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
   isUser = true,
   isSelectMode = false,
   onProposeTime,
+  proposedTime = null,
 }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
@@ -150,6 +153,24 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
+      </View>
+    );
+  }
+
+  // ---- Standing proposal (not editing) ----
+  if (proposedTime && !isSelectMode) {
+    return (
+      <View style={[styles.container, { transform: [{ scale }] }]}>
+        <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>Meetup Time</Text>
+            <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
+          </View>
+          <View style={styles.timeRow}>
+            <Text style={styles.timeText}>{proposedTime}</Text>
+            <FontAwesome6 name="circle-check" size={22} color={colors.actions.time} />
+          </View>
         </View>
       </View>
     );

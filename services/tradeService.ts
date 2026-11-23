@@ -295,9 +295,6 @@ export function buildTradeTurns(
             isUser,
           };
 
-        case 'verify':
-          return { type: 'turnVerify', user, isUser };
-
         case 'stall':
           return { type: 'turnStall', user, isUser };
 

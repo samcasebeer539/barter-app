@@ -254,7 +254,7 @@ export default function TradeDeck({
       return;
     }
 
-    // Simple actions (accept, acceptFinal, decline, stall, verify, wait, play)
+    // Simple actions (accept, acceptFinal, decline, stall, wait, play)
     // and subflow actions (query, where, when) both just arm on icon tap.
     trade.selectAction(actionType);
   };

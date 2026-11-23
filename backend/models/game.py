@@ -70,7 +70,6 @@ class Game:
         "barter": {
             "query": "barter",
             "counter": "barter",
-            "verify": "barter",
             "stall": "barter",
             "accept": "close",
             "decline": "declined",

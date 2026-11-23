@@ -49,7 +49,7 @@ function isReady(state: TradeActionState): boolean {
   if (COUNTER_ACTIONS.includes(state.activeAction)) {
     return state.counterValue !== 0;
   }
-  // Simple one-tap actions: accept, acceptFinal, decline, stall, verify, wait, play
+  // Simple one-tap actions: accept, acceptFinal, decline, stall, wait, play
   return true;
 }
 

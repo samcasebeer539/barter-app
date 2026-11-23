@@ -7,7 +7,6 @@ export type TradeActionType =
   | 'answer'
   | 'counter'
   | 'stall'
-  | 'verify'
   | 'accept'
   | 'acceptFinal'
   | 'decline'
@@ -25,7 +24,6 @@ export type TradeTurnType =
   | 'turnAccept'
   | 'turnAcceptFinal'
   | 'turnStall'
-  | 'turnVerify'
   | 'turnDecline'
   | 'turnWhere'
   | 'turnWhen';
@@ -83,13 +81,6 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     hasButtons: true,
     actionType: 'counter',
     turnType: 'turnCounter',
-  },
-  {
-    text: 'VERIFY',
-    color: colors.actions.verify,
-    hasButtons: true,
-    actionType: 'verify',
-    turnType: 'turnVerify',
   },
   {
     text: 'STALL',
@@ -185,13 +176,6 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     templateUser: 'You answered: {item}',
     templatePartner: '{user} answered: {item}',
     isSent: false,
-  },
-  turnVerify: {
-    actionText: 'VERIFY',
-    colorStyle: { color: colors.actions.verify, fontFamily: globalFonts.extrabold },
-    templateUser: 'You requested verification',
-    templatePartner: '{user} requested verification',
-    isSent: true,
   },
   turnStall: {
     actionText: 'STALL',

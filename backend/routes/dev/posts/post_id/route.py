@@ -48,6 +48,9 @@ def delete_post(post_id):
         if not user:
             return jsonify({"error": "User not found"}), 404
 
+        if ObjectId(post_id) in Game.locked_post_ids_for(user["_id"]):
+            return jsonify({"error": "This item is in an active trade and can't be deleted"}), 409
+
         posts_collection.delete_one(
             {"_id": ObjectId(post_id), "user_id": user["_id"]}
         )

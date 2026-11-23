@@ -343,6 +343,7 @@ export default function ProfileDeck({
     // When the delete button on a post is pressed, shows an alert before calling performDelete function to delete post
     const handleDeleteTopPost = useCallback(() => {
         if (topCardType !== 'post' || topPrimaryPostIndex === null) return;
+        if (posts[topPrimaryPostIndex]?.inTrade) return;
         const post = posts[topPrimaryPostIndex];
 
         Alert.alert(
@@ -358,7 +359,11 @@ export default function ProfileDeck({
 
     const cardWidth = Math.min(width - 36, 400);
     const spacerHeight = slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, secondaryHeight + SLIDE_MARGIN] });
-    const deleteDisabled = topCardType !== 'post' || topPrimaryPostIndex === null;
+    // Posts in an active trade can't be deleted (or edited).
+    const deleteDisabled =
+        topCardType !== 'post' ||
+        topPrimaryPostIndex === null ||
+        !!posts[topPrimaryPostIndex]?.inTrade;
 
     const handleTopPrimaryPostChange = useCallback((index: number | null) => {
         setTopPrimaryPostIndex(index);

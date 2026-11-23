@@ -28,6 +28,8 @@ interface TradeUIProps {
     onActionChange?: (actionType: TradeActionType) => void;
     /** ISO timestamp the active player's turn runs out; drives the DECLINE and WAIT timers. */
     turnDeadline?: string | null;
+    /** An action to show filled regardless of selection, e.g. ADD while its feed deck is open. */
+    filledActionType?: TradeActionType | null;
 }
 
 // ─── Button pattern helpers ───────────────────────────────────────────────────
@@ -157,6 +159,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
     onQueryPostDeselect,
     onActionChange,
     turnDeadline = null,
+    filledActionType = null,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -277,13 +280,15 @@ const TradeUI: React.FC<TradeUIProps> = ({
         // Add / subtract pick exactly one post, so no count — just a plus or
         // minus that turns into a check once the top card is selected.
         if (action.actionType === 'add' || action.actionType === 'subtract') {
-            const selected = active && isArmed && topCardIsSelected;
+            const selected =
+                (active && isArmed && topCardIsSelected) ||
+                (active && filledActionType === action.actionType);
             const idleIcon = action.actionType === 'add' ? 'circle-plus' : 'circle-minus';
             return (
                 <IconButton
                     color={color}
                     isActive={selected}
-                    icon={selected ? 'circle-check' : idleIcon}
+                    icon={selected && filledActionType !== action.actionType ? 'circle-check' : idleIcon}
                     onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
                     disabled={disabled}
                     fillOnActive

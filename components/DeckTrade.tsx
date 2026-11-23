@@ -119,6 +119,8 @@ export default function TradeDeck({
   const [isAddDeckOpen, setIsAddDeckOpen] = useState(false);
   const [addProfile, setAddProfile] = useState<FeedProfile | null>(null);
   const isLoadingAddProfile = useRef(false);
+  // ADD's wheel button stays filled from the tap until the feed deck closes.
+  const [isAddPressed, setIsAddPressed] = useState(false);
   const partnerPostIds = useMemo(
     () => partnerPosts.map(p => p._id).filter((id): id is string => !!id),
     [partnerPosts]
@@ -240,12 +242,14 @@ export default function TradeDeck({
     const anyPartnerPostId = partnerPostIds[0];
     if (!anyPartnerPostId || isLoadingAddProfile.current) return;
     isLoadingAddProfile.current = true;
+    setIsAddPressed(true);
     try {
       // Any of the partner's posts loads their profile and every post.
       setAddProfile(await getFeedProfile(anyPartnerPostId));
       setIsAddDeckOpen(true);
     } catch (err) {
       console.error('Loading partner posts failed:', err);
+      setIsAddPressed(false);
       onActionFailed?.('add', err);
     } finally {
       isLoadingAddProfile.current = false;
@@ -489,6 +493,7 @@ export default function TradeDeck({
                 onQueryPostDeselect={() => trade.setSubflowData(null)}
                 onActionChange={setScrolledActionType}
                 turnDeadline={turnDeadline}
+                filledActionType={isAddPressed ? 'add' : null}
               />
             </View>
             <View style={styles.turnsRow}>
@@ -526,7 +531,7 @@ export default function TradeDeck({
             postId={addProfile ? partnerPostIds[0] ?? null : null}
             prefetchedProfile={addProfile}
             visible={isAddDeckOpen}
-            onClose={() => setIsAddDeckOpen(false)}
+            onClose={() => { setIsAddDeckOpen(false); setIsAddPressed(false); }}
             addGameId={gameId}
             excludePostIds={partnerPostIds}
             onAdded={() => onActionComplete?.('add')}

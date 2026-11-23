@@ -160,7 +160,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
           onTouchCancel={() => { if (mapActiveRef) mapActiveRef.current = false; }}
         >
           <MapView
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             initialRegion={initialRegion}
             onPress={handleMapPress}
             scrollEnabled={true}

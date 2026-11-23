@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     imageLoadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: colors.ui.secondary,
         justifyContent: 'center',
         alignItems: 'center',

@@ -218,6 +218,8 @@ export async function getIncomingOffers(): Promise<IncomingOffer[]> {
 
 export interface BarterGame {
   gameId: string;
+  /** 'barter', 'close', or 'agreed' (both players accepted the meetup). */
+  phase: string;
   turnUserId: string;
   myTurn: boolean;
   /** ISO timestamp the active player's turn runs out; the game auto-declines after. */
@@ -330,7 +332,8 @@ export function buildTradeTurns(
           return { type: 'turnAdd', user, item: t.post_name ?? '', isUser };
 
         case 'accept':
-          return { type: 'turnAccept', user, isUser };
+          // The close-phase ACCEPT is marked final; barter's is *ACCEPT.
+          return { type: t.final ? 'turnAcceptFinal' : 'turnAccept', user, isUser };
 
         case 'acceptFinal':
           return { type: 'turnAcceptFinal', user, isUser };

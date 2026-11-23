@@ -212,7 +212,8 @@ export default function ActiveTradesTestScreen() {
         let timer: ReturnType<typeof setTimeout>;
         const tick = async () => {
             const games = tab === 'barter' ? barterGamesRef.current : closeGamesRef.current;
-            if (games.some(g => !g.myTurn)) {
+            // Agreed deals have no turns left to wait for.
+            if (games.some(g => !g.myTurn && g.phase !== 'agreed')) {
                 const changed = await (tab === 'barter' ? refreshBarterGames() : refreshCloseGames());
                 if (!changed) pollDelay.current = Math.min(pollDelay.current * 2, POLL_MAX_MS);
             }
@@ -275,6 +276,7 @@ export default function ActiveTradesTestScreen() {
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
                                 rawTurns={game.turns}
+                                phase={game.phase}
                                 onActionComplete={refreshBarterGames}
                                 onActionFailed={handleActionFailed(refreshBarterGames)}
                                 onTurnExpired={refreshBarterGames}
@@ -306,6 +308,7 @@ export default function ActiveTradesTestScreen() {
                                 turnDeadline={game.turnDeadline}
                                 pendingQuery={game.pendingQuery}
                                 rawTurns={game.turns}
+                                phase={game.phase}
                                 onActionComplete={refreshCloseGames}
                                 onActionFailed={handleActionFailed(refreshCloseGames)}
                                 onTurnExpired={handleCloseTurnExpired}

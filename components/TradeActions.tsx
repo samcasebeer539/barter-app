@@ -138,6 +138,7 @@ const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: numbe
     where:  { icon: 'circle-dot' },
     when:   { icon: 'clock' },
     answer: { icon: 'circle' },
+    review: { icon: 'star' },
     stall:  { icon: 'circle' },
     accept: { icon: 'circle' },
     acceptFinal: { icon: 'circle' },

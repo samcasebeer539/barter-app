@@ -14,6 +14,7 @@ export type TradeActionType =
   | 'where'
   | 'when'
   | 'wait'
+  | 'review'
   | 'rescind';
 
 export type TradeTurnType =
@@ -134,6 +135,13 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'when',
     turnType: 'turnWhen',
   },
+  // After the deal is agreed. Not wired to the backend yet.
+  {
+    text: 'REVIEW',
+    color: colors.actions.review,
+    hasButtons: true,
+    actionType: 'review',
+  },
   {
     text: 'WAIT',
     color: colors.ui.secondarydisabled,
@@ -211,8 +219,8 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
   turnAcceptFinal: {
     actionText: 'ACCEPT',
     colorStyle: { color: colors.actions.accept, fontFamily: globalFonts.extrabold },
-    templateUser: 'You accepted — moving to close',
-    templatePartner: '{user} accepted — moving to close',
+    templateUser: 'You accepted the meetup',
+    templatePartner: '{user} accepted the meetup',
     isSent: true,
   },
   turnDecline: {

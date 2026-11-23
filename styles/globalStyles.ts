@@ -28,6 +28,7 @@ export const colors = {
     wait: '#372788',
     stall: '#fb4921',
     rescind: '#ff3232',
+    review: '#ffd23f',
   },
 
 

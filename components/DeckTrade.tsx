@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck, { DeckGroup } from './Deck';
 
-import { colors } from '../styles/globalStyles';
+import { colors, globalFonts } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import QueryAnswer from './QueryAnswer';
@@ -37,6 +37,9 @@ interface TradeDeckProps {
   // Pass the same array reference between renders (it feeds the decks'
   // card lists, and a new array would reset their swipe positions).
   rawTurns?: any[];
+  // The game's stage. In 'agreed' (both players accepted the meetup) the
+  // deal box sits atop the log and REVIEW is the only action.
+  phase?: string;
   // ── Confirmed-action payload callbacks ──────────────────────────────────
   // TradeDeck owns the one-tap game moves (accept/decline/stall).
   // Everything else hands its payload up to whatever screen embeds this deck.
@@ -73,6 +76,7 @@ const DECK_WIDTH = Math.min(width - 36, 400);
 const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', 'subtract'];
 
 const WAIT_ACTION = getActionConfig('wait');
+const REVIEW_ACTION = getActionConfig('review');
 
 export default function TradeDeck({
   partnerUser,
@@ -96,24 +100,40 @@ export default function TradeDeck({
   onTurnExpired,
   pendingQuery = null,
   rawTurns,
+  phase,
 }: TradeDeckProps) {
   const trade = useTradeAction();
 
   // Your turn begins once any question the partner asked is answered. Until
   // then (and whenever it's not your turn) the wheel shows WAIT only.
-  const mustAnswer = isMyTurn && !!pendingQuery;
-  const canPlay = isMyTurn && !mustAnswer;
+  // Once the deal is agreed there are no turns: both players get REVIEW.
+  const isAgreed = phase === 'agreed';
+  const mustAnswer = !isAgreed && isMyTurn && !!pendingQuery;
+  const canPlay = isAgreed || (isMyTurn && !mustAnswer);
+
+  // Standing proposals: the latest WHERE and the latest WHEN, whoever made
+  // them. Each shows only on its maker's card.
+  const proposals = useMemo(
+    () => getLatestProposals(rawTurns ?? [], playerUser._id ?? ''),
+    [rawTurns, playerUser._id]
+  );
+  const hasPlaceAndTime = !!proposals.where && !!proposals.when;
+
   const visibleActions = useMemo(() => {
+    if (isAgreed) return REVIEW_ACTION ? [REVIEW_ACTION] : [];
     if (canPlay) {
       return actions.filter(a =>
         a.actionType !== 'wait' &&
         a.actionType !== 'answer' &&
+        a.actionType !== 'review' &&
         // SUBTRACT only when you'd still have an item left in the trade.
-        (a.actionType !== 'subtract' || playerPosts.length > 1)
+        (a.actionType !== 'subtract' || playerPosts.length > 1) &&
+        // ACCEPT (the meetup) only once there's a place and a time.
+        (a.actionType !== 'acceptFinal' || hasPlaceAndTime)
       );
     }
     return WAIT_ACTION ? [WAIT_ACTION] : [];
-  }, [actions, canPlay, playerPosts.length]);
+  }, [actions, canPlay, isAgreed, playerPosts.length, hasPlaceAndTime]);
 
   // Where the pending question sits in the log (newest first). Only the
   // player who has to answer gets the ANSWER wheel under it.
@@ -187,12 +207,6 @@ export default function TradeDeck({
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
 
-  // Standing proposals: the latest WHERE and the latest WHEN, whoever made
-  // them. Each shows only on its maker's card.
-  const proposals = useMemo(
-    () => getLatestProposals(rawTurns ?? [], playerUser._id ?? ''),
-    [rawTurns, playerUser._id]
-  );
   const myLocation = proposals.where?.isUser ? proposals.where.location : null;
   const theirLocation = proposals.where && !proposals.where.isUser ? proposals.where.location : null;
   const myTime = proposals.when?.isUser ? proposals.when.label : null;
@@ -556,6 +570,33 @@ export default function TradeDeck({
               />
             </View>
             <View style={styles.turnsRow}>
+              {isAgreed && (
+                <View style={styles.dealBox}>
+                  <Text style={styles.dealTitle}>Deal agreed</Text>
+                  <Text style={styles.dealLine}>
+                    <Text style={styles.dealLabel}>You give: </Text>
+                    {playerPosts.map(p => p.name).join(', ') || '—'}
+                  </Text>
+                  <Text style={styles.dealLine}>
+                    <Text style={styles.dealLabel}>You get: </Text>
+                    {partnerPosts.map(p => p.name).join(', ') || '—'}
+                  </Text>
+                  <Text style={styles.dealLine}>
+                    <Text style={styles.dealLabel}>Where: </Text>
+                    {proposals.where
+                      ? `${proposals.where.location.name}${proposals.where.location.description ? ` (${proposals.where.location.description})` : ''}`
+                      : '—'}
+                  </Text>
+                  <Text style={styles.dealLine}>
+                    <Text style={styles.dealLabel}>When: </Text>
+                    {proposals.when?.label ?? '—'}
+                  </Text>
+                  <Text style={styles.dealLine}>
+                    <Text style={styles.dealLabel}>With: </Text>
+                    {[partnerUser.first_name, partnerUser.last_name].filter(Boolean).join(' ')}
+                  </Text>
+                </View>
+              )}
               {pendingTurnIndex >= 0 && pendingQuery ? (
                 <>
                   {/* Newer turns, then the pending question with the ANSWER
@@ -619,6 +660,31 @@ const styles = StyleSheet.create({
   queryRow: {},
   actionRow: {marginBottom: -2},
   turnsRow: {},
+  // Deal summary atop the log once both players accept the meetup:
+  // rectangular, in the app's main color, white text.
+  dealBox: {
+    backgroundColor: colors.ui.secondary,
+    borderRadius: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
+    marginBottom: 4,
+  },
+  dealTitle: {
+    color: colors.text.white,
+    fontFamily: globalFonts.extrabold,
+    fontSize: 18,
+    marginBottom: 2,
+  },
+  dealLine: {
+    color: colors.text.white,
+    fontFamily: globalFonts.bold,
+    fontSize: 16,
+  },
+  dealLabel: {
+    color: colors.text.white,
+    fontFamily: globalFonts.extrabold,
+  },
   // 4px between list elements, matching TradeTurns' own gap.
   logGap: { marginBottom: 4 },
   answerGap: { marginTop: 4 },

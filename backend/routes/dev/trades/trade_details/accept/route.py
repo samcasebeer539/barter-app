@@ -35,6 +35,15 @@ def accept_trade():
     if game.expire_if_overdue():
         return jsonify({"error": "Turn time ran out; the trade was declined"}), 409
 
+    # In close, ACCEPT agrees to the meetup, so there must be a place and a
+    # time on the table.
+    accepting_in_close = game.phase == "close"
+    if accepting_in_close:
+        has_where = trades_collection.find_one({"game_id": game._id, "type": "where"})
+        has_when = trades_collection.find_one({"game_id": game._id, "type": "when"})
+        if not (has_where and has_when):
+            return jsonify({"error": "Propose a place and a time before accepting"}), 400
+
     try:
         advanced = game.accept(user["_id"])
     except NotYourTurnError as e:
@@ -47,6 +56,8 @@ def accept_trade():
     trades_collection.insert_one({
         "game_id": game._id,
         "type": "accept",
+        # The close-phase ACCEPT (agreeing to the meetup), vs. barter's *ACCEPT.
+        "final": accepting_in_close,
         "actor_id": user["_id"],
         "created_at": datetime.now(timezone.utc),
         "messages": [],

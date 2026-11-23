@@ -80,9 +80,15 @@ class Game:
             "query": "close",
             "where": "close",
             "when": "close",
-            "accept": "close",
+            # Needs a standing WHERE and WHEN (checked in the accept route);
+            # once both players accept, the deal is agreed.
+            "accept": "agreed",
             "decline": "declined",
-            "rate": "completed",
+        },
+        # Deal agreed: items, place and time are settled. Not turn-based,
+        # and no turn timer. REVIEW isn't wired up yet.
+        "agreed": {
+            "review": "completed",
         },
     }
 

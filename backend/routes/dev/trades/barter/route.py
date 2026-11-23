@@ -99,15 +99,16 @@ def _resolve_posts(post_ids):
     return posts
 
 def games_in_phase_for_user(user, phase):
-    """Every game the user is in that's in `phase`, shaped for a TradeDeck.
-    Shared by the barter and close tabs."""
+    """Every game the user is in that's in `phase` (a phase name or a list
+    of them), shaped for a TradeDeck. Shared by the barter and close tabs."""
+    phases = [phase] if isinstance(phase, str) else list(phase)
     games = list(
         games_collection.find({
             "$or": [
                 {"initiator_user_id": user["_id"]},
                 {"receiver_user_id": user["_id"]},
             ],
-            "phase": phase,
+            "phase": {"$in": phases},
         })
     )
 
@@ -140,6 +141,7 @@ def games_in_phase_for_user(user, phase):
 
         results.append({
             "gameId": str(game["_id"]),
+            "phase": game_obj.phase,
             "turnUserId": str(game["turn_user_id"]),
             "myTurn": game["turn_user_id"] == my_user_id,
             "turnDeadline": iso_utc(deadline),

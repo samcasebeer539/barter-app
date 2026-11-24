@@ -215,7 +215,6 @@ const UserCard: React.FC<UserCardProps> = ({
     user.email_visible ? user.email : null,
     user.phone_visible && user.phone ? user.phone : null,
   ].filter(Boolean).join(' · ');
-  const contactString = visibleContacts || 'No contacts shared';
 
   return (
     <View
@@ -390,15 +389,13 @@ const UserCard: React.FC<UserCardProps> = ({
                   </TouchableOpacity>
                 </View>
               </>
-            ) : (
+            ) : visibleContacts ? (
               <View style={styles.headerRow}>
                 <View style={styles.locationRow}>
-                  <Text style={styles.location}>
-                    {`Contacts: ${contactString}`}
-                  </Text>
+                  <Text style={styles.location}>{visibleContacts}</Text>
                 </View>
               </View>
-            )}
+            ) : null}
 
             {/* Bio */}
             {isReviewsOpen ? null : isEditable ? (
@@ -422,7 +419,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 />
               </View>
             ) : (
-              <Text style={styles.bio} numberOfLines={isInfoExpanded ? undefined : 2}>
+              <Text style={[styles.bio, !visibleContacts && { marginTop: 0 }]} numberOfLines={isInfoExpanded ? undefined : 2}>
                 {user.bio}
               </Text>
             )}

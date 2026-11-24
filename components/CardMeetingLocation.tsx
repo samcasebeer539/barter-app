@@ -9,12 +9,27 @@ import { useUserRegion } from '@/hooks/useUserRegion';
 
 const MAX_LOCATIONS = 3;
 
+// Where a map starts with no saved locations and no device location.
 const initialRegion = {
   latitude: 36.9945,
   longitude: -122.0658,
   latitudeDelta: 0.02,
   longitudeDelta: 0.02,
 };
+
+// The area that shows every location, with some room around them.
+function regionForLocations(locs: { latitude: number; longitude: number }[]) {
+  const lats = locs.map(l => l.latitude);
+  const lons = locs.map(l => l.longitude);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+  return {
+    latitude: (minLat + maxLat) / 2,
+    longitude: (minLon + maxLon) / 2,
+    latitudeDelta: Math.max((maxLat - minLat) * 1.6, 0.02),
+    longitudeDelta: Math.max((maxLon - minLon) * 1.6, 0.02),
+  };
+}
 
 interface CardLocationProps {
   scale?: number;
@@ -161,17 +176,34 @@ const CardLocation: React.FC<CardLocationProps> = ({
   // A standing proposal (when not picking a new one) shows just that spot.
   const showProposal = !!proposedLocation && !isSelectMode;
 
-  // Your own map starts on your area when Location Services is on (and the
-  // phone allows it), unless you've already moved the map yourself.
-  const mapRef = useRef<MapView>(null);
-  const userMovedMap = useRef(false);
-  const userRegion = useUserRegion(isUser && !showProposal);
-  useEffect(() => {
-    if (userRegion && !userMovedMap.current) mapRef.current?.animateToRegion(userRegion, 300);
-  }, [userRegion]);
   const displayLocations = showProposal
     ? [proposedLocation!]
     : isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
+
+  // Where the map starts: the saved locations shown on it (or the proposed
+  // spot) if there are any; otherwise your area if Location Services is on
+  // and the phone allows it; otherwise the default. Saved locations can
+  // arrive after the map appears, so the map moves to them once, unless
+  // you've already moved it yourself (adding a location later doesn't move it).
+  const mapRef = useRef<MapView>(null);
+  const userMovedMap = useRef(false);
+  const centeredOnLocations = useRef(false);
+  const hasLocations = displayLocations.length > 0;
+  const userRegion = useUserRegion(!hasLocations);
+  const startRegion = hasLocations ? regionForLocations(displayLocations) : initialRegion;
+  useEffect(() => {
+    if (!hasLocations || centeredOnLocations.current) return;
+    centeredOnLocations.current = true;
+    if (!userMovedMap.current) mapRef.current?.animateToRegion(regionForLocations(displayLocations), 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasLocations]);
+  useEffect(() => {
+    // Not after deleting your last location: the map stays where it is.
+    if (userRegion && !hasLocations && !userMovedMap.current && !centeredOnLocations.current) {
+      mapRef.current?.animateToRegion(userRegion, 300);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRegion]);
 
   return (
     <View
@@ -190,11 +222,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             ref={mapRef}
             onPanDrag={() => { userMovedMap.current = true; }}
             style={StyleSheet.absoluteFill}
-            initialRegion={
-              showProposal
-                ? { latitude: proposedLocation!.latitude, longitude: proposedLocation!.longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 }
-                : initialRegion
-            }
+            initialRegion={startRegion}
             onPress={handleMapPress}
             scrollEnabled={true}
             zoomEnabled={true}

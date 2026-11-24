@@ -9,6 +9,7 @@ import {
   KeyboardEvent,
   Platform,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -299,9 +300,7 @@ export default function ProfileScreen() {
 
   if (!primaryUser) return (
     <View style={styles.loadingContainer}>
-      <View style={styles.loadingIconContainer}>
-        <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
-      </View>
+      <ActivityIndicator size="large" color={colors.ui.secondarydisabled} />
     </View>
   );
 
@@ -374,14 +373,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.ui.background,
-  },
-  loadingIconContainer: {
-    height: 44,
-    width: 44,
-    borderRadius: 36,
-    backgroundColor: colors.ui.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   scroll: {
     flex: 1,

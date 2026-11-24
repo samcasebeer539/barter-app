@@ -7,11 +7,13 @@ import {
   ScrollView,
   Platform,
   RefreshControl,
-  ActivityIndicator,
+  Animated,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView, Edges, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
 import { colors } from '@/styles/globalStyles';
+import { deckStyles, barRadius, DECK_BAR_WIDTH } from '@/styles/deckStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Post, User, Locations } from '@/types/index';
@@ -25,6 +27,8 @@ import { FeedProfile, OffererGroup } from '@/types/index';
 
 
 const TOP_PADDING = 0;
+// How far the back card of a deck sits from the front one (Deck's SLOT_POSITIONS).
+const DECK_STACK_OFFSET = 12;
 const BOTTOM_PADDING = 20;
 
 const SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['top', 'right', 'bottom', 'left'];
@@ -40,6 +44,55 @@ const SECONDARY_USER_ID = '';
 
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
+
+// The profile's layout as plain shapes: the QUERIES / OFFERS bars, the deck
+// as one box the size of its outer bounds (front card plus the offset cards
+// behind it), the add / delete / count bar row, and the settings button.
+function ProfileSkeleton() {
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.min(width - 36, 400);           // as in DeckProfile
+  const deckWidth = cardWidth + DECK_STACK_OFFSET;
+  const deckHeight = cardWidth * (3.5 / 2.5) + DECK_STACK_OFFSET;
+
+  const opacity = useRef(new Animated.Value(0.5)).current;
+  useEffect(() => {
+    const pulse = Animated.loop(Animated.sequence([
+      Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 0.5, duration: 700, useNativeDriver: true }),
+    ]));
+    pulse.start();
+    return () => pulse.stop();
+  }, [opacity]);
+
+  return (
+    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
+      <Animated.View style={[styles.scroll, { opacity }]}>
+        <View style={styles.topSpacer} />
+        <View style={styles.deckWrapper}>
+          <View style={styles.skeletonColumn}>
+            <View style={[deckStyles.itemCountRow, { marginBottom: 8 }]}>
+              <View style={[styles.skeletonBar, barRadius.leftCap]} />
+              <View style={[styles.skeletonBar, barRadius.rightCap]} />
+            </View>
+            <View style={styles.skeletonDeckColumn}>
+              <View style={deckStyles.deckWrapper}>
+                <View style={[styles.skeletonBlock, { width: deckWidth, height: deckHeight }]} />
+              </View>
+              <View style={styles.skeletonButtonRow}>
+                <View style={[styles.skeletonBlock, styles.skeletonIconButton, barRadius.bottomLeftCap]} />
+                <View style={[styles.skeletonBlock, styles.skeletonIconButton, barRadius.flat]} />
+                <View style={[styles.skeletonBlock, styles.skeletonCountBar, barRadius.bottomRightCap]} />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Animated.View>
+      <Animated.View style={[styles.settingsButtonRow, { opacity }]}>
+        <View style={styles.settingsButton} />
+      </Animated.View>
+    </SafeAreaView>
+  );
+}
 
 export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
@@ -290,14 +343,11 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 
-  // A plain spinner in the refresh spinners' color. (Not a RefreshControl:
+  // Loading: plain pulsing shapes in the profile's layout, like the feed's
+  // skeleton, so nothing jumps when it loads. (No RefreshControl here:
   // unmounting one mid-refresh left iOS's refresh inset on the scroll view
   // React Native reused for the profile, so its pull-to-refresh fired at once.)
-  if (!primaryUser) return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="small" color={colors.ui.secondarydisabled} />
-    </View>
-  );
+  if (!primaryUser) return <ProfileSkeleton />;
 
   return (
     <KeyboardLiftContext.Provider value={keyboardLift.context}>
@@ -368,12 +418,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.ui.background,
   },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.ui.background,
-  },
+  // ── Loading skeleton (sizes match DeckProfile) ──
+  skeletonColumn: { width: '100%', maxWidth: 400, alignItems: 'center' },
+  skeletonDeckColumn: { width: '100%', alignItems: 'center', gap: 8 },
+  skeletonBlock: { backgroundColor: colors.ui.secondary, borderRadius: 2 },
+  skeletonBar: { flex: 1, height: 36, backgroundColor: colors.ui.secondary },
+  skeletonButtonRow: { width: DECK_BAR_WIDTH, flexDirection: 'row', gap: 4 },
+  skeletonIconButton: { width: 50, height: 44 },
+  skeletonCountBar: { flex: 1, height: 44 },
   scroll: {
     flex: 1,
     marginBottom: -8,

@@ -171,6 +171,10 @@ export default function ProfileDeck({
         scrolledActionType === 'query' &&
         trade.phase !== 'idle' &&
         trade.phase !== 'confirmed';
+    // While QUERY is open the question is about the offerer's post on top,
+    // following their deck as you swipe; with their user or location card on
+    // top it isn't about a post (still allowed, like the trade deck).
+    const queryPostIndex = isQueryActive ? topSecondaryPostIndex : null;
 
     // ── Per-user multiselect for barter ─────────────────────────────────────
     // trade.selectedPosts holds global indices across all offerer groups.
@@ -276,7 +280,7 @@ export default function ProfileDeck({
                 if (gameId) {
                     onQuerySubmit?.({
                         gameId,
-                        postIndex: typeof trade.subflowData === 'number' ? trade.subflowData : null,
+                        postIndex: topSecondaryPostIndex,
                     });
                 }
                 break;
@@ -466,9 +470,7 @@ export default function ProfileDeck({
                                 isUser={false}
                                 onSelectLocation={onSelectLocation}
                                 isQueryMode={isQueryActive}
-                                querySelectedPostIndex={
-                                    isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
-                                }
+                                querySelectedPostIndex={queryPostIndex}
                                 onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                                 onSelectPost={(postIndex) => {
                                     if (trade.activeAction !== 'barter') {
@@ -489,13 +491,13 @@ export default function ProfileDeck({
                                     actions={tradeActions}
                                     onActionSelected={handleTradeActionSelected}
                                     activeActionType={trade.activeAction}
-                                    isReady={trade.isReady}
+                                    isReady={trade.activeAction === 'query' ? isQueryActive : trade.isReady}
                                     selectedCount={trade.selectedPosts.length}
                                     topCardIsSelected={topSecondaryCardIsSelected}
                                     isQueryMode={isQueryActive}
-                                    queryPostSelected={isQueryActive && trade.subflowData != null}
-                                    onQueryPostSelect={() => trade.setSubflowData(topSecondaryPostIndex)}
-                                    onQueryPostDeselect={() => trade.setSubflowData(null)}
+                                    queryPostSelected={queryPostIndex !== null}
+                                    onQueryPostSelect={() => {}}
+                                    onQueryPostDeselect={() => {}}
                                     onActionChange={setScrolledActionType}
                                 />
                             </View>

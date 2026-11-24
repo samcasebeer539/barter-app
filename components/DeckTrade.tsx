@@ -305,6 +305,11 @@ export default function TradeDeck({
       ? queryText.trim().length > 0
       : trade.isReady;
 
+  // While QUERY is open the question is about the other player's post on
+  // top, following their deck as you swipe. With their user or location card
+  // on top, or your own deck showing, it isn't about a post (still allowed).
+  const queryPostIndex = isQueryActive && !showingPlayer ? partnerTopPostIndex : null;
+
   // Clear the locally-held question text whenever the query subflow ends,
   // so a stale draft doesn't leak into the next query attempt.
   useEffect(() => {
@@ -419,7 +424,7 @@ export default function TradeDeck({
         break;
 
       case 'query': {
-        const postIndex = typeof trade.subflowData === 'number' ? trade.subflowData : null;
+        const postIndex = !showingPlayer ? partnerTopPostIndex : null;
         const question = queryText.trim();
         if (gameId) {
           if (!question) break;
@@ -550,9 +555,7 @@ export default function TradeDeck({
                   isUser={false}
                   onTopCardChange={setPartnerTopPostIndex}
                   isQueryMode={isQueryActive}
-                  querySelectedPostIndex={
-                    isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
-                  }
+                  querySelectedPostIndex={queryPostIndex}
                   onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                 />
               </View>
@@ -607,9 +610,9 @@ export default function TradeDeck({
                 selectedCount={trade.selectedPosts.length}
                 topCardIsSelected={topCardIsSelected}
                 isQueryMode={isQueryActive}
-                queryPostSelected={isQueryActive && trade.subflowData != null}
-                onQueryPostSelect={() => trade.setSubflowData(partnerTopPostIndex)}
-                onQueryPostDeselect={() => trade.setSubflowData(null)}
+                queryPostSelected={queryPostIndex !== null}
+                onQueryPostSelect={() => {}}
+                onQueryPostDeselect={() => {}}
                 onActionChange={setScrolledActionType}
                 turnDeadline={turnDeadline}
                 filledActionType={isAddPressed ? 'add' : null}

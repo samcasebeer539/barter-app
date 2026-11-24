@@ -32,6 +32,9 @@ interface TradeUIProps {
     filledActionType?: TradeActionType | null;
     /** No turn clock applies (e.g. an agreed deal): WAIT shows its icon without a countdown. */
     noTurnClock?: boolean;
+    /** QUERY can't be started right now (a question must be about a post and
+     *  none is on top). Greys the button out; an open box can still be closed. */
+    queryBlocked?: boolean;
 }
 
 // ─── Button pattern helpers ───────────────────────────────────────────────────
@@ -166,6 +169,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
     turnDeadline = null,
     filledActionType = null,
     noTurnClock = false,
+    queryBlocked = false,
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -336,23 +340,26 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Query: select a partner post, then type a question (TradeTurns)
         if (action.actionType === 'query') {
+            const armed = active && isArmed;
+            const blocked = queryBlocked && !armed;
+            const buttonColor = blocked ? colors.ui.secondarydisabled : color;
             return (
                 <TouchableOpacity
                     activeOpacity={1}
                     style={[
                         styles.actionButton,
                         {
-                            borderColor: color,
-                            backgroundColor: active && isArmed ? color : 'transparent',
+                            borderColor: buttonColor,
+                            backgroundColor: armed ? color : 'transparent',
                         },
                     ]}
                     onPress={() => handleQueryPress(active)}
-                    disabled={disabled}
+                    disabled={disabled || blocked}
                 >
                     <FontAwesome6
-                        name={active && isArmed ? 'circle-question' : 'circle'}
+                        name={armed ? 'circle-question' : 'circle'}
                         size={26}
-                        color={active && isArmed ? '#000' : color}
+                        color={armed ? '#000' : buttonColor}
                     />
                 </TouchableOpacity>
             );

@@ -344,6 +344,7 @@ export default function ProfileDeck({
         const updated = posts.filter((_, i) => i !== postIndex);
         const targetInNewCards = DECK_PREFIX + postIndex;
         const newLen = DECK_PREFIX + updated.length;
+        setIsPostEditMode(false);
         jumpCounterRef.current += 1;
         setJumpToIndex(targetInNewCards < newLen ? targetInNewCards : 0);
         setJumpToken(jumpCounterRef.current);
@@ -357,6 +358,10 @@ export default function ProfileDeck({
         const targetInNewCards = DECK_PREFIX + topPrimaryPostIndex;
         const newLen = DECK_PREFIX + updated.length;
         const target = targetInNewCards < newLen ? targetInNewCards : 0;
+        // Deleting the post you're editing ends edit mode. (If the next card
+        // is also a post, the top-card type doesn't change, so nothing else
+        // would, and ADD POST stayed disabled.)
+        setIsPostEditMode(false);
         jumpCounterRef.current += 1;
         setJumpToIndex(target);
         setJumpToken(jumpCounterRef.current);

@@ -29,6 +29,8 @@ import { FeedProfile, OffererGroup } from '@/types/index';
 const TOP_PADDING = 0;
 // How far the back card of a deck sits from the front one (Deck's SLOT_POSITIONS).
 const DECK_STACK_OFFSET = 12;
+// The deck container's left margin (Deck's deckContainer style).
+const DECK_MARGIN_LEFT = 24;
 const BOTTOM_PADDING = 20;
 
 const SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['top', 'right', 'bottom', 'left'];
@@ -65,32 +67,29 @@ function ProfileSkeleton() {
   }, [opacity]);
 
   return (
-    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
-      <Animated.View style={[styles.scroll, { opacity }]}>
-        <View style={styles.topSpacer} />
-        <View style={styles.deckWrapper}>
-          <View style={styles.skeletonColumn}>
-            <View style={[deckStyles.itemCountRow, { marginBottom: 8 }]}>
-              <View style={[styles.skeletonBar, barRadius.leftCap]} />
-              <View style={[styles.skeletonBar, barRadius.rightCap]} />
+    <Animated.View style={[styles.scroll, { opacity }]}>
+      <View style={styles.topSpacer} />
+      <View style={styles.deckWrapper}>
+        <View style={styles.skeletonColumn}>
+          <View style={[deckStyles.itemCountRow, { marginBottom: 8 }]}>
+            <View style={[styles.skeletonBar, barRadius.leftCap]} />
+            <View style={[styles.skeletonBar, barRadius.rightCap]} />
+          </View>
+          <View style={styles.skeletonDeckColumn}>
+            {/* Same offsets as the real deck (deckWrapper's left shift plus
+                the deck container's left margin). */}
+            <View style={deckStyles.deckWrapper}>
+              <View style={[styles.skeletonBlock, { width: deckWidth, height: deckHeight, marginLeft: DECK_MARGIN_LEFT }]} />
             </View>
-            <View style={styles.skeletonDeckColumn}>
-              <View style={deckStyles.deckWrapper}>
-                <View style={[styles.skeletonBlock, { width: deckWidth, height: deckHeight }]} />
-              </View>
-              <View style={styles.skeletonButtonRow}>
-                <View style={[styles.skeletonBlock, styles.skeletonIconButton, barRadius.bottomLeftCap]} />
-                <View style={[styles.skeletonBlock, styles.skeletonIconButton, barRadius.flat]} />
-                <View style={[styles.skeletonBlock, styles.skeletonCountBar, barRadius.bottomRightCap]} />
-              </View>
+            <View style={styles.skeletonButtonRow}>
+              <View style={[styles.skeletonBlock, styles.skeletonIconButton, barRadius.bottomLeftCap]} />
+              <View style={[styles.skeletonBlock, styles.skeletonIconButton, barRadius.flat]} />
+              <View style={[styles.skeletonBlock, styles.skeletonCountBar, barRadius.bottomRightCap]} />
             </View>
           </View>
         </View>
-      </Animated.View>
-      <Animated.View style={[styles.settingsButtonRow, { opacity }]}>
-        <View style={styles.settingsButton} />
-      </Animated.View>
-    </SafeAreaView>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -347,11 +346,14 @@ export default function ProfileScreen() {
   // skeleton, so nothing jumps when it loads. (No RefreshControl here:
   // unmounting one mid-refresh left iOS's refresh inset on the scroll view
   // React Native reused for the profile, so its pull-to-refresh fired at once.)
-  if (!primaryUser) return <ProfileSkeleton />;
-
+  // The SafeAreaView and settings row stay mounted from loading to loaded;
+  // only the middle swaps. (Swapping the whole screen gave the new
+  // SafeAreaView a frame without its top inset, so the deck appeared at the
+  // top of the screen and then jumped down.)
   return (
     <KeyboardLiftContext.Provider value={keyboardLift.context}>
     <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
+      {!primaryUser ? <ProfileSkeleton /> : (
       <ScrollView
         ref={scrollViewRef}
         style={styles.scroll}
@@ -397,6 +399,7 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
+      )}
 
       <View style={styles.settingsButtonRow}>
         <TouchableOpacity

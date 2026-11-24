@@ -123,7 +123,7 @@ const PostCard: React.FC<PostCardProps> = ({
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: false,
       quality: 0.85,
     });

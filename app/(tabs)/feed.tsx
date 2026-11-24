@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
-import { deckStyles, barRadius } from '../../styles/deckStyles';
+import { deckStyles } from '../../styles/deckStyles';
 import { getFeedPosts, getFeedProfile, searchFeedPosts } from '@/services/feedService';
 import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -64,10 +64,10 @@ const SKELETON_HEIGHTS = [[1.3, 1.0, 1.15], [1.0, 1.4, 0.9]];
 type SortOption = 'nearest' | 'farthest' | 'newest'| 'oldest';
 
 const SORT_OPTIONS: { key: SortOption; label: string }[] = [
-    { key: 'nearest', label: 'NEAREST' },
-    { key: 'farthest', label: 'FARTHEST' },
-    { key: 'newest', label: 'NEWEST' },
-    { key: 'oldest', label: 'OLDEST' },
+    { key: 'nearest', label: 'Nearest' },
+    { key: 'farthest', label: 'Farthest' },
+    { key: 'newest', label: 'Newest' },
+    { key: 'oldest', label: 'Oldest' },
 ];
 
 // Posts with no known distance ("?") always sink to the bottom.
@@ -360,7 +360,9 @@ export default function FeedScreen() {
                                     style={styles.sortOption}
                                     onPress={() => { setSortBy(opt.key); setShowSortMenu(false); }}
                                 >
-                                    <Text style={styles.sortOptionText}>{opt.label}</Text>
+                                    <Text style={[styles.sortOptionText, sortBy !== opt.key && styles.sortOptionTextFaded]}>
+                                        {opt.label}
+                                    </Text>
                                     {sortBy === opt.key && (
                                         <FontAwesome6 name="circle-check" size={24} color="#fff" />
                                     )}
@@ -471,8 +473,8 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
 
-    // Sort menu: hangs under the header like a bar's bottom cap, same side
-    // margins as the header (12), bar text styles, rows the height of a bar.
+    // Sort menu: square, under the header with the header's side margins
+    // (12); options styled like feed item titles, faded unless selected.
     sortMenuArea: {
         position: 'absolute',
         left: 0,
@@ -483,7 +485,7 @@ const styles = StyleSheet.create({
     },
     sortMenu: {
         backgroundColor: colors.ui.secondary,
-        ...barRadius.bottomCap,
+        borderRadius: 2,
         paddingHorizontal: 16,
         paddingVertical: 8,
     },
@@ -498,5 +500,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         height: 36,
     },
-    sortOptionText: { ...deckStyles.actionButtonText, color: '#fff' },
+    sortOptionText: { fontSize: 18, fontFamily: globalFonts.bold, color: '#FFFFFF' },  // = itemTitle
+    sortOptionTextFaded: { color: colors.ui.secondarydisabled },
 });

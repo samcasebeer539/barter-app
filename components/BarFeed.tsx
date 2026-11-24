@@ -53,6 +53,7 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                     activeOpacity={1}
                 >
                     <TextInput
+                        keyboardAppearance="dark"
                         ref={searchInputRef}
                         style={styles.searchInput}
                         placeholder="Search"

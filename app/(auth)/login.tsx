@@ -112,6 +112,7 @@ export default function HandleLogin() {
 
                 {isSigningUp && (
                     <TextInput
+                        keyboardAppearance="dark"
                         style={styles.input}
                         value={firstName}
                         onChangeText={setFirstName}
@@ -121,6 +122,7 @@ export default function HandleLogin() {
                 )}
                 {isSigningUp && (
                     <TextInput
+                        keyboardAppearance="dark"
                         style={styles.input}
                         value={lastName}
                         onChangeText={setLastName}
@@ -129,6 +131,7 @@ export default function HandleLogin() {
                     />
                 )}
                 <TextInput
+                    keyboardAppearance="dark"
                     style={styles.input}
                     value={email}
                     onChangeText={setEmail}
@@ -138,6 +141,7 @@ export default function HandleLogin() {
                     placeholderTextColor={colors.ui.cardsecondary}
                 />
                 <TextInput
+                    keyboardAppearance="dark"
                     style={styles.input}
                     value={password}
                     onChangeText={setPassword}

@@ -320,6 +320,7 @@ const UserCard: React.FC<UserCardProps> = ({
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Pronouns:</Text>
                 <TextInput
+                  keyboardAppearance="dark"
                   style={[styles.location, styles.editableText, { flex: 1 }]}
                   value={draft.pronouns}
                   onFocus={kbField.onFocus}
@@ -360,13 +361,15 @@ const UserCard: React.FC<UserCardProps> = ({
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Phone:</Text>
                   <TextInput
+                    keyboardAppearance="dark"
                     style={[styles.location, styles.editableText, { flex: 1 }]}
                     value={draft.phone}
                     onFocus={kbField.onFocus}
                     onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
                     placeholder="optional"
                     placeholderTextColor={colors.ui.cardsecondary}
-                    keyboardType="phone-pad"
+                    keyboardType="numbers-and-punctuation"
+                    returnKeyType="done"
                     secureTextEntry={!phoneVisible}
                   />
                   <TouchableOpacity
@@ -398,11 +401,14 @@ const UserCard: React.FC<UserCardProps> = ({
               <View style={styles.bioEditArea}>
                 <Text style={styles.fieldLabel}>Bio:</Text>
                 <TextInput
+                  keyboardAppearance="dark"
                   style={[styles.bio, styles.editableText, styles.bioInput]}
                   value={draft.bio}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('bio', v); kbField.requestLift(); }}
                   placeholder="Tell others about yourself"
+                  returnKeyType="done"
+                  submitBehavior="blurAndSubmit"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline
                   scrollEnabled

@@ -292,6 +292,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
             <View style={styles.namingBlock}>
               <View style={styles.nameRow}>
                 <TextInput
+                  keyboardAppearance="dark"
                   style={styles.nameInput}
                   value={nameInput}
                   onFocus={kbField.onFocus}
@@ -313,6 +314,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 </TouchableOpacity>
               </View>
               <TextInput
+                keyboardAppearance="dark"
                 style={styles.descInput}
                 value={descInput}
                 onFocus={kbField.onFocus}

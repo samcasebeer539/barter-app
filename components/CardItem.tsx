@@ -194,6 +194,7 @@ const PostCard: React.FC<PostCardProps> = ({
               {isEditable ? (
                 <View style={styles.titleEditWrapper}>
                   <TextInput
+                    keyboardAppearance="dark"
                     style={[styles.title, styles.titleInput]}
                     value={draft.name}
                     onFocus={kbField.onFocus}
@@ -362,11 +363,14 @@ const PostCard: React.FC<PostCardProps> = ({
 
               <View style={styles.editDescriptionArea}>
                 <TextInput
+                  keyboardAppearance="dark"
                   style={[styles.descriptionText, styles.descriptionInput]}
                   value={draft.description}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('description', v); kbField.requestLift(); }}
                   placeholder="Describe this item"
+                  returnKeyType="done"
+                  submitBehavior="blurAndSubmit"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline
                   scrollEnabled

@@ -285,6 +285,11 @@ const CardLocation: React.FC<CardLocationProps> = ({
             </View>
           ))}
 
+          {/* Posting needs at least one saved location (see DeckProfile). */}
+          {!showProposal && isUser && !isSelectMode && locations.length === 0 && (
+            <Text style={styles.requiredText}>1 location required to post</Text>
+          )}
+
           {!showProposal && isUser && canAddMore && !isNaming && !isSelectMode && (
             <TouchableOpacity
               style={styles.addLocationBtn}
@@ -447,6 +452,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingVertical: 4,
+  },
+  requiredText: {
+    fontSize: 16,
+    fontFamily: globalFonts.regular,
+    color: colors.ui.cardsecondary,
+    letterSpacing: -0.2,
     paddingVertical: 4,
   },
   addLocationText: {

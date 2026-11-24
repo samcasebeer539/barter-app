@@ -392,6 +392,10 @@ export default function ProfileDeck({
 
     const cardWidth = Math.min(width - 36, 400);
     const spacerHeight = slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, secondaryHeight + SLIDE_MARGIN] });
+    // New posts need at least one saved location (the location card says so).
+    const hasSavedLocation = (primaryGroups[0]?.locations?.length ?? 0) > 0;
+    const addPostDisabled = isPostEditMode || !hasSavedLocation;
+
     // Posts in an active trade can't be deleted (or edited).
     const deleteDisabled =
         topCardType !== 'post' ||
@@ -543,8 +547,8 @@ export default function ProfileDeck({
                         )}
                         <View style={styles.buttonRow}>
                             {/* Disabled while a post is being edited. */}
-                            <TouchableOpacity style={styles.addButton} onPress={handleAddPost} disabled={isPostEditMode}>
-                                <FontAwesome6 name="circle-plus" size={24} color={isPostEditMode ? colors.ui.secondarydisabled : '#fff'} />
+                            <TouchableOpacity style={styles.addButton} onPress={handleAddPost} disabled={addPostDisabled}>
+                                <FontAwesome6 name="circle-plus" size={24} color={addPostDisabled ? colors.ui.secondarydisabled : '#fff'} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTopPost} disabled={deleteDisabled}>
                                 <FontAwesome6 name="circle-xmark" size={24} color={deleteDisabled ? colors.ui.secondarydisabled : '#fff'} />

@@ -30,6 +30,7 @@ export async function getFeedPosts(): Promise<FeedItem[]> {
       title: p.post_title,
       image: p.photos?.[0] ?? '',
       date_posted: p.date_posted ?? '',
+      distanceMi: typeof p.distance_mi === 'number' ? p.distance_mi : null,
     }));
   } catch (err: any) {
     clearTimeout(timeout);
@@ -114,5 +115,6 @@ export async function searchFeedPosts( query: string ): Promise<FeedItem[]> {
         title: p.post_title,
         image: p.photos?.[0] ?? '',
         date_posted: p.date_posted ?? '',
+        distanceMi: typeof p.distance_mi === 'number' ? p.distance_mi : null,
     }));
 }

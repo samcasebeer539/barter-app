@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post
+from helpers import get_uid_from_request, with_distances
 
 feed_bp = Blueprint('feed', __name__)
 
@@ -18,7 +18,7 @@ def get_feed():
         # Everyone's posts but your own.
         query = {"user_id": {"$ne": exclude_user_id}} if exclude_user_id else {}
         posts = list(posts_collection.find(query).sort("date_posted", -1))
-        posts = [serialize_post(p) for p in posts]
+        posts = with_distances(posts, user)
         return jsonify(posts), 200
 
     except Exception as e:

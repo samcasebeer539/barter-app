@@ -2,7 +2,7 @@ import re
 from flask import Blueprint, jsonify, request
 from backend import posts_collection, user_data_collection
 from firebase_admin import auth as firebase_auth
-from helpers import serialize_post
+from helpers import with_distances
 
 
 feed_search_bp = Blueprint("feed_search", __name__)
@@ -51,6 +51,6 @@ def search_feed():
         }
     )
 
-    posts = [serialize_post(post) for post in results]
+    posts = with_distances(list(results), user)
 
     return jsonify(posts)

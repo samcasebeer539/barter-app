@@ -44,6 +44,9 @@ export interface FeedItem {
     title: string;
     image: string;
     date_posted: string;
+    /** Miles between your nearest saved location and the poster's nearest;
+     *  null if either of you has none saved. */
+    distanceMi: number | null;
 }
 
 export interface FeedProfile {

@@ -49,6 +49,13 @@ async function prepareFeedBatch(items: FeedItem[], columnWidth: number): Promise
     return heights;
 }
 
+// "0.4 mi", "3.5 mi", "27 mi"; "?" until both players have saved a location.
+function formatDistance(mi: number | null): string {
+    if (mi == null) return '?';
+    if (mi < 10) return `${Math.max(mi, 0.1).toFixed(1)}\u00A0mi`;
+    return `${Math.round(mi)}\u00A0mi`;
+}
+
 // Placeholder heights (× column width) for the loading skeleton.
 const SKELETON_HEIGHTS = [[1.3, 1.0, 1.15], [1.0, 1.4, 0.9]];
 
@@ -189,7 +196,7 @@ export default function FeedScreen() {
                             {item.title}
 
                         </Text>
-                        <Text style={styles.itemDistance}>3.5{'\u00A0'}mi</Text>
+                        <Text style={styles.itemDistance}>{formatDistance(item.distanceMi)}</Text>
                     </View>
                 </TouchableOpacity>
             </View>

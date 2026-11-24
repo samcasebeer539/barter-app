@@ -8,6 +8,7 @@ import {
   Keyboard,
   KeyboardEvent,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -239,7 +240,7 @@ export default function ProfileScreen() {
   const [incomingQueries, setIncomingQueries] = useState<IncomingQuery[]>([]);
 
   const refreshIncomingQueries = useCallback(() => {
-    getIncomingQueries()
+    return getIncomingQueries()
       .then(setIncomingQueries)
       .catch(err => console.warn('Failed to load incoming queries:', err));
   }, []);
@@ -251,6 +252,32 @@ export default function ProfileScreen() {
 	const queriesForTopPost = topPost?._id
 	? incomingQueries.filter(q => q.targetPostId === topPost._id)
 	: [];
+
+  // Pull to refresh, like the feed: reload everything on the profile. A new
+  // post you haven't saved yet stays at the front of the deck.
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        getCurrentUser()
+          .then(setPrimaryUser)
+          .catch(err => console.warn('Failed to refresh profile:', err)),
+        getUserPosts()
+          .then(fresh => setPrimaryPosts(prev => [...prev.filter(p => !p._id), ...fresh]))
+          .catch(err => console.warn('Failed to refresh posts:', err)),
+        getIncomingOffers()
+          .then(setIncomingOffers)
+          .catch(err => console.warn('Failed to refresh incoming offers:', err)),
+        refreshIncomingQueries(),
+        getMyLocations()
+          .then(setMyLocations)
+          .catch(err => console.warn('Failed to refresh locations:', err)),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshIncomingQueries]);
 
   if (error) return (
     <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
@@ -278,6 +305,13 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
         onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.ui.secondarydisabled}
+          />
+        }
       >
         <View style={styles.topSpacer} />
         <View style={styles.deckWrapper}>

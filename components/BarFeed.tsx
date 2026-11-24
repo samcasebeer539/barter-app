@@ -10,9 +10,10 @@ interface FeedBarProps {
     headerTranslateY: Animated.Value;
     onSearchSubmit: (query: string) => void;
     onSearchClear: () => void;
+    onSortPress: () => void;
 }
 
-export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClear }: FeedBarProps) {
+export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClear, onSortPress }: FeedBarProps) {
     const [searchText, setSearchText] = useState('');
     const [searchActive, setSearchActive] = useState(false);
     const searchInputRef = useRef<TextInput>(null);
@@ -73,13 +74,12 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                             />
                         </TouchableOpacity>
                     ) : (
-                        <FontAwesome6
-                            name="magnifying-glass"
-                            size={22}
-                            color="#FFFFFF"
-                        />
+                        <TouchableOpacity style={styles.sortButton} onPress={onSortPress}>
+                            <FontAwesome6 name="sliders" size={22} color="#FFFFFF"/>
+                        </TouchableOpacity>
                     )}
                 </TouchableOpacity>
+                
             </Animated.View>
         </>
     );
@@ -154,5 +154,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 14,
+    },
+
+    sortButton: {
+        marginLeft: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

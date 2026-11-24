@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
@@ -59,6 +59,34 @@ function formatDistance(mi: number | null): string {
 // Placeholder heights (× column width) for the loading skeleton.
 const SKELETON_HEIGHTS = [[1.3, 1.0, 1.15], [1.0, 1.4, 0.9]];
 
+// Sorting posts by filtering
+type SortOption = 'nearest' | 'farthest' | 'newest'| 'oldest';
+
+const SORT_OPTIONS: { key: SortOption; label: string }[] = [
+    { key: 'nearest', label: 'Distance: Nearest' },
+    { key: 'farthest', label: 'Distance: Farthest' },
+    { key: 'newest', label: 'Date Posted: Newest' },
+    { key: 'oldest', label: 'Date Posted: Oldest' },
+];
+
+// Posts with no known distance ("?") always sink to the bottom.
+const byDistance = (dir: 1 | -1) => (a: FeedItem, b: FeedItem) => {
+    if (a.distanceMi == null && b.distanceMi == null) return 0;
+    if (a.distanceMi == null) return 1;
+    if (b.distanceMi == null) return -1;
+    return dir * (a.distanceMi - b.distanceMi);
+};
+
+function sortItems(items: FeedItem[], sortBy: SortOption): FeedItem[] {
+    const copy = [...items];
+    switch (sortBy) {
+        case 'nearest': return copy.sort(byDistance(1));
+        case 'farthest': return copy.sort(byDistance(-1));
+        case 'newest': return copy.sort((b, a) => a.date_posted.localeCompare(b.date_posted, undefined));
+        case 'oldest': return copy.sort((a, b) => a.date_posted.localeCompare(b.date_posted, undefined));
+    }
+}
+
 export default function FeedScreen() {
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
     const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
@@ -114,8 +142,13 @@ export default function FeedScreen() {
         return () => pulse.stop();
     }, [isInitialLoading, skeletonOpacity]);
 
-    const leftColumn = feedItems.filter((_, i) => i % 2 === 0);
-    const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
+    const [sortBy, setSortBy] = useState<SortOption>('nearest');
+    const [showSortMenu, setShowSortMenu] = useState(false);
+
+    const sortedItems = useMemo(() => sortItems(feedItems, sortBy), [feedItems, sortBy]);
+
+    const leftColumn = sortedItems.filter((_, i) => i % 2 === 0);
+    const rightColumn = sortedItems.filter((_, i) => i % 2 === 1);
 
     const handleScroll = (event: any) => {
         const currentScrollY = event.nativeEvent.contentOffset.y + HEADER_HEIGHT;
@@ -239,6 +272,7 @@ export default function FeedScreen() {
                 headerTranslateY={headerTranslateY}
                 onSearchSubmit={handleSearch}
                 onSearchClear={clearSearch}
+                onSortPress={() => setShowSortMenu(true)}
             />
 
             <ScrollView
@@ -308,6 +342,30 @@ export default function FeedScreen() {
                 onClose={() => setShowDeck(false)}
                 prefetchedProfile={prefetchedProfile}
             />
+            <Modal
+                transparent
+                visible={showSortMenu}
+                animationType="fade"
+                onRequestClose={() => setShowSortMenu(false)}
+            >
+                <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowSortMenu(false)}>
+                    <View style={[styles.sortMenu, { top: insets.top + HEADER_HEIGHT }]}>
+                        <Text style={styles.sortMenuTitle}>SORT BY</Text>
+                        {SORT_OPTIONS.map(opt => (
+                            <TouchableOpacity
+                                key={opt.key}
+                                style={styles.sortOption}
+                                onPress={() => { setSortBy(opt.key); setShowSortMenu(false); }}
+                            >
+                                <Text style={[styles.sortOptionText, sortBy === opt.key && styles.sortOptionTextActive]}>
+                                    {opt.label}
+                                </Text>
+                                {sortBy === opt.key && <FontAwesome6 name="check" size={14} color="#fff" />}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </Pressable>
+            </Modal>
         </View>
     );
 }
@@ -408,4 +466,30 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
         textAlign: "center",
     },
+
+    sortMenu: {
+        position: 'absolute',
+        right: 12,
+        minWidth: 230,
+        paddingVertical: 8,
+        borderRadius: 12,
+        backgroundColor: colors.ui.background,
+        borderWidth: 1,
+        borderColor: colors.ui.secondarydisabled,
+    },
+    sortMenuTitle: {
+        color: colors.ui.secondarydisabled,
+        fontSize: 12,
+        paddingHorizontal: 16,
+        paddingBottom: 6,
+    },
+    sortOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    sortOptionText: { color: colors.ui.secondarydisabled, fontSize: 15 },
+    sortOptionTextActive: { color: '#fff' },
 });

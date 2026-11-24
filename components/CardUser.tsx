@@ -387,16 +387,19 @@ const UserCard: React.FC<UserCardProps> = ({
 
             {/* Bio */}
             {isReviewsOpen ? null : isEditable ? (
-              <View>
+              // Like the post description: the bio fills the rest of the card and
+              // scrolls inside as you type, instead of growing past the card.
+              <View style={styles.bioEditArea}>
                 <Text style={styles.fieldLabel}>Bio:</Text>
                 <TextInput
-                  style={[styles.bio, styles.editableText, { flexShrink: 1 }]}
+                  style={[styles.bio, styles.editableText, styles.bioInput]}
                   value={draft.bio}
                   onChangeText={v => updateDraft('bio', v)}
                   placeholder="Tell others about yourself"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline
-                  // Grows as you type: ask the screen to keep it above the keyboard.
+                  scrollEnabled
+                  textAlignVertical="top"
                   onContentSizeChange={requestKeyboardLift}
                 />
               </View>
@@ -610,6 +613,13 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginLeft: 8,
+  },
+  bioEditArea: {
+    flex: 1,
+  },
+  bioInput: {
+    flex: 1,
+    textAlignVertical: 'top',
   },
   editableText: {
     paddingVertical: 2,

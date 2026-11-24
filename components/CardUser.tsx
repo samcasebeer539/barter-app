@@ -155,17 +155,11 @@ const UserCard: React.FC<UserCardProps> = ({
     onExitEdit?.();
   };
 
-  const handleEmailVisibleToggle = () => {
-    const next = !emailVisible;
-    setEmailVisible(next);
-    onSave?.({ ...user, email_visible: next });
-  };
-
-  const handlePhoneVisibleToggle = () => {
-    const next = !phoneVisible;
-    setPhoneVisible(next);
-    onSave?.({ ...user, phone_visible: next });
-  };
+  // The eyes are part of the edit like every other field: the check mark
+  // saves them, X reverts them. (Saving here right away sent the old profile
+  // and reset whatever you'd just typed.)
+  const handleEmailVisibleToggle = () => setEmailVisible(v => !v);
+  const handlePhoneVisibleToggle = () => setPhoneVisible(v => !v);
 
   const handlePickPhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();

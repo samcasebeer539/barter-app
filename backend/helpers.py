@@ -1,4 +1,6 @@
-from flask import jsonify, request
+import hashlib
+import json
+from flask import jsonify, request, Response
 from firebase_admin import auth as firebase_auth
 from bson import ObjectId
 import math
@@ -19,6 +21,25 @@ def clean(obj):
 
 def serialize_post(post):
     return clean(post)
+
+
+# ── "Unchanged" answers for the app's background checks ──────────────────
+def version_of(data) -> str:
+    """A short fingerprint of a response body: same data, same version."""
+    body = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha1(body.encode()).hexdigest()[:16]
+
+
+def json_with_version(data):
+    """Send `data` with its version in the X-Version header. If the app
+    already has that version (X-Known-Version), answer 204 with no body,
+    so an unchanged list costs almost nothing to send or read."""
+    version = version_of(data)
+    if request.headers.get("X-Known-Version") == version:
+        return Response(status=204, headers={"X-Version": version})
+    resp = jsonify(data)
+    resp.headers["X-Version"] = version
+    return resp
 
 
 # ── Distance between players ───────────────────────────────────────────────

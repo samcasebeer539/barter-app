@@ -37,13 +37,17 @@ def open_queries_for(user):
         })
     )
 
-    for i in range(len(queries)):
-        queries[i] = serialize_trade(queries[i])
-        post = posts_collection.find_one({"_id": ObjectId(queries[i]["target_post_id"])})
+    # All the target posts in one query.
+    posts = {p["_id"]: p for p in posts_collection.find(
+        {"_id": {"$in": [ObjectId(q["target_post_id"]) for q in queries]}})}
+    out = []
+    for q in queries:
+        post = posts.get(ObjectId(q["target_post_id"]))
+        item = serialize_trade(q)
         if post:
-            queries[i]["post"] = serialize_post(post)
-
-    return queries
+            item["post"] = serialize_post(post)
+        out.append(item)
+    return out
 
 
 @trades_query_bp.route("/dev/trades/query", methods=["POST"])

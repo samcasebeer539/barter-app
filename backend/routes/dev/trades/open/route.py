@@ -31,10 +31,14 @@ def open_offers_for(user):
         })
     )
 
-    for i in range(len(trades)):
-        post = posts_collection.find_one({"_id": trades[i].get("target_post_id")})
-        trades[i] = serialize_trade(trades[i])
+    # All the target posts in one query.
+    posts = {p["_id"]: p for p in posts_collection.find(
+        {"_id": {"$in": [t.get("target_post_id") for t in trades]}})}
+    out = []
+    for t in trades:
+        post = posts.get(t.get("target_post_id"))
+        item = serialize_trade(t)
         if post:
-            trades[i]["post"] = serialize_post(post)
-
-    return trades
+            item["post"] = serialize_post(post)
+        out.append(item)
+    return out

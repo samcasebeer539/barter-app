@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, json_with_version
 from routes.dev.trades.barter.route import games_in_phase_for_user
 
 trades_close_bp = Blueprint("trades_close", __name__)
@@ -18,7 +18,8 @@ def get_close_games():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    return jsonify(close_games_for(user)), 200
+    # 204 if the app already has this exact list (its background check).
+    return json_with_version(close_games_for(user))
 
 
 def close_games_for(user):

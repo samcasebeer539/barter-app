@@ -78,40 +78,6 @@ export function getCurrentUserId(): string | undefined {
   return getAuth().currentUser?.uid;
 }
 
-export async function getOpenTrade(): Promise<OpenTradeItem[]> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/open`, { headers });
-
-    const text = await res.text();
-    console.log('open trades raw:', text);
-    const data = JSON.parse(text);
-    return data.map(normalizeTradeItem);
-}
-
-export async function getBarterTrade() {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/barter`, {headers});
-
-    return res.json();
-}
-
-// Every post that isn't yours from all your declined games, one card per
-// post, most recently declined first.
-export async function getDeclinedTrades(): Promise<OpenTradeItem[]> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/declined`, { headers });
-    if (!res.ok) throw new Error(`Failed to load declined trades (${res.status})`);
-    const data = await res.json();
-    return data.map(normalizeTradeItem);
-}
-
-export async function getClosedTrade() {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/closed`, {headers});
-
-    return res.json();
-}
-
 export function acceptTrade(gameId: string) {
     return postTrade('/dev/trades/trade_details/accept', { gameId });
 }
@@ -168,35 +134,53 @@ export async function getOpenTab(): Promise<OpenTabData> {
 }
 
 // Everything the CLOSE tab shows, in one request: games settling where/when
-// (plus agreed deals), and the ACCEPTED / DECLINED TRADES history.
+// (plus agreed deals) and how many ACCEPTED / DECLINED TRADES there are.
+// With withHistory (once a history dropdown has been opened), also those
+// two lists in full.
 export interface CloseTabData {
     close: BarterGame[];
-    completed: BarterGame[];
-    declined: BarterGame[];
+    /** The close list's version, for getCloseGamesIfChanged. */
+    closeVersion: string;
+    counts: { completed: number; declined: number };
+    completed?: BarterGame[];
+    declined?: BarterGame[];
 }
-export async function getCloseTab(): Promise<CloseTabData> {
+export async function getCloseTab(withHistory: boolean): Promise<CloseTabData> {
     const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/close_tab`, { headers });
+    const res = await fetch(`${BASE_URL}/dev/trades/close_tab${withHistory ? '?history=1' : ''}`, { headers });
     if (!res.ok) throw new Error(`Failed to load close tab (${res.status})`);
     const data = await res.json();
     return {
         close: data.close ?? [],
-        completed: data.completed ?? [],
-        declined: data.declined ?? [],
+        closeVersion: data.closeVersion ?? '',
+        counts: data.counts ?? { completed: 0, declined: 0 },
+        completed: data.completed,
+        declined: data.declined,
     };
 }
 
-export async function getQuery(): Promise<OpenTradeItem[]> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/query`, {
-        method: 'GET',
-        headers,
-    });
+// Background checks: send the version of the list you already have. If it
+// hasn't changed the server answers 204 with no body.
+export type IfChanged<T> = { changed: false } | { changed: true; data: T; version: string };
 
-    const text = await res.text();
-    console.log('queries raw:', text);
-    const data = JSON.parse(text);
-    return groupQueryItems(data.map(normalizeTradeItem));
+async function getGamesIfChanged(path: string, knownVersion: string): Promise<IfChanged<BarterGame[]>> {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BASE_URL}${path}`, {
+        headers: knownVersion ? { ...headers, 'X-Known-Version': knownVersion } : headers,
+    });
+    if (res.status === 204) return { changed: false };
+    if (!res.ok) throw new Error(`Failed to load ${path} (${res.status})`);
+    return { changed: true, data: await res.json(), version: res.headers.get('X-Version') ?? '' };
+}
+
+/** BARTER tab games, or { changed: false } if you already have this version. */
+export function getBarterGamesIfChanged(knownVersion: string) {
+    return getGamesIfChanged('/dev/trades/barter', knownVersion);
+}
+
+/** CLOSE tab games (no history), or { changed: false } if unchanged. */
+export function getCloseGamesIfChanged(knownVersion: string) {
+    return getGamesIfChanged('/dev/trades/close', knownVersion);
 }
 
 export function sendQuery(targetPostId: string, message: string) {
@@ -275,30 +259,6 @@ export interface BarterGame {
   player: { user: User; posts: Post[] };
   partner: { user: User; posts: Post[] };
   turns: any[];
-}
-
-// Finished trades, as read-only trade decks: 'completed' (accepted) or
-// 'declined' (declined after reaching barter).
-export async function getTradeHistory(status: 'completed' | 'declined'): Promise<BarterGame[]> {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BASE_URL}/dev/trades/history?status=${status}`, { headers });
-  if (!res.ok) throw new Error(`Failed to load ${status} trades (${res.status})`);
-  return res.json();
-}
-
-export async function getBarterGames(): Promise<BarterGame[]> {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BASE_URL}/dev/trades/barter`, { headers });
-  const text = await res.text();
-  return JSON.parse(text);
-}
-
-// Games where both players *accepted in barter; same shape as barter games.
-export async function getCloseGames(): Promise<BarterGame[]> {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BASE_URL}/dev/trades/close`, { headers });
-  if (!res.ok) throw new Error(`Failed to load close games (${res.status})`);
-  return res.json();
 }
 
 // The standing WHERE / WHEN proposals in a game: only the latest of each

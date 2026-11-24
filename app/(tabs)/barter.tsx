@@ -8,7 +8,7 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTab, getCloseTab, getCloseGames, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { getOpenTab, getCloseTab, getCloseGamesIfChanged, getBarterGamesIfChanged, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -104,22 +104,22 @@ export default function ActiveTradesTestScreen() {
     // Current poll delay. Any change to a list (the partner's move, or your
     // own) resets it to the fastest rate.
     const pollDelay = useRef(POLL_MIN_MS);
-    const lastBarterJson = useRef('');
+    // Version of the barter list we have; the server answers 204 if unchanged.
+    const barterVersion = useRef('');
 
     // Resolves true if the list changed.
     // Whether the barter list has loaded at least once (so "no active trades"
     // doesn't flash before it arrives).
     const [hasLoadedBarter, setHasLoadedBarter] = useState(false);
     const refreshBarterGames = useCallback(() => {
-        return getBarterGames()
-            .then(games => {
+        return getBarterGamesIfChanged(barterVersion.current)
+            .then(result => {
                 setHasLoadedBarter(true);
-                const json = JSON.stringify(games);
-                const changed = json !== lastBarterJson.current;
-                lastBarterJson.current = json;
-                if (changed) pollDelay.current = POLL_MIN_MS;
-                setBarterGames(keepIfSame(games));
-                return changed;
+                if (!result.changed) return false;
+                barterVersion.current = result.version;
+                pollDelay.current = POLL_MIN_MS;
+                setBarterGames(keepIfSame(result.data));
+                return true;
             })
             .catch(err => { console.error('Failed to load barter games:', err); return false; });
     }, []);
@@ -130,42 +130,57 @@ export default function ActiveTradesTestScreen() {
     const [declinedTrades, setDeclinedTrades] = useState<BarterGame[]>([]);
     const [isAcceptedOpen, setIsAcceptedOpen] = useState(false);
     const [isDeclinedOpen, setIsDeclinedOpen] = useState(false);
-    // CLOSE tab: close games plus the ACCEPTED / DECLINED TRADES history,
-    // all from one request. Resolves true if anything changed (for polling).
-    const lastCloseJson = useRef('');
+    // History counts for the dropdown bars, sent with every close-tab load.
+    // The lists themselves load the first time either dropdown is opened,
+    // and are kept fresh with every close-tab load after that.
+    const [historyCounts, setHistoryCounts] = useState({ completed: 0, declined: 0 });
+    const historyLoaded = useRef(false);
+
+    // CLOSE tab: close games plus history counts (and the history lists once
+    // opened), all from one request. Resolves true if the close games changed.
+    const closeVersion = useRef('');
     const closeGameCount = useRef<number | null>(null);
     const refreshCloseTab = useCallback(() => {
-        return getCloseTab()
+        return getCloseTab(historyLoaded.current)
             .then(data => {
-                const json = JSON.stringify(data.close);
-                const changed = json !== lastCloseJson.current;
-                lastCloseJson.current = json;
+                const changed = data.closeVersion !== closeVersion.current;
+                closeVersion.current = data.closeVersion;
                 closeGameCount.current = data.close.length;
                 if (changed) pollDelay.current = POLL_MIN_MS;
                 setCloseGames(keepIfSame(data.close));
-                setAcceptedTrades(keepIfSame(data.completed));
-                setDeclinedTrades(keepIfSame(data.declined));
+                setHistoryCounts(keepIfSame(data.counts));
+                if (data.completed) setAcceptedTrades(keepIfSame(data.completed));
+                if (data.declined) setDeclinedTrades(keepIfSame(data.declined));
                 return changed;
             })
             .catch(err => { console.error('Failed to load close tab:', err); return false; });
     }, []);
 
-    // The close tab's background check: just the close games (light). The
-    // history only changes when a game leaves the list (declined, timed out
-    // or completed), so only then does it reload the whole tab.
+    // First open of either history dropdown: load the whole history.
+    const toggleHistory = useCallback((setOpen: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+        if (!historyLoaded.current) {
+            historyLoaded.current = true;
+            refreshCloseTab();
+        }
+        setOpen(o => !o);
+    }, [refreshCloseTab]);
+
+    // The close tab's background check: just the close games, and nothing
+    // at all (204) if they haven't changed. The history counts only change
+    // when a game leaves the list (declined, timed out or completed), so
+    // only then does it reload the whole tab.
     const pollCloseGames = useCallback(async () => {
         try {
-            const games = await getCloseGames();
-            const json = JSON.stringify(games);
-            if (json === lastCloseJson.current) return false;
-            if (closeGameCount.current !== null && games.length < closeGameCount.current) {
+            const result = await getCloseGamesIfChanged(closeVersion.current);
+            if (!result.changed) return false;
+            if (closeGameCount.current !== null && result.data.length < closeGameCount.current) {
                 await refreshCloseTab();
                 return true;
             }
-            lastCloseJson.current = json;
-            closeGameCount.current = games.length;
+            closeVersion.current = result.version;
+            closeGameCount.current = result.data.length;
             pollDelay.current = POLL_MIN_MS;
-            setCloseGames(keepIfSame(games));
+            setCloseGames(keepIfSame(result.data));
             return true;
         } catch (err) {
             console.error('Failed to check close games:', err);
@@ -281,23 +296,25 @@ export default function ActiveTradesTestScreen() {
 
     // A dropdown bar (label, count, arrow) and, when open, its trade decks.
     const renderHistorySection = (
-        label: string, color: string, games: BarterGame[], isOpen: boolean, onToggle: () => void,
+        label: string, color: string, count: number, games: BarterGame[], isOpen: boolean, onToggle: () => void,
     ) => (
+        // count comes from the server, so the bar is right before the list
+        // itself has been loaded (on first open).
         <View style={styles.historySection}>
             {/* Same row + pill bar as the decks' headers. */}
             <View style={[deckStyles.itemCountRow, styles.historyBarRow]}>
                 <TouchableOpacity
                     style={styles.historyBar}
                     onPress={onToggle}
-                    disabled={games.length === 0}
+                    disabled={count === 0}
                     activeOpacity={0.8}
                 >
                     <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color }]}>{label}</Text>
-                    <Text style={deckStyles.countText}>{String(games.length).padStart(2, '0')}</Text>
+                    <Text style={deckStyles.countText}>{String(count).padStart(2, '0')}</Text>
                     <FontAwesome6
                         name={isOpen ? 'angle-up' : 'angle-down'}
                         size={26}
-                        color={games.length === 0 ? colors.ui.secondarydisabled : '#fff'}
+                        color={count === 0 ? colors.ui.secondarydisabled : '#fff'}
                     />
                 </TouchableOpacity>
             </View>
@@ -446,12 +463,12 @@ export default function ActiveTradesTestScreen() {
                             />
                         ))}
                         {renderHistorySection(
-                            'ACCEPTED TRADES', colors.actions.accept,
-                            acceptedTrades, isAcceptedOpen, () => setIsAcceptedOpen(o => !o),
+                            'ACCEPTED TRADES', colors.actions.accept, historyCounts.completed,
+                            acceptedTrades, isAcceptedOpen, toggleHistory(setIsAcceptedOpen),
                         )}
                         {renderHistorySection(
-                            'DECLINED TRADES', colors.actions.decline,
-                            declinedTrades, isDeclinedOpen, () => setIsDeclinedOpen(o => !o),
+                            'DECLINED TRADES', colors.actions.decline, historyCounts.declined,
+                            declinedTrades, isDeclinedOpen, toggleHistory(setIsDeclinedOpen),
                         )}
                     </View>
                 )}

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade
+from helpers import get_uid_from_request, serialize_post, serialize_trade, json_with_version
 from models.game import Game, iso_utc
 
 trades_barter_bp = Blueprint("trades_barter", __name__)
@@ -92,54 +92,78 @@ def _serialize_post(post_doc):
         "date_posted": post_doc.get("date_posted", ""),
     }
 
-def _resolve_posts(post_ids):
-    posts = []
-    for pid in post_ids:
-        post = posts_collection.find_one({"_id": pid})
-        if post:
-            posts.append(_serialize_post(post))
-    return posts
+def _resolve_posts(post_ids, posts_by_id=None):
+    """Serialized posts in card order, skipping deleted ones. Pass
+    posts_by_id (from one batched lookup) to avoid a query per post."""
+    if posts_by_id is None:
+        posts_by_id = {p["_id"]: p for p in posts_collection.find({"_id": {"$in": list(post_ids)}})}
+    return [_serialize_post(posts_by_id[pid]) for pid in post_ids if pid in posts_by_id]
+
 
 def games_in_phase_for_user(user, phase):
     """Every game the user is in that's in `phase` (a phase name or a list
-    of them), shaped for a TradeDeck. Shared by the barter and close tabs."""
+    of them), shaped for a TradeDeck. Shared by the barter and close tabs.
+
+    Partners, posts, turn logs and pending questions are each fetched in
+    one query for all the games, not per game."""
     phases = [phase] if isinstance(phase, str) else list(phase)
+    my_user_id = user["_id"]
     games = list(
         games_collection.find({
             "$or": [
-                {"initiator_user_id": user["_id"]},
-                {"receiver_user_id": user["_id"]},
+                {"initiator_user_id": my_user_id},
+                {"receiver_user_id": my_user_id},
             ],
             "phase": {"$in": phases},
         })
     )
 
-    results = []
+    # Decline any game whose active player ran out of time, and leave it
+    # out of the list (it's no longer in this phase).
+    live = []
     for game in games:
-        # Decline any game whose active player ran out of time, and leave it
-        # out of the list (it's no longer in this phase).
         game_obj = Game.from_doc(game)
         if game_obj.expire_if_overdue():
             continue
         if "turn_started_at" not in game:
             game_obj.save()  # start the clock for games from before turn timers
+        live.append((game, game_obj))
+    if not live:
+        return []
+
+    game_ids = [g["_id"] for g, _ in live]
+    partner_ids = {
+        g["receiver_user_id"] if g["initiator_user_id"] == my_user_id else g["initiator_user_id"]
+        for g, _ in live
+    }
+    card_ids = {pid for g, _ in live for side in g["cards"].values() for pid in side}
+
+    partners = {u["_id"]: u for u in user_data_collection.find({"_id": {"$in": list(partner_ids)}})}
+    posts_by_id = {p["_id"]: p for p in posts_collection.find({"_id": {"$in": list(card_ids)}})}
+    turns_by_game = {gid: [] for gid in game_ids}
+    for t in trades_collection.find({"game_id": {"$in": game_ids}}).sort("created_at", 1):
+        turns_by_game[t["game_id"]].append(t)
+    # A question the partner asked that this user must answer before their
+    # turn can begin (same rule as Game.pending_query_for): the latest
+    # unanswered in-turn query from the other player, per game.
+    pending_by_game = {}
+    for t in trades_collection.find({
+        "game_id": {"$in": game_ids},
+        "type": "query",
+        "actor_id": {"$ne": my_user_id},
+        "in_turn": True,
+        "answered_at": None,
+    }).sort("created_at", -1):
+        pending_by_game.setdefault(t["game_id"], t)
+
+    results = []
+    for game, game_obj in live:
         deadline = game_obj.turn_deadline()
-
-        is_initiator = game["initiator_user_id"] == user["_id"]
-
-        my_user_id = user["_id"]
+        is_initiator = game["initiator_user_id"] == my_user_id
         partner_user_id = game["receiver_user_id"] if is_initiator else game["initiator_user_id"]
-
         my_role = "initiator" if is_initiator else "receiver"
         partner_role = "receiver" if is_initiator else "initiator"
-
-        partner_user = user_data_collection.find_one({"_id": partner_user_id})
-
-        turns = list(trades_collection.find({"game_id": game["_id"]}).sort("created_at", 1))
-
-        # A question the partner asked that this user must answer before
-        # their turn can begin.
-        pending = game_obj.pending_query_for(my_user_id)
+        pending = pending_by_game.get(game["_id"])
 
         results.append({
             "gameId": str(game["_id"]),
@@ -153,13 +177,13 @@ def games_in_phase_for_user(user, phase):
             } if pending else None,
             "player": {
                 "user": _serialize_user(user, is_self=True),
-                "posts": _resolve_posts(game["cards"].get(my_role, [])),
+                "posts": _resolve_posts(game["cards"].get(my_role, []), posts_by_id),
             },
             "partner": {
-                "user": _serialize_user(partner_user),
-                "posts": _resolve_posts(game["cards"].get(partner_role, [])),
+                "user": _serialize_user(partners.get(partner_user_id)),
+                "posts": _resolve_posts(game["cards"].get(partner_role, []), posts_by_id),
             },
-            "turns": [serialize_trade(t) for t in turns],
+            "turns": [serialize_trade(t) for t in turns_by_game[game["_id"]]],
         })
 
     return results
@@ -175,4 +199,5 @@ def get_barter_games():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    return jsonify(games_in_phase_for_user(user, "barter")), 200
+    # 204 if the app already has this exact list (its background check).
+    return json_with_version(games_in_phase_for_user(user, "barter"))

@@ -548,6 +548,12 @@ export default function ProfileDeck({
 
                 {/* Primary deck — logged-in user, editable */}
                 <View style={styles.primaryDeckWrapper}>
+                    {/* Covers the offerers' deck while it slides out from
+                        behind yours. It's as tall as that deck, so a long
+                        turn log can't peek out below your deck. */}
+                    {showSecondary && (
+                        <View pointerEvents="none" style={[styles.secondaryCover, { height: secondaryHeight }]} />
+                    )}
                     <View style={styles.primaryDeckColumn}>
                         <View style={[deckStyles.deckWrapper, { backgroundColor: colors.ui.background, paddingTop: 8, marginTop: -8 }]}>
                             <Deck
@@ -609,6 +615,9 @@ const styles = StyleSheet.create({
     container: { width: '100%', maxWidth: 400, position: 'relative', alignItems: 'center', overflow: 'visible' },
     decksContainer: { width: '100%', alignItems: 'center', overflow: 'visible' },
     primaryDeckWrapper: { width: '100%', alignItems: 'center', zIndex: 2, elevation: 2 },
+    secondaryCover: {
+        position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: colors.ui.background,
+    },
     primaryDeckColumn: {
         width: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
         gap: 8, backgroundColor: colors.ui.background, paddingBottom: 50,

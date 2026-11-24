@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
+import { deckStyles, barRadius } from '../../styles/deckStyles';
 import { getFeedPosts, getFeedProfile, searchFeedPosts } from '@/services/feedService';
 import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -63,10 +64,10 @@ const SKELETON_HEIGHTS = [[1.3, 1.0, 1.15], [1.0, 1.4, 0.9]];
 type SortOption = 'nearest' | 'farthest' | 'newest'| 'oldest';
 
 const SORT_OPTIONS: { key: SortOption; label: string }[] = [
-    { key: 'nearest', label: 'Distance: Nearest' },
-    { key: 'farthest', label: 'Distance: Farthest' },
-    { key: 'newest', label: 'Date Posted: Newest' },
-    { key: 'oldest', label: 'Date Posted: Oldest' },
+    { key: 'nearest', label: 'NEAREST' },
+    { key: 'farthest', label: 'FARTHEST' },
+    { key: 'newest', label: 'NEWEST' },
+    { key: 'oldest', label: 'OLDEST' },
 ];
 
 // Posts with no known distance ("?") always sink to the bottom.
@@ -349,20 +350,23 @@ export default function FeedScreen() {
                 onRequestClose={() => setShowSortMenu(false)}
             >
                 <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowSortMenu(false)}>
-                    <View style={[styles.sortMenu, { top: insets.top + HEADER_HEIGHT }]}>
-                        <Text style={styles.sortMenuTitle}>SORT BY</Text>
-                        {SORT_OPTIONS.map(opt => (
-                            <TouchableOpacity
-                                key={opt.key}
-                                style={styles.sortOption}
-                                onPress={() => { setSortBy(opt.key); setShowSortMenu(false); }}
-                            >
-                                <Text style={[styles.sortOptionText, sortBy === opt.key && styles.sortOptionTextActive]}>
-                                    {opt.label}
-                                </Text>
-                                {sortBy === opt.key && <FontAwesome6 name="check" size={14} color="#fff" />}
-                            </TouchableOpacity>
-                        ))}
+                    {/* Full width under the header, with 8px of black below. */}
+                    <View style={[styles.sortMenuArea, { top: insets.top + HEADER_HEIGHT }]}>
+                        <View style={styles.sortMenu}>
+                            <Text style={styles.sortMenuTitle}>SORT BY</Text>
+                            {SORT_OPTIONS.map(opt => (
+                                <TouchableOpacity
+                                    key={opt.key}
+                                    style={styles.sortOption}
+                                    onPress={() => { setSortBy(opt.key); setShowSortMenu(false); }}
+                                >
+                                    <Text style={styles.sortOptionText}>{opt.label}</Text>
+                                    {sortBy === opt.key && (
+                                        <FontAwesome6 name="circle-check" size={24} color="#fff" />
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
                     </View>
                 </Pressable>
             </Modal>
@@ -467,29 +471,32 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
 
-    sortMenu: {
+    // Sort menu: hangs under the header like a bar's bottom cap, same side
+    // margins as the header (12), bar text styles, rows the height of a bar.
+    sortMenuArea: {
         position: 'absolute',
-        right: 12,
-        minWidth: 230,
-        paddingVertical: 8,
-        borderRadius: 12,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 12,
+        paddingBottom: 8,
         backgroundColor: colors.ui.background,
-        borderWidth: 1,
-        borderColor: colors.ui.secondarydisabled,
+    },
+    sortMenu: {
+        backgroundColor: colors.ui.secondary,
+        ...barRadius.bottomCap,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
     },
     sortMenuTitle: {
-        color: colors.ui.secondarydisabled,
-        fontSize: 12,
-        paddingHorizontal: 16,
-        paddingBottom: 6,
+        ...deckStyles.countText,
+        height: 36,
+        lineHeight: 36,
     },
     sortOption: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        height: 36,
     },
-    sortOptionText: { color: colors.ui.secondarydisabled, fontSize: 15 },
-    sortOptionTextActive: { color: '#fff' },
+    sortOptionText: { ...deckStyles.actionButtonText, color: '#fff' },
 });

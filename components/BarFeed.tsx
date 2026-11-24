@@ -48,11 +48,16 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                     { paddingTop: insets.top, transform: [{ translateY: headerTranslateY }] }
                 ]}
             >
+                {/* Sort: its own button on the left, like the other icon buttons. */}
+                <TouchableOpacity style={styles.sortButton} onPress={onSortPress}>
+                    <FontAwesome6 name="sliders" size={22} color="#FFFFFF" />
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.searchBar}
                     onPress={handleSearchBarPress}
                     activeOpacity={1}
                 >
+                    <FontAwesome6 name="magnifying-glass" size={20} color={colors.ui.secondarydisabled} />
                     <TextInput
                         keyboardAppearance="dark"
                         ref={searchInputRef}
@@ -64,18 +69,14 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                         returnKeyType="done"
                         onSubmitEditing={handleSearchSubmit}
                     />
-                    {/* If there something being searched, show the X, else show magnifying glass */}
-                    {searchActive ? (
-                        <TouchableOpacity onPress={clearSearch}>
+                    {/* While a search is showing, an X on the right clears it. */}
+                    {searchActive && (
+                        <TouchableOpacity onPress={clearSearch} hitSlop={8}>
                             <FontAwesome6
                                 name="circle-xmark"
                                 size={22}
                                 color={colors.ui.secondarydisabled}
                             />
-                        </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity style={styles.sortButton} onPress={onSortPress}>
-                            <FontAwesome6 name="sliders" size={22} color="#FFFFFF"/>
                         </TouchableOpacity>
                     )}
                 </TouchableOpacity>
@@ -142,22 +143,30 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    // Sort button + search bar read as one pill: rounded outer corners,
+    // 2px inner ones, 4px apart (the container's gap).
     searchBar: {
         flex: 1,
         height: 44,
-        borderTopLeftRadius: 25,
+        borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
         borderTopRightRadius: 25,
         borderBottomRightRadius: 2,
         backgroundColor: colors.ui.secondary,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 14,
+        gap: 8,
+        paddingHorizontal: 16,
     },
 
     sortButton: {
-        marginLeft: 12,
+        width: 50,
+        height: 44,
+        borderTopLeftRadius: 25,
+        borderBottomLeftRadius: 2,
+        borderTopRightRadius: 2,
+        borderBottomRightRadius: 2,
+        backgroundColor: colors.ui.secondary,
         justifyContent: 'center',
         alignItems: 'center',
     },

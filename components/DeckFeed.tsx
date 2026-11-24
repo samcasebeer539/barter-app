@@ -355,6 +355,7 @@ export default function FeedDeck({
                     onQueryPostSelect={() => {}}
                     onQueryPostDeselect={() => {}}
                     queryBlocked={topPostIndex === null}
+                    blockedActionTypes={topPostIndex === null ? ['offer', 'add'] : []}
                     onActionChange={setScrolledActionType}
                   />
                 </View>

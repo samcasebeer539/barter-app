@@ -300,6 +300,7 @@ export default function OfferDeck({
                                     onQueryPostSelect={() => {}}
                                     onQueryPostDeselect={() => {}}
                                     queryBlocked={topPostIndex === null}
+                                    blockedActionTypes={topPostIndex === null ? ['offer', 'rescind'] : []}
                                     onActionChange={setScrolledActionType}
                                 />
                             </View>

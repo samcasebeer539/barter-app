@@ -613,6 +613,8 @@ export default function TradeDeck({
                 queryPostSelected={queryPostIndex !== null}
                 onQueryPostSelect={() => {}}
                 onQueryPostDeselect={() => {}}
+                // SUBTRACT picks your top card (ADD opens their feed deck instead).
+                blockedActionTypes={playerTopPostIndex === null ? ['subtract'] : []}
                 onActionChange={setScrolledActionType}
                 turnDeadline={turnDeadline}
                 filledActionType={isAddPressed ? 'add' : null}

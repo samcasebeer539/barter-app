@@ -534,6 +534,7 @@ export default function ProfileDeck({
                                     onQueryPostSelect={() => {}}
                                     onQueryPostDeselect={() => {}}
                                     queryBlocked={topSecondaryPostIndex === null}
+                                    blockedActionTypes={topSecondaryPostIndex === null ? ['barter'] : []}
                                     onActionChange={setScrolledActionType}
                                 />
                             </View>

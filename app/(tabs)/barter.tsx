@@ -8,7 +8,7 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTrade, getQuery, getBarterGames, getCloseGames, getDeclinedTrades, getTradeHistory, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { getOpenTab, getCloseTab, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -83,39 +83,28 @@ export default function ActiveTradesTestScreen() {
         return unsubscribe;
     }, []);
 
-    // Centralized so both the initial load and post-action refreshes go
-    // through the same functions — avoids the two getting out of sync.
-    const refreshTrades = useCallback(() => {
-        return getOpenTrade().then(setTrades).catch(err => console.error('Failed to load open trades:', err));
+    // OPEN tab: QUERIES, OFFERS and DECLINED OFFERS, all from one request.
+    // Used for the tab's load, pull to refresh, and after your own moves.
+    const refreshOpenTab = useCallback(() => {
+        return getOpenTab()
+            .then(data => {
+                setQueries(keepIfSame(data.queries));
+                setTrades(keepIfSame(data.offers));
+                setDeclined(keepIfSame(data.declined));
+            })
+            .catch(err => console.error('Failed to load open tab:', err));
     }, []);
 
-    const refreshQueries = useCallback(() => {
-        return getQuery().then(setQueries).catch(err => console.error('Failed to load queries:', err));
-    }, []);
-
-    // Fired by OfferDeck after a successful submit. An 'offer' submission
-    // changes the trades list; a 'query' submission changes the queries
-    // list — either deck can fire either one, so both decks pass this same
-    // handler and it dispatches based on actionType.
-    const handleActionComplete = useCallback((actionType: 'offer' | 'query' | 'rescind') => {
-        if (actionType === 'offer') refreshTrades();
-        if (actionType === 'query') refreshQueries();
-        if (actionType === 'rescind') refreshTrades();
-    }, [refreshTrades, refreshQueries]);
-
-    useEffect(() => {
-        refreshTrades();
-    }, [refreshTrades]);
-
-    useEffect(() => {
-        refreshQueries();
-    }, [refreshQueries]);
+    // Fired by OfferDeck after a successful offer, query or rescind.
+    const handleActionComplete = useCallback(
+        (_actionType: 'offer' | 'query' | 'rescind') => { refreshOpenTab(); },
+        [refreshOpenTab]
+    );
 
     // Current poll delay. Any change to a list (the partner's move, or your
     // own) resets it to the fastest rate.
     const pollDelay = useRef(POLL_MIN_MS);
     const lastBarterJson = useRef('');
-    const lastCloseJson = useRef('');
 
     // Resolves true if the list changed.
     // Whether the barter list has loaded at least once (so "no active trades"
@@ -135,53 +124,34 @@ export default function ActiveTradesTestScreen() {
             .catch(err => { console.error('Failed to load barter games:', err); return false; });
     }, []);
 
-    const refreshDeclined = useCallback(() => {
-        return getDeclinedTrades()
-            .then(items => setDeclined(keepIfSame(items)))
-            .catch(err => console.error('Failed to load declined trades:', err));
-    }, []);
 
     // Close tab history: finished trades, as read-only trade decks.
     const [acceptedTrades, setAcceptedTrades] = useState<BarterGame[]>([]);
     const [declinedTrades, setDeclinedTrades] = useState<BarterGame[]>([]);
     const [isAcceptedOpen, setIsAcceptedOpen] = useState(false);
     const [isDeclinedOpen, setIsDeclinedOpen] = useState(false);
-    const refreshHistory = useCallback(() => {
-        return Promise.all([
-            getTradeHistory('completed')
-                .then(games => setAcceptedTrades(keepIfSame(games)))
-                .catch(err => console.error('Failed to load accepted trades:', err)),
-            getTradeHistory('declined')
-                .then(games => setDeclinedTrades(keepIfSame(games)))
-                .catch(err => console.error('Failed to load declined trades:', err)),
-        ]);
-    }, []);
-
-    // A close game that drops out of the list was declined, timed out or
-    // completed, which is when the history lists change, so reload them then.
-    const closeGameCount = useRef<number | null>(null);
-    const refreshCloseGames = useCallback(() => {
-        return getCloseGames()
-            .then(games => {
-                if (closeGameCount.current !== null && games.length < closeGameCount.current) {
-                    refreshHistory();
-                }
-                closeGameCount.current = games.length;
-                const json = JSON.stringify(games);
-                const changed = json !== lastCloseJson.current;
-                lastCloseJson.current = json;
+    // CLOSE tab: close games plus the ACCEPTED / DECLINED TRADES history,
+    // all from one request. Resolves true if anything changed (for polling).
+    const lastCloseTabJson = useRef('');
+    const refreshCloseTab = useCallback(() => {
+        return getCloseTab()
+            .then(data => {
+                const json = JSON.stringify(data);
+                const changed = json !== lastCloseTabJson.current;
+                lastCloseTabJson.current = json;
                 if (changed) pollDelay.current = POLL_MIN_MS;
-                setCloseGames(keepIfSame(games));
+                setCloseGames(keepIfSame(data.close));
+                setAcceptedTrades(keepIfSame(data.completed));
+                setDeclinedTrades(keepIfSame(data.declined));
                 return changed;
             })
-            .catch(err => { console.error('Failed to load close games:', err); return false; });
-    }, [refreshHistory]);
+            .catch(err => { console.error('Failed to load close tab:', err); return false; });
+    }, []);
 
     // Stable, so the decks' turn-timer effects don't restart on every render.
     const handleCloseTurnExpired = useCallback(() => {
-        refreshCloseGames();
-        refreshHistory();
-    }, [refreshCloseGames, refreshHistory]);
+        refreshCloseTab();
+    }, [refreshCloseTab]);
 
     // A refused move means this screen was out of date (or the move was
     // invalid): say why, then reload so the wheel matches the server.
@@ -211,19 +181,18 @@ export default function ActiveTradesTestScreen() {
     // the other player in at least one game: on your own turn they can't
     // move, so nothing can change. (Your own moves refresh the list
     // directly.) Checks back off while nothing changes; see POLL_MIN_MS.
-    // DECLINED OFFERS loads with the open tab; the history lists load with
-    // the close tab and again when a close game drops out.
+    // Each tab loads with one request: the open tab's three decks, or the
+    // close tab's games plus history (which the close-tab poll also reloads).
     useEffect(() => {
         if (!isFocused) return;
         if (tab === 'open') {
-            refreshDeclined();
+            refreshOpenTab();
             return;
         }
         if (tab === 'barter') {
             refreshBarterGames();
         } else if (tab === 'close') {
-            refreshCloseGames();
-            refreshHistory();
+            refreshCloseTab();
         } else {
             return;
         }
@@ -235,27 +204,27 @@ export default function ActiveTradesTestScreen() {
             const games = tab === 'barter' ? barterGamesRef.current : closeGamesRef.current;
             // Agreed deals have no turns left to wait for.
             if (games.some(g => !g.myTurn && g.phase !== 'agreed')) {
-                const changed = await (tab === 'barter' ? refreshBarterGames() : refreshCloseGames());
+                const changed = await (tab === 'barter' ? refreshBarterGames() : refreshCloseTab());
                 if (!changed) pollDelay.current = Math.min(pollDelay.current * 2, POLL_MAX_MS);
             }
             if (!cancelled) timer = setTimeout(tick, pollDelay.current);
         };
         timer = setTimeout(tick, pollDelay.current);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined, refreshHistory]);
+    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseTab, refreshOpenTab]);
 
     // Pull to refresh, like the feed: reload every list on the current tab.
     const [refreshing, setRefreshing] = useState(false);
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         try {
-            if (tab === 'open') await Promise.all([refreshQueries(), refreshTrades(), refreshDeclined()]);
+            if (tab === 'open') await refreshOpenTab();
             else if (tab === 'barter') await refreshBarterGames();
-            else await Promise.all([refreshCloseGames(), refreshHistory()]);
+            else await refreshCloseTab();
         } finally {
             setRefreshing(false);
         }
-    }, [tab, refreshQueries, refreshTrades, refreshDeclined, refreshBarterGames, refreshCloseGames, refreshHistory]);
+    }, [tab, refreshOpenTab, refreshBarterGames, refreshCloseTab]);
 
     // A finished trade as a read-only trade deck (log and decks, no wheel).
     const renderHistoryDeck = (game: BarterGame) => (
@@ -430,8 +399,8 @@ export default function ActiveTradesTestScreen() {
                                 pendingQuery={game.pendingQuery}
                                 rawTurns={game.turns}
                                 phase={game.phase}
-                                onActionComplete={refreshCloseGames}
-                                onActionFailed={handleActionFailed(refreshCloseGames)}
+                                onActionComplete={refreshCloseTab}
+                                onActionFailed={handleActionFailed(refreshCloseTab)}
                                 onTurnExpired={handleCloseTurnExpired}
                                 partnerUser={game.partner.user}
                                 partnerPosts={game.partner.posts}

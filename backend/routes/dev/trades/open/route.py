@@ -11,7 +11,11 @@ def get_open_trades():
         return err
 
     user = user_data_collection.find_one({"firebase_uid": uid})
+    return jsonify(open_offers_for(user)), 200
 
+
+def open_offers_for(user):
+    """OFFERS deck: your offers still waiting on the other player."""
     pending_game_ids = [
         g["_id"] for g in games_collection.find(
             {"initiator_user_id": user["_id"], "phase": "offer_pending"},
@@ -33,4 +37,4 @@ def get_open_trades():
         if post:
             trades[i]["post"] = serialize_post(post)
 
-    return jsonify(trades), 200
+    return trades

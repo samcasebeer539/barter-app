@@ -19,11 +19,16 @@ def get_declined_posts():
     user = user_data_collection.find_one({"firebase_uid": uid})
     if not user:
         return jsonify({"error": "User not found"}), 404
-    my_id = user["_id"]
 
     # Games whose turn timer ran out only flip to declined when loaded,
     # so settle those first.
-    Game.expire_overdue_for_user(my_id)
+    Game.expire_overdue_for_user(user["_id"])
+    return jsonify(declined_offers_for(user)), 200
+
+
+def declined_offers_for(user):
+    """DECLINED OFFERS deck (call Game.expire_overdue_for_user first)."""
+    my_id = user["_id"]
 
     games = games_collection.find({
         "initiator_user_id": my_id,
@@ -71,4 +76,4 @@ def get_declined_posts():
             "partner_name": (owner or {}).get("first_name", ""),
         })
 
-    return jsonify(results), 200
+    return results

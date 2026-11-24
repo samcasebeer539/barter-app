@@ -149,6 +149,43 @@ export async function sendMessage(tradeId: string, message: string) {
     );
 }
 
+// Everything the barter page's OPEN tab shows, in one request.
+export interface OpenTabData {
+    queries: OpenTradeItem[];
+    offers: OpenTradeItem[];
+    declined: OpenTradeItem[];
+}
+export async function getOpenTab(): Promise<OpenTabData> {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BASE_URL}/dev/trades/open_tab`, { headers });
+    if (!res.ok) throw new Error(`Failed to load open tab (${res.status})`);
+    const data = await res.json();
+    return {
+        queries: groupQueryItems((data.queries ?? []).map(normalizeTradeItem)),
+        offers: (data.offers ?? []).map(normalizeTradeItem),
+        declined: (data.declined ?? []).map(normalizeTradeItem),
+    };
+}
+
+// Everything the CLOSE tab shows, in one request: games settling where/when
+// (plus agreed deals), and the ACCEPTED / DECLINED TRADES history.
+export interface CloseTabData {
+    close: BarterGame[];
+    completed: BarterGame[];
+    declined: BarterGame[];
+}
+export async function getCloseTab(): Promise<CloseTabData> {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${BASE_URL}/dev/trades/close_tab`, { headers });
+    if (!res.ok) throw new Error(`Failed to load close tab (${res.status})`);
+    const data = await res.json();
+    return {
+        close: data.close ?? [],
+        completed: data.completed ?? [],
+        declined: data.declined ?? [],
+    };
+}
+
 export async function getQuery(): Promise<OpenTradeItem[]> {
     const headers = await getAuthHeader();
     const res = await fetch(`${BASE_URL}/dev/trades/query`, {

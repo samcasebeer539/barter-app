@@ -18,5 +18,9 @@ def get_close_games():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
+    return jsonify(close_games_for(user)), 200
+
+
+def close_games_for(user):
     # Agreed deals stay in the close tab.
-    return jsonify(games_in_phase_for_user(user, ["close", "agreed"])), 200
+    return games_in_phase_for_user(user, ["close", "agreed"])

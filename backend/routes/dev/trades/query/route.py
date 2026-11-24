@@ -14,7 +14,11 @@ def get_queries():
         return err
 
     user = user_data_collection.find_one({"firebase_uid": uid})
+    return jsonify(open_queries_for(user)), 200
 
+
+def open_queries_for(user):
+    """QUERIES deck: your questions in games that haven't reached barter."""
     visible_game_ids = [
         g["_id"] for g in games_collection.find(
             {
@@ -39,7 +43,7 @@ def get_queries():
         if post:
             queries[i]["post"] = serialize_post(post)
 
-    return jsonify(queries), 200
+    return queries
 
 
 @trades_query_bp.route("/dev/trades/query", methods=["POST"])

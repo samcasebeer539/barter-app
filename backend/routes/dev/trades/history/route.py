@@ -27,11 +27,15 @@ def get_trade_history():
 
     # Timed-out games only flip to declined when loaded.
     Game.expire_overdue_for_user(user["_id"])
+    return jsonify(history_for(user, status)), 200
 
+
+def history_for(user, status):
+    """Finished trades with `status` (call Game.expire_overdue_for_user first)."""
     games = games_in_phase_for_user(user, status)
     if status == "declined":
         games = [g for g in games if any(t.get("type") == "barter" for t in g["turns"])]
 
     # Most recent first.
     games.sort(key=lambda g: g["turns"][-1].get("created_at", "") if g["turns"] else "", reverse=True)
-    return jsonify(games), 200
+    return games

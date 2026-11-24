@@ -9,6 +9,7 @@ import {
   KeyboardEvent,
   Platform,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -339,9 +340,12 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 
-  if (!primaryUser || !isLoaderGone) return (
+  // TEMPORARY TEST: plain spinner instead of CenteredRefreshSpinner, to check
+  // whether the refresh-control loader causes the instant pull-to-refresh.
+  // To restore: `if (!primaryUser || !isLoaderGone)` + <CenteredRefreshSpinner active={!primaryUser} />
+  if (!primaryUser) return (
     <View style={styles.loadingContainer}>
-      <CenteredRefreshSpinner active={!primaryUser} />
+      <ActivityIndicator size="small" color={colors.ui.secondarydisabled} />
     </View>
   );
 

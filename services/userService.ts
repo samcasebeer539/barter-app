@@ -81,7 +81,7 @@ export interface UserReview {
   _id: string;
   rating: number;
   text: string;
-  /** First name + last initial, e.g. "Jay W." */
+  /** The reviewer's full name. */
   reviewerName: string;
   /** ISO timestamp (UTC). */
   createdAt: string | null;

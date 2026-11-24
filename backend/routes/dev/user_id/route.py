@@ -55,8 +55,8 @@ MAX_REVIEWS = 50
 
 @userId_bp.route('/dev/users/<user_id>/reviews', methods=['GET'])
 def get_user_reviews(user_id):
-    """Reviews other players left for this user, newest first. Reviewers
-    appear as first name + last initial."""
+    """Reviews other players left for this user, newest first, with each
+    reviewer's full name."""
     try:
         uid, err = get_uid_from_request()
         if err: return err
@@ -82,9 +82,8 @@ def get_user_reviews(user_id):
         def display_name(user):
             if not user:
                 return "Former member"
-            first = user.get("first_name", "").strip()
-            last = user.get("last_name", "").strip()
-            return f"{first} {last[0]}." if last else first or "Member"
+            full = f'{user.get("first_name", "").strip()} {user.get("last_name", "").strip()}'.strip()
+            return full or "Member"
 
         return jsonify([
             {

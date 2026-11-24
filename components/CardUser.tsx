@@ -406,7 +406,11 @@ const UserCard: React.FC<UserCardProps> = ({
 
           {/* Reviews list (open) or the summary in the bottom row (closed) */}
           {isReviewsOpen ? (
-            <ScrollView style={styles.reviewList} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.reviewList}
+              contentContainerStyle={styles.reviewListContent}
+              showsVerticalScrollIndicator={false}
+            >
               {reviews === null && !reviewsError ? (
                 <ActivityIndicator style={styles.reviewsState} color={colors.ui.cardsecondary} />
               ) : reviewsError ? (
@@ -414,8 +418,8 @@ const UserCard: React.FC<UserCardProps> = ({
               ) : reviews!.length === 0 ? (
                 <Text style={[styles.reviewsStateText, styles.reviewsState]}>No reviews yet</Text>
               ) : (
-                reviews!.map((review, i) => (
-                  <View key={review._id} style={[styles.reviewItem, i > 0 && styles.reviewDivider]}>
+                reviews!.map(review => (
+                  <View key={review._id} style={styles.reviewItem}>
                     <View style={styles.reviewHeader}>
                       <Text style={styles.reviewerName} numberOfLines={1}>{review.reviewerName}</Text>
                       <Text style={styles.reviewDate}>{formatReviewDate(review.createdAt)}</Text>
@@ -553,13 +557,15 @@ const styles = StyleSheet.create({
   reviewList: {
     flex: 1,
   },
-  reviewItem: {
-    paddingVertical: 12,
-    gap: 4,
+  // Reviews are separated by space alone: 4px within a review, 20px
+  // between reviews.
+  reviewListContent: {
+    gap: 20,
+    paddingTop: 4,
+    paddingBottom: 12,
   },
-  reviewDivider: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.ui.cardsecondary,
+  reviewItem: {
+    gap: 4,
   },
   reviewHeader: {
     flexDirection: 'row',

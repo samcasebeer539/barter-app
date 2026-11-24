@@ -24,6 +24,9 @@ const StarRating = ({ rating = 0, size = 20 }: { rating?: number; size?: number 
   );
 };
 
+// Shown in place of a hidden email or phone in edit mode.
+const HIDDEN_DOTS = '••••••••••••';
+
 // "Today", "3 days ago", "Nov 12" (this year) or "Nov 12, 2025".
 function formatReviewDate(iso: string | null): string {
   if (!iso) return '';
@@ -102,6 +105,11 @@ const UserCard: React.FC<UserCardProps> = ({
   }, [isEditable]);
   const [emailVisible, setEmailVisible] = useState(user.email_visible);
   const [phoneVisible, setPhoneVisible] = useState(user.phone_visible);
+  // A hidden phone shows dots; tapping them opens the field to type in.
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  // Switched on after focus so iOS shows the check-mark key when the field
+  // focuses itself (see the query box in TradeTurns).
+  const [phoneDoneKey, setPhoneDoneKey] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const photoHeight = useRef(new Animated.Value(photoExpanded)).current;
 
@@ -279,7 +287,7 @@ const UserCard: React.FC<UserCardProps> = ({
               {isEditable ? (
                 <>
                   <TouchableOpacity style={styles.actionButton} onPress={handleSave} disabled={isUploadingPhoto}>
-                    <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.cardsecondary : colors.actions.accept} />
+                    <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.cardsecondary : colors.actions.review} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionButton} onPress={handleCancel}>
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
@@ -341,7 +349,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 {/* Email — read-only with visibility toggle */}
                 <View style={[styles.fieldRow, styles.fieldRowSpaced]}>
                   <Text style={[styles.location, { flex: 1 }]}>
-                    {emailVisible ? user.email : '••••••••••••'}
+                    {emailVisible ? user.email : HIDDEN_DOTS}
                   </Text>
                   <TouchableOpacity
                     style={styles.actionButton}
@@ -357,18 +365,25 @@ const UserCard: React.FC<UserCardProps> = ({
 
                 {/* Phone — editable with visibility toggle */}
                 <View style={[styles.fieldRow, styles.fieldRowSpaced]}>
-                  <TextInput
-                    keyboardAppearance="dark"
-                    style={styles.fieldInput}
-                    value={draft.phone}
-                    onFocus={kbField.onFocus}
-                    onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
-                    placeholder="Phone (optional)"
-                    placeholderTextColor={colors.ui.cardsecondary}
-                    keyboardType="numbers-and-punctuation"
-                    returnKeyType="done"
-                    secureTextEntry={!phoneVisible}
-                  />
+                  {!phoneVisible && !isEditingPhone && draft.phone ? (
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => setIsEditingPhone(true)}>
+                      <Text style={styles.location}>{HIDDEN_DOTS}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TextInput
+                      keyboardAppearance="dark"
+                      style={styles.fieldInput}
+                      value={draft.phone}
+                      autoFocus={isEditingPhone}
+                      onFocus={() => { kbField.onFocus(); setPhoneDoneKey(true); }}
+                      onBlur={() => { setIsEditingPhone(false); setPhoneDoneKey(false); }}
+                      onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
+                      placeholder="Phone (optional)"
+                      placeholderTextColor={colors.ui.cardsecondary}
+                      keyboardType="numbers-and-punctuation"
+                      returnKeyType={phoneDoneKey ? 'done' : 'default'}
+                    />
+                  )}
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={handlePhoneVisibleToggle}
@@ -622,7 +637,7 @@ const styles = StyleSheet.create({
   fieldInput: {
     flex: 1,
     fontSize: 16,
-    color: '#000000',
+    color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
     paddingVertical: 0,

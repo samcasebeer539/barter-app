@@ -320,7 +320,7 @@ const UserCard: React.FC<UserCardProps> = ({
               <View style={styles.fieldRow}>
                 <TextInput
                   keyboardAppearance="dark"
-                  style={[styles.location, styles.editableText, { flex: 1 }]}
+                  style={styles.fieldInput}
                   value={draft.pronouns}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('pronouns', v); kbField.requestLift(); }}
@@ -339,7 +339,7 @@ const UserCard: React.FC<UserCardProps> = ({
             {isReviewsOpen ? null : isEditable ? (
               <>
                 {/* Email — read-only with visibility toggle */}
-                <View style={styles.fieldRow}>
+                <View style={[styles.fieldRow, styles.fieldRowSpaced]}>
                   <Text style={[styles.location, { flex: 1 }]}>
                     {emailVisible ? user.email : '••••••••••••'}
                   </Text>
@@ -349,17 +349,17 @@ const UserCard: React.FC<UserCardProps> = ({
                   >
                     <FontAwesome6
                       name={emailVisible ? 'eye' : 'eye-slash'}
-                      size={22}
+                      size={24}
                       color={colors.ui.cardsecondary}
                     />
                   </TouchableOpacity>
                 </View>
 
                 {/* Phone — editable with visibility toggle */}
-                <View style={styles.fieldRow}>
+                <View style={[styles.fieldRow, styles.fieldRowSpaced]}>
                   <TextInput
                     keyboardAppearance="dark"
-                    style={[styles.location, styles.editableText, { flex: 1 }]}
+                    style={styles.fieldInput}
                     value={draft.phone}
                     onFocus={kbField.onFocus}
                     onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
@@ -375,7 +375,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   >
                     <FontAwesome6
                       name={phoneVisible ? 'eye' : 'eye-slash'}
-                      size={22}
+                      size={24}
                       color={colors.ui.cardsecondary}
                     />
                   </TouchableOpacity>
@@ -398,7 +398,7 @@ const UserCard: React.FC<UserCardProps> = ({
               <View style={styles.bioEditArea}>
                 <TextInput
                   keyboardAppearance="dark"
-                  style={[styles.bio, styles.editableText, styles.bioInput]}
+                  style={[styles.bio, styles.editableText, styles.bioInput, styles.bioInputSpaced]}
                   value={draft.bio}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('bio', v); kbField.requestLift(); }}
@@ -609,9 +609,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  // Edit-mode rows (pronouns, email, phone): one height, text and icons
+  // centered, so every row lines up the same.
   fieldRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    height: 24,
+  },
+  fieldRowSpaced: {
+    marginTop: 6,
+  },
+  fieldInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000000',
+    fontFamily: globalFonts.regular,
+    letterSpacing: -0.1,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
   },
   actionButton: {
     marginLeft: 8,
@@ -622,6 +637,9 @@ const styles = StyleSheet.create({
   bioInput: {
     flex: 1,
     textAlignVertical: 'top',
+  },
+  bioInputSpaced: {
+    marginTop: 6,
   },
   editableText: {
     paddingVertical: 2,

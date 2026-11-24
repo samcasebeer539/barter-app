@@ -261,7 +261,12 @@ export default function FeedScreen() {
                                 {column.map((h, i) => (
                                     <View key={i} style={styles.cardWrapper}>
                                         <View style={[styles.card, { height: columnWidth * h }]} />
-                                        <View style={styles.itemTitleWrapper} />
+                                        {/* Same text as a real post, invisible, so the
+                                            box is exactly a one-line post's height. */}
+                                        <View style={styles.itemTitleWrapper}>
+                                            <Text style={[styles.itemTitle, styles.skeletonText]} numberOfLines={1}>Item</Text>
+                                            <Text style={[styles.itemDistance, styles.skeletonText]}>0.0{'\u00A0'}mi</Text>
+                                        </View>
                                     </View>
                                 ))}
                             </View>
@@ -378,6 +383,9 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
         flexShrink: 0,
         letterSpacing: -0.3,
+    },
+    skeletonText: {
+        color: 'transparent',
     },
     noResultsContainer: {
         paddingVertical: 32,

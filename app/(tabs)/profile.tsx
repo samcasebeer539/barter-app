@@ -9,7 +9,6 @@ import {
   KeyboardEvent,
   Platform,
   RefreshControl,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -39,6 +38,30 @@ const SECONDARY_USER_ID = '';
 // downstream components (ProfileDeck) never need to reverse-engineer which
 // game a given group of cards belongs to.
 
+
+// ─── Loading spinner ──────────────────────────────────────────────────────────
+
+// The exact pull-to-refresh spinner the feed, barter and profile pages use (a
+// real RefreshControl with the same tint), shown in the middle of the screen.
+// iOS only draws a RefreshControl that starts refreshing after it has laid
+// out, so refreshing is switched on just after mount.
+function CenteredRefreshSpinner() {
+  const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setRefreshing(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <ScrollView
+      style={styles.spinnerScroll}
+      contentContainerStyle={styles.spinnerContent}
+      scrollEnabled={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} tintColor={colors.ui.secondarydisabled} />
+      }
+    />
+  );
+}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -300,7 +323,7 @@ export default function ProfileScreen() {
 
   if (!primaryUser) return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="small" color={colors.ui.secondarydisabled} />
+      <CenteredRefreshSpinner />
     </View>
   );
 
@@ -367,6 +390,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.ui.background,
+  },
+  // A short strip centered on screen; the refresh spinner draws at its top.
+  spinnerScroll: {
+    flexGrow: 0,
+    width: '100%',
+    height: 80,
+  },
+  spinnerContent: {
+    height: 80,
   },
   loadingContainer: {
     flex: 1,

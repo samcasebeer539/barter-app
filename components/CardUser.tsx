@@ -24,8 +24,8 @@ const StarRating = ({ rating = 0, size = 20 }: { rating?: number; size?: number 
   );
 };
 
-// Shown in place of a hidden email or phone in edit mode.
-const HIDDEN_DOTS = '••••••••••••';
+// Shown in place of a hidden email or phone in edit mode: one dot per character.
+const hiddenDots = (value?: string | null) => '•'.repeat(value?.length ?? 0);
 
 // "Today", "3 days ago", "Nov 12" (this year) or "Nov 12, 2025".
 function formatReviewDate(iso: string | null): string {
@@ -349,7 +349,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 {/* Email — read-only with visibility toggle */}
                 <View style={[styles.fieldRow, styles.fieldRowSpaced]}>
                   <Text style={[styles.location, { flex: 1 }]}>
-                    {emailVisible ? user.email : HIDDEN_DOTS}
+                    {emailVisible ? user.email : hiddenDots(user.email)}
                   </Text>
                   <TouchableOpacity
                     style={styles.actionButton}
@@ -367,7 +367,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 <View style={[styles.fieldRow, styles.fieldRowSpaced]}>
                   {!phoneVisible && !isEditingPhone && draft.phone ? (
                     <TouchableOpacity style={{ flex: 1 }} onPress={() => setIsEditingPhone(true)}>
-                      <Text style={styles.location}>{HIDDEN_DOTS}</Text>
+                      <Text style={styles.location}>{hiddenDots(draft.phone)}</Text>
                     </TouchableOpacity>
                   ) : (
                     <TextInput

@@ -1,8 +1,9 @@
 from flask import jsonify, Blueprint
 import traceback
 from bson.objectid import ObjectId
-from backend import user_data_collection, posts_collection
+from backend import user_data_collection, posts_collection, trades_collection
 from helpers import get_uid_from_request, serialize_post, public_user
+from models.game import iso_utc
 
 userId_bp = Blueprint('userId', __name__)
 
@@ -44,6 +45,57 @@ def get_user_profile(user_id):
             "posts": owner_posts,
         }), 200
 
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+MAX_REVIEWS = 50
+
+
+@userId_bp.route('/dev/users/<user_id>/reviews', methods=['GET'])
+def get_user_reviews(user_id):
+    """Reviews other players left for this user, newest first. Reviewers
+    appear as first name + last initial."""
+    try:
+        uid, err = get_uid_from_request()
+        if err: return err
+
+        try:
+            target_id = ObjectId(user_id)
+        except Exception:
+            return jsonify({"error": "Invalid user_id"}), 400
+
+        reviews = list(
+            trades_collection.find({"type": "review", "reviewed_user_id": target_id})
+            .sort("created_at", -1)
+            .limit(MAX_REVIEWS)
+        )
+
+        reviewer_ids = list({r["actor_id"] for r in reviews})
+        reviewers = {
+            u["_id"]: u for u in user_data_collection.find(
+                {"_id": {"$in": reviewer_ids}}, {"first_name": 1, "last_name": 1}
+            )
+        }
+
+        def display_name(user):
+            if not user:
+                return "Former member"
+            first = user.get("first_name", "").strip()
+            last = user.get("last_name", "").strip()
+            return f"{first} {last[0]}." if last else first or "Member"
+
+        return jsonify([
+            {
+                "_id": str(r["_id"]),
+                "rating": r.get("rating", 0),
+                "text": r.get("text", ""),
+                "reviewerName": display_name(reviewers.get(r["actor_id"])),
+                "createdAt": iso_utc(r.get("created_at")),
+            }
+            for r in reviews
+        ]), 200
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

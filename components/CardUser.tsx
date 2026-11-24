@@ -1,10 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { User } from '@/types/index';
-import { uploadProfilePhoto } from '@/services/userService';
+import { uploadProfilePhoto, getUserReviews, UserReview } from '@/services/userService';
+
+// ─── Star rating ──────────────────────────────────────────────────────────────
+
+// Filled and half stars in the review color, empty ones as gray outlines.
+const StarRating = ({ rating = 0, size = 20 }: { rating?: number; size?: number }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating - fullStars >= 0.5;
+  return (
+    <View style={[styles.starRow, { gap: Math.round(size / 8) }]}>
+      {[0, 1, 2, 3, 4].map(i => {
+        if (i < fullStars) return <FontAwesome6 key={i} name="star" size={size} color={colors.actions.review} solid />;
+        if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={size} color={colors.actions.review} solid />;
+        return <FontAwesome6 key={i} name="star" size={size} color={colors.ui.cardsecondary} />;
+      })}
+    </View>
+  );
+};
+
+// "Today", "3 days ago", "Nov 12" (this year) or "Nov 12, 2025".
+function formatReviewDate(iso: string | null): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+  if (days < 1) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }),
+  });
+}
 
 
 interface UserCardProps {
@@ -39,6 +71,32 @@ const UserCard: React.FC<UserCardProps> = ({
   const photoCollapsed = 80;
 
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+
+  // Reviews: tapping the stars or count opens the list in place of the
+  // contacts and bio (and collapses the photo). Loaded on first open.
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [reviews, setReviews] = useState<UserReview[] | null>(null);
+  const [reviewsError, setReviewsError] = useState(false);
+  const reviewsLoadedFor = useRef<string | null>(null);
+  const reviewCount = user.reviewCount ?? 0;
+
+  useEffect(() => {
+    if (!isReviewsOpen || !user._id || reviewsLoadedFor.current === user._id) return;
+    reviewsLoadedFor.current = user._id;
+    setReviews(null);
+    setReviewsError(false);
+    getUserReviews(user._id)
+      .then(setReviews)
+      .catch(err => {
+        console.error('Failed to load reviews:', err);
+        setReviewsError(true);
+        reviewsLoadedFor.current = null; // retry on next open
+      });
+  }, [isReviewsOpen, user._id]);
+
+  useEffect(() => {
+    if (isEditable) setIsReviewsOpen(false);
+  }, [isEditable]);
   const [emailVisible, setEmailVisible] = useState(user.email_visible);
   const [phoneVisible, setPhoneVisible] = useState(user.phone_visible);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -120,28 +178,29 @@ const UserCard: React.FC<UserCardProps> = ({
   };
 
   useEffect(() => {
-    const target = isEditable ? photoCollapsed : (isInfoExpanded ? photoCollapsed : photoExpanded);
+    const target = isEditable || isInfoExpanded || isReviewsOpen ? photoCollapsed : photoExpanded;
     Animated.spring(photoHeight, {
       toValue: target,
       useNativeDriver: false,
       damping: 40,
       stiffness: 270,
     }).start();
-  }, [isInfoExpanded, isEditable]);
+  }, [isInfoExpanded, isEditable, isReviewsOpen]);
 
-  const StarRating = ({ rating = 0 }: { rating?: number }) => {
-    const fullStars = Math.floor(rating);
-    const hasHalf = rating % 1 >= 0.5;
-    return (
-      <View style={styles.ratingRow}>
-        {[...Array(5)].map((_, i) => {
-          if (i < fullStars) return <FontAwesome6 key={i} name="star" size={24} color={colors.actions.accept} solid />;
-          if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={24} color="#F5B301" solid />;
-          return <FontAwesome6 key={i} name="star" size={24} color={colors.ui.cardsecondary} />;
-        })}
-      </View>
-    );
-  };
+  // Stars + "(N reviews)", left-aligned; tap to show or hide the reviews.
+  const reviewSummary = (
+    <TouchableOpacity
+      style={styles.reviewSummary}
+      onPress={() => setIsReviewsOpen(open => !open)}
+      hitSlop={8}
+      activeOpacity={0.7}
+    >
+      <StarRating rating={user.rating ?? 0} size={20} />
+      <Text style={styles.reviewCountText}>
+        ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+      </Text>
+    </TouchableOpacity>
+  );
 
   // Only show contacts that are marked visible
   const visibleContacts = [
@@ -166,10 +225,12 @@ const UserCard: React.FC<UserCardProps> = ({
 
           {/* Photo */}
           <TouchableOpacity
-            activeOpacity={isEditable ? 0.8 : (isInfoExpanded ? 0.8 : 1)}
+            activeOpacity={isEditable || isInfoExpanded || isReviewsOpen ? 0.8 : 1}
             onPress={() => {
               if (isEditable) {
                 handlePickPhoto();
+              } else if (isReviewsOpen) {
+                setIsReviewsOpen(false);
               } else if (isInfoExpanded) {
                 setIsInfoExpanded(false);
               }
@@ -196,9 +257,9 @@ const UserCard: React.FC<UserCardProps> = ({
 
           {/* Info section */}
           <TouchableOpacity
-            activeOpacity={isEditable ? 1 : 0.9}
-            onPress={() => !isEditable && setIsInfoExpanded(true)}
-            style={styles.infoSection}
+            activeOpacity={isEditable || isReviewsOpen ? 1 : 0.9}
+            onPress={() => !isEditable && !isReviewsOpen && setIsInfoExpanded(true)}
+            style={[styles.infoSection, isReviewsOpen && styles.infoSectionCompact]}
           >
             {/* Name row */}
             <View style={[styles.headerRow, { marginBottom: 8 }]}>
@@ -262,8 +323,12 @@ const UserCard: React.FC<UserCardProps> = ({
               </View>
             )}
 
+            {/* Reviews open: the summary moves up under the name, replacing
+                the contacts and bio. */}
+            {isReviewsOpen && reviewSummary}
+
             {/* Contacts */}
-            {isEditable ? (
+            {isReviewsOpen ? null : isEditable ? (
               <>
                 {/* Email — read-only with visibility toggle */}
                 <View style={styles.fieldRow}>
@@ -318,7 +383,7 @@ const UserCard: React.FC<UserCardProps> = ({
             )}
 
             {/* Bio */}
-            {isEditable ? (
+            {isReviewsOpen ? null : isEditable ? (
               <View>
                 <Text style={styles.fieldLabel}>Bio:</Text>
                 <TextInput
@@ -337,16 +402,31 @@ const UserCard: React.FC<UserCardProps> = ({
             )}
           </TouchableOpacity>
 
-          {/* Bottom row — ratings only in view mode */}
-          <View style={styles.ratingsRow}>
-            {!isEditable && (
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{user.reviewCount ?? 0}  Exchanges:</Text>
-                <StarRating rating={user.rating} />
-                
-              </View>
-            )}
-          </View>
+          {/* Reviews list (open) or the summary in the bottom row (closed) */}
+          {isReviewsOpen ? (
+            <ScrollView style={styles.reviewList} showsVerticalScrollIndicator={false}>
+              {reviews === null && !reviewsError ? (
+                <ActivityIndicator style={styles.reviewsState} color={colors.ui.cardsecondary} />
+              ) : reviewsError ? (
+                <Text style={[styles.reviewsStateText, styles.reviewsState]}>Couldn't load reviews</Text>
+              ) : reviews!.length === 0 ? (
+                <Text style={[styles.reviewsStateText, styles.reviewsState]}>No reviews yet</Text>
+              ) : (
+                reviews!.map((review, i) => (
+                  <View key={review._id} style={[styles.reviewItem, i > 0 && styles.reviewDivider]}>
+                    <View style={styles.reviewHeader}>
+                      <Text style={styles.reviewerName} numberOfLines={1}>{review.reviewerName}</Text>
+                      <Text style={styles.reviewDate}>{formatReviewDate(review.createdAt)}</Text>
+                    </View>
+                    <StarRating rating={review.rating} size={14} />
+                    {review.text ? <Text style={styles.reviewText}>{review.text}</Text> : null}
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          ) : !isEditable ? (
+            <View style={styles.ratingsRow}>{reviewSummary}</View>
+          ) : null}
 
         </View>
       </View>
@@ -402,6 +482,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  // While reviews are open the info section is just name + summary; the
+  // list below takes the remaining height.
+  infoSectionCompact: {
+    flex: 0,
+  },
   name: {
     fontSize: 18,
     color: '#000000',
@@ -433,23 +518,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
     marginRight: 6,
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
-    gap: 6,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    gap: 2,
-  },
-  ratingText: {
-    lineHeight: 20,
-    fontSize: 16,
-    color: colors.ui.cardsecondary,
-    fontFamily: globalFonts.regular,
-  },
   bio: {
     fontSize: 16,
     lineHeight: 20,
@@ -460,10 +528,70 @@ const styles = StyleSheet.create({
   },
   ratingsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
+    justifyContent: 'flex-start',
     backgroundColor: '#ffffff',
     paddingTop: 8,
+  },
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  reviewSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+  },
+  reviewCountText: {
+    fontSize: 16,
+    lineHeight: 20,
+    color: colors.ui.cardsecondary,
+    fontFamily: globalFonts.regular,
+  },
+  reviewList: {
+    flex: 1,
+  },
+  reviewItem: {
+    paddingVertical: 12,
+    gap: 4,
+  },
+  reviewDivider: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.ui.cardsecondary,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  reviewerName: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000000',
+    fontFamily: globalFonts.bold,
+  },
+  reviewDate: {
+    fontSize: 14,
+    color: colors.ui.cardsecondary,
+    fontFamily: globalFonts.regular,
+  },
+  reviewText: {
+    fontSize: 16,
+    lineHeight: 20,
+    color: '#000000',
+    fontFamily: globalFonts.regular,
+    letterSpacing: -0.1,
+    marginTop: 2,
+  },
+  reviewsState: {
+    marginTop: 24,
+    alignSelf: 'center',
+  },
+  reviewsStateText: {
+    fontSize: 16,
+    color: colors.ui.cardsecondary,
+    fontFamily: globalFonts.regular,
   },
   headerRow: {
     flexDirection: 'row',

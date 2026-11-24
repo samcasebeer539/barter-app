@@ -72,3 +72,22 @@ export async function uploadProfilePhoto(localUri: string): Promise<string> {
   await uploadBytes(storageRef, blob);
   return await getDownloadURL(storageRef);
 }
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export interface UserReview {
+  _id: string;
+  rating: number;
+  text: string;
+  /** First name + last initial, e.g. "Jay W." */
+  reviewerName: string;
+  /** ISO timestamp (UTC). */
+  createdAt: string | null;
+}
+
+/** Reviews other players left for this user, newest first. */
+export async function getUserReviews(userId: string): Promise<UserReview[]> {
+  const headers = await getAuthHeader();
+  const res = await fetch(`${BASE_URL}/dev/users/${userId}/reviews`, { headers });
+  if (!res.ok) throw new Error(`Failed to load reviews (${res.status})`);
+  return res.json();
+}

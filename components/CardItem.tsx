@@ -101,10 +101,10 @@ const PostCard: React.FC<PostCardProps> = ({
     onSave?.({ ...post, ...draft });
     onExitEdit?.();
   };
-  // Cancelling a post that was never saved, with its title or photo still
-  // missing, removes it. Posts that existed before editing just revert.
+  // Cancelling a post that was never saved removes it. Posts that existed
+  // before editing just revert.
   const handleCancel = () => {
-    if (!post._id && !canSave) {
+    if (!post._id) {
       onExitEdit?.();
       onDiscard?.();
       return;

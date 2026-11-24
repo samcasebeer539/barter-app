@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { User } from '@/types/index';
 import { uploadProfilePhoto, getUserReviews, UserReview } from '@/services/userService';
+import { requestKeyboardLift } from '@/lib/keyboardLift';
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
 
@@ -395,6 +396,8 @@ const UserCard: React.FC<UserCardProps> = ({
                   placeholder="Tell others about yourself"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline
+                  // Grows as you type: ask the screen to keep it above the keyboard.
+                  onContentSizeChange={requestKeyboardLift}
                 />
               </View>
             ) : (

@@ -20,6 +20,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Post, User, Locations } from '@/types/index';
 import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
+import { onKeyboardLiftRequest } from '@/lib/keyboardLift';
 import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
 import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
@@ -257,21 +258,30 @@ export default function ProfileScreen() {
         scrollToLift(target);
       });
     };
+    // Top edge of the open keyboard (null while it's closed), for re-checks
+    // when the focused field grows as you type.
+    let keyboardTop: number | null = null;
     const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
       setKeyboardHeight(e.endCoordinates.height);
-      const keyboardTop = e.endCoordinates.screenY;
-      setTimeout(() => liftFocusedInput(keyboardTop), 50);
+      keyboardTop = e.endCoordinates.screenY;
+      const top = keyboardTop;
+      setTimeout(() => liftFocusedInput(top), 50);
+    });
+    const unsubscribeLift = onKeyboardLiftRequest(() => {
+      if (keyboardTop !== null) liftFocusedInput(keyboardTop);
     });
     // Second check once the keyboard is fully up, in case the first lift was
     // capped or the focus moved to another field.
     const didShow = Keyboard.addListener('keyboardDidShow', (e: KeyboardEvent) => {
-      liftFocusedInput(e.endCoordinates.screenY);
+      keyboardTop = e.endCoordinates.screenY;
+      liftFocusedInput(keyboardTop);
     });
     const hide = Keyboard.addListener('keyboardWillHide', () => {
+      keyboardTop = null;
       liftTarget.current = null;
       setKeyboardHeight(0);
     });
-    return () => { show.remove(); didShow.remove(); hide.remove(); };
+    return () => { show.remove(); didShow.remove(); hide.remove(); unsubscribeLift(); };
   }, []);
 
   const [incomingQueries, setIncomingQueries] = useState<IncomingQuery[]>([]);

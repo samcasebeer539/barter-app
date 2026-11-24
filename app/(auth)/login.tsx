@@ -147,7 +147,7 @@ export default function HandleLogin() {
                 />
 
                 {loading ? (
-                    <ActivityIndicator size={"small"} style={{ margin: 28 }} />
+                    <ActivityIndicator size="large" color={colors.ui.secondary} style={{ margin: 28 }} />
                 ) : (
                     <View style={styles.signButtonRow}>
                         <TouchableOpacity

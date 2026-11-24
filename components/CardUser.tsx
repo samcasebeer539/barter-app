@@ -249,7 +249,7 @@ const UserCard: React.FC<UserCardProps> = ({
               {isEditable && (
                 <View style={styles.photoEditOverlay} pointerEvents="none">
                   {isUploadingPhoto
-                    ? <ActivityIndicator color="#fff" size="small" />
+                    ? <ActivityIndicator color={colors.ui.secondary} size="large" />
                     : <FontAwesome6 name="camera" size={24} color="#fff" />
                   }
                 </View>
@@ -412,7 +412,7 @@ const UserCard: React.FC<UserCardProps> = ({
               showsVerticalScrollIndicator={false}
             >
               {reviews === null && !reviewsError ? (
-                <ActivityIndicator style={styles.reviewsState} color={colors.ui.cardsecondary} />
+                <ActivityIndicator style={styles.reviewsState} size="large" color={colors.ui.secondary} />
               ) : reviewsError ? (
                 <Text style={[styles.reviewsStateText, styles.reviewsState]}>Couldn't load reviews</Text>
               ) : reviews!.length === 0 ? (

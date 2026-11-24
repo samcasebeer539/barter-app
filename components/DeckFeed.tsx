@@ -293,7 +293,7 @@ export default function FeedDeck({
 
               {isLoading ? (
                 <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color={colors.ui.secondarydisabled} />
+                  <ActivityIndicator size="large" color={colors.ui.secondary} />
                 </View>
               ) : (
                 <View style={deckStyles.deckWrapper}>

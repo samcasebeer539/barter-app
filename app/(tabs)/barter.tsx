@@ -341,7 +341,7 @@ export default function ActiveTradesTestScreen() {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        tintColor={colors.ui.secondarydisabled}
+                        tintColor={colors.ui.secondary}
                         progressViewOffset={insets.top}
                     />
                 }

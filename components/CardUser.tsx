@@ -291,12 +291,15 @@ const UserCard: React.FC<UserCardProps> = ({
                 </>
               ) : isUser ? (
                 <>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={e => { e.stopPropagation(); onEnterEdit?.(); }}
-                  >
-                    <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
-                  </TouchableOpacity>
+                  {/* Only where the card can actually be edited (the profile). */}
+                  {onEnterEdit && (
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={e => { e.stopPropagation(); onEnterEdit(); }}
+                    >
+                      <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity style={styles.actionButton}>
                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>

@@ -19,6 +19,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Dimensions, Keyboard, KeyboardEvent, Platform, TextInput } from 'react-native';
 
 const GAP = 16;
+// Space kept between the text you're typing and the top of the keyboard.
+const KEYBOARD_GAP = 40;
 
 interface KeyboardLiftContextValue {
     /** The focused field belongs to this screen. */
@@ -61,7 +63,7 @@ export function useKeyboardLift(
                 return;
             }
             // Covered by the keyboard.
-            const overlap = y + h + GAP - kbTop;
+            const overlap = y + h + KEYBOARD_GAP - kbTop;
             if (overlap <= 0) return;
             const target = scrollY.current + overlap;
             // Re-applied once the keyboard padding has laid out (before that

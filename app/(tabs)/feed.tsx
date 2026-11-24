@@ -246,7 +246,7 @@ export default function FeedScreen() {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        tintColor={colors.ui.secondary}
+                        tintColor={colors.ui.secondarydisabled}
                         progressViewOffset={HEADER_HEIGHT}            // Android
                     />
                 }

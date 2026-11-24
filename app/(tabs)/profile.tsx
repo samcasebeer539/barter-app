@@ -300,7 +300,7 @@ export default function ProfileScreen() {
 
   if (!primaryUser) return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color={colors.ui.secondary} />
+      <ActivityIndicator size="large" color={colors.ui.secondarydisabled} />
     </View>
   );
 
@@ -320,7 +320,7 @@ export default function ProfileScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.ui.secondary}
+            tintColor={colors.ui.secondarydisabled}
           />
         }
       >

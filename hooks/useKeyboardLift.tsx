@@ -20,7 +20,7 @@ import { Dimensions, Keyboard, KeyboardEvent, Platform, TextInput } from 'react-
 
 const GAP = 16;
 // Space kept between the text you're typing and the top of the keyboard.
-const KEYBOARD_GAP = 40;
+const KEYBOARD_GAP = 56;
 
 interface KeyboardLiftContextValue {
     /** The focused field belongs to this screen. */

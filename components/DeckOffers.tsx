@@ -9,7 +9,7 @@ import { TradeActionConfig } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post } from '@/types/index';
 import { OpenTradeItem } from '@/types'
-import { buildQueryTurns, buildOfferTurns, sendOffer, sendQuery, rescindOffer } from '@/services/tradeService';
+import { buildQueryTurns, buildOfferTurns, buildTradeTurns, sendOffer, sendQuery, rescindOffer } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 
 const { width } = Dimensions.get('window');
@@ -215,8 +215,17 @@ export default function OfferDeck({
         if (!topItem) return [];
         if (isQueryDeck) return buildQueryTurns(topItem);
         if (isOffersDeck) return buildOfferTurns(topItem);
+        // Declined offers: the whole game's history, read-only.
+        if (deckType === 'declined') {
+            return buildTradeTurns(
+                topItem.rawTurns ?? [],
+                topItem.myId ?? '',
+                topItem.partnerName ?? '',
+                topItem.post ? [topItem.post] : [],
+            );
+        }
         return [];
-    }, [isQueryDeck, isOffersDeck, topPostIndex, itemsWithPost]);
+    }, [isQueryDeck, isOffersDeck, deckType, topPostIndex, itemsWithPost]);
 
     return (
         <View style={styles.modalContent} pointerEvents="box-none">

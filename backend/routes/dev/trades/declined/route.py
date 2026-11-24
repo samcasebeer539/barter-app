@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post
+from helpers import get_uid_from_request, serialize_post, serialize_trade
 from models.game import Game
 
 trades_declined_bp = Blueprint("trades_declined", __name__)
@@ -54,6 +54,9 @@ def get_declined_posts():
             {"game_id": game._id, "type": "decline"},
             sort=[("created_at", -1)],
         )
+        # The game's full history, oldest first, for the deck's turn log.
+        turns = trades_collection.find({"game_id": game._id}).sort("created_at", 1)
+        owner = user_data_collection.find_one({"_id": game.receiver_user_id}, {"first_name": 1})
         results.append({
             # Same shape as the open/query lists, so the client can reuse
             # normalizeTradeItem.
@@ -63,6 +66,9 @@ def get_declined_posts():
             "actor_id": str(decline["actor_id"]) if decline else None,
             "post": serialize_post(post),
             "messages": [],
+            "turns": [serialize_trade(t) for t in turns],
+            "my_id": str(my_id),
+            "partner_name": (owner or {}).get("first_name", ""),
         })
 
     return jsonify(results), 200

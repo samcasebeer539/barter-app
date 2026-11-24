@@ -69,6 +69,9 @@ function normalizeTradeItem(raw: any): OpenTradeItem {
         post: raw.post ? normalizePost(raw.post) : null,
         actorId: raw.actor_id,
         messages: (raw.messages ?? []).map(normalizeMessage),
+        rawTurns: raw.turns,
+        myId: raw.my_id,
+        partnerName: raw.partner_name,
     };
 }
 export function getCurrentUserId(): string | undefined {

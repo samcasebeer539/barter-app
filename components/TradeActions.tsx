@@ -306,7 +306,23 @@ const TradeUI: React.FC<TradeUIProps> = ({
             );
         }
 
-        if (['offer', 'barter', 'rescind'].includes(action.actionType)) {
+        // Offer picks exactly one post: no count, just a check once the top
+        // card is selected.
+        if (action.actionType === 'offer') {
+            const selected = active && isArmed && topCardIsSelected;
+            return (
+                <IconButton
+                    color={color}
+                    isActive={selected}
+                    icon={selected ? 'circle-check' : 'circle'}
+                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+                    disabled={disabled}
+                    fillOnActive
+                />
+            );
+        }
+
+        if (['barter', 'rescind'].includes(action.actionType)) {
             return (
                 <SelectButton
                     color={color}

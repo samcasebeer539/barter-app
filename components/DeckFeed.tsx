@@ -180,6 +180,12 @@ export default function FeedDeck({
       return;
     }
 
+    // Like OFFER, a question has to be about a post: QUERY does nothing while
+    // the user or location card is on top (closing an open box still works).
+    if (actionType === 'query' && trade.activeAction !== 'query' && topPostIndex == null) {
+      return;
+    }
+
     trade.selectAction(actionType);
   };
 

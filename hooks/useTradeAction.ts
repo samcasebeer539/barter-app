@@ -6,7 +6,8 @@ import { TradeActionType } from '../config/tradeConfig';
 const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', 'add', 'subtract'];
 
 // Select actions that pick exactly one post: selecting another replaces it.
-const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['add', 'subtract'];
+// (You offer on one post at a time.)
+const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['offer', 'add', 'subtract'];
 
 // Actions whose button tap toggles something other than the action itself,
 // so tapping it again doesn't disarm. (None right now: QUERY used to be one.)

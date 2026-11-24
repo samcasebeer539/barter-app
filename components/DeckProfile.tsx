@@ -184,6 +184,12 @@ export default function ProfileDeck({
     // top, following their deck as you swipe. With their user or location
     // card on top, QUERY is greyed out and can't be sent.
     const queryPostIndex = isQueryActive ? topSecondaryPostIndex : null;
+    // Swiping to a user or location card turns QUERY off (closing the box):
+    // there's no post to ask about.
+    useEffect(() => {
+      if (trade.activeAction === 'query' && topSecondaryPostIndex === null) trade.reset();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [topSecondaryPostIndex]);
     const [queryText, setQueryText] = useState('');
     useEffect(() => {
         if (!isQueryActive) setQueryText('');

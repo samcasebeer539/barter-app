@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Animated,
   useWindowDimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView, Edges, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -31,6 +32,17 @@ const TOP_PADDING = 0;
 const DECK_STACK_OFFSET = 12;
 // The deck container's left margin (Deck's deckContainer style).
 const DECK_MARGIN_LEFT = 24;
+// Longest the skeleton waits for the deck's images before showing it anyway.
+const DECK_READY_TIMEOUT_MS = 4000;
+
+// Loads the images visible when the profile first appears (your photo on
+// the front card, the first posts' photos peeking out behind it) into the
+// image cache, so they're there the moment the deck shows.
+function prefetchDeckImages(user: User, posts: Post[]): Promise<void> {
+  const urls = [user.profileImageUrl, ...posts.slice(0, 3).map(p => p.photos?.[0])]
+    .filter((u): u is string => !!u && /^https?:/.test(u));
+  return Promise.all(urls.map(u => Image.prefetch(u).catch(() => false))).then(() => undefined);
+}
 const BOTTOM_PADDING = 20;
 
 const SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['top', 'right', 'bottom', 'left'];
@@ -97,6 +109,13 @@ export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const [primaryUser, setPrimaryUser] = useState<User | null>(null);
   const [primaryPosts, setPrimaryPosts] = useState<Post[]>([]);
+
+  // The deck stays hidden behind the skeleton until it's fully ready: your
+  // data, saved locations and visible images loaded, laid out, and a couple
+  // of frames drawn (so card shadows are on). Never longer than the timeout.
+  const [deckReady, setDeckReady] = useState(false);
+  const [deckImagesLoaded, setDeckImagesLoaded] = useState(false);
+  const [deckLaidOut, setDeckLaidOut] = useState(false);
   // null until loaded from the server.
   const [myLocations, setMyLocations] = useState<Locations[] | null>(null);
   const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
@@ -189,6 +208,7 @@ export default function ProfileScreen() {
         const [user, posts] = await Promise.all([getCurrentUser(), getUserPosts()]);
         setPrimaryUser(user);
         setPrimaryPosts(posts);
+        prefetchDeckImages(user, posts).then(() => setDeckImagesLoaded(true));
       } catch (err: any) {
         console.error('Failed to load core profile data:', err);
         setError(err.message ?? 'Unknown error');
@@ -336,6 +356,18 @@ export default function ProfileScreen() {
     }
   }, [refreshIncomingQueries]);
 
+  useEffect(() => {
+    if (deckReady || !primaryUser || !deckImagesLoaded || myLocations === null || !deckLaidOut) return;
+    let cancelled = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (!cancelled) setDeckReady(true); }));
+    return () => { cancelled = true; };
+  }, [deckReady, primaryUser, deckImagesLoaded, myLocations, deckLaidOut]);
+  useEffect(() => {
+    if (!primaryUser || deckReady) return;
+    const t = setTimeout(() => setDeckReady(true), DECK_READY_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [primaryUser, deckReady]);
+
   if (error) return (
     <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
       <Text style={{ color: 'red', padding: 20 }}>Error: {error}</Text>
@@ -353,10 +385,13 @@ export default function ProfileScreen() {
   return (
     <KeyboardLiftContext.Provider value={keyboardLift.context}>
     <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
-      {!primaryUser ? <ProfileSkeleton /> : (
+      <View style={styles.body}>
+      {primaryUser && (
       <ScrollView
         ref={scrollViewRef}
-        style={styles.scroll}
+        // Mounted (so it lays out and loads) but invisible until ready.
+        style={[styles.scroll, !deckReady && styles.hidden]}
+        pointerEvents={deckReady ? 'auto' : 'none'}
         contentContainerStyle={[
           styles.contentContainer,
           { paddingBottom: keyboardHeight > 0 ? BOTTOM_PADDING + keyboardHeight : 0 },
@@ -375,7 +410,7 @@ export default function ProfileScreen() {
         }
       >
         <View style={styles.topSpacer} />
-        <View style={styles.deckWrapper}>
+        <View style={styles.deckWrapper} onLayout={() => setDeckLaidOut(true)}>
           <ProfileDeck
             posts={primaryPosts}
             primaryUser={primaryUser}
@@ -400,6 +435,12 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
       )}
+      {!deckReady && (
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <ProfileSkeleton />
+        </View>
+      )}
+      </View>
 
       <View style={styles.settingsButtonRow}>
         <TouchableOpacity
@@ -421,6 +462,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.ui.background,
   },
+  body: { flex: 1 },
+  hidden: { opacity: 0 },
   // ── Loading skeleton (sizes match DeckProfile) ──
   skeletonColumn: { width: '100%', maxWidth: 400, alignItems: 'center' },
   skeletonDeckColumn: { width: '100%', alignItems: 'center', gap: 8 },

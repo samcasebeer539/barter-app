@@ -8,10 +8,9 @@ const MULTI_SELECT_ACTIONS: TradeActionType[] = ['offer', 'barter', 'rescind', '
 // Select actions that pick exactly one post: selecting another replaces it.
 const SINGLE_SELECT_ACTIONS: TradeActionType[] = ['add', 'subtract'];
 
-// Actions whose button tap toggles something other than the action itself
-// (QUERY's button toggles the post the question is about), so tapping it
-// again doesn't disarm.
-const NON_TOGGLE_ACTIONS: TradeActionType[] = ['query'];
+// Actions whose button tap toggles something other than the action itself,
+// so tapping it again doesn't disarm. (None right now: QUERY used to be one.)
+const NON_TOGGLE_ACTIONS: TradeActionType[] = [];
 
 // Actions that need an intermediate step (typed text, a picked location, etc.)
 // before they're ready to confirm

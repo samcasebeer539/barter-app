@@ -216,18 +216,22 @@ const TradeUI: React.FC<TradeUIProps> = ({
         return i < 0 ? (i + actions.length) % actions.length : i;
     };
 
+    // QUERY toggles like the other actions: the first tap fills the button and
+    // opens the question box (tagging the partner post on top, if any); the
+    // next tap empties it and closes the box.
     const handleQueryPress = (active: boolean) => {
         if (!active) return;
 
-        // Arm 'query' first — setSubflowData is a no-op until activeAction
-        // is already 'query', so this must come before the select/deselect call.
-        onActionSelected({ actionType: 'query', subAction: 'write' });
-
-        if (queryPostSelected) {
+        if (activeActionType === 'query') {
             onQueryPostDeselect();
-        } else {
-            onQueryPostSelect();
+            onActionSelected({ actionType: 'query', subAction: 'write' }); // disarms
+            return;
         }
+
+        // Arm 'query' first — setSubflowData is a no-op until activeAction
+        // is already 'query', so this must come before tagging the post.
+        onActionSelected({ actionType: 'query', subAction: 'write' });
+        onQueryPostSelect();
     };
 
     const handleActionTextPress = () => {
@@ -323,16 +327,16 @@ const TradeUI: React.FC<TradeUIProps> = ({
                         styles.actionButton,
                         {
                             borderColor: color,
-                            backgroundColor: queryPostSelected && active ? color : 'transparent',
+                            backgroundColor: active && isArmed ? color : 'transparent',
                         },
                     ]}
                     onPress={() => handleQueryPress(active)}
                     disabled={disabled}
                 >
                     <FontAwesome6
-                        name={queryPostSelected ? 'circle-question' : 'circle'}
+                        name={active && isArmed ? 'circle-question' : 'circle'}
                         size={26}
-                        color={queryPostSelected ? '#000' : color}
+                        color={active && isArmed ? '#000' : color}
                     />
                 </TouchableOpacity>
             );

@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, RefreshControl, Platform } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { deckStyles, makeCountBar } from '../../styles/deckStyles';
 import { colors } from '../../styles/globalStyles';
@@ -327,6 +327,7 @@ export default function ActiveTradesTestScreen() {
                     { paddingTop: insets.top, paddingBottom: BOTTOM_PADDING + keyboardHeight },
                 ]}
                 keyboardShouldPersistTaps="handled"
+                keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'none'}
                 scrollEnabled={scrollEnabled}
                 onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
                 scrollEventThrottle={16}

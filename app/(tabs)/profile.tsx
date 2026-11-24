@@ -305,6 +305,7 @@ export default function ProfileScreen() {
           { paddingBottom: keyboardHeight > 0 ? BOTTOM_PADDING + keyboardHeight : 0 },
         ]}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'none'}
         onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
         onContentSizeChange={keyboardLift.onContentSizeChange}

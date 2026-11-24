@@ -199,6 +199,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     onFocus={kbField.onFocus}
                     onChangeText={v => { updateDraft('name', v); kbField.requestLift(); }}
                     placeholder="Item title"
+                    returnKeyType="done"
                     placeholderTextColor={colors.ui.cardsecondary}
                   />
                 </View>

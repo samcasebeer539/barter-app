@@ -325,6 +325,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('pronouns', v); kbField.requestLift(); }}
                   placeholder="optional"
+                  returnKeyType="done"
                   placeholderTextColor={colors.ui.cardsecondary}
                 />
               </View>

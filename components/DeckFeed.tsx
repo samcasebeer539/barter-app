@@ -269,6 +269,7 @@ export default function FeedDeck({
             style={{ maxHeight: MAX_SCROLL_HEIGHT }}
             contentContainerStyle={[styles.scrollContent, { paddingBottom: keyboardHeight }]}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'none'}
             showsVerticalScrollIndicator={false}
             bounces={true}
             scrollEnabled={scrollEnabled}

@@ -10,7 +10,7 @@ import {
   Platform,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView, Edges } from 'react-native-safe-area-context';
+import { SafeAreaView, Edges, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
 import { colors } from '@/styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -28,6 +28,9 @@ const TOP_PADDING = 0;
 const BOTTOM_PADDING = 20;
 
 const SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['top', 'right', 'bottom', 'left'];
+// The main screen leaves the top to the scroll view (padded by the status bar
+// height), the same as the barter page, so pull to refresh behaves the same.
+const MAIN_SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['right', 'bottom', 'left'];
 
 // TODO: replace with the real secondary user's MongoDB _id from routing/auth.
 // Leave empty to skip the secondary locations fetch until you have a real id —
@@ -73,6 +76,7 @@ export default function ProfileScreen() {
   const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   
   // ── Incoming offers (across all of this user's posts) ──────────────────────
   const [incomingOffers, setIncomingOffers] = useState<IncomingOffer[]>([]);
@@ -328,13 +332,16 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
+    <SafeAreaView style={styles.container} edges={MAIN_SAFE_AREA_EDGES}>
       <ScrollView
         ref={scrollViewRef}
         style={styles.scroll}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingBottom: keyboardHeight > 0 ? BOTTOM_PADDING + keyboardHeight : 0 },
+          {
+            paddingTop: Platform.OS === 'android' ? 0 : insets.top,
+            paddingBottom: keyboardHeight > 0 ? BOTTOM_PADDING + keyboardHeight : 0,
+          },
         ]}
         keyboardShouldPersistTaps="handled"
         onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
@@ -344,6 +351,7 @@ export default function ProfileScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={colors.ui.secondarydisabled}
+            progressViewOffset={Platform.OS === 'android' ? undefined : insets.top}
           />
         }
       >

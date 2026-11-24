@@ -318,14 +318,13 @@ const UserCard: React.FC<UserCardProps> = ({
             {/* Pronouns */}
             {isEditable && (
               <View style={styles.fieldRow}>
-                <Text style={styles.fieldLabel}>Pronouns:</Text>
                 <TextInput
                   keyboardAppearance="dark"
                   style={[styles.location, styles.editableText, { flex: 1 }]}
                   value={draft.pronouns}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('pronouns', v); kbField.requestLift(); }}
-                  placeholder="optional"
+                  placeholder="Pronouns (optional)"
                   returnKeyType="done"
                   placeholderTextColor={colors.ui.cardsecondary}
                 />
@@ -341,7 +340,6 @@ const UserCard: React.FC<UserCardProps> = ({
               <>
                 {/* Email — read-only with visibility toggle */}
                 <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Email:</Text>
                   <Text style={[styles.location, { flex: 1 }]}>
                     {emailVisible ? user.email : '••••••••••••'}
                   </Text>
@@ -359,14 +357,13 @@ const UserCard: React.FC<UserCardProps> = ({
 
                 {/* Phone — editable with visibility toggle */}
                 <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Phone:</Text>
                   <TextInput
                     keyboardAppearance="dark"
                     style={[styles.location, styles.editableText, { flex: 1 }]}
                     value={draft.phone}
                     onFocus={kbField.onFocus}
                     onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
-                    placeholder="optional"
+                    placeholder="Phone (optional)"
                     placeholderTextColor={colors.ui.cardsecondary}
                     keyboardType="numbers-and-punctuation"
                     returnKeyType="done"
@@ -399,7 +396,6 @@ const UserCard: React.FC<UserCardProps> = ({
               // Like the post description: the bio fills the rest of the card and
               // scrolls inside as you type, instead of growing past the card.
               <View style={styles.bioEditArea}>
-                <Text style={styles.fieldLabel}>Bio:</Text>
                 <TextInput
                   keyboardAppearance="dark"
                   style={[styles.bio, styles.editableText, styles.bioInput]}
@@ -530,13 +526,6 @@ const styles = StyleSheet.create({
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
     letterSpacing: -0.1,
-  },
-  fieldLabel: {
-    fontSize: 16,
-    color: colors.ui.cardsecondary,
-    fontFamily: globalFonts.regular,
-    letterSpacing: -0.1,
-    marginRight: 6,
   },
   bio: {
     fontSize: 16,

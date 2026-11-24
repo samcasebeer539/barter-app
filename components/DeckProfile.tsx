@@ -123,9 +123,10 @@ export default function ProfileDeck({
         () => [{
             user: primaryUser,
             posts,
-            locations: (initialLocations && initialLocations.length > 0)
-                ? initialLocations
-                : (primaryUser.locations ?? []),
+            // Your saved list once it's loaded, even if it's empty (falling
+            // back on an empty list brought deleted locations back from the
+            // profile loaded at startup).
+            locations: initialLocations ?? primaryUser.locations ?? [],
         }],
         [primaryUser, posts, initialLocations]
     );

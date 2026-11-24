@@ -45,7 +45,8 @@ export default function ProfileScreen() {
   const [isDeckRevealed, setIsDeckRevealed] = useState(false);
   const [primaryUser, setPrimaryUser] = useState<User | null>(null);
   const [primaryPosts, setPrimaryPosts] = useState<Post[]>([]);
-  const [myLocations, setMyLocations] = useState<Locations[]>([]);
+  // null until loaded from the server.
+  const [myLocations, setMyLocations] = useState<Locations[] | null>(null);
   const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -323,7 +324,7 @@ export default function ProfileScreen() {
             posts={primaryPosts}
             primaryUser={primaryUser}
             secondaryOfferers={secondaryOfferers}
-            initialLocations={myLocations}
+            initialLocations={myLocations ?? undefined}
             onConfirmLocations={handleConfirmLocations}
             onSelectLocation={handleSelectLocation}
             onToggleReveal={() => setIsDeckRevealed(prev => !prev)}

@@ -45,12 +45,20 @@ const SECONDARY_USER_ID = '';
 // real RefreshControl with the same tint), shown in the middle of the screen.
 // iOS only draws a RefreshControl that starts refreshing after it has laid
 // out, so refreshing is switched on just after mount.
-function CenteredRefreshSpinner() {
-  const [refreshing, setRefreshing] = useState(false);
+//
+// It must also be stopped (active=false) and given time to finish before it
+// unmounts: a refresh control removed mid-refresh leaves iOS's refresh inset
+// on the native scroll view, which React Native then reuses for the profile's
+// own scroll view, making its pull-to-refresh fire almost instantly.
+const SPINNER_END_MS = 400;
+
+function CenteredRefreshSpinner({ active }: { active: boolean }) {
+  const [started, setStarted] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setRefreshing(true), 0);
+    const t = setTimeout(() => setStarted(true), 0);
     return () => clearTimeout(t);
   }, []);
+  const refreshing = started && active;
   return (
     <ScrollView
       style={styles.spinnerScroll}
@@ -73,6 +81,16 @@ export default function ProfileScreen() {
   const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Keep the loader mounted (stopped) briefly after the data arrives, so its
+  // refresh ends cleanly before the profile replaces it. See CenteredRefreshSpinner.
+  const [isLoaderGone, setIsLoaderGone] = useState(false);
+  const hasUser = primaryUser !== null;
+  useEffect(() => {
+    if (!hasUser) return;
+    const t = setTimeout(() => setIsLoaderGone(true), SPINNER_END_MS);
+    return () => clearTimeout(t);
+  }, [hasUser]);
   
   // ── Incoming offers (across all of this user's posts) ──────────────────────
   const [incomingOffers, setIncomingOffers] = useState<IncomingOffer[]>([]);
@@ -321,9 +339,9 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 
-  if (!primaryUser) return (
+  if (!primaryUser || !isLoaderGone) return (
     <View style={styles.loadingContainer}>
-      <CenteredRefreshSpinner />
+      <CenteredRefreshSpinner active={!primaryUser} />
     </View>
   );
 

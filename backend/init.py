@@ -22,6 +22,7 @@ from routes.dev.trades.subtract.route import trades_subtract_bp
 from routes.dev.trades.add.route import trades_add_bp
 from routes.dev.trades.when.route import trades_when_bp
 from routes.dev.trades.review.route import trades_review_bp
+from routes.dev.trades.history.route import trades_history_bp
 from routes.dev.trades.trade_details.accept.route import trades_detail_accept_bp
 from routes.dev.trades.trade_details.counter.route import trades_detail_counter_bp
 from routes.dev.trades.trade_details.decline.route import trades_detail_decline_bp
@@ -72,6 +73,7 @@ app.register_blueprint(trades_subtract_bp)
 app.register_blueprint(trades_add_bp)
 app.register_blueprint(trades_when_bp)
 app.register_blueprint(trades_review_bp)
+app.register_blueprint(trades_history_bp)
 
 
 

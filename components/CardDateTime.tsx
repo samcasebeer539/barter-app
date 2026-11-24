@@ -123,7 +123,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
               <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.pickerScroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.pickerScroll} contentContainerStyle={styles.pickerList} showsVerticalScrollIndicator={false}>
             {availableDates.map(d => (
               <TouchableOpacity key={d.label} style={styles.pickerRow} onPress={() => chooseDate(d)}>
                 <Text style={styles.pickerRowText}>{d.label}</Text>
@@ -146,7 +146,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
               <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.pickerScroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.pickerScroll} contentContainerStyle={styles.pickerList} showsVerticalScrollIndicator={false}>
             {TIME_OPTIONS.map(t => (
               <TouchableOpacity key={t} style={styles.pickerRow} onPress={() => chooseTime(t)}>
                 <Text style={styles.pickerRowText}>{t}</Text>
@@ -280,10 +280,12 @@ const styles = StyleSheet.create({
   pickerScroll: {
     flex: 1,
   },
+  // Dates and times are separated by space only.
+  pickerList: {
+    gap: 4,
+  },
   pickerRow: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ui.secondary,
+    paddingVertical: 8,
   },
   pickerRowText: {
     fontSize: 16,

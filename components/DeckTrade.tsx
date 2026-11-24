@@ -114,8 +114,10 @@ export default function TradeDeck({
   // then (and whenever it's not your turn) the wheel shows WAIT only.
   // Once the deal is agreed there are no turns: both players get REVIEW.
   const isAgreed = phase === 'agreed';
-  const mustAnswer = !isAgreed && isMyTurn && !!pendingQuery;
-  const canPlay = isAgreed || (isMyTurn && !mustAnswer);
+  // Finished trades (accepted or declined) are read-only: log and decks, no wheel.
+  const isHistory = phase === 'completed' || phase === 'declined';
+  const mustAnswer = !isAgreed && !isHistory && isMyTurn && !!pendingQuery;
+  const canPlay = !isHistory && (isAgreed || (isMyTurn && !mustAnswer));
 
   // Standing proposals: the latest WHERE and the latest WHEN, whoever made
   // them. Each shows only on its maker's card.
@@ -581,6 +583,7 @@ export default function TradeDeck({
         {/* Actions + turns */}
         {isExpanded && (
           <View style={styles.turnsAndButtonColumn}>
+            {!isHistory && (<>
             <View style={[styles.queryRow, { marginBottom: isQueryActive || isReviewActive ? 4 : 0 }]}>
               {isReviewActive && (
                 <View style={styles.starGap}>
@@ -613,8 +616,9 @@ export default function TradeDeck({
                 noTurnClock={isAgreed}
               />
             </View>
+            </>)}
             <View style={styles.turnsRow}>
-              {isAgreed && (
+              {(isAgreed || phase === 'completed') && (
                 <View style={styles.dealBox}>
                   
                   <Text style={styles.dealLine}>

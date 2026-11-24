@@ -32,7 +32,7 @@ interface OfferDeckProps {
 const DECK_LABELS: Record<OfferDeckType, { text: string; color: string }> = {
     queries: { text: 'MY QUERIES', color: colors.actions.query },
     offers: { text: 'MY OFFERS', color: colors.actions.offer },
-    declined: { text: 'DECLINED', color: colors.actions.decline },
+    declined: { text: 'DECLINED OFFERS', color: colors.actions.decline },
     deals: { text: 'ACCEPTED', color: colors.actions.accept },
 };
 

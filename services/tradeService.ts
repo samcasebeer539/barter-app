@@ -224,7 +224,7 @@ export async function getIncomingOffers(): Promise<IncomingOffer[]> {
 
 export interface BarterGame {
   gameId: string;
-  /** 'barter', 'close', or 'agreed' (both players accepted the meetup). */
+  /** 'barter', 'close', 'agreed' (both accepted the meetup), or finished: 'completed' / 'declined'. */
   phase: string;
   turnUserId: string;
   myTurn: boolean;
@@ -235,6 +235,15 @@ export interface BarterGame {
   player: { user: User; posts: Post[] };
   partner: { user: User; posts: Post[] };
   turns: any[];
+}
+
+// Finished trades, as read-only trade decks: 'completed' (accepted) or
+// 'declined' (declined after reaching barter).
+export async function getTradeHistory(status: 'completed' | 'declined'): Promise<BarterGame[]> {
+  const headers = await getAuthHeader();
+  const res = await fetch(`${BASE_URL}/dev/trades/history?status=${status}`, { headers });
+  if (!res.ok) throw new Error(`Failed to load ${status} trades (${res.status})`);
+  return res.json();
 }
 
 export async function getBarterGames(): Promise<BarterGame[]> {

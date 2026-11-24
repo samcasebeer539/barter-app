@@ -1,12 +1,14 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Keyboard, KeyboardEvent, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Keyboard, KeyboardEvent, Alert } from 'react-native';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { deckStyles, makeCountBar } from '../../styles/deckStyles';
 import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTrade, getQuery, getBarterGames, getCloseGames, getDeclinedTrades, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { getOpenTrade, getQuery, getBarterGames, getCloseGames, getDeclinedTrades, getTradeHistory, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -147,14 +149,28 @@ export default function ActiveTradesTestScreen() {
             .catch(err => console.error('Failed to load declined trades:', err));
     }, []);
 
-    // A close game that drops out of the list was declined (or timed out),
-    // which is the only time the declined list changes, so reload it then.
+    // Close tab history: finished trades, as read-only trade decks.
+    const [acceptedTrades, setAcceptedTrades] = useState<BarterGame[]>([]);
+    const [declinedTrades, setDeclinedTrades] = useState<BarterGame[]>([]);
+    const [isAcceptedOpen, setIsAcceptedOpen] = useState(false);
+    const [isDeclinedOpen, setIsDeclinedOpen] = useState(false);
+    const refreshHistory = useCallback(() => {
+        getTradeHistory('completed')
+            .then(games => setAcceptedTrades(keepIfSame(games)))
+            .catch(err => console.error('Failed to load accepted trades:', err));
+        getTradeHistory('declined')
+            .then(games => setDeclinedTrades(keepIfSame(games)))
+            .catch(err => console.error('Failed to load declined trades:', err));
+    }, []);
+
+    // A close game that drops out of the list was declined, timed out or
+    // completed, which is when the history lists change, so reload them then.
     const closeGameCount = useRef<number | null>(null);
     const refreshCloseGames = useCallback(() => {
         return getCloseGames()
             .then(games => {
                 if (closeGameCount.current !== null && games.length < closeGameCount.current) {
-                    refreshDeclined();
+                    refreshHistory();
                 }
                 closeGameCount.current = games.length;
                 const json = JSON.stringify(games);
@@ -165,13 +181,13 @@ export default function ActiveTradesTestScreen() {
                 return changed;
             })
             .catch(err => { console.error('Failed to load close games:', err); return false; });
-    }, [refreshDeclined]);
+    }, [refreshHistory]);
 
     // Stable, so the decks' turn-timer effects don't restart on every render.
     const handleCloseTurnExpired = useCallback(() => {
         refreshCloseGames();
-        refreshDeclined();
-    }, [refreshCloseGames, refreshDeclined]);
+        refreshHistory();
+    }, [refreshCloseGames, refreshHistory]);
 
     // A refused move means this screen was out of date (or the move was
     // invalid): say why, then reload so the wheel matches the server.
@@ -201,15 +217,19 @@ export default function ActiveTradesTestScreen() {
     // the other player in at least one game: on your own turn they can't
     // move, so nothing can change. (Your own moves refresh the list
     // directly.) Checks back off while nothing changes; see POLL_MIN_MS.
-    // The declined list loads with the close tab and again only when a
-    // close game drops out.
+    // DECLINED OFFERS loads with the open tab; the history lists load with
+    // the close tab and again when a close game drops out.
     useEffect(() => {
         if (!isFocused) return;
+        if (tab === 'open') {
+            refreshDeclined();
+            return;
+        }
         if (tab === 'barter') {
             refreshBarterGames();
         } else if (tab === 'close') {
             refreshCloseGames();
-            refreshDeclined();
+            refreshHistory();
         } else {
             return;
         }
@@ -228,7 +248,60 @@ export default function ActiveTradesTestScreen() {
         };
         timer = setTimeout(tick, pollDelay.current);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined]);
+    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined, refreshHistory]);
+
+    // A finished trade as a read-only trade deck (log and decks, no wheel).
+    const renderHistoryDeck = (game: BarterGame) => (
+        <TradeDeck
+            key={game.gameId}
+            {...deckExpansion(`game:${game.gameId}`)}
+            gameId={game.gameId}
+            isMyTurn={false}
+            phase={game.phase}
+            rawTurns={game.turns}
+            partnerUser={game.partner.user}
+            partnerPosts={game.partner.posts}
+            playerUser={game.player.user}
+            playerPosts={game.player.posts}
+            actions={[]}
+            showDateTime={true}
+            showLocation={true}
+            turns={buildTradeTurns(
+                game.turns,
+                game.player.user._id ?? '',
+                game.partner.user.first_name,
+                [...game.player.posts, ...game.partner.posts]
+            )}
+            onHorizontalGestureStart={() => setScrollEnabled(false)}
+            onGestureEnd={() => setScrollEnabled(true)}
+        />
+    );
+
+    // A dropdown bar (label, count, arrow) and, when open, its trade decks.
+    const renderHistorySection = (
+        label: string, color: string, games: BarterGame[], isOpen: boolean, onToggle: () => void,
+    ) => (
+        <View style={styles.historySection}>
+            {/* Same row + pill bar as the decks' headers. */}
+            <View style={deckStyles.itemCountRow}>
+                <TouchableOpacity
+                    style={styles.historyBar}
+                    onPress={onToggle}
+                    disabled={games.length === 0}
+                    activeOpacity={0.8}
+                >
+                    <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color }]}>{label}</Text>
+                    <Text style={deckStyles.countText}>{String(games.length).padStart(2, '0')}</Text>
+                    <FontAwesome6
+                        name={isOpen ? 'angle-up' : 'angle-down'}
+                        size={24}
+                        color={games.length === 0 ? colors.ui.secondarydisabled : '#fff'}
+                    />
+                </TouchableOpacity>
+            </View>
+            {isOpen && games.map(renderHistoryDeck)}
+        </View>
+    );
 
     return (
         <View style={styles.container}>
@@ -271,6 +344,13 @@ export default function ActiveTradesTestScreen() {
                             onHorizontalGestureStart={() => setScrollEnabled(false)}
                             onGestureEnd={() => setScrollEnabled(true)}
                             onActionComplete={handleActionComplete}
+                        />
+                        <OfferDeck
+                            posts={declined}
+                            deckType="declined"
+                            {...deckExpansion('declined')}
+                            onHorizontalGestureStart={() => setScrollEnabled(false)}
+                            onGestureEnd={() => setScrollEnabled(true)}
                         />
                     </View>
                 )}
@@ -340,18 +420,14 @@ export default function ActiveTradesTestScreen() {
                                 onGestureEnd={() => setScrollEnabled(true)}
                             />
                         ))}
-                        <OfferDeck
-                            posts={[]}
-                            deckType="deals"
-                            {...deckExpansion('deals')}
-                        />
-                        <OfferDeck
-                            posts={declined}
-                            deckType="declined"
-                            {...deckExpansion('declined')}
-                            onHorizontalGestureStart={() => setScrollEnabled(false)}
-                            onGestureEnd={() => setScrollEnabled(true)}
-                        />
+                        {renderHistorySection(
+                            'ACCEPTED TRADES', colors.actions.accept,
+                            acceptedTrades, isAcceptedOpen, () => setIsAcceptedOpen(o => !o),
+                        )}
+                        {renderHistorySection(
+                            'DECLINED TRADES', colors.actions.decline,
+                            declinedTrades, isDeclinedOpen, () => setIsDeclinedOpen(o => !o),
+                        )}
                     </View>
                 )}
             </ScrollView>
@@ -365,4 +441,6 @@ const styles = StyleSheet.create({
     contentContainer: { flexGrow: 1, paddingTop: 0 },
     topSpacer: { height: TOP_PADDING },
     deckList: { gap: DECK_GAP },
+    historySection: { alignItems: 'center', gap: DECK_GAP },
+    historyBar: { ...makeCountBar('pill', 'flex-end') },
 });

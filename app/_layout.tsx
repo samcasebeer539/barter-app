@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { View, ActivityIndicator } from 'react-native';
-import { colors } from '@/styles/globalStyles';
 
 export default function RootLayout() {
     const [initializing, setInitializing] = useState(true);
@@ -48,7 +47,7 @@ export default function RootLayout() {
                     justifyContent: "center",
                     flex: 1,
                 }} >
-                <ActivityIndicator size="large" color={colors.ui.secondary} />
+                <ActivityIndicator size="large" />
             </View>
     )
     

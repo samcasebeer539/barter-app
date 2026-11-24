@@ -8,7 +8,7 @@ import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
-import { getOpenTab, getCloseTab, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
+import { getOpenTab, getCloseTab, getCloseGames, getBarterGames, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -132,13 +132,15 @@ export default function ActiveTradesTestScreen() {
     const [isDeclinedOpen, setIsDeclinedOpen] = useState(false);
     // CLOSE tab: close games plus the ACCEPTED / DECLINED TRADES history,
     // all from one request. Resolves true if anything changed (for polling).
-    const lastCloseTabJson = useRef('');
+    const lastCloseJson = useRef('');
+    const closeGameCount = useRef<number | null>(null);
     const refreshCloseTab = useCallback(() => {
         return getCloseTab()
             .then(data => {
-                const json = JSON.stringify(data);
-                const changed = json !== lastCloseTabJson.current;
-                lastCloseTabJson.current = json;
+                const json = JSON.stringify(data.close);
+                const changed = json !== lastCloseJson.current;
+                lastCloseJson.current = json;
+                closeGameCount.current = data.close.length;
                 if (changed) pollDelay.current = POLL_MIN_MS;
                 setCloseGames(keepIfSame(data.close));
                 setAcceptedTrades(keepIfSame(data.completed));
@@ -147,6 +149,29 @@ export default function ActiveTradesTestScreen() {
             })
             .catch(err => { console.error('Failed to load close tab:', err); return false; });
     }, []);
+
+    // The close tab's background check: just the close games (light). The
+    // history only changes when a game leaves the list (declined, timed out
+    // or completed), so only then does it reload the whole tab.
+    const pollCloseGames = useCallback(async () => {
+        try {
+            const games = await getCloseGames();
+            const json = JSON.stringify(games);
+            if (json === lastCloseJson.current) return false;
+            if (closeGameCount.current !== null && games.length < closeGameCount.current) {
+                await refreshCloseTab();
+                return true;
+            }
+            lastCloseJson.current = json;
+            closeGameCount.current = games.length;
+            pollDelay.current = POLL_MIN_MS;
+            setCloseGames(keepIfSame(games));
+            return true;
+        } catch (err) {
+            console.error('Failed to check close games:', err);
+            return false;
+        }
+    }, [refreshCloseTab]);
 
     // Stable, so the decks' turn-timer effects don't restart on every render.
     const handleCloseTurnExpired = useCallback(() => {
@@ -182,7 +207,8 @@ export default function ActiveTradesTestScreen() {
     // move, so nothing can change. (Your own moves refresh the list
     // directly.) Checks back off while nothing changes; see POLL_MIN_MS.
     // Each tab loads with one request: the open tab's three decks, or the
-    // close tab's games plus history (which the close-tab poll also reloads).
+    // close tab's games plus history. The close-tab poll checks only the
+    // close games (see pollCloseGames).
     useEffect(() => {
         if (!isFocused) return;
         if (tab === 'open') {
@@ -204,14 +230,14 @@ export default function ActiveTradesTestScreen() {
             const games = tab === 'barter' ? barterGamesRef.current : closeGamesRef.current;
             // Agreed deals have no turns left to wait for.
             if (games.some(g => !g.myTurn && g.phase !== 'agreed')) {
-                const changed = await (tab === 'barter' ? refreshBarterGames() : refreshCloseTab());
+                const changed = await (tab === 'barter' ? refreshBarterGames() : pollCloseGames());
                 if (!changed) pollDelay.current = Math.min(pollDelay.current * 2, POLL_MAX_MS);
             }
             if (!cancelled) timer = setTimeout(tick, pollDelay.current);
         };
         timer = setTimeout(tick, pollDelay.current);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseTab, refreshOpenTab]);
+    }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseTab, pollCloseGames, refreshOpenTab]);
 
     // Pull to refresh, like the feed: reload every list on the current tab.
     const [refreshing, setRefreshing] = useState(false);

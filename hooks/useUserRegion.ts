@@ -1,0 +1,88 @@
+// hooks/useUserRegion.ts
+//
+// The "Location Services" setting, and the area around the device for maps.
+// The setting is saved on the server (is_location_allowed); it's read once and
+// cached here, and the settings screen updates the cache when it changes.
+import { useEffect, useState } from 'react';
+import { getAuth } from 'firebase/auth';
+import * as Location from 'expo-location';
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+let cachedAllowed: boolean | null = null;
+let pending: Promise<boolean> | null = null;
+
+/** Whether the user has Location Services turned on in settings. */
+export async function getLocationAllowed(): Promise<boolean> {
+  if (cachedAllowed !== null) return cachedAllowed;
+  if (!pending) {
+    pending = (async () => {
+      try {
+        const token = await getAuth().currentUser?.getIdToken();
+        const res = await fetch(`${BASE_URL}/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        cachedAllowed = data.is_location_allowed !== false;
+      } catch (err) {
+        console.error('Failed to load location setting:', err);
+        cachedAllowed = false;
+      } finally {
+        pending = null;
+      }
+      return cachedAllowed!;
+    })();
+  }
+  return pending;
+}
+
+/** Called by the settings screen whenever the toggle changes. */
+export function setLocationAllowedCache(value: boolean) {
+  cachedAllowed = value;
+}
+
+export interface Region {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}
+
+/**
+ * The area around the device, or null if Location Services is off in settings,
+ * the phone hasn't granted location access, or no position is available.
+ * Never asks for permission itself (the settings toggle does that).
+ */
+export function useUserRegion(enabled = true): Region | null {
+  const [region, setRegion] = useState<Region | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!(await getLocationAllowed())) return;
+        const { status } = await Location.getForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+        // A recent cached fix is instant; fall back to a fresh one.
+        const pos =
+          (await Location.getLastKnownPositionAsync({ maxAge: 10 * 60 * 1000 })) ??
+          (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }));
+        if (!cancelled && pos) {
+          setRegion({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to get device location:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [enabled]);
+
+  return region;
+}

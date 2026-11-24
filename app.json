@@ -30,7 +30,13 @@
       ],
       "expo-font",
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Win-Win uses your location to center maps on your area."
+        }
+      ]
     ]
   }
 }

@@ -6,7 +6,11 @@ import {
     ScrollView,
     TouchableOpacity,
     Switch,
+    Alert,
+    Linking,
 } from 'react-native';
+import * as Location from 'expo-location';
+import { setLocationAllowedCache } from '@/hooks/useUserRegion';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
 import { colors, globalFonts } from '@/styles/globalStyles';
@@ -44,7 +48,11 @@ export default function SettingsScreen() {
     
         const data = await response.json();
     
-        setLocationEnabled(data.is_location_allowed);
+        // On only if it's on in your account and the phone allows it.
+        const { status } = await Location.getForegroundPermissionsAsync();
+        const allowed = data.is_location_allowed !== false && status === 'granted';
+        setLocationEnabled(allowed);
+        setLocationAllowedCache(allowed);
         setNotificationsEnabled(data.notifications_enabled);
     };
 
@@ -61,7 +69,27 @@ export default function SettingsScreen() {
     };
 
     const updateLocationSetting = async (value: boolean) => {
+        // Turning it on asks the phone for location access. If that's refused
+        // (now or before), it stays off; iOS only lets you change it in Settings.
+        if (value) {
+            const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setLocationEnabled(false);
+                Alert.alert(
+                    'Location access is off',
+                    canAskAgain
+                        ? 'Allow location access to use Location Services.'
+                        : 'To use Location Services, allow location access for this app in your phone\'s Settings.',
+                    canAskAgain
+                        ? [{ text: 'OK' }]
+                        : [{ text: 'Cancel', style: 'cancel' }, { text: 'Open Settings', onPress: () => Linking.openSettings() }],
+                );
+                return;
+            }
+        }
+
         setLocationEnabled(value);
+        setLocationAllowedCache(value);
     
         try {
             const user = auth.currentUser;
@@ -78,10 +106,11 @@ export default function SettingsScreen() {
                 body: JSON.stringify({
                     is_location_allowed: value,
                 }),
-            });
+            }).then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); });
         } catch (err) {
             console.log(err);
-            setLocationEnabled(!value); // optionally revert on failure
+            setLocationEnabled(!value);
+            setLocationAllowedCache(!value);
         }
     };
 

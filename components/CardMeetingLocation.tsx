@@ -1,10 +1,11 @@
 import { colors, globalFonts } from '@/styles/globalStyles';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput } from 'react-native';
 import MapView, { Marker, MapPressEvent } from 'react-native-maps';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Locations, LocationEntry } from '@/types/index';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
+import { useUserRegion } from '@/hooks/useUserRegion';
 
 const MAX_LOCATIONS = 3;
 
@@ -159,6 +160,15 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const canAddMore = locations.length < MAX_LOCATIONS;
   // A standing proposal (when not picking a new one) shows just that spot.
   const showProposal = !!proposedLocation && !isSelectMode;
+
+  // Your own map starts on your area when Location Services is on (and the
+  // phone allows it), unless you've already moved the map yourself.
+  const mapRef = useRef<MapView>(null);
+  const userMovedMap = useRef(false);
+  const userRegion = useUserRegion(isUser && !showProposal);
+  useEffect(() => {
+    if (userRegion && !userMovedMap.current) mapRef.current?.animateToRegion(userRegion, 300);
+  }, [userRegion]);
   const displayLocations = showProposal
     ? [proposedLocation!]
     : isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
@@ -177,6 +187,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
           onTouchCancel={() => { if (mapActiveRef) mapActiveRef.current = false; }}
         >
           <MapView
+            ref={mapRef}
+            onPanDrag={() => { userMovedMap.current = true; }}
             style={StyleSheet.absoluteFill}
             initialRegion={
               showProposal

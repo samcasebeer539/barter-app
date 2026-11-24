@@ -315,8 +315,22 @@ export default function ProfileDeck({
         } catch (err) { console.error('Failed to save post:', err); }
     }, [posts, onPostsChange, topPrimaryPostIndex]);
 
+    // A new post opens straight into edit mode, once the deck has jumped to
+    // it (setting edit mode before the jump lands could be undone by the
+    // top-card change).
+    const openNewPostInEdit = useRef(false);
+    useEffect(() => {
+        if (openNewPostInEdit.current && topCardType === 'post' && topPrimaryPostIndex === 0) {
+            openNewPostInEdit.current = false;
+            setIsPostEditMode(true);
+        }
+        // posts.length: if a post was already on top at index 0, the top-card
+        // values don't change when the new one is inserted in front of it.
+    }, [topCardType, topPrimaryPostIndex, posts.length]);
+
     const handleAddPost = useCallback(() => {
         const emptyPost: Post = { name: 'New Item', description: '', photos: [], date_posted: '' };
+        openNewPostInEdit.current = true;
         jumpCounterRef.current += 1;
         setJumpToIndex(DECK_PREFIX);
         setJumpToken(jumpCounterRef.current);

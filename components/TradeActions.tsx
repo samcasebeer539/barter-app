@@ -38,7 +38,7 @@ interface TradeUIProps {
     queryBlocked?: boolean;
     /** Select actions (offer, barter, add, subtract) whose card to pick isn't
      *  a post right now (a user or location card is on top). Like a blocked
-     *  QUERY: no circle, can't be tapped. Counts still show. */
+     *  QUERY: no circle (or count), can't be tapped. */
     blockedActionTypes?: TradeActionType[];
 }
 
@@ -50,7 +50,7 @@ interface SelectButtonProps {
     selectedCount: number;
     onPress: () => void;
     disabled: boolean;
-    /** No circle (nothing on top to select). */
+    /** No circle or count (nothing on top to select). */
     hideIcon?: boolean;
 }
 
@@ -64,11 +64,13 @@ const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCo
         onPress={onPress}
         disabled={disabled}
     >
-        <Text style={[styles.timerText, { color: isActive ? '#000' : color }]}>
-            {String(selectedCount).padStart(2, '0')}
-        </Text>
         {!hideIcon && (
-            <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
+            <>
+                <Text style={[styles.timerText, { color: isActive ? '#000' : color }]}>
+                    {String(selectedCount).padStart(2, '0')}
+                </Text>
+                <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
+            </>
         )}
     </TouchableOpacity>
 );

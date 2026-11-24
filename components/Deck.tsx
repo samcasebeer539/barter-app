@@ -358,7 +358,8 @@ const Deck: React.FC<DeckProps> = ({
         const frontSlot  = roleToSlot(0);
         const secondSlot = roleToSlot(1);
         const thirdSlot  = roleToSlot(2);
-        slotRefs[frontSlot].current?.setShadow(false);
+        // The card coming up to second place gains its shadow now; the one
+        // flying off keeps its shadow until it has moved to the back.
         slotRefs[thirdSlot].current?.setShadow(true);
         Animated.parallel([
         Animated.timing(slotAnims[frontSlot].swipeX, { toValue: direction * screenWidth * 1.1, duration: 250, useNativeDriver: true }),
@@ -367,6 +368,7 @@ const Deck: React.FC<DeckProps> = ({
         ]).start(() => {
         slotAnims[frontSlot].swipeX.setValue(0);
         slotAnims[frontSlot].position.setValue(SLOT_POSITIONS[2]);
+        slotRefs[frontSlot].current?.setShadow(false);
         rotatingFrontRef.current = secondSlot;
         const newFrontCardIndex = ci(frontCardIndexRef.current + 1);
         slotRefs[frontSlot].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 3)], false);

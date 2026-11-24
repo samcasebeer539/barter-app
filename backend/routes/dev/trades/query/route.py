@@ -18,11 +18,12 @@ def get_queries():
 
 
 def open_queries_for(user):
-    """QUERIES deck: your questions in games that haven't reached barter."""
+    """QUERIES deck: your questions in games that haven't reached barter,
+    including ones you asked someone who made an offer on your post."""
     visible_game_ids = [
         g["_id"] for g in games_collection.find(
             {
-                "initiator_user_id": user["_id"],
+                "$or": [{"initiator_user_id": user["_id"]}, {"receiver_user_id": user["_id"]}],
                 "phase": {"$in": ["open", "offer_pending"]},
             },
             {"_id": 1}

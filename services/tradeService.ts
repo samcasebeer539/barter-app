@@ -72,11 +72,6 @@ function normalizeTradeItem(raw: any): OpenTradeItem {
         rawTurns: raw.turns,
         myId: raw.my_id,
         partnerName: raw.partner_name,
-        incomingQueries: (raw.incoming_queries ?? []).map((q: any) => ({
-            tradeId: q.tradeId,
-            question: q.question ?? '',
-            answer: q.answer ?? null,
-        })),
     };
 }
 export function getCurrentUserId(): string | undefined {

@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck, { DeckGroup } from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
-import QueryAnswer from './QueryAnswer';
 import { TradeActionConfig } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { Post } from '@/types/index';
@@ -222,17 +221,7 @@ export default function OfferDeck({
         const topItem = itemsWithPost[topPostIndex];
         if (!topItem) return [];
         if (isQueryDeck) return buildQueryTurns(topItem);
-        if (isOffersDeck) {
-            // Questions the post's owner asked you that you've answered,
-            // newest first with your answer under each, then your offer.
-            // (Unanswered ones show with the ANSWER wheel; see below.)
-            const answered = (topItem.incomingQueries ?? []).filter(q => q.answer != null);
-            const questions: TradeTurn[] = [...answered].reverse().flatMap(q => [
-                { type: 'turnQuery' as const, user: topItem.partnerName ?? '', item: q.question, isUser: false },
-                { type: 'turnAnswer' as const, item: q.answer!, isUser: true },
-            ]);
-            return [...questions, ...buildOfferTurns(topItem)];
-        }
+        if (isOffersDeck) return buildOfferTurns(topItem);
         // Declined offers: the whole game's history, read-only.
         if (deckType === 'declined') {
             return buildTradeTurns(
@@ -244,15 +233,6 @@ export default function OfferDeck({
         }
         return [];
     }, [isQueryDeck, isOffersDeck, deckType, topPostIndex, itemsWithPost]);
-
-    // OFFERS deck: questions the post's owner asked you that still need an
-    // answer, newest first.
-    const unansweredQueries = useMemo(() => {
-        if (!isOffersDeck || topPostIndex === null) return [];
-        const topItem = itemsWithPost[topPostIndex];
-        return [...(topItem?.incomingQueries ?? [])].filter(q => q.answer == null).reverse()
-            .map(q => ({ ...q, asker: topItem?.partnerName ?? '' }));
-    }, [isOffersDeck, topPostIndex, itemsWithPost]);
 
     return (
         <View style={styles.modalContent} pointerEvents="box-none">
@@ -319,19 +299,6 @@ export default function OfferDeck({
                             </View>
                         )}
                         <View style={styles.turnsRow}>
-                            {unansweredQueries.map(q => (
-                                <View key={q.tradeId} style={styles.answerBlock}>
-                                    <QueryAnswer
-                                        queryId={q.tradeId}
-                                        questionTurn={{ type: 'turnQuery', user: q.asker, item: q.question, isUser: false }}
-                                        onAnswered={() => onActionComplete?.('query')}
-                                        onFailed={err => Alert.alert(
-                                            "That answer didn't go through",
-                                            err instanceof Error ? err.message : String(err),
-                                        )}
-                                    />
-                                </View>
-                            ))}
                             <TradeTurns turns={topTurns} />
                         </View>
                     </View>
@@ -360,7 +327,6 @@ const styles = StyleSheet.create({
     queryRow: {},
     actionRow: { marginBottom: -2 },
     turnsRow: {},
-    answerBlock: { marginBottom: 4 },
     collapseBar: {
         width: DECK_BAR_WIDTH,
         height: 44,

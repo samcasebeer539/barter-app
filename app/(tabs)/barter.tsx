@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Keyboard, KeyboardEvent, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Keyboard, KeyboardEvent, Alert, RefreshControl } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { deckStyles, makeCountBar } from '../../styles/deckStyles';
 import { colors } from '../../styles/globalStyles';
@@ -98,11 +98,11 @@ export default function ActiveTradesTestScreen() {
     // Centralized so both the initial load and post-action refreshes go
     // through the same functions — avoids the two getting out of sync.
     const refreshTrades = useCallback(() => {
-        getOpenTrade().then(setTrades).catch(err => console.error('Failed to load open trades:', err));
+        return getOpenTrade().then(setTrades).catch(err => console.error('Failed to load open trades:', err));
     }, []);
 
     const refreshQueries = useCallback(() => {
-        getQuery().then(setQueries).catch(err => console.error('Failed to load queries:', err));
+        return getQuery().then(setQueries).catch(err => console.error('Failed to load queries:', err));
     }, []);
 
     // Fired by OfferDeck after a successful submit. An 'offer' submission
@@ -144,7 +144,7 @@ export default function ActiveTradesTestScreen() {
     }, []);
 
     const refreshDeclined = useCallback(() => {
-        getDeclinedTrades()
+        return getDeclinedTrades()
             .then(items => setDeclined(keepIfSame(items)))
             .catch(err => console.error('Failed to load declined trades:', err));
     }, []);
@@ -155,12 +155,14 @@ export default function ActiveTradesTestScreen() {
     const [isAcceptedOpen, setIsAcceptedOpen] = useState(false);
     const [isDeclinedOpen, setIsDeclinedOpen] = useState(false);
     const refreshHistory = useCallback(() => {
-        getTradeHistory('completed')
-            .then(games => setAcceptedTrades(keepIfSame(games)))
-            .catch(err => console.error('Failed to load accepted trades:', err));
-        getTradeHistory('declined')
-            .then(games => setDeclinedTrades(keepIfSame(games)))
-            .catch(err => console.error('Failed to load declined trades:', err));
+        return Promise.all([
+            getTradeHistory('completed')
+                .then(games => setAcceptedTrades(keepIfSame(games)))
+                .catch(err => console.error('Failed to load accepted trades:', err)),
+            getTradeHistory('declined')
+                .then(games => setDeclinedTrades(keepIfSame(games)))
+                .catch(err => console.error('Failed to load declined trades:', err)),
+        ]);
     }, []);
 
     // A close game that drops out of the list was declined, timed out or
@@ -250,6 +252,19 @@ export default function ActiveTradesTestScreen() {
         return () => { cancelled = true; clearTimeout(timer); };
     }, [isFocused, tab, resetKey, refreshBarterGames, refreshCloseGames, refreshDeclined, refreshHistory]);
 
+    // Pull to refresh, like the feed: reload every list on the current tab.
+    const [refreshing, setRefreshing] = useState(false);
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            if (tab === 'open') await Promise.all([refreshQueries(), refreshTrades(), refreshDeclined()]);
+            else if (tab === 'barter') await refreshBarterGames();
+            else await Promise.all([refreshCloseGames(), refreshHistory()]);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [tab, refreshQueries, refreshTrades, refreshDeclined, refreshBarterGames, refreshCloseGames, refreshHistory]);
+
     // A finished trade as a read-only trade deck (log and decks, no wheel).
     const renderHistoryDeck = (game: BarterGame) => (
         <TradeDeck
@@ -322,6 +337,14 @@ export default function ActiveTradesTestScreen() {
                 scrollEnabled={scrollEnabled}
                 onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
                 scrollEventThrottle={16}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={colors.ui.secondarydisabled}
+                        progressViewOffset={insets.top}
+                    />
+                }
             >
                 <View style={styles.topSpacer} />
 

@@ -27,6 +27,12 @@ pill: {
     borderTopRightRadius: 22,
     borderBottomRightRadius: 2,
 },
+pill1: {
+    borderTopLeftRadius: 22,
+    borderBottomLeftRadius: 22,
+    borderTopRightRadius: 22,
+    borderBottomRightRadius: 22,
+},
 flat: {
     borderRadius: 2,
 },

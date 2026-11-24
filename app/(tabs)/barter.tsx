@@ -468,5 +468,5 @@ const styles = StyleSheet.create({
     // Same height and bottom margin as the arrow bars under the decks, so
     // every gap in the tab is DECK_GAP + 6.
     historyBarRow: { marginBottom: 6 },
-    historyBar: { ...makeCountBar('pill', 'flex-end'), height: 44 },
+    historyBar: { ...makeCountBar('pill1', 'flex-end'), height: 44 },
 });

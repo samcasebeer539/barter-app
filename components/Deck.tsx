@@ -47,6 +47,8 @@ interface DeckProps {
     onEnterPostEdit?: () => void;
     onSaveUser?: (updated: User) => void;
     onSavePost?: (updated: Post) => void;
+    /** Remove a post entirely (cancelling a new, incomplete post). */
+    onDiscardPost?: (postIndex: number) => void;
     jumpToken?: number;
     jumpToCardIndex?: number;
     onConfirmLocations?: (locations: Locations[]) => void;
@@ -105,6 +107,7 @@ interface CardSlotProps {
   onEnterPostEdit?: () => void;
   onSaveUser?: (u: User) => void;
   onSavePost?: (updated: Post) => void;
+  onDiscardPost?: (postIndex: number) => void;
   onConfirmLocations?: (locations: Locations[]) => void;
   onSelectLocation?: (location: Locations | null) => void;
   isQueryMode: boolean;
@@ -122,7 +125,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
   screenWidth, finalCardWidth, isUser, isSelectMode, selectedPosts,
   selectColor, mapActiveRef, isEditMode, isPostEditMode,
   onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit,
-  onSaveUser, onSavePost, onConfirmLocations,
+  onSaveUser, onSavePost, onDiscardPost, onConfirmLocations,
   onSelectLocation,
   isQueryMode, querySelectedPostIndex, onQueryPostTap,
   onSelectPost,
@@ -204,6 +207,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             selectColor={selectColor} isUser={isUser}
             isEditable={isFront && isPostEditMode && !card.post.inTrade}
             onEnterEdit={onEnterPostEdit} onExitEdit={onExitPostEdit} onSave={onSavePost}
+            onDiscard={onDiscardPost ? () => onDiscardPost(card.postIndex) : undefined}
             isQueryMode={isFront && isQueryMode}
             isQuerySelected={isQuerySelected}
             onSelect={
@@ -241,7 +245,7 @@ const Deck: React.FC<DeckProps> = ({
     showDateTime = false, showLocation = true, showUser = true,
     isEditMode = false, onExitEdit, onEnterEdit,
     isUser = false, isPostEditMode = false,
-    onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost,
+    onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost, onDiscardPost,
     jumpToken, jumpToCardIndex,
     onConfirmLocations, onSelectLocation,
     isQueryMode = false, querySelectedPostIndex = null, onSelectPost, onQueryPostTap,
@@ -425,7 +429,7 @@ const Deck: React.FC<DeckProps> = ({
     const sharedProps = {
         screenWidth, finalCardWidth, isUser, isEditMode, isPostEditMode,
         isSelectMode, selectedPosts, selectColor,
-        onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost,
+        onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost, onDiscardPost,
         mapActiveRef, onConfirmLocations, onSelectLocation,
         isQueryMode, querySelectedPostIndex, onSelectPost, onQueryPostTap,
         isLocationSelectMode, onProposeLocation,

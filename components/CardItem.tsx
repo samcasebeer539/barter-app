@@ -19,6 +19,8 @@ interface PostCardProps {
   onSave?: (updated: Post) => void;
   onExitEdit?: () => void;
   onEnterEdit?: () => void;
+  /** Remove this post entirely (cancelling a new, incomplete post). */
+  onDiscard?: () => void;
   // Query mode: shows circle-question instead of circle-check, single select
   isQueryMode?: boolean;
   isQuerySelected?: boolean;
@@ -65,6 +67,7 @@ const PostCard: React.FC<PostCardProps> = ({
   isEditable = false,
   onSave,
   onExitEdit,
+  onDiscard,
   onEnterEdit,
   isQueryMode = false,
   isQuerySelected = false,
@@ -87,8 +90,24 @@ const PostCard: React.FC<PostCardProps> = ({
     setDraft(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave   = () => { onSave?.({ ...post, ...draft }); onExitEdit?.(); };
-  const handleCancel = () => { setDraft({ name: post.name, description: post.description, photos: post.photos }); onExitEdit?.(); };
+  // A post needs a title and at least one photo before it can be saved.
+  const canSave = draft.name.trim().length > 0 && draft.photos.length > 0;
+  const handleSave = () => {
+    if (!canSave) return;
+    onSave?.({ ...post, ...draft });
+    onExitEdit?.();
+  };
+  // Cancelling a post that was never saved, with its title or photo still
+  // missing, removes it. Posts that existed before editing just revert.
+  const handleCancel = () => {
+    if (!post._id && !canSave) {
+      onExitEdit?.();
+      onDiscard?.();
+      return;
+    }
+    setDraft({ name: post.name, description: post.description, photos: post.photos });
+    onExitEdit?.();
+  };
 
   const handleRemovePhoto = (index: number) => {
     const updated = draft.photos.filter((_, i) => i !== index);
@@ -170,7 +189,6 @@ const PostCard: React.FC<PostCardProps> = ({
             <View style={styles.titleContainer}>
               {isEditable ? (
                 <View style={styles.titleEditWrapper}>
-                  <Text style={styles.fieldLabelTitle}>Title:</Text>
                   <TextInput
                     style={[styles.title, styles.titleInput]}
                     value={draft.name}
@@ -217,8 +235,8 @@ const PostCard: React.FC<PostCardProps> = ({
 
               {isEditable ? (
                 <>
-                  <TouchableOpacity style={styles.iconContainer} onPress={handleSave}>
-                    <FontAwesome6 name="circle-check" size={24} color={colors.actions.trade} />
+                  <TouchableOpacity style={styles.iconContainer} onPress={handleSave} disabled={!canSave}>
+                    <FontAwesome6 name="circle-check" size={24} color={canSave ? colors.actions.trade : colors.ui.cardsecondary} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.iconContainer} onPress={handleCancel}>
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
@@ -337,7 +355,6 @@ const PostCard: React.FC<PostCardProps> = ({
               </View>
 
               <View style={styles.editDescriptionArea}>
-                <Text style={styles.fieldLabel}>Description:</Text>
                 <TextInput
                   style={[styles.descriptionText, styles.descriptionInput]}
                   value={draft.description}

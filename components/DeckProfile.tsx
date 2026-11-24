@@ -329,12 +329,25 @@ export default function ProfileDeck({
     }, [topCardType, topPrimaryPostIndex, posts.length]);
 
     const handleAddPost = useCallback(() => {
-        const emptyPost: Post = { name: 'New Item', description: '', photos: [], date_posted: '' };
+        // Starts untitled so the title field shows its placeholder.
+        const emptyPost: Post = { name: '', description: '', photos: [], date_posted: '' };
         openNewPostInEdit.current = true;
         jumpCounterRef.current += 1;
         setJumpToIndex(DECK_PREFIX);
         setJumpToken(jumpCounterRef.current);
         onPostsChange?.([emptyPost, ...posts]);
+    }, [posts, onPostsChange]);
+
+    // Drop an unsaved post without touching the server (cancelled while new
+    // and incomplete), keeping the deck on the card that takes its place.
+    const handleDiscardPost = useCallback((postIndex: number) => {
+        const updated = posts.filter((_, i) => i !== postIndex);
+        const targetInNewCards = DECK_PREFIX + postIndex;
+        const newLen = DECK_PREFIX + updated.length;
+        jumpCounterRef.current += 1;
+        setJumpToIndex(targetInNewCards < newLen ? targetInNewCards : 0);
+        setJumpToken(jumpCounterRef.current);
+        onPostsChange?.(updated);
     }, [posts, onPostsChange]);
 
     const performDelete = useCallback(async () => {
@@ -504,6 +517,7 @@ export default function ProfileDeck({
                                 onEnterPostEdit={() => setIsPostEditMode(true)}
                                 onSaveUser={onSaveUser}
                                 onSavePost={handleSavePost}
+                                onDiscardPost={handleDiscardPost}
                                 jumpToken={jumpToken}
                                 jumpToCardIndex={jumpToIndex}
                                 onConfirmLocations={onConfirmLocations}

@@ -131,17 +131,17 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
 }, ref) => {
   const [card, setCardState] = useState<DeckItem | null>(initialCard);
   const [isFront, setIsFront] = useState(initialIsFront);
+  // Kept in state (not setNativeProps): under the new architecture a native
+  // prop set directly is overwritten on the slot's next render, which made
+  // the shadow vanish as soon as a swipe finished and setCard re-rendered.
+  const [hasShadow, setHasShadow] = useState(false);
   const wrapperRef = useRef<View>(null);
   const cardRef = useRef<View>(null);
 
   useImperativeHandle(ref, () => ({
     setCard(item, front) { setCardState(item); setIsFront(front); },
     setZIndex(z) { wrapperRef.current?.setNativeProps({ style: { zIndex: z } }); },
-    setShadow(enabled) {
-      cardRef.current?.setNativeProps({
-        style: { shadowOpacity: enabled ? 0.5 : 0, elevation: enabled ? 8 : 0 },
-      });
-    },
+    setShadow(enabled) { setHasShadow(enabled); },
   }));
 
   const rotate = slotAnim.swipeX.interpolate({
@@ -159,6 +159,8 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
       <Animated.View
         ref={cardRef}
         style={[slotStyles.card, slotStyles.shadowBase, {
+          shadowOpacity: hasShadow ? 0.5 : 0,
+          elevation: hasShadow ? 8 : 0,
           transform: [
             { translateX },
             { translateY: slotAnim.position.y },

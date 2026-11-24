@@ -511,7 +511,10 @@ export default function ProfileDeck({
                             />
                         </View>
                         <View style={styles.turnsAndButtonColumn}>
-
+                            {/* Question box above the wheel, like the other decks. */}
+                            <View style={[styles.queryRow, { marginBottom: isQueryActive ? 4 : 0 }]}>
+                                <TradeTurns turns={[]} isQueryOpen={isQueryActive} onQueryTextChange={setQueryText} />
+                            </View>
                             <View style={styles.actionRow}>
                                 <TradeUI
                                     actions={tradeActions}
@@ -529,11 +532,7 @@ export default function ProfileDeck({
                                 />
                             </View>
                             <View style={styles.turnsRow}>
-                                <TradeTurns
-                                    turns={currentOfferTurns}
-                                    isQueryOpen={isQueryActive}
-                                    onQueryTextChange={setQueryText}
-                                />
+                                <TradeTurns turns={currentOfferTurns} />
                             </View>
                         </View>
                     </View>

@@ -33,7 +33,8 @@ interface TradeUIProps {
     /** No turn clock applies (e.g. an agreed deal): WAIT shows its icon without a countdown. */
     noTurnClock?: boolean;
     /** QUERY can't be started right now (a question must be about a post and
-     *  none is on top). Greys the button out; an open box can still be closed. */
+     *  none is on top). The button shows no icon and can't be tapped; an open
+     *  box can still be closed. */
     queryBlocked?: boolean;
 }
 
@@ -342,25 +343,27 @@ const TradeUI: React.FC<TradeUIProps> = ({
         if (action.actionType === 'query') {
             const armed = active && isArmed;
             const blocked = queryBlocked && !armed;
-            const buttonColor = blocked ? colors.ui.secondarydisabled : color;
             return (
                 <TouchableOpacity
                     activeOpacity={1}
                     style={[
                         styles.actionButton,
                         {
-                            borderColor: buttonColor,
+                            borderColor: color,
                             backgroundColor: armed ? color : 'transparent',
                         },
                     ]}
                     onPress={() => handleQueryPress(active)}
                     disabled={disabled || blocked}
                 >
-                    <FontAwesome6
-                        name={armed ? 'circle-question' : 'circle'}
-                        size={26}
-                        color={armed ? '#000' : buttonColor}
-                    />
+                    {/* No circle while there's no post to ask about. */}
+                    {!blocked && (
+                        <FontAwesome6
+                            name={armed ? 'circle-question' : 'circle'}
+                            size={26}
+                            color={armed ? '#000' : color}
+                        />
+                    )}
                 </TouchableOpacity>
             );
         }

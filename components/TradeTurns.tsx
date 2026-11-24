@@ -41,11 +41,17 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
       setTimeout(() => activeQueryInputRef.current?.focus(), 100);
     } else {
       setActiveQueryText('');
+      setDoneKey(false);
     }
   }, [isQueryOpen]);
 
   // Keeps the box above the keyboard while you type.
   const kbField = useKeyboardLiftField();
+
+  // These fields focus themselves as they appear, and iOS then shows a plain
+  // "return" key. Switching the key to "done" once focused makes iOS redraw
+  // the keyboard with the check mark, like the fields you tap into.
+  const [doneKey, setDoneKey] = useState(false);
 
   const handleActiveQueryChange = (text: string) => {
     setActiveQueryText(text);
@@ -114,13 +120,13 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             placeholder={queryPlaceholder}
             placeholderTextColor={queryColor}
             value={activeQueryText}
-            onFocus={kbField.onFocus}
+            onFocus={() => { kbField.onFocus(); setDoneKey(true); }}
             onChangeText={handleActiveQueryChange}
             onContentSizeChange={kbField.requestLift}
             multiline
-            returnKeyType="done"
+            returnKeyType={doneKey ? 'done' : 'default'}
             onSubmitEditing={() => Keyboard.dismiss()}
-            blurOnSubmit
+            submitBehavior="blurAndSubmit"
             keyboardAppearance="dark" 
           />
         </View>

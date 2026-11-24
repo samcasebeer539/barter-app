@@ -74,6 +74,10 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const [nameInput, setNameInput] = useState('');
   // Keeps the field you're typing in above the keyboard.
   const kbField = useKeyboardLiftField();
+  // These fields focus themselves as they appear, and iOS then shows a plain
+  // "return" key. Switching the key to "done" once focused makes iOS redraw
+  // the keyboard with the check mark, like the fields you tap into.
+  const [doneKey, setDoneKey] = useState(false);
   const [descInput, setDescInput] = useState('');
 
   // ── Read-only state ───────────────────────────────────────────────────────
@@ -120,10 +124,12 @@ const CardLocation: React.FC<CardLocationProps> = ({
     setNameInput('');
     setDescInput('');
     setIsNaming(false);
+    setDoneKey(false);
   };
 
   const handleCancelNaming = () => {
     setIsNaming(false);
+    setDoneKey(false);
     setNameInput('');
     setDescInput('');
   };
@@ -295,12 +301,12 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   keyboardAppearance="dark"
                   style={styles.nameInput}
                   value={nameInput}
-                  onFocus={kbField.onFocus}
+                  onFocus={() => { kbField.onFocus(); setDoneKey(true); }}
                   onChangeText={v => { setNameInput(v); kbField.requestLift(); }}
                   placeholder="Name"
                   placeholderTextColor={colors.ui.cardsecondary}
                   autoFocus
-                  returnKeyType="done"
+                  returnKeyType={doneKey ? 'done' : 'default'}
                 />
                 <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
                   <FontAwesome6

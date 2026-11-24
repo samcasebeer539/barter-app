@@ -80,19 +80,21 @@ const UserCard: React.FC<UserCardProps> = ({
   const reviewsLoadedFor = useRef<string | null>(null);
   const reviewCount = user.reviewCount ?? 0;
 
+  // Reload when the person or their review count changes (a new review).
+  const reviewsKey = user._id ? `${user._id}:${reviewCount}` : null;
   useEffect(() => {
-    if (!isReviewsOpen || !user._id || reviewsLoadedFor.current === user._id) return;
-    reviewsLoadedFor.current = user._id;
+    if (!isReviewsOpen || !reviewsKey || reviewsLoadedFor.current === reviewsKey) return;
+    reviewsLoadedFor.current = reviewsKey;
     setReviews(null);
     setReviewsError(false);
-    getUserReviews(user._id)
+    getUserReviews(user._id!)
       .then(setReviews)
       .catch(err => {
         console.error('Failed to load reviews:', err);
         setReviewsError(true);
         reviewsLoadedFor.current = null; // retry on next open
       });
-  }, [isReviewsOpen, user._id]);
+  }, [isReviewsOpen, reviewsKey]);
 
   useEffect(() => {
     if (isEditable) setIsReviewsOpen(false);

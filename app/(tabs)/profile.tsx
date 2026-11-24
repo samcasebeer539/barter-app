@@ -88,6 +88,15 @@ export default function ProfileScreen() {
   // the lock flags change (and only if they differ), so the deck keeps its
   // place and any unsaved new post stays put.
   useFocusEffect(useCallback(() => {
+    // Your rating can change while you're away (someone reviews you).
+    getCurrentUser()
+      .then(fresh => setPrimaryUser(prev =>
+        prev && (prev.rating !== fresh.rating || prev.reviewCount !== fresh.reviewCount)
+          ? { ...prev, rating: fresh.rating, reviewCount: fresh.reviewCount }
+          : prev
+      ))
+      .catch(err => console.warn('Failed to refresh rating:', err));
+
     getUserPosts()
       .then(fresh => {
         const lockById = new Map(fresh.map(p => [p._id, !!p.inTrade]));

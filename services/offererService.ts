@@ -25,6 +25,7 @@ export async function getOffererProfile(userId: string): Promise<FeedProfile> {
 
     return {
       user: {
+        _id: data.user._id,
         first_name: data.user.first_name,
         last_name: data.user.last_name,
         pronouns: data.user.pronouns,
@@ -35,6 +36,8 @@ export async function getOffererProfile(userId: string): Promise<FeedProfile> {
         email_visible: data.user.email_visible ?? false,
         phone_visible: data.user.phone_visible ?? false,
         locations: data.user.locations ?? [],
+        rating: data.user.rating ?? 0,
+        reviewCount: data.user.reviewCount ?? 0,
       },
       posts: data.posts.map((p: any) => ({
         _id: p._id,

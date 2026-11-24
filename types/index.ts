@@ -48,6 +48,7 @@ export interface FeedItem {
 
 export interface FeedProfile {
     user: {
+        _id?: string;
         first_name: string;
         last_name: string;
         pronouns?: string;
@@ -58,6 +59,8 @@ export interface FeedProfile {
         email_visible: boolean;
         phone_visible: boolean;
         locations: Locations[];
+        rating?: number;
+        reviewCount?: number;
     };
     posts: {
         _id: string;

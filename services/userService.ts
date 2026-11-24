@@ -26,6 +26,7 @@ export async function getCurrentUser(): Promise<User> {
     const data = await res.json();
 
     return {
+      _id: data._id,
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email,
@@ -35,7 +36,9 @@ export async function getCurrentUser(): Promise<User> {
       profileImageUrl: data.profile_photo,
       email_visible: data.email_visible ?? false,
       phone_visible: data.phone_visible ?? false,
-      locations: data.locations ?? [],   // ← add this
+      locations: data.locations ?? [],
+      rating: data.rating ?? 0,
+      reviewCount: data.reviewCount ?? 0,
     };
   } catch (err: any) {
     clearTimeout(timeout);

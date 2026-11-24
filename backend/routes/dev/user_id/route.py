@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint, request
 import traceback
 from bson.objectid import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
@@ -49,6 +49,49 @@ def get_user_profile(user_id):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+
+MAX_PROFILE_BATCH = 50
+
+
+@userId_bp.route('/dev/profiles', methods=['GET'])
+def get_user_profiles():
+    """Several users' profiles in one call: ?ids=<id>,<id>,...
+    Returns {userId: {"user": ..., "posts": [...]}}, the same shape as
+    GET /dev/users/<id> per user. Unknown ids are left out. All posts come
+    from a single query."""
+    try:
+        uid, err = get_uid_from_request()
+        if err: return err
+
+        ids = []
+        for raw in (request.args.get("ids") or "").split(","):
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                ids.append(ObjectId(raw))
+            except Exception:
+                return jsonify({"error": f"Invalid id: {raw}"}), 400
+        ids = list(dict.fromkeys(ids))[:MAX_PROFILE_BATCH]
+        if not ids:
+            return jsonify({}), 200
+
+        users = list(user_data_collection.find({"_id": {"$in": ids}}))
+        posts_by_owner = {}
+        for post in posts_collection.find({"user_id": {"$in": ids}}):
+            posts_by_owner.setdefault(post["user_id"], []).append(serialize_post(post))
+
+        return jsonify({
+            str(u["_id"]): {
+                "user": public_user(u),
+                "posts": posts_by_owner.get(u["_id"], []),
+            }
+            for u in users
+        }), 200
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 MAX_REVIEWS = 50
 

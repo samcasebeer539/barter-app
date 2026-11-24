@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { Post, User, Locations } from '@/types/index';
 import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
 import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
-import { getOffererProfile } from '@/services/offererService';
+import { getOffererProfiles } from '@/services/offererService';
 import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
 import { FeedProfile, OffererGroup } from '@/types/index';
 
@@ -53,7 +53,10 @@ export default function ProfileScreen() {
   // ── Incoming offers (across all of this user's posts) ──────────────────────
   const [incomingOffers, setIncomingOffers] = useState<IncomingOffer[]>([]);
   const [topPrimaryPostIndex, setTopPrimaryPostIndex] = useState<number | null>(null);
-  const [secondaryOfferers, setSecondaryOfferers] = useState<OffererGroup[]>([]);
+  // Offerer profiles, cached by user id. Fetched in one batch for every
+  // offer on any of your posts, so swiping between posts reads from here
+  // instead of hitting the server.
+  const [offererProfiles, setOffererProfiles] = useState<Record<string, FeedProfile>>({});
 
   const topPost = topPrimaryPostIndex !== null ? primaryPosts[topPrimaryPostIndex] : null;
 
@@ -67,22 +70,28 @@ export default function ProfileScreen() {
       .catch(err => console.warn('Failed to load incoming offers:', err));
   }, []);
 
+  // Fetch, in one request, any offerers not cached yet (new offers).
   useEffect(() => {
-    if (offersForTopPost.length === 0) {
-      setSecondaryOfferers([]);
-      return;
-    }
+    const missing = [...new Set(incomingOffers.map(o => o.fromUserId))].filter(id => !offererProfiles[id]);
+    if (missing.length === 0) return;
     let cancelled = false;
-    Promise.all(
-      offersForTopPost.map(offer =>
-        getOffererProfile(offer.fromUserId).then(profile => ({ gameId: offer.gameId, profile }))
-      )
-    )
-      .then(groups => { if (!cancelled) setSecondaryOfferers(groups); })
+    getOffererProfiles(missing)
+      .then(found => { if (!cancelled) setOffererProfiles(prev => ({ ...prev, ...found })); })
       .catch(err => console.warn('Failed to load offerer profiles:', err));
     return () => { cancelled = true; };
+  }, [incomingOffers, offererProfiles]);
+
+  // The top post's offerers, straight from the cache. Keyed on the offers'
+  // game ids so the array (and the deck) only changes when they do.
+  const topOffersKey = offersForTopPost.map(o => o.gameId).join(',');
+  const secondaryOfferers: OffererGroup[] = useMemo(
+    () => offersForTopPost.flatMap(offer => {
+      const profile = offererProfiles[offer.fromUserId];
+      return profile ? [{ gameId: offer.gameId, profile }] : [];
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offersForTopPost.map(o => o.gameId).join(',')]);
+    [topOffersKey, offererProfiles]
+  );
 
   // Posts can join or leave trades while you're elsewhere in the app, so
   // recheck which are locked each time the profile comes into view. Only
@@ -205,14 +214,12 @@ export default function ProfileScreen() {
 	// Shared by both barter and decline — once a game leaves the deck, drop it
 	// from local state, and auto-close the reveal if that was the last offerer
 	// left, so the deck doesn't sit open showing nothing.
+	// The offerer list is derived from incomingOffers, so dropping the offer
+	// removes them.
 	const removeOfferer = (gameId: string) => {
-	setSecondaryOfferers(prev => {
-		const next = prev.filter(o => o.gameId !== gameId);
-		if (next.length === 0) {
+	if (offersForTopPost.every(o => o.gameId === gameId)) {
 		setIsDeckRevealed(false);
-		}
-		return next;
-	});
+	}
 	setIncomingOffers(prev => prev.filter(o => o.gameId !== gameId));
 	};
 
@@ -267,7 +274,12 @@ export default function ProfileScreen() {
           .then(fresh => setPrimaryPosts(prev => [...prev.filter(p => !p._id), ...fresh]))
           .catch(err => console.warn('Failed to refresh posts:', err)),
         getIncomingOffers()
-          .then(setIncomingOffers)
+          .then(async offers => {
+            const ids = [...new Set(offers.map(o => o.fromUserId))];
+            const profiles = await getOffererProfiles(ids);
+            setOffererProfiles(profiles);
+            setIncomingOffers(offers);
+          })
           .catch(err => console.warn('Failed to refresh incoming offers:', err)),
         refreshIncomingQueries(),
         getMyLocations()

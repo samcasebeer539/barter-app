@@ -98,6 +98,8 @@ export interface OpenTradeItem {
     rawTurns?: any[];
     myId?: string;
     partnerName?: string;
+    /** OFFERS deck: questions the post's owner asked you, oldest first. */
+    incomingQueries?: { tradeId: string; question: string; answer: string | null }[];
 }
 
 // Pairs an offerer's profile with the gameId of their pending offer, so

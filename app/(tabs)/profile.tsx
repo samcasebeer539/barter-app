@@ -66,11 +66,15 @@ export default function ProfileScreen() {
     ? incomingOffers.filter(o => o.targetPostId === topPost._id)
     : [];
 
-  useEffect(() => {
-    getIncomingOffers()
+  const refreshIncomingOffers = useCallback(() => {
+    return getIncomingOffers()
       .then(setIncomingOffers)
       .catch(err => console.warn('Failed to load incoming offers:', err));
   }, []);
+
+  useEffect(() => {
+    refreshIncomingOffers();
+  }, [refreshIncomingOffers]);
 
   // Fetch, in one request, any offerers not cached yet (new offers).
   useEffect(() => {
@@ -338,6 +342,7 @@ export default function ProfileScreen() {
             onDeclineSubmit={handleDeclineSubmit}
             incomingQueries={queriesForTopPost}
             onQueryAnswered={refreshIncomingQueries}
+            onQueryAsked={refreshIncomingOffers}
             incomingOffers={offersForTopPost}
           />
         </View>

@@ -32,6 +32,13 @@ def get_incoming_offers():
             "targetPostId": str(game["target_post_id"]),
             "fromUserId": str(game["initiator_user_id"]),
             "fromUserName": offerer.get("first_name", ""),
+            # Your own questions to the offerer (and their answers), oldest
+            # first, for the profile deck's turn log.
+            "myQueries": [
+                _query_summary(q) for q in trades_collection.find({
+                    "game_id": game["_id"], "type": "query", "actor_id": user["_id"],
+                }).sort("created_at", 1)
+            ],
         })
 
     return jsonify(results), 200
@@ -62,6 +69,8 @@ def get_incoming_queries():
         trades_collection.find({
             "game_id": {"$in": list(game_ids_by_id.keys())},
             "type": "query",
+            # Not your own questions to an offerer (those are theirs to answer).
+            "actor_id": {"$ne": user["_id"]},
             "answered_at": None,
         }).sort("created_at", 1)
     )
@@ -83,3 +92,12 @@ def get_incoming_queries():
         })
 
     return jsonify(results), 200
+
+def _query_summary(q):
+    """A question and its answer (the first reply), if any."""
+    messages = q.get("messages") or []
+    return {
+        "tradeId": str(q["_id"]),
+        "question": messages[0].get("message", "") if messages else "",
+        "answer": messages[1].get("message", "") if len(messages) > 1 else None,
+    }

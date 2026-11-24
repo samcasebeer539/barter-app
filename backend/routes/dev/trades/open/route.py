@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, trades_collection, posts_collection, games_collection
 from helpers import get_uid_from_request, serialize_post, serialize_trade
+from routes.dev.trades.incoming.route import _query_summary
 
 trades_open_bp = Blueprint("trades_open", __name__)
 
@@ -34,11 +35,25 @@ def open_offers_for(user):
     # All the target posts in one query.
     posts = {p["_id"]: p for p in posts_collection.find(
         {"_id": {"$in": [t.get("target_post_id") for t in trades]}})}
+    # Questions the post's owner asked you in these games (answer them from
+    # the OFFERS deck), all in one query, oldest first.
+    asked = {}
+    for q in trades_collection.find({
+        "game_id": {"$in": pending_game_ids},
+        "type": "query",
+        "actor_id": {"$ne": user["_id"]},
+    }).sort("created_at", 1):
+        asked.setdefault(q["game_id"], []).append(_query_summary(q))
+    # Post owners' first names, for the turn log ("Sam asked ...").
+    owners = {u["_id"]: u.get("first_name", "") for u in user_data_collection.find(
+        {"_id": {"$in": list({p.get("user_id") for p in posts.values()})}}, {"first_name": 1})}
     out = []
     for t in trades:
         post = posts.get(t.get("target_post_id"))
         item = serialize_trade(t)
         if post:
             item["post"] = serialize_post(post)
+            item["partner_name"] = owners.get(post.get("user_id"), "")
+        item["incoming_queries"] = asked.get(t.get("game_id"), [])
         out.append(item)
     return out

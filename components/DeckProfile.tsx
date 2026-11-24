@@ -13,7 +13,7 @@ import { useTradeAction } from '../hooks/useTradeAction';
 
 import { Post, User, Locations, OffererGroup } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
-import { IncomingQuery, IncomingOffer, resolvePostName } from '@/services/tradeService';
+import { IncomingQuery, IncomingOffer, resolvePostName, sendGameQuery } from '@/services/tradeService';
 
 const SLIDE_MARGIN = 0;
 const { width } = Dimensions.get('window');
@@ -36,7 +36,8 @@ interface ProfileDeckProps {
     hasIncomingOffers?: boolean;
     // ── Confirmed-action payload callbacks ──────────────────────────────────
     onBarterSubmit?: (gameId: string, selectedPostIds: string[]) => void;
-    onQuerySubmit?: (payload: { gameId: string; postIndex: number | null }) => void;
+    /** Fired after you send an offerer a question, so the screen can refetch. */
+    onQueryAsked?: () => void;
     onDeclineSubmit?: (gameId: string) => void;
     incomingQueries?: IncomingQuery[];
     incomingOffers?: IncomingOffer[];
@@ -59,7 +60,7 @@ export default function ProfileDeck({
     onTopPrimaryPostChange,
     hasIncomingOffers = false,
     onBarterSubmit,
-    onQuerySubmit,
+    onQueryAsked,
     onDeclineSubmit,
     incomingQueries = [],
     incomingOffers = [],
@@ -140,7 +141,15 @@ export default function ProfileDeck({
         () => secondaryOfferers.map(({ gameId }) => {
             const offer = incomingOffers.find(o => o.gameId === gameId);
             if (!offer) return [];
-            return [{
+            // Your questions to them, newest first, each with its answer
+            // under it; the offer itself at the bottom.
+            const questions: TradeTurn[] = [...(offer.myQueries ?? [])].reverse().flatMap(q => [
+                { type: 'turnQuery' as const, item: q.question, isUser: true },
+                ...(q.answer != null
+                    ? [{ type: 'turnAnswer' as const, user: offer.fromUserName, item: q.answer, isUser: false }]
+                    : []),
+            ]);
+            return [...questions, {
                 type: 'turnOffer' as const,
                 user: offer.fromUserName,
                 item: resolvePostName(offer.targetPostId, posts),
@@ -171,10 +180,18 @@ export default function ProfileDeck({
         scrolledActionType === 'query' &&
         trade.phase !== 'idle' &&
         trade.phase !== 'confirmed';
-    // While QUERY is open the question is about the offerer's post on top,
-    // following their deck as you swipe; with their user or location card on
-    // top it isn't about a post (still allowed, like the trade deck).
+    // Like the feed deck: a question to an offerer is about their post on
+    // top, following their deck as you swipe. With their user or location
+    // card on top, QUERY is greyed out and can't be sent.
     const queryPostIndex = isQueryActive ? topSecondaryPostIndex : null;
+    const [queryText, setQueryText] = useState('');
+    useEffect(() => {
+        if (!isQueryActive) setQueryText('');
+    }, [isQueryActive]);
+    const effectiveIsReady =
+        trade.activeAction === 'query'
+            ? topSecondaryPostIndex !== null && queryText.trim().length > 0
+            : trade.isReady;
 
     // ── Per-user multiselect for barter ─────────────────────────────────────
     // trade.selectedPosts holds global indices across all offerer groups.
@@ -249,12 +266,16 @@ export default function ProfileDeck({
             return;
         }
 
+        // A question needs one of their posts on top (closing an open box
+        // still works).
+        if (actionType === 'query' && trade.activeAction !== 'query' && topSecondaryPostIndex === null) return;
+
         // query, decline: arm on icon tap
         trade.selectAction(actionType);
     };
 
     const handleConfirm = async () => {
-        if (!trade.isReady || !trade.activeAction) return;
+        if (!effectiveIsReady || !trade.activeAction) return;
 
         // Let the press-out opacity animation settle before anything disables
         // this same button — see TradeDeck for the full explanation.
@@ -277,11 +298,16 @@ export default function ProfileDeck({
             case 'query': {
                 const groupIndex = topSecondaryGroupIndex;
                 const gameId = groupIndex !== null ? secondaryOfferers[groupIndex]?.gameId : undefined;
-                if (gameId) {
-                    onQuerySubmit?.({
-                        gameId,
-                        postIndex: topSecondaryPostIndex,
-                    });
+                const postId = topSecondaryPostIndex !== null ? flattenedSecondaryPosts[topSecondaryPostIndex]?._id : undefined;
+                const question = queryText.trim();
+                if (!gameId || !postId || !question) break;
+                try {
+                    await sendGameQuery(gameId, question, postId);
+                    onQueryAsked?.();
+                } catch (err) {
+                    console.error('Query failed:', err);
+                    Alert.alert("That question didn't go through", err instanceof Error ? err.message : String(err));
+                    return; // keep the box open with your text
                 }
                 break;
             }
@@ -491,18 +517,23 @@ export default function ProfileDeck({
                                     actions={tradeActions}
                                     onActionSelected={handleTradeActionSelected}
                                     activeActionType={trade.activeAction}
-                                    isReady={trade.activeAction === 'query' ? isQueryActive : trade.isReady}
+                                    isReady={effectiveIsReady}
                                     selectedCount={trade.selectedPosts.length}
                                     topCardIsSelected={topSecondaryCardIsSelected}
                                     isQueryMode={isQueryActive}
                                     queryPostSelected={queryPostIndex !== null}
                                     onQueryPostSelect={() => {}}
                                     onQueryPostDeselect={() => {}}
+                                    queryBlocked={topSecondaryPostIndex === null}
                                     onActionChange={setScrolledActionType}
                                 />
                             </View>
                             <View style={styles.turnsRow}>
-                                <TradeTurns turns={currentOfferTurns} />
+                                <TradeTurns
+                                    turns={currentOfferTurns}
+                                    isQueryOpen={isQueryActive}
+                                    onQueryTextChange={setQueryText}
+                                />
                             </View>
                         </View>
                     </View>

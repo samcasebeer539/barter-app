@@ -40,38 +40,6 @@ const SECONDARY_USER_ID = '';
 // game a given group of cards belongs to.
 
 
-// ─── Loading spinner ──────────────────────────────────────────────────────────
-
-// The exact pull-to-refresh spinner the feed, barter and profile pages use (a
-// real RefreshControl with the same tint), shown in the middle of the screen.
-// iOS only draws a RefreshControl that starts refreshing after it has laid
-// out, so refreshing is switched on just after mount.
-//
-// It must also be stopped (active=false) and given time to finish before it
-// unmounts: a refresh control removed mid-refresh leaves iOS's refresh inset
-// on the native scroll view, which React Native then reuses for the profile's
-// own scroll view, making its pull-to-refresh fire almost instantly.
-const SPINNER_END_MS = 400;
-
-function CenteredRefreshSpinner({ active }: { active: boolean }) {
-  const [started, setStarted] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setStarted(true), 0);
-    return () => clearTimeout(t);
-  }, []);
-  const refreshing = started && active;
-  return (
-    <ScrollView
-      style={styles.spinnerScroll}
-      contentContainerStyle={styles.spinnerContent}
-      scrollEnabled={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} tintColor={colors.ui.secondarydisabled} />
-      }
-    />
-  );
-}
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
@@ -83,15 +51,6 @@ export default function ProfileScreen() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Keep the loader mounted (stopped) briefly after the data arrives, so its
-  // refresh ends cleanly before the profile replaces it. See CenteredRefreshSpinner.
-  const [isLoaderGone, setIsLoaderGone] = useState(false);
-  const hasUser = primaryUser !== null;
-  useEffect(() => {
-    if (!hasUser) return;
-    const t = setTimeout(() => setIsLoaderGone(true), SPINNER_END_MS);
-    return () => clearTimeout(t);
-  }, [hasUser]);
   
   // ── Incoming offers (across all of this user's posts) ──────────────────────
   const [incomingOffers, setIncomingOffers] = useState<IncomingOffer[]>([]);
@@ -340,9 +299,9 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 
-  // TEMPORARY TEST: plain spinner instead of CenteredRefreshSpinner, to check
-  // whether the refresh-control loader causes the instant pull-to-refresh.
-  // To restore: `if (!primaryUser || !isLoaderGone)` + <CenteredRefreshSpinner active={!primaryUser} />
+  // A plain spinner in the refresh spinners' color. (Not a RefreshControl:
+  // unmounting one mid-refresh left iOS's refresh inset on the scroll view
+  // React Native reused for the profile, so its pull-to-refresh fired at once.)
   if (!primaryUser) return (
     <View style={styles.loadingContainer}>
       <ActivityIndicator size="small" color={colors.ui.secondarydisabled} />
@@ -412,15 +371,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.ui.background,
-  },
-  // A short strip centered on screen; the refresh spinner draws at its top.
-  spinnerScroll: {
-    flexGrow: 0,
-    width: '100%',
-    height: 80,
-  },
-  spinnerContent: {
-    height: 80,
   },
   loadingContainer: {
     flex: 1,

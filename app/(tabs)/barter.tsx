@@ -283,7 +283,7 @@ export default function ActiveTradesTestScreen() {
     ) => (
         <View style={styles.historySection}>
             {/* Same row + pill bar as the decks' headers. */}
-            <View style={deckStyles.itemCountRow}>
+            <View style={[deckStyles.itemCountRow, styles.historyBarRow]}>
                 <TouchableOpacity
                     style={styles.historyBar}
                     onPress={onToggle}
@@ -442,5 +442,8 @@ const styles = StyleSheet.create({
     topSpacer: { height: TOP_PADDING },
     deckList: { gap: DECK_GAP },
     historySection: { alignItems: 'center', gap: DECK_GAP },
-    historyBar: { ...makeCountBar('pill', 'flex-end') },
+    // Same height and bottom margin as the arrow bars under the decks, so
+    // every gap in the tab is DECK_GAP + 6.
+    historyBarRow: { marginBottom: 6 },
+    historyBar: { ...makeCountBar('pill', 'flex-end'), height: 44 },
 });

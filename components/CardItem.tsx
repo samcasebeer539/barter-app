@@ -325,8 +325,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.emptyPhotoPlaceholder}>
-                    <FontAwesome6 name="image" size={32} color={colors.ui.cardsecondary} />
-                    <Text style={styles.emptyPhotoText}>No photos</Text>
+                    <Text style={styles.emptyPhotoText}>Photos (1 required)</Text>
                   </View>
                 )}
 
@@ -368,7 +367,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   value={draft.description}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('description', v); kbField.requestLift(); }}
-                  placeholder="Describe this item"
+                  placeholder="Describe this item (optional)"
                   returnKeyType="done"
                   submitBehavior="blurAndSubmit"
                   placeholderTextColor={colors.ui.cardsecondary}

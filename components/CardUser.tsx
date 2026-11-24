@@ -411,7 +411,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   value={draft.bio}
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('bio', v); kbField.requestLift(); }}
-                  placeholder="Tell others about yourself"
+                  placeholder="Tell others about yourself (optional)"
                   returnKeyType="done"
                   submitBehavior="blurAndSubmit"
                   placeholderTextColor={colors.ui.cardsecondary}

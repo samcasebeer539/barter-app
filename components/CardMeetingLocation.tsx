@@ -287,7 +287,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
 
           {/* Posting needs at least one saved location (see DeckProfile). */}
           {!showProposal && isUser && !isSelectMode && locations.length === 0 && (
-            <Text style={styles.requiredText}>1 location required to post</Text>
+            <Text style={styles.requiredText}>(1 location required to post)</Text>
           )}
 
           {!showProposal && isUser && canAddMore && !isNaming && !isSelectMode && (

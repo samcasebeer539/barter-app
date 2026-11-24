@@ -130,9 +130,13 @@ export default function ActiveTradesTestScreen() {
     const lastCloseJson = useRef('');
 
     // Resolves true if the list changed.
+    // Whether the barter list has loaded at least once (so "no active trades"
+    // doesn't flash before it arrives).
+    const [hasLoadedBarter, setHasLoadedBarter] = useState(false);
     const refreshBarterGames = useCallback(() => {
         return getBarterGames()
             .then(games => {
+                setHasLoadedBarter(true);
                 const json = JSON.stringify(games);
                 const changed = json !== lastBarterJson.current;
                 lastBarterJson.current = json;
@@ -380,6 +384,18 @@ export default function ActiveTradesTestScreen() {
 
                 {tab === 'barter' && (
                     <View style={styles.deckList}>
+                        {hasLoadedBarter && barterGames.length === 0 && (
+                            // Same shape as the ACCEPTED / DECLINED TRADES bars.
+                            <View style={styles.historySection}>
+                                <View style={[deckStyles.itemCountRow, styles.historyBarRow]}>
+                                    <View style={[styles.historyBar, styles.emptyBar]}>
+                                        <Text style={[deckStyles.actionButtonText, styles.emptyBarText]}>
+                                            NO ACTIVE TRADES
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                        )}
                         {barterGames.map(game => (
                             <TradeDeck
                                 key={game.gameId}

@@ -60,7 +60,7 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                         placeholderTextColor={colors.ui.secondarydisabled}
                         value={searchText}
                         onChangeText={setSearchText}
-                        returnKeyType="search"
+                        returnKeyType="done"
                         onSubmitEditing={handleSearchSubmit}
                     />
                     {/* If there something being searched, show the X, else show magnifying glass */}

@@ -300,7 +300,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   placeholder="Name"
                   placeholderTextColor={colors.ui.cardsecondary}
                   autoFocus
-                  returnKeyType="next"
+                  returnKeyType="done"
                 />
                 <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
                   <FontAwesome6

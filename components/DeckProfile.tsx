@@ -522,8 +522,9 @@ export default function ProfileDeck({
                             </View>
                         )}
                         <View style={styles.buttonRow}>
-                            <TouchableOpacity style={styles.addButton} onPress={handleAddPost}>
-                                <FontAwesome6 name="circle-plus" size={24} color="#fff" />
+                            {/* Disabled while a post is being edited. */}
+                            <TouchableOpacity style={styles.addButton} onPress={handleAddPost} disabled={isPostEditMode}>
+                                <FontAwesome6 name="circle-plus" size={24} color={isPostEditMode ? colors.ui.secondarydisabled : '#fff'} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTopPost} disabled={deleteDisabled}>
                                 <FontAwesome6 name="circle-xmark" size={24} color={deleteDisabled ? colors.ui.secondarydisabled : '#fff'} />

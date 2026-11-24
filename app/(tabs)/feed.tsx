@@ -11,6 +11,47 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RefreshControl, Platform } from 'react-native';
 
 
+// How long one image may hold up a batch before it falls back to a square.
+const IMAGE_PREP_TIMEOUT_MS = 6000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+    return new Promise(resolve => {
+        const timer = setTimeout(() => resolve(fallback), ms);
+        promise.then(
+            value => { clearTimeout(timer); resolve(value); },
+            () => { clearTimeout(timer); resolve(fallback); },
+        );
+    });
+}
+
+function measureImage(uri: string): Promise<{ w: number; h: number } | null> {
+    return new Promise(resolve => {
+        Image.getSize(uri, (w, h) => resolve({ w, h }), () => resolve(null));
+    });
+}
+
+// Measure and preload every image in a batch, so the posts can be shown at
+// their final size with their images ready, instead of resizing and popping
+// in one by one.
+async function prepareFeedBatch(items: FeedItem[], columnWidth: number): Promise<Record<string, number>> {
+    const heights: Record<string, number> = {};
+    await Promise.all(items.map(async item => {
+        if (!item.image) {
+            heights[item.id] = columnWidth;
+            return;
+        }
+        const [size] = await Promise.all([
+            withTimeout(measureImage(item.image), IMAGE_PREP_TIMEOUT_MS, null),
+            withTimeout(Image.prefetch(item.image), IMAGE_PREP_TIMEOUT_MS, false),
+        ]);
+        heights[item.id] = size && size.w > 0 ? columnWidth * (size.h / size.w) : columnWidth;
+    }));
+    return heights;
+}
+
+// Placeholder heights (× column width) for the loading skeleton.
+const SKELETON_HEIGHTS = [[1.3, 1.0, 1.15], [1.0, 1.4, 0.9]];
+
 export default function FeedScreen() {
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
     const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
@@ -30,29 +71,41 @@ export default function FeedScreen() {
     const insets = useSafeAreaInsets();
 
 
-    useEffect(() => {
-        getFeedPosts()
-            .then(setFeedItems)
-            .catch(err => console.error('Feed load error:', err));
-    }, []);
+    // Posts appear only once a whole batch is ready (sizes measured, images
+    // preloaded). Until the first batch, a skeleton shows. If loads overlap
+    // (refresh, search, clear), only the latest one is shown.
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const latestLoad = useRef(0);
+    const showBatch = useCallback(async (fetchPosts: () => Promise<FeedItem[]>) => {
+        const loadId = ++latestLoad.current;
+        try {
+            const posts = await fetchPosts();
+            const heights = await prepareFeedBatch(posts, columnWidth);
+            if (loadId !== latestLoad.current) return; // a newer load replaced this one
+            setImageHeights(heights);
+            setFeedItems(posts);
+        } catch (err) {
+            console.error('Feed load error:', err);
+        } finally {
+            if (loadId === latestLoad.current) setIsInitialLoading(false);
+        }
+    }, [columnWidth]);
 
-    // When a new image URI is known, measure its natural dimensions
     useEffect(() => {
-        feedItems.forEach(item => {
-            if (!item.image || imageHeights[item.id] !== undefined) return;
-            Image.getSize(
-                item.image,
-                (w, h) => {
-                    const aspectRatio = h / w;
-                    setImageHeights(prev => ({ ...prev, [item.id]: columnWidth * aspectRatio }));
-                },
-                () => {
-                    // Fallback height if getSize fails
-                    setImageHeights(prev => ({ ...prev, [item.id]: columnWidth }));
-                }
-            );
-        });
-    }, [feedItems, columnWidth]);
+        showBatch(getFeedPosts);
+    }, [showBatch]);
+
+    // Skeleton pulse.
+    const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
+    useEffect(() => {
+        if (!isInitialLoading) return;
+        const pulse = Animated.loop(Animated.sequence([
+            Animated.timing(skeletonOpacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+            Animated.timing(skeletonOpacity, { toValue: 0.5, duration: 700, useNativeDriver: true }),
+        ]));
+        pulse.start();
+        return () => pulse.stop();
+    }, [isInitialLoading, skeletonOpacity]);
 
     const leftColumn = feedItems.filter((_, i) => i % 2 === 0);
     const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
@@ -145,25 +198,12 @@ export default function FeedScreen() {
 
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
-        try {
-            const results = await searchFeedPosts(query);
-            setFeedItems(results);
-        }
-        catch (err) {
-            console.log(err);
-        }
+        await showBatch(() => searchFeedPosts(query));
     };
 
     const clearSearch = async () => {
         setSearchQuery("");
-
-        try {
-            const posts = await getFeedPosts();
-            setFeedItems(posts);
-        }
-        catch (err) {
-            console.log(err)
-        }
+        await showBatch(getFeedPosts);
     }
 
     const HEADER_HEIGHT = 52;
@@ -172,16 +212,13 @@ export default function FeedScreen() {
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         try {
-            const posts = searchQuery.length > 0
-                ? await searchFeedPosts(searchQuery)   // re-run the active search
-                : await getFeedPosts();
-            setFeedItems(posts);
-        } catch (err) {
-            console.error('Feed refresh error:', err);
+            // Re-run the active search, or reload the feed. The current posts
+            // stay up until the new batch is fully ready.
+            await showBatch(searchQuery.length > 0 ? () => searchFeedPosts(searchQuery) : getFeedPosts);
         } finally {
             setRefreshing(false);
         }
-    }, [searchQuery]);
+    }, [searchQuery, showBatch]);
 
     return (
         <View style={styles.container}>
@@ -217,6 +254,23 @@ export default function FeedScreen() {
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
             >
+                {isInitialLoading && feedItems.length === 0 && (
+                    <Animated.View style={[styles.columnsContainer, { opacity: skeletonOpacity }]}>
+                        {SKELETON_HEIGHTS.map((column, c) => (
+                            <View key={c} style={styles.column}>
+                                {column.map((h, i) => (
+                                    <View key={i} style={styles.cardWrapper}>
+                                        <View style={[styles.card, { height: columnWidth * h }]} />
+                                        <View style={styles.itemTitleWrapper}>
+                                            <View style={styles.skeletonTitle} />
+                                            <View style={styles.skeletonSubtitle} />
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+                        ))}
+                    </Animated.View>
+                )}
                 {feedItems.length === 0 && searchQuery.length > 0 && (
                     <View style={styles.noResultsContainer}>
                         <Text style={styles.noResultsText}>
@@ -327,6 +381,23 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
         flexShrink: 0,
         letterSpacing: -0.3,
+    },
+    // Loading skeleton: the post card shapes, with bars for the text lines.
+    skeletonTitle: {
+        width: '70%',
+        height: 14,
+        marginTop: 3,
+        borderRadius: 2,
+        backgroundColor: colors.ui.secondarydisabled,
+        opacity: 0.35,
+    },
+    skeletonSubtitle: {
+        width: '35%',
+        height: 12,
+        marginTop: 6,
+        borderRadius: 2,
+        backgroundColor: colors.ui.secondarydisabled,
+        opacity: 0.25,
     },
     noResultsContainer: {
         paddingVertical: 32,

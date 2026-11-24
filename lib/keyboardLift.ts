@@ -1,10 +1,11 @@
-// A tiny signal for "the field you're typing in just changed size".
+// A tiny signal for "the field you're typing in changed" (grew, or you typed).
 //
 // Screens that keep the focused field above the keyboard (the profile)
-// subscribe; a text field that grows as you type (the user card's bio) calls
-// requestKeyboardLift() so the screen can re-check and scroll it clear.
-// Without this, the check only ran when the keyboard opened, while the field
-// was still short.
+// subscribe; text fields (the user card's bio, a post's description) call
+// requestKeyboardLift() as they grow or as you type, so the screen re-checks
+// and scrolls the field back into view if it's covered by the keyboard or
+// scrolled off the top. Without this, the check only ran when the keyboard
+// opened.
 
 type Listener = () => void;
 

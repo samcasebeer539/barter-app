@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
-import { SafeAreaView, Edges } from 'react-native-safe-area-context';
+import { SafeAreaView, Edges, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
 import { colors } from '@/styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -232,6 +232,10 @@ export default function ProfileScreen() {
   // Where the page should be scrolled to keep the focused field above the
   // keyboard; re-applied when the keyboard padding changes the content size.
   const liftTarget = useRef<number | null>(null);
+  // Top of the visible area (below the status bar), for fields scrolled off the top.
+  const insets = useSafeAreaInsets();
+  const visibleTop = useRef(insets.top);
+  visibleTop.current = insets.top;
   const scrollToLift = (y: number) => {
     // (The ScrollView ref's type lacks scrollTo in this React Native version.)
     (scrollViewRef.current as unknown as { scrollTo: (o: { y: number; animated: boolean }) => void } | null)
@@ -249,6 +253,14 @@ export default function ProfileScreen() {
       const input = TextInput.State.currentlyFocusedInput();
       if (!input) return;
       input.measureInWindow((_x, y, _w, h) => {
+        // Scrolled up off the top (all but a sliver hidden): bring its top
+        // back just below the status bar.
+        const topLimit = visibleTop.current + KEYBOARD_GAP;
+        if (y + h < topLimit + 40) {
+          scrollToLift(Math.max(0, scrollY.current - (topLimit - y)));
+          return;
+        }
+        // Covered by the keyboard: lift its bottom just above it.
         const overlap = y + h + KEYBOARD_GAP - keyboardTop;
         if (overlap <= 0) return;
         const target = scrollY.current + overlap;

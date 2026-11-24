@@ -394,7 +394,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 <TextInput
                   style={[styles.bio, styles.editableText, styles.bioInput]}
                   value={draft.bio}
-                  onChangeText={v => updateDraft('bio', v)}
+                  onChangeText={v => { updateDraft('bio', v); requestKeyboardLift(); }}
                   placeholder="Tell others about yourself"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline

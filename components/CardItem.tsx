@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput } from 'react-native';
+import { requestKeyboardLift } from '@/lib/keyboardLift';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import TextTicker from 'react-native-text-ticker';
@@ -358,7 +359,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 <TextInput
                   style={[styles.descriptionText, styles.descriptionInput]}
                   value={draft.description}
-                  onChangeText={v => updateDraft('description', v)}
+                  onChangeText={v => { updateDraft('description', v); requestKeyboardLift(); }}
                   placeholder="Describe this item"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline

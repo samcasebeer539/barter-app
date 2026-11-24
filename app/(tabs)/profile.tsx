@@ -228,6 +228,14 @@ export default function ProfileScreen() {
 
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
+  // Where the page should be scrolled to keep the focused field above the
+  // keyboard; re-applied when the keyboard padding changes the content size.
+  const liftTarget = useRef<number | null>(null);
+  const scrollToLift = (y: number) => {
+    // (The ScrollView ref's type lacks scrollTo in this React Native version.)
+    (scrollViewRef.current as unknown as { scrollTo: (o: { y: number; animated: boolean }) => void } | null)
+      ?.scrollTo({ y, animated: true });
+  };
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
@@ -236,25 +244,34 @@ export default function ProfileScreen() {
     // (Scrolling by the full keyboard height overshot fields near the top,
     // then bounced back where the page couldn't scroll that far.)
     const KEYBOARD_GAP = 16;
+    const liftFocusedInput = (keyboardTop: number) => {
+      const input = TextInput.State.currentlyFocusedInput();
+      if (!input) return;
+      input.measureInWindow((_x, y, _w, h) => {
+        const overlap = y + h + KEYBOARD_GAP - keyboardTop;
+        if (overlap <= 0) return;
+        const target = scrollY.current + overlap;
+        // Remembered so it can be re-applied once the keyboard padding has
+        // laid out (before that the scroll can be capped short).
+        liftTarget.current = target;
+        scrollToLift(target);
+      });
+    };
     const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
       setKeyboardHeight(e.endCoordinates.height);
       const keyboardTop = e.endCoordinates.screenY;
-      const input = TextInput.State.currentlyFocusedInput();
-      if (!input) return;
-      // Wait a beat for the extra bottom padding to lay out.
-      setTimeout(() => {
-        input.measureInWindow((_x, y, _w, h) => {
-          const overlap = y + h + KEYBOARD_GAP - keyboardTop;
-          if (overlap > 0) {
-            scrollViewRef.current?.scrollTo({ y: scrollY.current + overlap, animated: true });
-          }
-        });
-      }, 50);
+      setTimeout(() => liftFocusedInput(keyboardTop), 50);
+    });
+    // Second check once the keyboard is fully up, in case the first lift was
+    // capped or the focus moved to another field.
+    const didShow = Keyboard.addListener('keyboardDidShow', (e: KeyboardEvent) => {
+      liftFocusedInput(e.endCoordinates.screenY);
     });
     const hide = Keyboard.addListener('keyboardWillHide', () => {
+      liftTarget.current = null;
       setKeyboardHeight(0);
     });
-    return () => { show.remove(); hide.remove(); };
+    return () => { show.remove(); didShow.remove(); hide.remove(); };
   }, []);
 
   const [incomingQueries, setIncomingQueries] = useState<IncomingQuery[]>([]);
@@ -331,6 +348,12 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
         onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
+        onContentSizeChange={() => {
+          if (liftTarget.current !== null) {
+            scrollToLift(liftTarget.current);
+            liftTarget.current = null;
+          }
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

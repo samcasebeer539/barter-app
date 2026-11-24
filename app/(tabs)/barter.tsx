@@ -486,5 +486,5 @@ const styles = StyleSheet.create({
     historyBarRow: { marginBottom: 6 },
     historyBar: { ...makeCountBar('pill1', 'flex-end'), height: 44 },
     emptyBar: { justifyContent: 'center' },
-    emptyBarText: { color: '#fff', textAlign: 'center' },
+    emptyBarText: { color: colors.ui.secondarydisabled, textAlign: 'center' },
 });

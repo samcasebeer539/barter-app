@@ -10,6 +10,7 @@ import {
   Platform,
   RefreshControl,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView, Edges } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -230,13 +231,23 @@ export default function ProfileScreen() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
+    // Scroll only as far as needed to keep the field you're typing in just
+    // above the keyboard; fields the keyboard won't cover don't move the page.
+    // (Scrolling by the full keyboard height overshot fields near the top,
+    // then bounced back where the page couldn't scroll that far.)
+    const KEYBOARD_GAP = 16;
     const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
-      const kbHeight = e.endCoordinates.height;
-      setKeyboardHeight(kbHeight);
+      setKeyboardHeight(e.endCoordinates.height);
+      const keyboardTop = e.endCoordinates.screenY;
+      const input = TextInput.State.currentlyFocusedInput();
+      if (!input) return;
+      // Wait a beat for the extra bottom padding to lay out.
       setTimeout(() => {
-        scrollViewRef.current?.scrollTo({
-          y: scrollY.current + kbHeight,
-          animated: true,
+        input.measureInWindow((_x, y, _w, h) => {
+          const overlap = y + h + KEYBOARD_GAP - keyboardTop;
+          if (overlap > 0) {
+            scrollViewRef.current?.scrollTo({ y: scrollY.current + overlap, animated: true });
+          }
         });
       }, 50);
     });

@@ -32,6 +32,14 @@ interface TradeUIProps {
     filledActionType?: TradeActionType | null;
     /** No turn clock applies (e.g. an agreed deal): WAIT shows its icon without a countdown. */
     noTurnClock?: boolean;
+    /** QUERY can't be started right now (a question must be about a post and
+     *  none is on top). The button shows no icon and can't be tapped; an open
+     *  box can still be closed. */
+    queryBlocked?: boolean;
+    /** Select actions (offer, barter, add, subtract) whose card to pick isn't
+     *  a post right now (a user or location card is on top). Like a blocked
+     *  QUERY: no circle, can't be tapped. Counts still show. */
+    blockedActionTypes?: TradeActionType[];
 }
 
 // ─── Button pattern helpers ───────────────────────────────────────────────────
@@ -42,9 +50,11 @@ interface SelectButtonProps {
     selectedCount: number;
     onPress: () => void;
     disabled: boolean;
+    /** No circle (nothing on top to select). */
+    hideIcon?: boolean;
 }
 
-const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled }) => (
+const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled, hideIcon = false }) => (
     <TouchableOpacity
         activeOpacity={1}
         style={[styles.actionButton, styles.selectButton, {
@@ -57,7 +67,9 @@ const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCo
         <Text style={[styles.timerText, { color: isActive ? '#000' : color }]}>
             {String(selectedCount).padStart(2, '0')}
         </Text>
-        <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
+        {!hideIcon && (
+            <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
+        )}
     </TouchableOpacity>
 );
 
@@ -69,9 +81,11 @@ interface IconButtonProps {
     onPress: () => void;
     disabled: boolean;
     fillOnActive?: boolean;
+    /** No icon (nothing on top to select). */
+    hideIcon?: boolean;
 }
 
-const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false }) => (
+const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false, hideIcon = false }) => (
     <TouchableOpacity
         activeOpacity={1}
         style={[styles.actionButton, {
@@ -81,7 +95,7 @@ const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize
         onPress={onPress}
         disabled={disabled}
     >
-        <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />
+        {!hideIcon && <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />}
     </TouchableOpacity>
 );
 
@@ -166,6 +180,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
     turnDeadline = null,
     filledActionType = null,
     noTurnClock = false,
+    queryBlocked = false,
+    blockedActionTypes = [],
 }) => {
     const ITEM_HEIGHT = 54;
     const INITIAL_SCROLL_DELAY = 100;
@@ -289,10 +305,14 @@ const TradeUI: React.FC<TradeUIProps> = ({
         // current top card; fills once that specific card is selected.
         // Add / subtract pick exactly one post, so no count — just a plus or
         // minus that turns into a check once the top card is selected.
+        // Nothing to select on top (a user or location card): no icon, no tap.
+        const selectBlocked = blockedActionTypes.includes(action.actionType);
+
         if (action.actionType === 'add' || action.actionType === 'subtract') {
             const selected =
                 (active && isArmed && topCardIsSelected) ||
                 (active && filledActionType === action.actionType);
+            const blocked = selectBlocked && !selected;
             const idleIcon = action.actionType === 'add' ? 'circle-plus' : 'circle-minus';
             return (
                 <IconButton
@@ -300,7 +320,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
                     isActive={selected}
                     icon={selected && filledActionType !== action.actionType ? 'circle-check' : idleIcon}
                     onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled}
+                    disabled={disabled || blocked}
+                    hideIcon={blocked}
                     fillOnActive
                 />
             );
@@ -316,7 +337,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
                     isActive={selected}
                     icon={selected ? 'circle-check' : 'circle'}
                     onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled}
+                    disabled={disabled || selectBlocked}
+                    hideIcon={selectBlocked}
                     fillOnActive
                 />
             );
@@ -329,13 +351,16 @@ const TradeUI: React.FC<TradeUIProps> = ({
                     isActive={active && isArmed && topCardIsSelected}
                     selectedCount={selectedCount}
                     onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled}
+                    disabled={disabled || selectBlocked}
+                    hideIcon={selectBlocked}
                 />
             );
         }
 
         // Query: select a partner post, then type a question (TradeTurns)
         if (action.actionType === 'query') {
+            const armed = active && isArmed;
+            const blocked = queryBlocked && !armed;
             return (
                 <TouchableOpacity
                     activeOpacity={1}
@@ -343,17 +368,20 @@ const TradeUI: React.FC<TradeUIProps> = ({
                         styles.actionButton,
                         {
                             borderColor: color,
-                            backgroundColor: active && isArmed ? color : 'transparent',
+                            backgroundColor: armed ? color : 'transparent',
                         },
                     ]}
                     onPress={() => handleQueryPress(active)}
-                    disabled={disabled}
+                    disabled={disabled || blocked}
                 >
-                    <FontAwesome6
-                        name={active && isArmed ? 'circle-question' : 'circle'}
-                        size={26}
-                        color={active && isArmed ? '#000' : color}
-                    />
+                    {/* No circle while there's no post to ask about. */}
+                    {!blocked && (
+                        <FontAwesome6
+                            name={armed ? 'circle-question' : 'circle'}
+                            size={26}
+                            color={armed ? '#000' : color}
+                        />
+                    )}
                 </TouchableOpacity>
             );
         }

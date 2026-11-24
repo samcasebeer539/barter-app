@@ -80,9 +80,19 @@ export default function OfferDeck({
         trade.phase !== 'idle' &&
         trade.phase !== 'confirmed';
 
+    // A question here is always about the post on top (the server needs a
+    // post): it follows the deck as you swipe, and QUERY is greyed out while
+    // a user or location card is on top.
+    const queryPostIndex = isQueryActive ? topPostIndex : null;
+    // Swiping to a user or location card turns QUERY off (closing the box):
+    // there's no post to ask about.
+    useEffect(() => {
+      if (trade.activeAction === 'query' && topPostIndex === null) trade.reset();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [topPostIndex]);
     const effectiveIsReady =
         trade.activeAction === 'query'
-            ? trade.isReady || queryText.trim().length > 0
+            ? topPostIndex !== null && queryText.trim().length > 0
             : trade.isReady;
 
     useEffect(() => {
@@ -129,6 +139,9 @@ export default function OfferDeck({
             return;
         }
 
+        // A question needs a post on top (closing an open box still works).
+        if (actionType === 'query' && trade.activeAction !== 'query' && topPostIndex === null) return;
+
         trade.selectAction(actionType);
     };
 
@@ -156,8 +169,8 @@ export default function OfferDeck({
             }
 
             case 'query': {
-                if (typeof trade.subflowData !== 'number' || !queryText.trim() || isSubmittingQuery) break;
-                const targetItem = itemsWithPost[trade.subflowData];
+                if (topPostIndex === null || !queryText.trim() || isSubmittingQuery) break;
+                const targetItem = itemsWithPost[topPostIndex];
                 if (!targetItem?.post._id) break;
 
                 setIsSubmittingQuery(true);
@@ -253,9 +266,7 @@ export default function OfferDeck({
                             onTopCardChange={setTopPostIndex}
                             selectColor={colors.actions.offer}
                             isQueryMode={isQueryActive}
-                            querySelectedPostIndex={
-                                isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
-                            }
+                            querySelectedPostIndex={queryPostIndex}
                             onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                             onSelectPost={(postIndex) => {
                                 if (trade.activeAction !== 'offer') {
@@ -285,9 +296,11 @@ export default function OfferDeck({
                                     selectedCount={trade.selectedPosts.length}
                                     topCardIsSelected={topCardIsSelected}
                                     isQueryMode={isQueryActive}
-                                    queryPostSelected={isQueryActive && trade.subflowData != null}
-                                    onQueryPostSelect={() => trade.setSubflowData(topPostIndex)}
-                                    onQueryPostDeselect={() => trade.setSubflowData(null)}
+                                    queryPostSelected={queryPostIndex !== null}
+                                    onQueryPostSelect={() => {}}
+                                    onQueryPostDeselect={() => {}}
+                                    queryBlocked={topPostIndex === null}
+                                    blockedActionTypes={topPostIndex === null ? ['offer', 'rescind'] : []}
                                     onActionChange={setScrolledActionType}
                                 />
                             </View>

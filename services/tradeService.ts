@@ -232,11 +232,20 @@ export function sendGameQuery(gameId: string, message: string, targetPostId?: st
 
 // ── Incoming offers (for ProfileScreen) ─────────────────────────────────────
 
+/** A question and its answer (null until answered). */
+export interface QueryThread {
+  tradeId: string;
+  question: string;
+  answer: string | null;
+}
+
 export interface IncomingOffer {
   gameId: string;
   targetPostId: string;
   fromUserId: string;
   fromUserName: string;
+  /** Your own questions to the offerer, oldest first. */
+  myQueries?: QueryThread[];
 }
 
 export async function getIncomingOffers(): Promise<IncomingOffer[]> {

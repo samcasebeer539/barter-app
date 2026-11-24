@@ -87,9 +87,19 @@ export default function FeedDeck({
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
 
+  // A feed question is always about the post on top: it follows the deck as
+  // you swipe, and with the user or location card on top there's nothing to
+  // ask about, so QUERY is greyed out and can't be sent.
+  const queryPostIndex = isQueryActive ? topPostIndex : null;
+  // Swiping to a user or location card turns QUERY off (closing the box):
+  // there's no post to ask about.
+  useEffect(() => {
+    if (trade.activeAction === 'query' && topPostIndex === null) trade.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topPostIndex]);
   const effectiveIsReady =
     trade.activeAction === 'query'
-      ? trade.isReady || queryText.trim().length > 0
+      ? topPostIndex !== null && queryText.trim().length > 0
       : trade.isReady;
 
   useEffect(() => {
@@ -226,15 +236,15 @@ export default function FeedDeck({
       }
 
       case 'query': {
-        if (typeof trade.subflowData !== 'number' || !queryText.trim() || isSubmittingQuery) break;
-        const targetPost = deckPosts[trade.subflowData];
+        if (topPostIndex === null || !queryText.trim() || isSubmittingQuery) break;
+        const targetPost = deckPosts[topPostIndex];
         if (!targetPost?._id) break;
 
         setIsSubmittingQuery(true);
         try {
           await sendQuery(targetPost._id, queryText);
           onQuerySubmit?.({
-            postIndex: trade.subflowData,
+            postIndex: topPostIndex,
             question: queryText,
           });
         } catch (err) {
@@ -314,9 +324,7 @@ export default function FeedDeck({
                     onGestureEnd={() => setScrollEnabled(true)}
                     jumpToken={jumpToken}
                     jumpToCardIndex={jumpToIndex}
-                    querySelectedPostIndex={
-                      isQueryActive && typeof trade.subflowData === 'number' ? trade.subflowData : null
-                    }
+                    querySelectedPostIndex={queryPostIndex}
                     onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
                     onSelectPost={(postIndex) => {
                       const selectType = isAddMode ? 'add' : 'offer';
@@ -343,9 +351,11 @@ export default function FeedDeck({
                     selectedCount={trade.selectedPosts.length}
                     topCardIsSelected={topCardIsSelected}
                     isQueryMode={isQueryActive}
-                    queryPostSelected={isQueryActive && trade.subflowData != null}
-                    onQueryPostSelect={() => trade.setSubflowData(topPostIndex)}
-                    onQueryPostDeselect={() => trade.setSubflowData(null)}
+                    queryPostSelected={queryPostIndex !== null}
+                    onQueryPostSelect={() => {}}
+                    onQueryPostDeselect={() => {}}
+                    queryBlocked={topPostIndex === null}
+                    blockedActionTypes={topPostIndex === null ? ['offer', 'add'] : []}
                     onActionChange={setScrolledActionType}
                   />
                 </View>

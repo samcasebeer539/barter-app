@@ -18,11 +18,12 @@ def get_queries():
 
 
 def open_queries_for(user):
-    """QUERIES deck: your questions in games that haven't reached barter."""
+    """QUERIES deck: your questions in games that haven't reached barter,
+    including ones you asked someone who made an offer on your post."""
     visible_game_ids = [
         g["_id"] for g in games_collection.find(
             {
-                "initiator_user_id": user["_id"],
+                "$or": [{"initiator_user_id": user["_id"]}, {"receiver_user_id": user["_id"]}],
                 "phase": {"$in": ["open", "offer_pending"]},
             },
             {"_id": 1}
@@ -132,6 +133,9 @@ def _query_in_game(user, data):
     if game.expire_if_overdue():
         return jsonify({"error": "Turn time ran out; the trade was declined"}), 409
 
+    if game.phase not in Game.TURN_ENFORCED_PHASES:
+        return _query_before_barter(user, game, message, data.get("targetPostId"))
+
     target_post_id = None
     if data.get("targetPostId"):
         target_post_id = ObjectId(data["targetPostId"])
@@ -163,6 +167,38 @@ def _query_in_game(user, data):
         "messages": [{"sender_id": user["_id"], "message": message, "created_at": now}],
     })
 
+    return jsonify({
+        "success": True,
+        "tradeId": str(result.inserted_id),
+        "gameId": str(game._id),
+    }), 201
+
+
+def _query_before_barter(user, game, message, target_post_id):
+    """A question in a game that hasn't reached barter yet, e.g. the post
+    owner asking someone who made an offer (profile deck). It must be about
+    one of the other player's posts. Not a turn: it doesn't pass the turn or
+    lock anyone's turn, like the offerer's own questions before barter."""
+    try:
+        game.next_phase("query")
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    if not target_post_id:
+        return jsonify({"error": "Pick one of their posts to ask about"}), 400
+    target_post_id = ObjectId(target_post_id)
+    post = posts_collection.find_one({"_id": target_post_id}, {"user_id": 1})
+    if not post or post.get("user_id") != game.other_user(user["_id"]):
+        return jsonify({"error": "That post isn't one of the other player's"}), 400
+
+    now = datetime.now(timezone.utc)
+    result = trades_collection.insert_one({
+        "game_id": game._id,
+        "type": "query",
+        "actor_id": user["_id"],
+        "target_post_id": target_post_id,
+        "created_at": now,
+        "messages": [{"sender_id": user["_id"], "message": message, "created_at": now}],
+    })
     return jsonify({
         "success": True,
         "tradeId": str(result.inserted_id),

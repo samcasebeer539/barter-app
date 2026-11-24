@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Keyboard } from 'react-native';
 import { colors, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
+import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 
 export interface TradeTurn {
   type: TradeTurnType;
@@ -43,9 +44,13 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
     }
   }, [isQueryOpen]);
 
+  // Keeps the box above the keyboard while you type.
+  const kbField = useKeyboardLiftField();
+
   const handleActiveQueryChange = (text: string) => {
     setActiveQueryText(text);
     onQueryTextChange?.(text);
+    kbField.requestLift();
   };
 
   const renderTurn = (turn: TradeTurn, index: number) => {
@@ -109,7 +114,9 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             placeholder={queryPlaceholder}
             placeholderTextColor={queryColor}
             value={activeQueryText}
+            onFocus={kbField.onFocus}
             onChangeText={handleActiveQueryChange}
+            onContentSizeChange={kbField.requestLift}
             multiline
             returnKeyType="done"
             onSubmitEditing={() => Keyboard.dismiss()}

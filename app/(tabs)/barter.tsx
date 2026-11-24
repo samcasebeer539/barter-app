@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Keyboard, KeyboardEvent, Alert, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, RefreshControl } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { deckStyles, makeCountBar } from '../../styles/deckStyles';
 import { colors } from '../../styles/globalStyles';
@@ -12,6 +12,7 @@ import { getOpenTrade, getQuery, getBarterGames, getCloseGames, getDeclinedTrade
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
+import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
@@ -34,7 +35,6 @@ export default function ActiveTradesTestScreen() {
     const [resetKey, setResetKey] = useState(0);
     const [tab, setTab] = useState<'open' | 'barter' | 'close'>('open');
     const [scrollEnabled, setScrollEnabled] = useState(true);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [trades, setTrades] = useState<OpenTradeItem[]>([]);
     const [queries, setQueries] = useState<OpenTradeItem[]>([]);
     const [barterGames, setBarterGames] = useState<BarterGame[]>([]);
@@ -70,22 +70,10 @@ export default function ActiveTradesTestScreen() {
         []
     );
 
-    useEffect(() => {
-        const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
-            setKeyboardHeight(e.endCoordinates.height);
-            scrollViewRef.current?.scrollTo({
-                y: scrollY.current + e.endCoordinates.height * 0.8,
-                animated: true,
-            });
-        });
-        const hide = Keyboard.addListener('keyboardWillHide', () => {
-            setKeyboardHeight(0);
-        });
-        return () => {
-            show.remove();
-            hide.remove();
-        };
-    }, []);
+    // Keeps the field you're typing in visible above the keyboard (shared
+    // with the profile and feed deck; see hooks/useKeyboardLift).
+    const keyboardLift = useKeyboardLift(scrollViewRef, scrollY, insets.top);
+    const keyboardHeight = keyboardLift.keyboardHeight;
 
     useEffect(() => {
         const unsubscribe = () => {
@@ -323,6 +311,7 @@ export default function ActiveTradesTestScreen() {
     );
 
     return (
+        <KeyboardLiftContext.Provider value={keyboardLift.context}>
         <View style={styles.container}>
             <OffersTradesDealsBar
                 onOffersPress={() => setTab('open')}
@@ -341,6 +330,7 @@ export default function ActiveTradesTestScreen() {
                 scrollEnabled={scrollEnabled}
                 onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
                 scrollEventThrottle={16}
+                onContentSizeChange={keyboardLift.onContentSizeChange}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -471,6 +461,7 @@ export default function ActiveTradesTestScreen() {
                 )}
             </ScrollView>
         </View>
+        </KeyboardLiftContext.Provider>
     );
 }
 

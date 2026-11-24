@@ -4,6 +4,7 @@ import { View, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput } from 
 import MapView, { Marker, MapPressEvent } from 'react-native-maps';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Locations, LocationEntry } from '@/types/index';
+import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 
 const MAX_LOCATIONS = 3;
 
@@ -71,6 +72,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const [pendingPin, setPendingPin] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isNaming, setIsNaming] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  // Keeps the field you're typing in above the keyboard.
+  const kbField = useKeyboardLiftField();
   const [descInput, setDescInput] = useState('');
 
   // ── Read-only state ───────────────────────────────────────────────────────
@@ -291,7 +294,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 <TextInput
                   style={styles.nameInput}
                   value={nameInput}
-                  onChangeText={setNameInput}
+                  onFocus={kbField.onFocus}
+                  onChangeText={v => { setNameInput(v); kbField.requestLift(); }}
                   placeholder="Name"
                   placeholderTextColor={colors.ui.cardsecondary}
                   autoFocus
@@ -311,7 +315,8 @@ const CardLocation: React.FC<CardLocationProps> = ({
               <TextInput
                 style={styles.descInput}
                 value={descInput}
-                onChangeText={setDescInput}
+                onFocus={kbField.onFocus}
+                onChangeText={v => { setDescInput(v); kbField.requestLift(); }}
                 placeholder="Description (optional)"
                 placeholderTextColor={colors.ui.cardsecondary}
                 returnKeyType="done"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput } from 'react-native';
-import { requestKeyboardLift } from '@/lib/keyboardLift';
+import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import TextTicker from 'react-native-text-ticker';
@@ -86,6 +86,9 @@ const PostCard: React.FC<PostCardProps> = ({
   useEffect(() => {
     setDraft({ name: post.name, description: post.description, photos: post.photos });
   }, [post]);
+
+  // Keeps the field you're typing in above the keyboard.
+  const kbField = useKeyboardLiftField();
 
   const updateDraft = (field: keyof typeof draft, value: any) => {
     setDraft(prev => ({ ...prev, [field]: value }));
@@ -193,7 +196,8 @@ const PostCard: React.FC<PostCardProps> = ({
                   <TextInput
                     style={[styles.title, styles.titleInput]}
                     value={draft.name}
-                    onChangeText={v => updateDraft('name', v)}
+                    onFocus={kbField.onFocus}
+                    onChangeText={v => { updateDraft('name', v); kbField.requestLift(); }}
                     placeholder="Item title"
                     placeholderTextColor={colors.ui.cardsecondary}
                   />
@@ -359,7 +363,8 @@ const PostCard: React.FC<PostCardProps> = ({
                 <TextInput
                   style={[styles.descriptionText, styles.descriptionInput]}
                   value={draft.description}
-                  onChangeText={v => { updateDraft('description', v); requestKeyboardLift(); }}
+                  onFocus={kbField.onFocus}
+                  onChangeText={v => { updateDraft('description', v); kbField.requestLift(); }}
                   placeholder="Describe this item"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline

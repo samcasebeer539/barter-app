@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { User } from '@/types/index';
 import { uploadProfilePhoto, getUserReviews, UserReview } from '@/services/userService';
-import { requestKeyboardLift } from '@/lib/keyboardLift';
+import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
 
@@ -122,6 +122,9 @@ const UserCard: React.FC<UserCardProps> = ({
     setEmailVisible(user.email_visible);
     setPhoneVisible(user.phone_visible);
   }, [user]);
+
+  // Keeps the field you're typing in above the keyboard.
+  const kbField = useKeyboardLiftField();
 
   const updateDraft = (field: keyof typeof draft, value: string) => {
     setDraft(prev => ({ ...prev, [field]: value }));
@@ -319,7 +322,8 @@ const UserCard: React.FC<UserCardProps> = ({
                 <TextInput
                   style={[styles.location, styles.editableText, { flex: 1 }]}
                   value={draft.pronouns}
-                  onChangeText={v => updateDraft('pronouns', v)}
+                  onFocus={kbField.onFocus}
+                  onChangeText={v => { updateDraft('pronouns', v); kbField.requestLift(); }}
                   placeholder="optional"
                   placeholderTextColor={colors.ui.cardsecondary}
                 />
@@ -357,7 +361,8 @@ const UserCard: React.FC<UserCardProps> = ({
                   <TextInput
                     style={[styles.location, styles.editableText, { flex: 1 }]}
                     value={draft.phone}
-                    onChangeText={v => updateDraft('phone', v)}
+                    onFocus={kbField.onFocus}
+                    onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
                     placeholder="optional"
                     placeholderTextColor={colors.ui.cardsecondary}
                     keyboardType="phone-pad"
@@ -394,13 +399,14 @@ const UserCard: React.FC<UserCardProps> = ({
                 <TextInput
                   style={[styles.bio, styles.editableText, styles.bioInput]}
                   value={draft.bio}
-                  onChangeText={v => { updateDraft('bio', v); requestKeyboardLift(); }}
+                  onFocus={kbField.onFocus}
+                  onChangeText={v => { updateDraft('bio', v); kbField.requestLift(); }}
                   placeholder="Tell others about yourself"
                   placeholderTextColor={colors.ui.cardsecondary}
                   multiline
                   scrollEnabled
                   textAlignVertical="top"
-                  onContentSizeChange={requestKeyboardLift}
+                  onContentSizeChange={kbField.requestLift}
                 />
               </View>
             ) : (

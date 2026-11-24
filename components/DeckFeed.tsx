@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions,
-  Modal, Platform, ScrollView, Keyboard, KeyboardEvent, ActivityIndicator,
+  Modal, Platform, ScrollView, Keyboard, ActivityIndicator,
 } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
@@ -15,6 +15,7 @@ import { FeedProfile } from '@/types/index';
 import { Post, User, Locations } from '@/types/index';
 import { sendOffer, sendQuery, addPost } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
+import { useKeyboardLift, KeyboardLiftContext } from '../hooks/useKeyboardLift';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -46,7 +47,6 @@ export default function FeedDeck({
   const [isRendered, setIsRendered] = useState(false);
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
@@ -132,16 +132,10 @@ export default function FeedDeck({
     }
   }, [postId, prefetchedProfile]);
 
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, (e: KeyboardEvent) => {
-      setKeyboardHeight(e.endCoordinates.height);
-      setTimeout(() => scrollViewRef.current?.scrollTo({ y: scrollY.current + e.endCoordinates.height * 0.8, animated: true }), 50);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
-    return () => { show.remove(); hide.remove(); };
-  }, []);
+  // Keeps the field you're typing in visible above the keyboard (shared with
+  // the profile and barter page; see hooks/useKeyboardLift).
+  const keyboardLift = useKeyboardLift(scrollViewRef, scrollY, insets.top);
+  const keyboardHeight = keyboardLift.keyboardHeight;
 
   useEffect(() => {
     if (visible) {
@@ -158,7 +152,6 @@ export default function FeedDeck({
         Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: false }),
       ]).start(() => {
         setIsRendered(false);
-        setKeyboardHeight(0);
         trade.reset();
         setQueryText('');
         setScrolledActionType(feedActions[0]?.actionType ?? null);
@@ -258,6 +251,7 @@ export default function FeedDeck({
 
   return (
     <Modal visible={isRendered} transparent animationType="none" statusBarTranslucent>
+      <KeyboardLiftContext.Provider value={keyboardLift.context}>
       <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         <Animated.View style={[styles.modalBackground, { opacity: backdropOpacity }]} pointerEvents="none">
           <LinearGradient
@@ -280,6 +274,7 @@ export default function FeedDeck({
             scrollEnabled={scrollEnabled}
             onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
             scrollEventThrottle={16}
+            onContentSizeChange={keyboardLift.onContentSizeChange}
           >
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
@@ -352,6 +347,7 @@ export default function FeedDeck({
           </ScrollView>
         </Animated.View>
       </View>
+      </KeyboardLiftContext.Provider>
     </Modal>
   );
 }

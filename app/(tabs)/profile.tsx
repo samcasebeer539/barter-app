@@ -5,12 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Keyboard,
-  KeyboardEvent,
   Platform,
   RefreshControl,
   ActivityIndicator,
-  TextInput,
 } from 'react-native';
 import { SafeAreaView, Edges, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
@@ -20,7 +17,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Post, User, Locations } from '@/types/index';
 import { getCurrentUser, updateUser } from '@/services/userService';
 import { getUserPosts } from '@/services/postService';
-import { onKeyboardLiftRequest } from '@/lib/keyboardLift';
+import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
 import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
 import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
@@ -229,72 +226,11 @@ export default function ProfileScreen() {
 
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
-  // Where the page should be scrolled to keep the focused field above the
-  // keyboard; re-applied when the keyboard padding changes the content size.
-  const liftTarget = useRef<number | null>(null);
-  // Top of the visible area (below the status bar), for fields scrolled off the top.
+  // Keeps the field you're typing in visible above the keyboard (shared with
+  // the barter page and feed deck; see hooks/useKeyboardLift).
   const insets = useSafeAreaInsets();
-  const visibleTop = useRef(insets.top);
-  visibleTop.current = insets.top;
-  const scrollToLift = (y: number) => {
-    // (The ScrollView ref's type lacks scrollTo in this React Native version.)
-    (scrollViewRef.current as unknown as { scrollTo: (o: { y: number; animated: boolean }) => void } | null)
-      ?.scrollTo({ y, animated: true });
-  };
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    // Scroll only as far as needed to keep the field you're typing in just
-    // above the keyboard; fields the keyboard won't cover don't move the page.
-    // (Scrolling by the full keyboard height overshot fields near the top,
-    // then bounced back where the page couldn't scroll that far.)
-    const KEYBOARD_GAP = 16;
-    const liftFocusedInput = (keyboardTop: number) => {
-      const input = TextInput.State.currentlyFocusedInput();
-      if (!input) return;
-      input.measureInWindow((_x, y, _w, h) => {
-        // Scrolled up off the top (all but a sliver hidden): bring its top
-        // back just below the status bar.
-        const topLimit = visibleTop.current + KEYBOARD_GAP;
-        if (y + h < topLimit + 40) {
-          scrollToLift(Math.max(0, scrollY.current - (topLimit - y)));
-          return;
-        }
-        // Covered by the keyboard: lift its bottom just above it.
-        const overlap = y + h + KEYBOARD_GAP - keyboardTop;
-        if (overlap <= 0) return;
-        const target = scrollY.current + overlap;
-        // Remembered so it can be re-applied once the keyboard padding has
-        // laid out (before that the scroll can be capped short).
-        liftTarget.current = target;
-        scrollToLift(target);
-      });
-    };
-    // Top edge of the open keyboard (null while it's closed), for re-checks
-    // when the focused field grows as you type.
-    let keyboardTop: number | null = null;
-    const show = Keyboard.addListener('keyboardWillShow', (e: KeyboardEvent) => {
-      setKeyboardHeight(e.endCoordinates.height);
-      keyboardTop = e.endCoordinates.screenY;
-      const top = keyboardTop;
-      setTimeout(() => liftFocusedInput(top), 50);
-    });
-    const unsubscribeLift = onKeyboardLiftRequest(() => {
-      if (keyboardTop !== null) liftFocusedInput(keyboardTop);
-    });
-    // Second check once the keyboard is fully up, in case the first lift was
-    // capped or the focus moved to another field.
-    const didShow = Keyboard.addListener('keyboardDidShow', (e: KeyboardEvent) => {
-      keyboardTop = e.endCoordinates.screenY;
-      liftFocusedInput(keyboardTop);
-    });
-    const hide = Keyboard.addListener('keyboardWillHide', () => {
-      keyboardTop = null;
-      liftTarget.current = null;
-      setKeyboardHeight(0);
-    });
-    return () => { show.remove(); didShow.remove(); hide.remove(); unsubscribeLift(); };
-  }, []);
+  const keyboardLift = useKeyboardLift(scrollViewRef, scrollY, insets.top);
+  const keyboardHeight = keyboardLift.keyboardHeight;
 
   const [incomingQueries, setIncomingQueries] = useState<IncomingQuery[]>([]);
 
@@ -359,6 +295,7 @@ export default function ProfileScreen() {
   );
 
   return (
+    <KeyboardLiftContext.Provider value={keyboardLift.context}>
     <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
       <ScrollView
         ref={scrollViewRef}
@@ -370,12 +307,7 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
         onScroll={e => { scrollY.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
-        onContentSizeChange={() => {
-          if (liftTarget.current !== null) {
-            scrollToLift(liftTarget.current);
-            liftTarget.current = null;
-          }
-        }}
+        onContentSizeChange={keyboardLift.onContentSizeChange}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -420,6 +352,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
+    </KeyboardLiftContext.Provider>
   );
 }
 

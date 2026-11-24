@@ -69,13 +69,6 @@ export default function FeedDeck({
     feedActions[0]?.actionType ?? null
   );
 
-  // Scrolling the wheel off QUERY disarms it, so the question box doesn't
-  // come back when you scroll onto QUERY again.
-  useEffect(() => {
-    if (trade.activeAction === 'query' && scrolledActionType !== 'query') trade.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scrolledActionType]);
-
   const [queryText, setQueryText] = useState('');
 
   const isOfferActive =
@@ -94,20 +87,10 @@ export default function FeedDeck({
     trade.phase !== 'idle' &&
     trade.phase !== 'confirmed';
 
-  // A feed question is always about the post on top: it needs that post and
-  // some text before it can be sent.
   const effectiveIsReady =
     trade.activeAction === 'query'
-      ? typeof trade.subflowData === 'number' && queryText.trim().length > 0
+      ? trade.isReady || queryText.trim().length > 0
       : trade.isReady;
-
-  // While QUERY is open, the question follows the card on top. Swiping to the
-  // user or location card clears the post, which blocks sending until you
-  // swipe back to a post (your text stays).
-  useEffect(() => {
-    if (trade.activeAction === 'query') trade.setSubflowData(topPostIndex);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topPostIndex]);
 
   useEffect(() => {
     if (!isQueryActive) setQueryText('');

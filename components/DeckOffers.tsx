@@ -65,13 +65,6 @@ export default function OfferDeck({
     const trade = useTradeAction();
     const [queryText, setQueryText] = useState('');
     const [scrolledActionType, setScrolledActionType] = useState(actions[0]?.actionType ?? null);
-
-    // Scrolling the wheel off QUERY disarms it, so the question box doesn't
-    // come back when you scroll onto QUERY again.
-    useEffect(() => {
-      if (trade.activeAction === 'query' && scrolledActionType !== 'query') trade.reset();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [scrolledActionType]);
     const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
     const [isSubmittingQuery, setIsSubmittingQuery] = useState(false);
     const [isSubmittingRescind, setIsSubmittingRescind] = useState(false);

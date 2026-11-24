@@ -198,13 +198,6 @@ export default function TradeDeck({
     visibleActions[0]?.actionType ?? null
   );
 
-  // Scrolling the wheel off QUERY disarms it, so the question box doesn't
-  // come back when you scroll onto QUERY again.
-  useEffect(() => {
-    if (trade.activeAction === 'query' && scrolledActionType !== 'query') trade.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scrolledActionType]);
-
   // Refetch once the turn deadline passes (checked each second rather than
   // one long setTimeout, which React Native warns about on Android).
   useEffect(() => {

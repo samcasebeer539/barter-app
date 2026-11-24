@@ -247,7 +247,10 @@ export default function FeedScreen() {
                         refreshing={refreshing}
                         onRefresh={onRefresh}
                         tintColor={colors.ui.secondarydisabled}
-                        progressViewOffset={HEADER_HEIGHT}            // Android
+                        // Android only: iOS already accounts for contentInset, and newer
+                        // React Native applies this on iOS too, which pushed the spinner
+                        // down behind the posts.
+                        progressViewOffset={Platform.OS === 'android' ? HEADER_HEIGHT : undefined}
                     />
                 }
                 showsVerticalScrollIndicator={false}

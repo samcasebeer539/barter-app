@@ -261,10 +261,7 @@ export default function FeedScreen() {
                                 {column.map((h, i) => (
                                     <View key={i} style={styles.cardWrapper}>
                                         <View style={[styles.card, { height: columnWidth * h }]} />
-                                        <View style={styles.itemTitleWrapper}>
-                                            <View style={styles.skeletonTitle} />
-                                            <View style={styles.skeletonSubtitle} />
-                                        </View>
+                                        <View style={styles.itemTitleWrapper} />
                                     </View>
                                 ))}
                             </View>
@@ -381,23 +378,6 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
         flexShrink: 0,
         letterSpacing: -0.3,
-    },
-    // Loading skeleton: the post card shapes, with bars for the text lines.
-    skeletonTitle: {
-        width: '70%',
-        height: 14,
-        marginTop: 3,
-        borderRadius: 2,
-        backgroundColor: colors.ui.secondarydisabled,
-        opacity: 0.35,
-    },
-    skeletonSubtitle: {
-        width: '35%',
-        height: 12,
-        marginTop: 6,
-        borderRadius: 2,
-        backgroundColor: colors.ui.secondarydisabled,
-        opacity: 0.25,
     },
     noResultsContainer: {
         paddingVertical: 32,

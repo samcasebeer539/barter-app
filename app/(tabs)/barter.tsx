@@ -294,7 +294,7 @@ export default function ActiveTradesTestScreen() {
                     <Text style={deckStyles.countText}>{String(games.length).padStart(2, '0')}</Text>
                     <FontAwesome6
                         name={isOpen ? 'angle-up' : 'angle-down'}
-                        size={24}
+                        size={26}
                         color={games.length === 0 ? colors.ui.secondarydisabled : '#fff'}
                     />
                 </TouchableOpacity>

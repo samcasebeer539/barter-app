@@ -449,11 +449,6 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 2,
-    shadowColor: colors.ui.secondary,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
-    elevation: 10,
     position: 'relative',
     overflow: 'hidden',
     justifyContent: 'flex-start',
@@ -580,7 +575,7 @@ const styles = StyleSheet.create({
     fontFamily: globalFonts.bold,
   },
   reviewDate: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.ui.cardsecondary,
     fontFamily: globalFonts.regular,
   },

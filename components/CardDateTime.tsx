@@ -120,7 +120,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
           <View style={styles.header}>
             <Text style={styles.headerText}>Pick a Date</Text>
             <TouchableOpacity onPress={cancelPicker}>
-              <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+              <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.pickerScroll} contentContainerStyle={styles.pickerList} showsVerticalScrollIndicator={false}>
@@ -143,7 +143,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
           <View style={styles.header}>
             <Text style={styles.headerText}>Time on {pendingDate.label}</Text>
             <TouchableOpacity onPress={cancelPicker}>
-              <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+              <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.pickerScroll} contentContainerStyle={styles.pickerList} showsVerticalScrollIndicator={false}>
@@ -165,11 +165,11 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
           <View style={styles.header}>
             <Text style={styles.headerText}>Meetup Time</Text>
-            <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
+            <FontAwesome6 name="clock" size={24} color={colors.ui.cardsecondary} />
           </View>
           <View style={styles.timeRow}>
             <Text style={styles.timeText}>{proposedTime}</Text>
-            <FontAwesome6 name="circle-check" size={22} color={colors.actions.time} />
+            <FontAwesome6 name="circle-check" size={24} color={colors.actions.time} />
           </View>
         </View>
       </View>
@@ -185,7 +185,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         <View style={styles.header}>
           <Text style={styles.headerText}>{isUser ? 'Propose a Meetup Time' : 'Meetup Time'}</Text>
-          <FontAwesome6 name="clock" size={22} color={colors.ui.cardsecondary} />
+          <FontAwesome6 name="clock" size={24} color={colors.ui.cardsecondary} />
         </View>
 
         {picked ? (
@@ -193,18 +193,18 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
             <Text style={styles.timeText}>{picked.date.label} at {picked.time}</Text>
             <View style={styles.rowIcons}>
               {isSelectMode && (
-                <FontAwesome6 name="circle-check" size={22} color={colors.actions.time} />
+                <FontAwesome6 name="circle-check" size={24} color={colors.actions.time} />
               )}
               {isUser && (
                 <TouchableOpacity onPress={() => setPicked(null)} hitSlop={8}>
-                  <FontAwesome6 name="circle-xmark" size={22} color={colors.ui.cardsecondary} />
+                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               )}
             </View>
           </View>
         ) : isUser ? (
           <TouchableOpacity style={styles.addDateBtn} onPress={() => setShowDatePicker(true)}>
-            <FontAwesome6 name="circle-plus" size={22} color={colors.actions.time} />
+            <FontAwesome6 name="circle-plus" size={24} color={colors.actions.time} />
             <Text style={[styles.addDateText, { color: colors.actions.time }]}>Date</Text>
           </TouchableOpacity>
         ) : (
@@ -226,17 +226,12 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     padding: 16,
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   headerText: {
     fontSize: 18,
@@ -250,7 +245,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   timeText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: globalFonts.bold,
     color: '#000',
     flex: 1,
@@ -262,7 +257,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: globalFonts.regular,
     color: colors.ui.cardsecondary,
   },
@@ -274,7 +269,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   addDateText: {
-    fontSize: 15,
+    fontSize: 18,
     fontFamily: globalFonts.bold,
   },
   pickerScroll: {

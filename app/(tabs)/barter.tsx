@@ -485,4 +485,6 @@ const styles = StyleSheet.create({
     // every gap in the tab is DECK_GAP + 6.
     historyBarRow: { marginBottom: 6 },
     historyBar: { ...makeCountBar('pill1', 'flex-end'), height: 44 },
+    emptyBar: { justifyContent: 'center' },
+    emptyBarText: { color: '#fff', textAlign: 'center' },
 });

@@ -549,11 +549,12 @@ export default function ProfileDeck({
                 {/* Primary deck — logged-in user, editable */}
                 <View style={styles.primaryDeckWrapper}>
                     {/* Covers the offerers' deck while it slides out from
-                        behind yours. It's as tall as that deck, so a long
-                        turn log can't peek out below your deck. */}
-                    {showSecondary && (
-                        <View pointerEvents="none" style={[styles.secondaryCover, { height: secondaryHeight }]} />
-                    )}
+                        behind yours: runs from the top of your deck to past
+                        the bottom of the screen, so nothing peeks out below. */}
+                    <View
+                        pointerEvents="none"
+                        style={[styles.secondaryCover, { height: Dimensions.get('screen').height + secondaryHeight }]}
+                    />
                     <View style={styles.primaryDeckColumn}>
                         <View style={[deckStyles.deckWrapper, { backgroundColor: colors.ui.background, paddingTop: 8, marginTop: -8 }]}>
                             <Deck

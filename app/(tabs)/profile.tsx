@@ -300,7 +300,7 @@ export default function ProfileScreen() {
 
   if (!primaryUser) return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color={colors.ui.secondarydisabled} />
+      <ActivityIndicator size="small" color={colors.ui.secondarydisabled} />
     </View>
   );
 

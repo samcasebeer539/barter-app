@@ -287,6 +287,9 @@ const PostCard: React.FC<PostCardProps> = ({
                       style={styles.photo}
                       contentFit="cover"
                       cachePolicy="memory-disk"
+                      // The photo resizes as the description opens and closes;
+                      // re-scaling it to every frame's size made that choppy.
+                      allowDownscaling={false}
                     />
                   ) : (
                     <View style={styles.photoPlaceholder} />

@@ -264,6 +264,9 @@ const UserCard: React.FC<UserCardProps> = ({
                 style={styles.photo}
                 contentFit="cover"
                 cachePolicy="memory-disk"
+                // The photo resizes as the card changes mode; re-scaling it to
+                // every frame's size made that choppy.
+                allowDownscaling={false}
               />
               {isEditable && (
                 <View style={styles.photoEditOverlay} pointerEvents="none">

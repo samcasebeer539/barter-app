@@ -162,14 +162,12 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="user" size={22} color="#fff" />
                             <Text style={styles.settingText}>Edit Profile</Text>
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="lock" size={22} color="#fff" />
                             <Text style={styles.settingText}>Privacy</Text>
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
@@ -177,7 +175,6 @@ export default function SettingsScreen() {
                     
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="shield-halved" size={22} color="#fff" />
                             <Text style={styles.settingText}>Security</Text>
                         </View>
                         <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
@@ -190,9 +187,6 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <View style={styles.iconWrapper}>
-                                <FontAwesome6 name="bell" size={22} color="#fff" />
-                            </View>
                             <Text style={styles.settingText}>Notifications</Text>
                         </View>
                         <Switch
@@ -205,9 +199,6 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <View style={styles.iconWrapper}>
-                                <FontAwesome6 name="location-dot" size={22} color="#fff" />
-                            </View>
                             <Text style={styles.settingText}>Location Services</Text>
                         </View>
                         <Switch
@@ -220,7 +211,6 @@ export default function SettingsScreen() {
                     {/*
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
-                            <FontAwesome6 name="globe" size={22} color="#fff" />
                             <Text style={styles.settingText}>Language</Text>
                         </View>
                         <View style={styles.settingRight}>
@@ -240,9 +230,6 @@ export default function SettingsScreen() {
                         onPress={() => setHelpExpanded(!helpExpanded)}
                     >
                         <View style={styles.settingLeft}>
-                            <View style={styles.iconWrapper}>
-                                <FontAwesome6 name="circle-question" size={22} color="#fff" />
-                            </View>
                             <Text style={styles.settingText}>Help Center</Text>
                         </View>
 
@@ -269,9 +256,6 @@ export default function SettingsScreen() {
                         onPress={() => setAboutExpanded(!aboutExpanded)}
                     >
                         <View style={styles.settingLeft}>
-                            <View style={styles.iconWrapper}>
-                                <FontAwesome6 name="circle-info" size={22} color="#fff" />
-                            </View>
                             <Text style={styles.settingText}>About</Text>
                         </View>
 
@@ -296,9 +280,6 @@ export default function SettingsScreen() {
                         onPress={() => setTermsExpanded(!termsExpanded)}
                     >
                         <View style={styles.settingLeft}>
-                            <View style={styles.iconWrapper}>
-                                <FontAwesome6 name="file-contract" size={22} color="#fff" />
-                            </View>
                             <Text style={styles.settingText}>Terms and Conditions</Text>
                         </View>
 
@@ -333,13 +314,6 @@ export default function SettingsScreen() {
 
                 {/* Logout Button */}
                 <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
-                    <View style={styles.iconWrapper}>
-                        <FontAwesome6
-                            name="right-from-bracket"
-                            size={22}
-                            color={colors.actions.decline}
-                        />
-                    </View>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
 
@@ -421,16 +395,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
     },
-    // Fixed-width slot for the leading icon in each settingItem. FontAwesome6
-    // glyphs aren't all the same rendered width at a given `size`, so without
-    // this the text after a wider glyph (e.g. file-circle-check) starts
-    // further right than text after a narrower one (e.g. bell). 24px + the
-    // existing 16px gap = 40px, matching dropdownContainer's paddingLeft so
-    // titles and expanded descriptions line up on the same left edge.
-    iconWrapper: {
-        width: 24,
-        alignItems: 'center',
-    },
     settingText: {
         fontSize: 18,
         color: '#fff',
@@ -472,8 +436,9 @@ const styles = StyleSheet.create({
     bottomSpacer: {
         height: 80,
     },
+    // Expanded text lines up with the row titles (no leading icons now).
     dropdownContainer: {
-        paddingLeft: 40,
+        paddingLeft: 0,
         paddingRight: 12,
         paddingBottom: 12,
     },

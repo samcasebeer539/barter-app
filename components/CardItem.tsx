@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput, Alert } from 'react-native';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -119,14 +119,22 @@ const PostCard: React.FC<PostCardProps> = ({
     if (currentPhotoIndex >= updated.length) setCurrentPhotoIndex(Math.max(0, updated.length - 1));
   };
 
+  // No permission request: the system photo picker doesn't need one (only
+  // iOS 10 did). Asking first meant a "Don't Allow" made the button silently
+  // do nothing, with no way to ever get the prompt back.
   const handleAddPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      quality: 0.85,
-    });
+    let result: ImagePicker.ImagePickerResult;
+    try {
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.85,
+      });
+    } catch (err) {
+      console.error('Photo picker failed:', err);
+      Alert.alert("Couldn't open your photos", err instanceof Error ? err.message : String(err));
+      return;
+    }
     if (!result.canceled && result.assets.length > 0) {
       const updated = [...draft.photos, result.assets[0].uri];
       updateDraft('photos', updated);

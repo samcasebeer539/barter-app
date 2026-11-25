@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
@@ -161,16 +161,22 @@ const UserCard: React.FC<UserCardProps> = ({
   const handleEmailVisibleToggle = () => setEmailVisible(v => !v);
   const handlePhoneVisibleToggle = () => setPhoneVisible(v => !v);
 
+  // No permission request: the system photo picker doesn't need one (see
+  // CardItem's handleAddPhoto).
   const handlePickPhoto = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    let result: ImagePicker.ImagePickerResult;
+    try {
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+    } catch (err) {
+      console.error('Photo picker failed:', err);
+      Alert.alert("Couldn't open your photos", err instanceof Error ? err.message : String(err));
+      return;
+    }
 
     if (!result.canceled && result.assets[0]) {
       try {

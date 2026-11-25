@@ -278,7 +278,6 @@ export default function ProfileScreen() {
 
   const handleSelectLocation = (location: Locations | null) => {
     // Wire into your trade/offer submission flow here
-    console.log('Selected meetup location:', location);
   };
 
   const handleBarterSubmit = async (gameId: string, selectedPostIds: string[]) => {

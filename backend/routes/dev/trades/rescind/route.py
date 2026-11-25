@@ -16,7 +16,6 @@ def rescind_offer():
 
         user = current_user()
         if not user:
-            print("RESCIND 400: user not found for uid", uid)
             return jsonify({"error": "User not found"}), 404
 
         data = request.json
@@ -24,7 +23,6 @@ def rescind_offer():
 
         target_post = posts_collection.find_one({"_id": target_post_id})
         if not target_post:
-            print("RESCIND 404: post not found for id", target_post_id)
             return jsonify({"error": "Post not found"}), 404
 
         # The offer in this player's ongoing game for the post (offers in
@@ -36,23 +34,18 @@ def rescind_offer():
             "game_id": active_game._id,
         }) if active_game else None
         if not offer:
-            print("RESCIND 404: no offer found for actor", user["_id"], "post", target_post_id)
             return jsonify({"error": "Offer not found"}), 404
 
         game = Game.get(offer["game_id"])
         if not game:
-            print("RESCIND 404: game not found for id", offer["game_id"])
             return jsonify({"error": "Game not found"}), 404
 
         if not game.is_participant(user["_id"]):
-            print("RESCIND 403: user", user["_id"], "not a participant in game", game._id)
             return jsonify({"error": "Not a participant in this game"}), 403
 
-        print("RESCIND: attempting transition, game phase is currently", game.phase)
         try:
             game.apply_transition("rescind", next_turn_user_id=target_post["user_id"])
         except ValueError as e:
-            print("RESCIND 400: transition failed —", str(e))
             return jsonify({"error": str(e)}), 400
 
         game.remove_card("receiver", target_post_id)

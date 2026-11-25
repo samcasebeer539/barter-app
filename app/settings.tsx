@@ -43,7 +43,7 @@ export default function SettingsScreen() {
         try {
             settings = await getSettings();
         } catch (err) {
-            console.log('Failed to load settings:', err);
+            console.warn('Failed to load settings:', err);
             return;
         }
     
@@ -63,7 +63,7 @@ export default function SettingsScreen() {
         try {
             await signOut(auth);
         } catch (error) {
-            console.log("Sign out error: ", error);
+            console.warn("Sign out error: ", error);
         }
     };
 
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
             if (!auth.currentUser) return;
             await apiJson('/dev/update_user', { method: 'PATCH', body: { is_location_allowed: value } });
         } catch (err) {
-            console.log(err);
+            console.warn('Failed to save setting:', err);
             setLocationEnabled(!value);
             setLocationAllowedCache(!value);
         }
@@ -107,7 +107,7 @@ export default function SettingsScreen() {
             if (!auth.currentUser) return;
             await apiJson('/dev/update_user', { method: 'PATCH', body: { is_notifications_allowed: value } });
         } catch (err) {
-            console.log(err);
+            console.warn('Failed to save setting:', err);
             setNotificationsEnabled(!value); // optionally revert on failure
         }
     };

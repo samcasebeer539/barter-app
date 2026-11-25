@@ -13,25 +13,19 @@ def get_user_profile(user_id):
         uid, err = get_uid_from_request()
         if err: return err
 
-        print(f"Looking up user_id: '{user_id}'")
-
         # Try as ObjectId
         try:
             owner = user_data_collection.find_one({"_id": ObjectId(user_id)})
-            print(f"ObjectId lookup result: {owner is not None}")
         except Exception:
             owner = None
-            print("ObjectId conversion failed")
 
         # Fallback: plain string
         if not owner:
             owner = user_data_collection.find_one({"_id": user_id})
-            print(f"String lookup result: {owner is not None}")
 
         # Fallback: uid field
         if not owner:
             owner = user_data_collection.find_one({"uid": user_id})
-            print(f"uid field lookup result: {owner is not None}")
 
         if not owner:
             return jsonify({"error": "User not found"}), 404

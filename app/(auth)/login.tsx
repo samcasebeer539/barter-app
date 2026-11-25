@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, ActivityIndica
 import { auth } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { colors, globalFonts } from '../../styles/globalStyles';
-import { apiJson, apiRequest } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function HandleLogin() {
     const [email, setEmail] = useState('');
@@ -40,15 +40,11 @@ export default function HandleLogin() {
     const signIn = async () => {
         // If there is currently a sign in happening, stop the extra sign in
         if (loading) {
-            //console.log("Attempted 2nd sign in")
             return;
         }
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            const response = await apiRequest('/dev/user_data');
-            const data = await response.json().catch(() => null);
-            console.log("BACKEND RESPONSE:", data);
         } catch(e: any) {
             alert('Sign In Failed: ' + e.message);
         } finally {

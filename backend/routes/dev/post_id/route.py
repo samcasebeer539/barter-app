@@ -12,19 +12,15 @@ def get_feed_profile(post_id):
         uid, err = get_uid_from_request()
         if err: return err
 
-        print(f"get_feed_profile called with post_id: '{post_id}'")
 
         # Find the post
         post = posts_collection.find_one({"_id": ObjectId(post_id)})
-        print(f"post found: {post is not None}")
         if not post:
             return jsonify({"error": "Post not found"}), 404
 
-        print(f"post user_id: {post['user_id']} (type: {type(post['user_id'])})")
 
         # Find the owner
         owner = user_data_collection.find_one({"_id": post["user_id"]})
-        print(f"owner found: {owner is not None}")
         if not owner:
             return jsonify({"error": "User not found"}), 404
 

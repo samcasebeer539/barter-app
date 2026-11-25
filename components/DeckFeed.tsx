@@ -147,16 +147,38 @@ export default function FeedDeck({
   const keyboardLift = useKeyboardLift(scrollViewRef, scrollY, insets.top);
   const keyboardHeight = keyboardLift.keyboardHeight;
 
-  useEffect(() => {
-    if (visible) {
-      setIsRendered(true);
-      deckTranslateY.setValue(height);
-      backdropOpacity.setValue(0);
+  // The open animation waits until the deck has been laid out and a frame
+  // drawn. Starting it as the modal was asked to appear meant part of it ran
+  // while the modal and deck were still being built (a varying amount each
+  // time), so the visible slide looked faster on some opens than others.
+  const pendingOpen = useRef(false);
+  const startOpenAnimation = () => {
+    if (!pendingOpen.current) return;
+    pendingOpen.current = false;
+    requestAnimationFrame(() => {
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: 0, useNativeDriver: true, duration: 440 }),
         Animated.timing(backdropOpacity, { toValue: 1, duration: 700, useNativeDriver: true }),
       ]).start();
+    });
+  };
+
+  useEffect(() => {
+    if (visible) {
+      deckTranslateY.setValue(height);
+      backdropOpacity.setValue(0);
+      pendingOpen.current = true;
+      if (isRendered) {
+        // Reopened before the close finished: already laid out, so no
+        // layout event is coming. Start now.
+        startOpenAnimation();
+      } else {
+        setIsRendered(true);
+        // Backstop in case a layout event never arrives.
+        setTimeout(startOpenAnimation, 500);
+      }
     } else {
+      pendingOpen.current = false;
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
         Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),
@@ -279,7 +301,10 @@ export default function FeedDeck({
           />
         </Animated.View>
         <TouchableOpacity style={styles.closeStrip} activeOpacity={1} onPress={handleCloseModal} />
-        <Animated.View style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}>
+        <Animated.View
+          style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}
+          onLayout={startOpenAnimation}
+        >
           <ScrollView
             ref={scrollViewRef}
             style={{ maxHeight: MAX_SCROLL_HEIGHT }}

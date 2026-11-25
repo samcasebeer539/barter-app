@@ -9,8 +9,8 @@ import {
   RefreshControl,
   Animated,
   useWindowDimensions,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, Edges, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileDeck from "@/components/DeckProfile";
 import { colors } from '@/styles/globalStyles';
@@ -18,10 +18,10 @@ import { deckStyles, barRadius, DECK_BAR_WIDTH } from '@/styles/deckStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Post, User, Locations } from '@/types/index';
-import { getCurrentUser, updateUser } from '@/services/userService';
-import { getUserPosts } from '@/services/postService';
+import { updateUser } from '@/services/userService';
+import { getProfilePage } from '@/services/profileService';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
-import { getMyLocations, getUserLocations, saveMyLocations } from '@/services/locationService';
+import { getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
 import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
 import { FeedProfile, OffererGroup } from '@/types/index';
@@ -41,7 +41,8 @@ const DECK_READY_TIMEOUT_MS = 4000;
 function prefetchDeckImages(user: User, posts: Post[]): Promise<void> {
   const urls = [user.profileImageUrl, ...posts.slice(0, 3).map(p => p.photos?.[0])]
     .filter((u): u is string => !!u && /^https?:/.test(u));
-  return Promise.all(urls.map(u => Image.prefetch(u).catch(() => false))).then(() => undefined);
+  if (urls.length === 0) return Promise.resolve();
+  return Image.prefetch(urls, 'memory-disk').catch(() => false).then(() => undefined);
 }
 const BOTTOM_PADDING = 20;
 
@@ -143,10 +144,6 @@ export default function ProfileScreen() {
       .catch(err => console.warn('Failed to load incoming offers:', err));
   }, []);
 
-  useEffect(() => {
-    refreshIncomingOffers();
-  }, [refreshIncomingOffers]);
-
   // Fetch, in one request, any offerers not cached yet (new offers).
   useEffect(() => {
     const missing = [...new Set(incomingOffers.map(o => o.fromUserId))].filter(id => !offererProfiles[id]);
@@ -174,19 +171,26 @@ export default function ProfileScreen() {
   // recheck which are locked each time the profile comes into view. Only
   // the lock flags change (and only if they differ), so the deck keeps its
   // place and any unsaved new post stays put.
+  // The first time the profile comes into view, the page load above has
+  // just fetched all of this, so it's skipped (it used to fetch your user and
+  // posts a second time at startup).
+  const hasFocusedOnce = useRef(false);
   useFocusEffect(useCallback(() => {
-    // Your rating can change while you're away (someone reviews you).
-    getCurrentUser()
-      .then(fresh => setPrimaryUser(prev =>
-        prev && (prev.rating !== fresh.rating || prev.reviewCount !== fresh.reviewCount)
-          ? { ...prev, rating: fresh.rating, reviewCount: fresh.reviewCount }
-          : prev
-      ))
-      .catch(err => console.warn('Failed to refresh rating:', err));
-
-    getUserPosts()
-      .then(fresh => {
-        const lockById = new Map(fresh.map(p => [p._id, !!p.inTrade]));
+    if (!hasFocusedOnce.current) {
+      hasFocusedOnce.current = true;
+      return;
+    }
+    getProfilePage()
+      .then(page => {
+        // Your rating can change while you're away (someone reviews you).
+        setPrimaryUser(prev =>
+          prev && (prev.rating !== page.user.rating || prev.reviewCount !== page.user.reviewCount)
+            ? { ...prev, rating: page.user.rating, reviewCount: page.user.reviewCount }
+            : prev
+        );
+        // Only the lock flags change (and only if they differ), so the deck
+        // keeps its place and any unsaved new post stays put.
+        const lockById = new Map(page.posts.map(p => [p._id, !!p.inTrade]));
         setPrimaryPosts(prev => {
           let changed = false;
           const next = prev.map(p => {
@@ -197,30 +201,31 @@ export default function ProfileScreen() {
           });
           return changed ? next : prev;
         });
+        // New offers and questions that came in while you were away.
+        setOffererProfiles(prev => ({ ...prev, ...page.offererProfiles }));
+        setIncomingOffers(page.incomingOffers);
+        setIncomingQueries(page.incomingQueries);
       })
-      .catch(err => console.warn('Failed to refresh post lock state:', err));
+      .catch(err => console.warn('Failed to refresh profile:', err));
   }, []));
 
   useEffect(() => {
     const load = async () => {
-      // ── Core data: must succeed for screen to render ──────────────────────
+      // ── Everything on the profile, in one request ─────────────────────────
       try {
-        const [user, posts] = await Promise.all([getCurrentUser(), getUserPosts()]);
-        setPrimaryUser(user);
-        setPrimaryPosts(posts);
-        prefetchDeckImages(user, posts).then(() => setDeckImagesLoaded(true));
+        const page = await getProfilePage();
+        // Profiles before offers, so the offers never wait on a profile fetch.
+        setOffererProfiles(page.offererProfiles);
+        setIncomingOffers(page.incomingOffers);
+        setIncomingQueries(page.incomingQueries);
+        setMyLocations(page.locations);
+        setPrimaryPosts(page.posts);
+        setPrimaryUser(page.user);
+        prefetchDeckImages(page.user, page.posts).then(() => setDeckImagesLoaded(true));
       } catch (err: any) {
-        console.error('Failed to load core profile data:', err);
+        console.error('Failed to load profile:', err);
         setError(err.message ?? 'Unknown error');
         return;
-      }
-
-      // ── My locations: non-fatal ───────────────────────────────────────────
-      try {
-        const myLocs = await getMyLocations();
-        setMyLocations(myLocs);
-      } catch (err) {
-        console.warn('Could not load my locations:', err);
       }
 
       // ── Their locations: only fetch if we have a valid MongoDB _id ────────
@@ -317,10 +322,6 @@ export default function ProfileScreen() {
       .catch(err => console.warn('Failed to load incoming queries:', err));
   }, []);
 
-  useEffect(() => {
-    refreshIncomingQueries();
-  }, [refreshIncomingQueries]);
-
 	const queriesForTopPost = topPost?._id
 	? incomingQueries.filter(q => q.targetPostId === topPost._id)
 	: [];
@@ -331,30 +332,19 @@ export default function ProfileScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([
-        getCurrentUser()
-          .then(setPrimaryUser)
-          .catch(err => console.warn('Failed to refresh profile:', err)),
-        getUserPosts()
-          .then(fresh => setPrimaryPosts(prev => [...prev.filter(p => !p._id), ...fresh]))
-          .catch(err => console.warn('Failed to refresh posts:', err)),
-        getIncomingOffers()
-          .then(async offers => {
-            const ids = [...new Set(offers.map(o => o.fromUserId))];
-            const profiles = await getOffererProfiles(ids);
-            setOffererProfiles(profiles);
-            setIncomingOffers(offers);
-          })
-          .catch(err => console.warn('Failed to refresh incoming offers:', err)),
-        refreshIncomingQueries(),
-        getMyLocations()
-          .then(setMyLocations)
-          .catch(err => console.warn('Failed to refresh locations:', err)),
-      ]);
+      const page = await getProfilePage();
+      setPrimaryUser(page.user);
+      setPrimaryPosts(prev => [...prev.filter(p => !p._id), ...page.posts]);
+      setOffererProfiles(page.offererProfiles);
+      setIncomingOffers(page.incomingOffers);
+      setIncomingQueries(page.incomingQueries);
+      setMyLocations(page.locations);
+    } catch (err) {
+      console.warn('Failed to refresh profile:', err);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshIncomingQueries]);
+  }, []);
 
   useEffect(() => {
     if (deckReady || !primaryUser || !deckImagesLoaded || myLocations === null || !deckLaidOut) return;

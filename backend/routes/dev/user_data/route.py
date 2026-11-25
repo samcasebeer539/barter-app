@@ -20,10 +20,16 @@ def get_user_data():
         if not existing_user:
             return jsonify({"message": "No user found"}), 400
         
-        existing_user["_id"] = str(existing_user["_id"])
-        existing_user["posts"] = [str(p) for p in existing_user.get("posts", [])]
-        return jsonify(existing_user), 200
+        return jsonify(own_user_json(existing_user)), 200
 
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+def own_user_json(user):
+    """Your own user record as GET /dev/user_data sends it."""
+    out = dict(user)
+    out["_id"] = str(out["_id"])
+    out["posts"] = [str(p) for p in out.get("posts", [])]
+    return out

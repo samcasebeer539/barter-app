@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -284,7 +285,8 @@ const PostCard: React.FC<PostCardProps> = ({
                     <Image
                       source={{ uri: displayPhotos[currentPhotoIndex] }}
                       style={styles.photo}
-                      resizeMode="cover"
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
                     />
                   ) : (
                     <View style={styles.photoPlaceholder} />
@@ -329,7 +331,7 @@ const PostCard: React.FC<PostCardProps> = ({
               <View style={styles.editPhotoArea}>
                 {displayPhotos.length > 0 ? (
                   <TouchableOpacity activeOpacity={0.9} onPress={handlePhotoTap} style={styles.editPhotoFrame}>
-                    <Image source={{ uri: displayPhotos[currentPhotoIndex] }} style={styles.photo} resizeMode="cover" />
+                    <Image source={{ uri: displayPhotos[currentPhotoIndex] }} style={styles.photo} contentFit="cover" cachePolicy="memory-disk" />
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.emptyPhotoPlaceholder}>

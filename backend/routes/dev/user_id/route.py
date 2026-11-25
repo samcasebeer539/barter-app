@@ -77,21 +77,28 @@ def get_user_profiles():
         if not ids:
             return jsonify({}), 200
 
-        users = list(user_data_collection.find({"_id": {"$in": ids}}))
-        posts_by_owner = {}
-        for post in posts_collection.find({"user_id": {"$in": ids}}):
-            posts_by_owner.setdefault(post["user_id"], []).append(serialize_post(post))
-
-        return jsonify({
-            str(u["_id"]): {
-                "user": public_user(u),
-                "posts": posts_by_owner.get(u["_id"], []),
-            }
-            for u in users
-        }), 200
+        return jsonify(profiles_for(ids)), 200
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+def profiles_for(ids):
+    """{userId: {"user": ..., "posts": [...]}} for these user ids (ObjectIds),
+    as GET /dev/profiles sends it. All posts come from a single query."""
+    if not ids:
+        return {}
+    users = list(user_data_collection.find({"_id": {"$in": ids}}))
+    posts_by_owner = {}
+    for post in posts_collection.find({"user_id": {"$in": ids}}):
+        posts_by_owner.setdefault(post["user_id"], []).append(serialize_post(post))
+    return {
+        str(u["_id"]): {
+            "user": public_user(u),
+            "posts": posts_by_owner.get(u["_id"], []),
+        }
+        for u in users
+    }
+
 
 MAX_REVIEWS = 50
 

@@ -17,12 +17,7 @@ def get_posts():
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        user_id = user["_id"]
-        posts = list(posts_collection.find({"user_id": user_id}))
-        # Posts in an active trade are locked (not editable).
-        locked = Game.locked_post_ids_for(user_id)
-        posts = [{**serialize_post(p), "in_trade": p["_id"] in locked} for p in posts]
-        return jsonify(posts), 200
+        return jsonify(my_posts_for(user)), 200
 
     except Exception as e:
         traceback.print_exc()
@@ -64,3 +59,12 @@ def create_post():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+def my_posts_for(user):
+    """Your posts as GET /dev/posts sends them. Posts in an active trade are
+    locked (not editable)."""
+    user_id = user["_id"]
+    posts = list(posts_collection.find({"user_id": user_id}))
+    locked = Game.locked_post_ids_for(user_id)
+    return [{**serialize_post(p), "in_trade": p["_id"] in locked} for p in posts]

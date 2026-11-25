@@ -2,6 +2,7 @@ import { Post, PostRecord } from '@/types/index';
 import { getAuth } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
+import { shrinkPhoto } from '@/lib/shrinkPhoto';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -12,7 +13,7 @@ async function getAuthHeader() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function toPost(record: PostRecord): Post {
+export function toPost(record: PostRecord): Post {
   return {
     name: record.post_title,
     description: record.description,
@@ -68,7 +69,8 @@ async function resolvePhotos(photos: string[], postId: string): Promise<string[]
   return Promise.all(
     photos.map(async (uri, index) => {
       if (!isLocalUri(uri)) return uri; // already a remote URL, keep as-is
-      const response = await fetch(uri);
+      // Upload a smaller JPEG copy (see lib/shrinkPhoto).
+      const response = await fetch(await shrinkPhoto(uri));
       const blob = await response.blob();
       const storageRef = ref(storage, `post_photos/${uid}/${postId}/${index}`);
       await uploadBytes(storageRef, blob);

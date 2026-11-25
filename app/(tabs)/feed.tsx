@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions, ActivityIndicator, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, useWindowDimensions, ActivityIndicator, Modal, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import FeedDeck from '@/components/DeckFeed';
@@ -25,10 +26,18 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
     });
 }
 
-function measureImage(uri: string): Promise<{ w: number; h: number } | null> {
-    return new Promise(resolve => {
-        Image.getSize(uri, (w, h) => resolve({ w, h }), () => resolve(null));
-    });
+// Downloads the image into the on-phone cache (the one the tiles and cards
+// read from), then reads its size from there.
+async function cacheAndMeasure(uri: string): Promise<{ w: number; h: number } | null> {
+    try {
+        await Image.prefetch(uri, 'memory-disk');
+        const ref = await Image.loadAsync(uri);
+        const size = { w: ref.width, h: ref.height };
+        ref.release();
+        return size;
+    } catch {
+        return null;
+    }
 }
 
 // Measure and preload every image in a batch, so the posts can be shown at
@@ -41,10 +50,7 @@ async function prepareFeedBatch(items: FeedItem[], columnWidth: number): Promise
             heights[item.id] = columnWidth;
             return;
         }
-        const [size] = await Promise.all([
-            withTimeout(measureImage(item.image), IMAGE_PREP_TIMEOUT_MS, null),
-            withTimeout(Image.prefetch(item.image), IMAGE_PREP_TIMEOUT_MS, false),
-        ]);
+        const size = await withTimeout(cacheAndMeasure(item.image), IMAGE_PREP_TIMEOUT_MS, null);
         heights[item.id] = size && size.w > 0 ? columnWidth * (size.h / size.w) : columnWidth;
     }));
     return heights;
@@ -198,7 +204,8 @@ export default function FeedScreen() {
                             <Image
                                 source={{ uri: item.image }}
                                 style={styles.image}
-                                resizeMode="cover"
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
                             />
                         ) : (
                             <View style={styles.imagePlaceholder} />

@@ -2,12 +2,32 @@ import { User } from '@/types/index';
 import { getAuth } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
+import { shrinkPhoto } from '@/lib/shrinkPhoto';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 async function getAuthHeader() {
   const token = await getAuth().currentUser?.getIdToken();
   return { Authorization: `Bearer ${token}` };
+}
+
+/** Your user record from the server -> User. */
+export function toUser(data: any): User {
+  return {
+    _id: data._id,
+    first_name: data.first_name,
+    last_name: data.last_name,
+    email: data.email,
+    phone: data.phone,
+    pronouns: data.pronouns,
+    bio: data.bio,
+    profileImageUrl: data.profile_photo,
+    email_visible: data.email_visible ?? false,
+    phone_visible: data.phone_visible ?? false,
+    locations: data.locations ?? [],
+    rating: data.rating ?? 0,
+    reviewCount: data.reviewCount ?? 0,
+  };
 }
 
 export async function getCurrentUser(): Promise<User> {
@@ -23,23 +43,7 @@ export async function getCurrentUser(): Promise<User> {
     });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    return {
-      _id: data._id,
-      first_name: data.first_name,
-      last_name: data.last_name,
-      email: data.email,
-      phone: data.phone,
-      pronouns: data.pronouns,
-      bio: data.bio,
-      profileImageUrl: data.profile_photo,
-      email_visible: data.email_visible ?? false,
-      phone_visible: data.phone_visible ?? false,
-      locations: data.locations ?? [],
-      rating: data.rating ?? 0,
-      reviewCount: data.reviewCount ?? 0,
-    };
+    return toUser(await res.json());
   } catch (err: any) {
     clearTimeout(timeout);
     console.error('Fetch error:', err.message);
@@ -65,7 +69,9 @@ export async function updateUser(fields: Partial<User>): Promise<void> {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
-export async function uploadProfilePhoto(localUri: string): Promise<string> {
+export async function uploadProfilePhoto(pickedUri: string): Promise<string> {
+  // Upload a smaller JPEG copy (see lib/shrinkPhoto).
+  const localUri = await shrinkPhoto(pickedUri);
   const response = await fetch(localUri);
   const blob = await response.blob();
 

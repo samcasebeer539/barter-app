@@ -9,7 +9,7 @@ async function getAuthHeader() {
 }
 
 // Server profile ({ user, posts }) -> FeedProfile.
-function toFeedProfile(data: any): FeedProfile {
+export function toFeedProfile(data: any): FeedProfile {
   return {
     user: {
       _id: data.user._id,

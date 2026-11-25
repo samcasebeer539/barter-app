@@ -11,22 +11,36 @@ def get_incoming_offers():
         return err
 
     user = user_data_collection.find_one({"firebase_uid": uid})
+    return jsonify(incoming_offers_for(user)), 200
 
+
+def incoming_offers_for(user):
+    """Pending offers on your posts, as GET /dev/trades/incoming sends them.
+    Posts, offerers and your questions are each fetched in one query."""
     games = list(
         games_collection.find({
             "receiver_user_id": user["_id"],
             "phase": "offer_pending",
         })
     )
+    if not games:
+        return []
+    game_ids = [g["_id"] for g in games]
+    posts = {p["_id"] for p in posts_collection.find(
+        {"_id": {"$in": [g["target_post_id"] for g in games]}}, {"_id": 1})}
+    offerers = {u["_id"]: u for u in user_data_collection.find(
+        {"_id": {"$in": [g["initiator_user_id"] for g in games]}}, {"first_name": 1})}
+    my_queries = {gid: [] for gid in game_ids}
+    for q in trades_collection.find({
+        "game_id": {"$in": game_ids}, "type": "query", "actor_id": user["_id"],
+    }).sort("created_at", 1):
+        my_queries[q["game_id"]].append(_query_summary(q))
 
     results = []
     for game in games:
-        target_post = posts_collection.find_one({"_id": game["target_post_id"]})
-        offerer = user_data_collection.find_one({"_id": game["initiator_user_id"]})
-
-        if not target_post or not offerer:
+        offerer = offerers.get(game["initiator_user_id"])
+        if game["target_post_id"] not in posts or not offerer:
             continue
-
         results.append({
             "gameId": str(game["_id"]),
             "targetPostId": str(game["target_post_id"]),
@@ -34,14 +48,9 @@ def get_incoming_offers():
             "fromUserName": offerer.get("first_name", ""),
             # Your own questions to the offerer (and their answers), oldest
             # first, for the profile deck's turn log.
-            "myQueries": [
-                _query_summary(q) for q in trades_collection.find({
-                    "game_id": game["_id"], "type": "query", "actor_id": user["_id"],
-                }).sort("created_at", 1)
-            ],
+            "myQueries": my_queries[game["_id"]],
         })
-
-    return jsonify(results), 200
+    return results
 
 
 trades_incoming_queries_bp = Blueprint("trades_incoming_queries", __name__)
@@ -57,7 +66,11 @@ def get_incoming_queries():
         return err
 
     user = user_data_collection.find_one({"firebase_uid": uid})
+    return jsonify(incoming_queries_for(user)), 200
 
+
+def incoming_queries_for(user):
+    """Unanswered questions to you, as GET /dev/trades/incoming_queries sends them."""
     games = list(
         games_collection.find({
             "$or": [{"receiver_user_id": user["_id"]}, {"initiator_user_id": user["_id"]}],
@@ -65,7 +78,7 @@ def get_incoming_queries():
         }, {"_id": 1})
     )
     if not games:
-        return jsonify([]), 200
+        return []
 
     queries = list(
         trades_collection.find({
@@ -96,7 +109,7 @@ def get_incoming_queries():
             "question": q.get("messages", [{}])[0].get("message", ""),
         })
 
-    return jsonify(results), 200
+    return results
 
 
 def _query_summary(q):

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
@@ -255,7 +256,8 @@ const UserCard: React.FC<UserCardProps> = ({
               <Image
                 source={{ uri: draft.profileImageUrl || 'https://picsum.photos/seed/camera3/600/600' }}
                 style={styles.photo}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="memory-disk"
               />
               {isEditable && (
                 <View style={styles.photoEditOverlay} pointerEvents="none">

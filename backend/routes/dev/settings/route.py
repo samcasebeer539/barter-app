@@ -2,7 +2,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 
 settings_bp = Blueprint("settings", __name__)
 
@@ -15,7 +15,7 @@ def get_settings():
         if err: return err
 
         # Return all posts from all users except the current user
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
 
         if not user:
             return jsonify({

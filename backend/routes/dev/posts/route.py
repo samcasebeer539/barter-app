@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post
+from helpers import get_uid_from_request, serialize_post, current_user
 from models.game import Game
 
 posts_bp = Blueprint('posts', __name__)
@@ -13,7 +13,7 @@ def get_posts():
         uid, err = get_uid_from_request()
         if err: return err
 
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
         if not user:
             return jsonify({"error": "User not found"}), 404
 
@@ -29,7 +29,7 @@ def create_post():
         uid, err = get_uid_from_request()
         if err: return err
 
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
         if not user:
             return jsonify({"error": "User not found"}), 404
 

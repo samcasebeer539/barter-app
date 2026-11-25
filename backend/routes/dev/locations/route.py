@@ -1,7 +1,7 @@
 from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 
 locations_bp = Blueprint('locations', __name__)
 
@@ -12,7 +12,7 @@ def get_my_locations():
         uid, err = get_uid_from_request()
         if err: return err
 
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
         if not user:
             return jsonify({"error": "User not found"}), 404
 

@@ -1,6 +1,6 @@
 import hashlib
 import json
-from flask import jsonify, request, Response
+from flask import jsonify, request, Response, g
 from firebase_admin import auth as firebase_auth
 from bson import ObjectId
 import math
@@ -93,13 +93,40 @@ def with_distances(posts, me):
         out.append(s)
     return out
 
+def current_token():
+    """The caller's verified Firebase token (decoded). init.py's
+    before_request verifies it once per request; this only verifies here if
+    that didn't run (e.g. a script calling a route directly)."""
+    token = g.get("firebase_token")
+    if token is None:
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return None
+        token = firebase_auth.verify_id_token(auth_header.split(" ", 1)[1])
+        g.firebase_token = token
+        g.uid = token["uid"]
+    return token
+
+
 def get_uid_from_request():
-    auth_header = request.headers.get("Authorization")
-    if not auth_header:
+    """(uid, None), or (None, error response) if there's no token."""
+    token = current_token()
+    if token is None:
         return None, (jsonify({"error": "Missing token"}), 401)
-    id_token = auth_header.split(" ")[1]
-    decoded_token = firebase_auth.verify_id_token(id_token)
-    return decoded_token['uid'], None
+    return token["uid"], None
+
+
+_NO_USER = object()
+
+def current_user():
+    """The caller's user record, looked up once per request (None if they
+    have no account yet)."""
+    user = g.get("current_user", _NO_USER)
+    if user is _NO_USER:
+        token = current_token()
+        user = user_data_collection.find_one({"firebase_uid": token["uid"]}) if token else None
+        g.current_user = user
+    return user
 
 # Never sent to anyone but the account owner.
 _PRIVATE_USER_FIELDS = {"firebase_uid", "email", "phone"}

@@ -54,7 +54,10 @@ def require_firebase_token():
         decoded = auth.verify_id_token(header.split(" ", 1)[1])
     except Exception:
         return jsonify({"error": "Invalid or expired token"}), 401
+    # Routes read these (helpers.get_uid_from_request / current_user /
+    # current_token) instead of verifying the token again.
     g.uid = decoded["uid"]
+    g.firebase_token = decoded
     return None
 
 # Registers a blueprint (like an instance of the app) for each API route

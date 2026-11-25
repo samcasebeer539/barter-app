@@ -4,7 +4,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from pymongo import ReturnDocument
 from backend import user_data_collection, trades_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 from models.game import Game
 
 trades_review_bp = Blueprint("trades_review", __name__)
@@ -21,7 +21,7 @@ def review_trade():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     if not user:
         return jsonify({"error": "User not found"}), 404
 

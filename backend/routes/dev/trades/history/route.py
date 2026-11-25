@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from backend import user_data_collection, games_collection, trades_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 from models.game import Game
 from routes.dev.trades.barter.route import games_in_phase_for_user
 
@@ -17,7 +17,7 @@ def get_trade_history():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     if not user:
         return jsonify({"error": "User not found"}), 404
 

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, trades_collection
-from helpers import get_uid_from_request, serialize_trade
+from helpers import get_uid_from_request, serialize_trade, current_user
 from models.game import Game
 
 trades_detail_get_trade_bp = Blueprint("trades_detail_get_trade", __name__)
@@ -12,7 +12,7 @@ def get_trade():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     game_id = request.args.get("gameId")
     if not game_id:
         return jsonify({"error": "Missing gameId"}), 400

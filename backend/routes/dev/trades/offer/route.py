@@ -3,7 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 from models.game import Game
 
 trades_offer_bp = Blueprint('trades_offer', __name__)
@@ -14,7 +14,7 @@ def send_offer():
         uid, err = get_uid_from_request()
         if err: return err
 
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
         if not user:
             return jsonify({"error": "User not found"}), 404
 

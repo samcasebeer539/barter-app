@@ -3,7 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import storage as firebase_storage
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 from models.game import Game
 
 posts_post_id_bp = Blueprint('posts_post_id', __name__)
@@ -14,7 +14,7 @@ def update_post(post_id):
         uid, err = get_uid_from_request()
         if err: return err
 
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
         if not user:
             return jsonify({"error": "User not found"}), 404
 
@@ -44,7 +44,7 @@ def delete_post(post_id):
         uid, err = get_uid_from_request()
         if err: return err
 
-        user = user_data_collection.find_one({"firebase_uid": uid})
+        user = current_user()
         if not user:
             return jsonify({"error": "User not found"}), 404
 

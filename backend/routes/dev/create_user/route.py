@@ -3,18 +3,16 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
+from helpers import current_user, current_token
 
 create_user_bp = Blueprint('create_user', __name__)
 
 @create_user_bp.route('/dev/create_user', methods=['POST'])
 def create_user():
     try:
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
+        decoded_token = current_token()
+        if decoded_token is None:
             return jsonify({"error": "Missing token"}), 401
-
-        id_token = auth_header.split(" ")[1]
-        decoded_token = firebase_auth.verify_id_token(id_token)
         uid = decoded_token['uid']
         email = decoded_token['email']
         
@@ -25,7 +23,7 @@ def create_user():
         if not first_name or not last_name:
             return jsonify({"error": "Missing name fields"}), 400
 
-        existing_user = user_data_collection.find_one({"firebase_uid": uid})
+        existing_user = current_user()
         if existing_user:
             return jsonify({"message": "User already exists"}), 200
 

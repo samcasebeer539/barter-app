@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, trades_collection, posts_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user
 
 trades_open_bp = Blueprint("trades_open", __name__)
 
@@ -10,7 +10,7 @@ def get_open_trades():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     return jsonify(open_offers_for(user)), 200
 
 

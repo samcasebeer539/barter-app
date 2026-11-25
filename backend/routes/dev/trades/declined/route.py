@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user
 from models.game import Game
 
 trades_declined_bp = Blueprint("trades_declined", __name__)
@@ -16,7 +16,7 @@ def get_declined_posts():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     if not user:
         return jsonify({"error": "User not found"}), 404
 

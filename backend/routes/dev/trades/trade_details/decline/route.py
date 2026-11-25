@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, trades_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, current_user
 from models.game import Game, NotYourTurnError
 
 trades_detail_decline_bp = Blueprint("trades_detail_decline", __name__)
@@ -14,7 +14,7 @@ def decline_trade():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
 
     data = request.json
     game_id = data.get("gameId")

@@ -2,7 +2,7 @@ import re
 from flask import Blueprint, jsonify, request
 from backend import posts_collection, user_data_collection
 from firebase_admin import auth as firebase_auth
-from helpers import with_distances
+from helpers import with_distances, current_user, get_uid_from_request
 
 
 feed_search_bp = Blueprint("feed_search", __name__)
@@ -11,15 +11,10 @@ feed_search_bp = Blueprint("feed_search", __name__)
 @feed_search_bp.route("/dev/feed/search", methods=["GET"])
 def search_feed():
 
-    auth_header = request.headers.get("Authorization")
-
-    if not auth_header:
-        return jsonify({"error": "Missing token"}), 401
-
-    token = auth_header.split(" ")[1]
-
-    uid = firebase_auth.verify_id_token(token)["uid"]
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    uid, err = get_uid_from_request()
+    if err:
+        return err
+    user = current_user()
 
 
     query = request.args.get("q", "")

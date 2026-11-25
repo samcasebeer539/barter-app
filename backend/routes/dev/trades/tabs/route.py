@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from backend import user_data_collection
-from helpers import get_uid_from_request, version_of
+from helpers import get_uid_from_request, version_of, current_user
 from models.game import Game
 from routes.dev.trades.open.route import open_offers_for
 from routes.dev.trades.query.route import open_queries_for
@@ -15,7 +15,7 @@ def _current_user():
     uid, err = get_uid_from_request()
     if err:
         return None, err
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     if not user:
         return None, (jsonify({"error": "User not found"}), 404)
     # Timed-out games only flip to declined when loaded; settle them once

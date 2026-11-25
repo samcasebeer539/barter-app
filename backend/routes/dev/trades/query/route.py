@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user
 from models.game import Game, NotYourTurnError
 
 trades_query_bp = Blueprint("trades_query", __name__)
@@ -13,7 +13,7 @@ def get_queries():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     return jsonify(open_queries_for(user)), 200
 
 
@@ -57,7 +57,7 @@ def create_query():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
 
     data = request.json or {}
 

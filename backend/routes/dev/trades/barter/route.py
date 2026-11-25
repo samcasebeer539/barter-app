@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, json_with_version
+from helpers import get_uid_from_request, serialize_post, serialize_trade, json_with_version, current_user
 from models.game import Game, iso_utc
 
 trades_barter_bp = Blueprint("trades_barter", __name__)
@@ -13,7 +13,7 @@ def send_barter():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
 
     data = request.json
     game_id = data.get("gameId")
@@ -195,7 +195,7 @@ def get_barter_games():
     if err:
         return err
 
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     if not user:
         return jsonify({"error": "User not found"}), 404
 

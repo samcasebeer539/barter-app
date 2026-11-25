@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from bson import ObjectId
 from backend import user_data_collection
-from helpers import get_uid_from_request, json_with_version
+from helpers import get_uid_from_request, json_with_version, current_user
 from routes.dev.settings.route import settings_for
 from routes.dev.user_data.route import own_user_json
 from routes.dev.posts.route import my_posts_for
@@ -29,7 +29,7 @@ def get_profile_page():
     uid, err = get_uid_from_request()
     if err:
         return err
-    user = user_data_collection.find_one({"firebase_uid": uid})
+    user = current_user()
     if not user:
         return jsonify({"message": "No user found"}), 400
 

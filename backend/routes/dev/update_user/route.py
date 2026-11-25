@@ -2,19 +2,15 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
+from helpers import get_uid_from_request
 
 update_user_bp = Blueprint('update_user', __name__)
 
 @update_user_bp.route('/dev/update_user', methods=['PATCH'])
 def update_user():
     try:
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
-            return jsonify({"error": "Missing token"}), 401
-
-        id_token = auth_header.split(" ")[1]
-        decoded_token = firebase_auth.verify_id_token(id_token)
-        uid = decoded_token['uid']
+        uid, err = get_uid_from_request()
+        if err: return err
 
         data = request.json
         allowed_fields = {'pronouns', 'bio', 'phone', 'profile_photo', 'email_visible', 'phone_visible', 'locations', 'is_location_allowed', 'is_notifications_allowed'}

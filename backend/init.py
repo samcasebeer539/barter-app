@@ -1,5 +1,8 @@
 import os
-from flask import Flask
+from flask import Flask, request, g, jsonify
+from firebase_admin import auth
+import backend
+
 from routes.dev.create_user.route import create_user_bp
 from routes.dev.feed.route import feed_bp
 from routes.dev.locations.route import locations_bp
@@ -38,6 +41,20 @@ from routes.dev.feed.search.route import feed_search_bp
 
 
 app = Flask(__name__)
+
+@app.before_request
+def require_firebase_token():
+    if request.method == "OPTIONS":
+        return None
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Bearer "):
+        return jsonify({"error": "Missing token"}), 401
+    try:
+        decoded = auth.verify_id_token(header.split(" ", 1)[1])
+    except Exception:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    g.uid = decoded["uid"]
+    return None
 
 # Registers a blueprint (like an instance of the app) for each API route
 app.register_blueprint(create_user_bp)

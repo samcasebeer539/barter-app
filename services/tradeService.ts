@@ -2,12 +2,7 @@ import { OpenTradeItem, Post, User, Locations } from '@/types';
 import { getAuth } from 'firebase/auth';
 import { TradeTurn } from '@/components/TradeTurns';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-async function getAuthHeader() {
-    const token = await getAuth().currentUser?.getIdToken();
-    return { Authorization: `Bearer ${token}` };
-  }
+import { apiJson, apiJsonIfChanged, IfChanged } from '@/lib/api';
 
 export interface TradeWriteResult {
     success: boolean;
@@ -15,20 +10,11 @@ export interface TradeWriteResult {
     tradeId?: string;
 }
 
-// Shared POST for every trade write: attaches auth, sends JSON, and throws on a
-// non-2xx response so callers' catch blocks see failed transitions (400s etc.).
-async function postTrade(path: string, body: unknown): Promise<TradeWriteResult> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}${path}`, {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        throw new Error(data?.error ?? `${path} failed with status ${res.status}`);
-    }
-    return data as TradeWriteResult;
+// Every trade write: a JSON POST that throws on a non-2xx answer (with the
+// server's message, e.g. "It's not your turn") so callers' catch blocks see
+// refused moves.
+function postTrade(path: string, body: unknown): Promise<TradeWriteResult> {
+    return apiJson<TradeWriteResult>(path, { method: 'POST', body });
 }
 
 export function sendOffer(targetPostId: string) {
@@ -91,30 +77,6 @@ export function stallTrade(gameId: string) {
     return postTrade('/dev/trades/stall', { gameId });
 }
 
-export async function getGame(gameId: string) {
-    const headers = await getAuthHeader();
-    const res = await fetch(
-        `${BASE_URL}/dev/trades/trade_details/get_trade?gameId=${gameId}`,
-        { headers }
-    );
-    return res.json();
-}
-
-export async function sendMessage(tradeId: string, message: string) {
-    const headers = await getAuthHeader();
-    return fetch(
-        `${BASE_URL}/dev/trades/trade_details/message/${tradeId}`,
-        {
-            method: 'POST',
-            headers: {
-                ...headers,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message }),
-        }
-    );
-}
-
 // Everything the barter page's OPEN tab shows, in one request.
 export interface OpenTabData {
     queries: OpenTradeItem[];
@@ -122,10 +84,7 @@ export interface OpenTabData {
     declined: OpenTradeItem[];
 }
 export async function getOpenTab(): Promise<OpenTabData> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/open_tab`, { headers });
-    if (!res.ok) throw new Error(`Failed to load open tab (${res.status})`);
-    const data = await res.json();
+    const data = await apiJson('/dev/trades/open_tab');
     return {
         queries: groupQueryItems((data.queries ?? []).map(normalizeTradeItem)),
         offers: (data.offers ?? []).map(normalizeTradeItem),
@@ -146,10 +105,7 @@ export interface CloseTabData {
     declined?: BarterGame[];
 }
 export async function getCloseTab(withHistory: boolean): Promise<CloseTabData> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}/dev/trades/close_tab${withHistory ? '?history=1' : ''}`, { headers });
-    if (!res.ok) throw new Error(`Failed to load close tab (${res.status})`);
-    const data = await res.json();
+    const data = await apiJson(`/dev/trades/close_tab${withHistory ? '?history=1' : ''}`);
     return {
         close: data.close ?? [],
         closeVersion: data.closeVersion ?? '',
@@ -161,16 +117,10 @@ export async function getCloseTab(withHistory: boolean): Promise<CloseTabData> {
 
 // Background checks: send the version of the list you already have. If it
 // hasn't changed the server answers 204 with no body.
-export type IfChanged<T> = { changed: false } | { changed: true; data: T; version: string };
+export type { IfChanged };
 
-async function getGamesIfChanged(path: string, knownVersion: string): Promise<IfChanged<BarterGame[]>> {
-    const headers = await getAuthHeader();
-    const res = await fetch(`${BASE_URL}${path}`, {
-        headers: knownVersion ? { ...headers, 'X-Known-Version': knownVersion } : headers,
-    });
-    if (res.status === 204) return { changed: false };
-    if (!res.ok) throw new Error(`Failed to load ${path} (${res.status})`);
-    return { changed: true, data: await res.json(), version: res.headers.get('X-Version') ?? '' };
+function getGamesIfChanged(path: string, knownVersion: string): Promise<IfChanged<BarterGame[]>> {
+    return apiJsonIfChanged<BarterGame[]>(path, knownVersion);
 }
 
 /** BARTER tab games, or { changed: false } if you already have this version. */
@@ -248,11 +198,8 @@ export interface IncomingOffer {
   myQueries?: QueryThread[];
 }
 
-export async function getIncomingOffers(): Promise<IncomingOffer[]> {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BASE_URL}/dev/trades/incoming`, { headers });
-  const text = await res.text();
-  return JSON.parse(text);
+export function getIncomingOffers(): Promise<IncomingOffer[]> {
+  return apiJson('/dev/trades/incoming');
 }
 
 export interface BarterGame {
@@ -397,11 +344,8 @@ export interface IncomingQuery {
   question: string;
 }
 
-export async function getIncomingQueries(): Promise<IncomingQuery[]> {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BASE_URL}/dev/trades/incoming_queries`, { headers });
-  const text = await res.text();
-  return JSON.parse(text);
+export function getIncomingQueries(): Promise<IncomingQuery[]> {
+  return apiJson('/dev/trades/incoming_queries');
 }
 
 export function buildQueryTurns(item: OpenTradeItem): TradeTurn[] {

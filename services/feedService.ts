@@ -1,120 +1,38 @@
-import { getAuth } from 'firebase/auth';
 import { FeedItem, FeedProfile } from '@/types/index';
+import { apiJson } from '@/lib/api';
+import { toFeedProfile } from './offererService';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-async function getAuthHeader() {
-  const token = await getAuth().currentUser?.getIdToken();
-  return { Authorization: `Bearer ${token}` };
+// Server post (with distance_mi) -> feed tile.
+function toFeedItem(p: any): FeedItem {
+  return {
+    id: p._id,
+    title: p.post_title,
+    image: p.photos?.[0] ?? '',
+    date_posted: p.date_posted ?? '',
+    distanceMi: typeof p.distance_mi === 'number' ? p.distance_mi : null,
+  };
 }
 
-// ─── Fetch feed ───────────────────────────────────────────────────────────────
+// ─── Feed ────────────────────────────────────────────────────────────────────
 
 export async function getFeedPosts(): Promise<FeedItem[]> {
-  const headers = await getAuthHeader();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-
-  try {
-    const res = await fetch(`${BASE_URL}/dev/feed`, {
-      headers,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    return data.map((p: any): FeedItem => ({
-      id: p._id,
-      title: p.post_title,
-      image: p.photos?.[0] ?? '',
-      date_posted: p.date_posted ?? '',
-      distanceMi: typeof p.distance_mi === 'number' ? p.distance_mi : null,
-    }));
-  } catch (err: any) {
-    clearTimeout(timeout);
-    console.error('getFeedPosts error:', err.message);
-    throw err;
-  }
+  const data = await apiJson<any[]>('/dev/feed');
+  return data.map(toFeedItem);
 }
 
-// ─── Fetch profile for a tapped post ─────────────────────────────────────────
+export async function searchFeedPosts(query: string): Promise<FeedItem[]> {
+  const data = await apiJson<any[]>(`/dev/feed/search?q=${encodeURIComponent(query)}`);
+  return data.map(toFeedItem);
+}
+
+// ─── Profile for a tapped post ───────────────────────────────────────────────
 
 export async function getFeedProfile(postId: string): Promise<FeedProfile> {
-  const headers = await getAuthHeader();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-
-  try {
-    const res = await fetch(`${BASE_URL}/dev/feed/${postId}`, {
-      headers,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    return {
-      user: {
-        _id: data.user._id,
-        first_name: data.user.first_name,
-        last_name: data.user.last_name,
-        pronouns: data.user.pronouns,
-        email: data.user.email,
-        phone: data.user.phone,
-        bio: data.user.bio,
-        profileImageUrl: data.user.profile_photo,
-        email_visible: data.user.email_visible ?? false,
-        phone_visible: data.user.phone_visible ?? false,
-        locations: data.user.locations ?? [],
-        rating: data.user.rating ?? 0,
-        reviewCount: data.user.reviewCount ?? 0,
-      },
-      posts: data.posts.map((p: any) => ({
-        _id: p._id,
-        name: p.post_title,
-        description: p.description,
-        photos: p.photos ?? [],
-        date_posted: p.date_posted ?? '',
-      })),
-      tappedPostId: data.tapped_post_id,
-    };
-  } catch (err: any) {
-    clearTimeout(timeout);
-    console.error('getFeedProfile error:', err.message);
-    throw err;
-  }
+  const data = await apiJson(`/dev/feed/${postId}`);
+  return { ...toFeedProfile(data), tappedPostId: data.tapped_post_id };
 }
 
 // for profile deck offerer
 export async function getOffererProfile(offeredPostId: string): Promise<FeedProfile> {
   return getFeedProfile(offeredPostId);
-}
-
-export async function searchFeedPosts( query: string ): Promise<FeedItem[]> {
-
-    const headers = await getAuthHeader();
-
-    const res = await fetch(
-        `${BASE_URL}/dev/feed/search?q=${encodeURIComponent(query)}`,
-        {
-            headers,
-        }
-    );
-
-    if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    return data.map((p: any): FeedItem => ({
-        id: p._id,
-        title: p.post_title,
-        image: p.photos?.[0] ?? '',
-        date_posted: p.date_posted ?? '',
-        distanceMi: typeof p.distance_mi === 'number' ? p.distance_mi : null,
-    }));
 }

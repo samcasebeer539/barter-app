@@ -12,6 +12,7 @@ import {
 import * as Location from 'expo-location';
 import { setLocationAllowedCache } from '@/hooks/useUserRegion';
 import { getSettings } from '@/lib/settingsCache';
+import { apiJson } from '@/lib/api';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
 import { colors, globalFonts } from '@/styles/globalStyles';
@@ -22,7 +23,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const HEADER_HEIGHT = 44;
 
 export default function SettingsScreen() {
-    const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
@@ -91,21 +91,8 @@ export default function SettingsScreen() {
         setLocationAllowedCache(value);
     
         try {
-            const user = auth.currentUser;
-            if (!user) return;
-    
-            const token = await user.getIdToken();
-    
-            await fetch(`${BASE_URL}/dev/update_user`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    is_location_allowed: value,
-                }),
-            }).then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); });
+            if (!auth.currentUser) return;
+            await apiJson('/dev/update_user', { method: 'PATCH', body: { is_location_allowed: value } });
         } catch (err) {
             console.log(err);
             setLocationEnabled(!value);
@@ -117,21 +104,8 @@ export default function SettingsScreen() {
         setNotificationsEnabled(value);
     
         try {
-            const user = auth.currentUser;
-            if (!user) return;
-    
-            const token = await user.getIdToken();
-    
-            await fetch(`${BASE_URL}/dev/update_user`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    is_notifications_allowed: value,
-                }),
-            });
+            if (!auth.currentUser) return;
+            await apiJson('/dev/update_user', { method: 'PATCH', body: { is_notifications_allowed: value } });
         } catch (err) {
             console.log(err);
             setNotificationsEnabled(!value); // optionally revert on failure

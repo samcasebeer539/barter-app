@@ -4,12 +4,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { shrinkPhoto } from '@/lib/shrinkPhoto';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-async function getAuthHeader() {
-  const token = await getAuth().currentUser?.getIdToken();
-  return { Authorization: `Bearer ${token}` };
-}
+import { apiJson } from '@/lib/api';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,25 +31,8 @@ function toPayload(post: Partial<Post>): Record<string, any> {
 // ─── Read ─────────────────────────────────────────────────────────────────────
 
 export async function getUserPosts(): Promise<Post[]> {
-  const headers = await getAuthHeader();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-
-  try {
-    const res = await fetch(`${BASE_URL}/dev/posts`, {
-      headers,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data: PostRecord[] = await res.json();
-    return data.map(toPost);
-  } catch (err: any) {
-    clearTimeout(timeout);
-    console.error('getUserPosts error:', err.message);
-    throw err;
-  }
+  const data = await apiJson<PostRecord[]>('/dev/posts');
+  return data.map(toPost);
 }
 
 // ─── Photo Upload ─────────────────────────────────────────────────────────────
@@ -82,16 +60,8 @@ async function resolvePhotos(photos: string[], postId: string): Promise<string[]
 // ─── Create ───────────────────────────────────────────────────────────────────
 
 export async function createPost(post: Omit<Post, '_id'>): Promise<Post> {
-  const headers = await getAuthHeader();
-
   // Create the post first to get an _id, with photos as-is
-  const res = await fetch(`${BASE_URL}/dev/posts`, {
-    method: 'POST',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(toPayload(post)),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const created: PostRecord = await res.json();
+  const created = await apiJson<PostRecord>('/dev/posts', { method: 'POST', body: toPayload(post) });
 
   // If there are local photos, upload them now that we have an _id
   const hasLocalPhotos = post.photos.some(isLocalUri);
@@ -107,8 +77,6 @@ export async function createPost(post: Omit<Post, '_id'>): Promise<Post> {
 // ─── Update ───────────────────────────────────────────────────────────────────
 
 export async function updatePost(postId: string, fields: Partial<Post>): Promise<void> {
-  const headers = await getAuthHeader();
-
   // Upload any local photos before patching
   let resolvedFields = fields;
   if (fields.photos?.some(isLocalUri)) {
@@ -116,22 +84,11 @@ export async function updatePost(postId: string, fields: Partial<Post>): Promise
     resolvedFields = { ...fields, photos: remotePhotos };
   }
 
-  const res = await fetch(`${BASE_URL}/dev/posts/${postId}`, {
-    method: 'PATCH',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(toPayload(resolvedFields)),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  await apiJson(`/dev/posts/${postId}`, { method: 'PATCH', body: toPayload(resolvedFields) });
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
 export async function deletePost(postId: string): Promise<void> {
-  const headers = await getAuthHeader();
-
-  const res = await fetch(`${BASE_URL}/dev/posts/${postId}`, {
-    method: 'DELETE',
-    headers,
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  await apiJson(`/dev/posts/${postId}`, { method: 'DELETE' });
 }

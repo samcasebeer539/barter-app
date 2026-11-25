@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, TextInput, KeyboardAvoidingView, ActivityIndica
 import { auth } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { colors, globalFonts } from '../../styles/globalStyles';
+import { apiJson, apiRequest } from '@/lib/api';
 
 export default function HandleLogin() {
     const [email, setEmail] = useState('');
@@ -12,8 +13,8 @@ export default function HandleLogin() {
     const [loading, setLoading] = useState(false);
     const [isSigningUp, setIsSigningUp] = useState(false);
 
-    // Update your .env file so that EXPO_PUBLIC_API_URL = {your IP address}
-    const API_URL = process.env.EXPO_PUBLIC_API_URL
+    // The server address comes from EXPO_PUBLIC_API_URL in .env (your IP
+    // address); lib/api adds it and the sign-in token to every request.
 
     const signUp = async () => {
         // If there is currently a sign in happening, stop the extra sign in
@@ -24,24 +25,11 @@ export default function HandleLogin() {
             return;
         }
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            // Gets token for backend verification
-            const token = await userCredential.user.getIdToken();
-        
-            const response  = await fetch(`${API_URL}/dev/create_user`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    // Sends first and last name to the backend
-                    firstName,
-                    lastName,
-                }),
-            });
-            // const data = await response.json();
-            // console.log("BACKEND RESPONSE:", data);
+            await createUserWithEmailAndPassword(auth, email, password);
+            // Creates the account's record on the server, with first and last
+            // name. A failure now shows the alert below (it used to be silent,
+            // leaving a signed-in user with no account record).
+            await apiJson('/dev/create_user', { method: 'POST', body: { firstName, lastName } });
         } catch(e: any) {
             alert('Sign Up Failed: ' + e.message);
         } finally {
@@ -57,16 +45,9 @@ export default function HandleLogin() {
         }
         setLoading(true);
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const token = await userCredential.user.getIdToken();
-        
-            const response = await fetch(`${API_URL}/dev/user_data`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            const data = await response.json();
+            await signInWithEmailAndPassword(auth, email, password);
+            const response = await apiRequest('/dev/user_data');
+            const data = await response.json().catch(() => null);
             console.log("BACKEND RESPONSE:", data);
         } catch(e: any) {
             alert('Sign In Failed: ' + e.message);

@@ -4,12 +4,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { shrinkPhoto } from '@/lib/shrinkPhoto';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-async function getAuthHeader() {
-  const token = await getAuth().currentUser?.getIdToken();
-  return { Authorization: `Bearer ${token}` };
-}
+import { apiJson } from '@/lib/api';
 
 /** Your user record from the server -> User. */
 export function toUser(data: any): User {
@@ -31,29 +26,10 @@ export function toUser(data: any): User {
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const headers = await getAuthHeader();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-
-  try {
-    const res = await fetch(`${BASE_URL}/dev/user_data`, {
-      headers,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return toUser(await res.json());
-  } catch (err: any) {
-    clearTimeout(timeout);
-    console.error('Fetch error:', err.message);
-    throw err;
-  }
+  return toUser(await apiJson('/dev/user_data'));
 }
 
 export async function updateUser(fields: Partial<User>): Promise<void> {
-  const headers = await getAuthHeader();
-
   // Map frontend field names → DB field names
   const { profileImageUrl, ...rest } = fields as any;
   const payload = {
@@ -61,12 +37,7 @@ export async function updateUser(fields: Partial<User>): Promise<void> {
     ...(profileImageUrl !== undefined && { profile_photo: profileImageUrl }),
   };
 
-  const res = await fetch(`${BASE_URL}/dev/update_user`, {
-    method: 'PATCH',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  await apiJson('/dev/update_user', { method: 'PATCH', body: payload });
 }
 
 export async function uploadProfilePhoto(pickedUri: string): Promise<string> {
@@ -109,10 +80,7 @@ export function getCachedReviews(userId: string, reviewCount: number): UserRevie
 }
 
 export async function getUserReviews(userId: string, reviewCount?: number): Promise<UserReview[]> {
-  const headers = await getAuthHeader();
-  const res = await fetch(`${BASE_URL}/dev/users/${userId}/reviews`, { headers });
-  if (!res.ok) throw new Error(`Failed to load reviews (${res.status})`);
-  const reviews: UserReview[] = await res.json();
+  const reviews = await apiJson<UserReview[]>(`/dev/users/${userId}/reviews`);
   if (reviewCount != null) reviewsCache.set(reviewsKey(userId, reviewCount), reviews);
   return reviews;
 }

@@ -4,9 +4,7 @@
 // The profile request brings them along (so usually nothing is fetched), the
 // settings screen updates them when you toggle, and only if nothing has
 // filled the cache yet is GET /settings called.
-import { getAuth } from 'firebase/auth';
-
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+import { apiJson } from './api';
 
 export interface AppSettings {
   locationAllowed: boolean;
@@ -38,12 +36,7 @@ export async function getSettings(): Promise<AppSettings> {
   if (!pending) {
     pending = (async () => {
       try {
-        const token = await getAuth().currentUser?.getIdToken();
-        const res = await fetch(`${BASE_URL}/settings`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        cached = toAppSettings(await res.json());
+        cached = toAppSettings(await apiJson('/settings'));
         return cached;
       } finally {
         pending = null;

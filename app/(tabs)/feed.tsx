@@ -352,13 +352,14 @@ export default function FeedScreen() {
                 <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowSortMenu(false)}>
                     {/* Full width under the header, with 8px of black below. */}
                     <View style={[styles.sortMenuArea, { top: insets.top + HEADER_HEIGHT }]}>
-                        <View style={styles.sortMenu}>
+                        {/* Taps inside the menu don't close it; tap outside to close. */}
+                        <View style={styles.sortMenu} onStartShouldSetResponder={() => true}>
                             <Text style={styles.sortMenuTitle}>SORT BY</Text>
                             {SORT_OPTIONS.map(opt => (
                                 <TouchableOpacity
                                     key={opt.key}
                                     style={styles.sortOption}
-                                    onPress={() => { setSortBy(opt.key); setShowSortMenu(false); }}
+                                    onPress={() => setSortBy(opt.key)}
                                 >
                                     <Text style={[styles.sortOptionText, sortBy !== opt.key && styles.sortOptionTextFaded]}>
                                         {opt.label}

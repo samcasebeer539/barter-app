@@ -48,16 +48,11 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                     { paddingTop: insets.top, transform: [{ translateY: headerTranslateY }] }
                 ]}
             >
-                {/* Sort: its own button on the left, like the other icon buttons. */}
-                <TouchableOpacity style={styles.sortButton} onPress={onSortPress}>
-                    <FontAwesome6 name="sliders" size={22} color="#FFFFFF" />
-                </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.searchBar}
                     onPress={handleSearchBarPress}
                     activeOpacity={1}
                 >
-                    <FontAwesome6 name="magnifying-glass" size={20} color={colors.ui.secondarydisabled} />
                     <TextInput
                         keyboardAppearance="dark"
                         ref={searchInputRef}
@@ -69,8 +64,9 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                         returnKeyType="done"
                         onSubmitEditing={handleSearchSubmit}
                     />
-                    {/* While a search is showing, an X on the right clears it. */}
-                    {searchActive && (
+                    {/* Magnifying glass on the right; while a search is
+                        showing, an X there clears it instead. */}
+                    {searchActive ? (
                         <TouchableOpacity onPress={clearSearch} hitSlop={8}>
                             <FontAwesome6
                                 name="circle-xmark"
@@ -78,7 +74,13 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                                 color={colors.ui.secondarydisabled}
                             />
                         </TouchableOpacity>
+                    ) : (
+                        <FontAwesome6 name="magnifying-glass" size={20} color={colors.ui.secondarydisabled} />
                     )}
+                </TouchableOpacity>
+                {/* Sort: its own button on the right, like the other icon buttons. */}
+                <TouchableOpacity style={styles.sortButton} onPress={onSortPress}>
+                    <FontAwesome6 name="sliders" size={22} color="#FFFFFF" />
                 </TouchableOpacity>
                 
             </Animated.View>
@@ -148,9 +150,9 @@ const styles = StyleSheet.create({
     searchBar: {
         flex: 1,
         height: 44,
-        borderTopLeftRadius: 2,
+        borderTopLeftRadius: 25,
         borderBottomLeftRadius: 2,
-        borderTopRightRadius: 25,
+        borderTopRightRadius: 2,
         borderBottomRightRadius: 2,
         backgroundColor: colors.ui.secondary,
         flexDirection: 'row',
@@ -162,9 +164,9 @@ const styles = StyleSheet.create({
     sortButton: {
         width: 50,
         height: 44,
-        borderTopLeftRadius: 25,
+        borderTopLeftRadius: 2,
         borderBottomLeftRadius: 2,
-        borderTopRightRadius: 2,
+        borderTopRightRadius: 25,
         borderBottomRightRadius: 2,
         backgroundColor: colors.ui.secondary,
         justifyContent: 'center',

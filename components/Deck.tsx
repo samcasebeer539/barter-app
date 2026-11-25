@@ -467,4 +467,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Deck;
+// Memoized: re-renders only when its props change. Parents pass stable
+// callbacks (useStableCallback) and memoized groups so typing or other
+// unrelated state changes don't redraw every card.
+export default React.memo(Deck);

@@ -17,6 +17,7 @@ import { Post, Locations, User } from '@/types/index';
 import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost, getLatestProposals, submitReview } from '@/services/tradeService';
 import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
+import { useStableCallback } from '../hooks/useStableCallback';
 
 const { width } = Dimensions.get('window');
 
@@ -517,6 +518,10 @@ export default function TradeDeck({
   const partnerShowsDateTime = showDateTime && !!theirTime;
   const partnerShowsLocation = showLocation && !!theirLocation;
 
+  // Stable for the (memoized) decks: post taps, picked locations and times
+  // all go to the action's subflow data.
+  const setTradeSubflowData = useStableCallback((data: unknown) => trade.setSubflowData(data));
+
   const sharedDeckProps = {
     cardWidth: DECK_WIDTH,
     enabled: true,
@@ -556,7 +561,7 @@ export default function TradeDeck({
                   onTopCardChange={setPartnerTopPostIndex}
                   isQueryMode={isQueryActive}
                   querySelectedPostIndex={queryPostIndex}
-                  onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
+                  onQueryPostTap={setTradeSubflowData}
                 />
               </View>
               {/* Player deck — barter select / where select mode */}
@@ -573,10 +578,10 @@ export default function TradeDeck({
                   selectColor={trade.activeAction === 'subtract' ? colors.actions.counter : colors.actions.trade}
                   isLocationSelectMode={isWhereActive}
                   isTimeSelectMode={isWhenActive}
-                  onProposeTime={(time) => trade.setSubflowData(time)}
+                  onProposeTime={setTradeSubflowData}
                   jumpToken={playerJumpToken}
                   jumpToCardIndex={playerJumpIndex}
-                  onProposeLocation={(location) => trade.setSubflowData(location)}
+                  onProposeLocation={setTradeSubflowData}
                 />
               </View>
             </Animated.View>

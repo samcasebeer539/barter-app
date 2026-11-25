@@ -16,6 +16,7 @@ import { Post, User, Locations } from '@/types/index';
 import { sendOffer, sendQuery, addPost } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useKeyboardLift, KeyboardLiftContext } from '../hooks/useKeyboardLift';
+import { useStableCallback } from '../hooks/useStableCallback';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -108,15 +109,21 @@ export default function FeedDeck({
 
   const deckUser: User | undefined = profile?.user;
   const excluded = useMemo(() => new Set(excludePostIds ?? []), [excludePostIds]);
-  const deckPosts: Post[] = profile
+  // Memoized so the deck's cards aren't rebuilt on every render (e.g. each
+  // keystroke in the question box).
+  const deckPosts: Post[] = useMemo(() => profile
     ? profile.posts
         .filter(p => !p._id || !excluded.has(p._id))
         .map(p => ({
           _id: p._id, name: p.name, description: p.description,
           photos: p.photos, date_posted: p.date_posted,
         }))
-    : [];
-  const externalLocations: Locations[] = profile?.user?.locations ?? [];
+    : [], [profile, excluded]);
+  const externalLocations: Locations[] = useMemo(() => profile?.user?.locations ?? [], [profile]);
+  const deckGroups = useMemo(
+    () => (deckUser ? [{ user: deckUser, posts: deckPosts, locations: externalLocations }] : []),
+    [deckUser, deckPosts, externalLocations],
+  );
   const postCount = deckPosts.length;
 
   const [jumpToken, setJumpToken] = useState<number | undefined>(undefined);
@@ -198,6 +205,19 @@ export default function FeedDeck({
       Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: true }),
     ]).start(() => onClose());
   };
+
+  // Stable callbacks for the (memoized) deck.
+  const disableScroll = useStableCallback(() => setScrollEnabled(false));
+  const enableScroll = useStableCallback(() => setScrollEnabled(true));
+  const handleQueryPostTap = useStableCallback((postIndex: number) => trade.setSubflowData(postIndex));
+  const handleSelectPost = useStableCallback((postIndex: number) => {
+    const selectType = isAddMode ? 'add' : 'offer';
+    if (trade.activeAction !== selectType) {
+      trade.selectAction(selectType, postIndex);
+    } else {
+      trade.togglePost(postIndex);
+    }
+  });
 
   const handleActionSelected = (action: TradeAction) => {
     const { actionType, subAction } = action;
@@ -335,7 +355,7 @@ export default function FeedDeck({
               ) : (
                 <View style={deckStyles.deckWrapper}>
                   <Deck
-                    groups={deckUser ? [{ user: deckUser, posts: deckPosts, locations: externalLocations }] : []}
+                    groups={deckGroups}
                     cardWidth={Math.min(width - 36, 400)}
                     enabled={true}
                     isUser={false}
@@ -345,20 +365,13 @@ export default function FeedDeck({
                     onTopCardChange={setTopPostIndex}
                     selectColor={isAddMode ? colors.actions.verify : colors.actions.offer}
                     showLocation={true}
-                    onHorizontalGestureStart={() => setScrollEnabled(false)}
-                    onGestureEnd={() => setScrollEnabled(true)}
+                    onHorizontalGestureStart={disableScroll}
+                    onGestureEnd={enableScroll}
                     jumpToken={jumpToken}
                     jumpToCardIndex={jumpToIndex}
                     querySelectedPostIndex={queryPostIndex}
-                    onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
-                    onSelectPost={(postIndex) => {
-                      const selectType = isAddMode ? 'add' : 'offer';
-                      if (trade.activeAction !== selectType) {
-                        trade.selectAction(selectType, postIndex);
-                      } else {
-                        trade.togglePost(postIndex);
-                      }
-                    }}
+                    onQueryPostTap={handleQueryPostTap}
+                    onSelectPost={handleSelectPost}
                   />
                 </View>
               )}

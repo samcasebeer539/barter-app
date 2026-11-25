@@ -83,6 +83,10 @@ export default function ActiveTradesTestScreen() {
         return unsubscribe;
     }, []);
 
+    // Stable, so the (memoized) decks don't redraw when this screen does.
+    const disableScroll = useCallback(() => setScrollEnabled(false), []);
+    const enableScroll = useCallback(() => setScrollEnabled(true), []);
+
     // OPEN tab: QUERIES, OFFERS and DECLINED OFFERS, all from one request.
     // Used for the tab's load, pull to refresh, and after your own moves.
     const refreshOpenTab = useCallback(() => {
@@ -289,8 +293,8 @@ export default function ActiveTradesTestScreen() {
                 game.partner.user.first_name,
                 [...game.player.posts, ...game.partner.posts]
             )}
-            onHorizontalGestureStart={() => setScrollEnabled(false)}
-            onGestureEnd={() => setScrollEnabled(true)}
+            onHorizontalGestureStart={disableScroll}
+            onGestureEnd={enableScroll}
         />
     );
 
@@ -362,8 +366,8 @@ export default function ActiveTradesTestScreen() {
                             deckType="queries"
                             {...deckExpansion('queries')}
                             actions={queriesActions}
-                            onHorizontalGestureStart={() => setScrollEnabled(false)}
-                            onGestureEnd={() => setScrollEnabled(true)}
+                            onHorizontalGestureStart={disableScroll}
+                            onGestureEnd={enableScroll}
                             onActionComplete={handleActionComplete}
                         />
                         <OfferDeck
@@ -371,16 +375,16 @@ export default function ActiveTradesTestScreen() {
                             deckType="offers"
                             {...deckExpansion('offers')}
                             actions={offersActions}
-                            onHorizontalGestureStart={() => setScrollEnabled(false)}
-                            onGestureEnd={() => setScrollEnabled(true)}
+                            onHorizontalGestureStart={disableScroll}
+                            onGestureEnd={enableScroll}
                             onActionComplete={handleActionComplete}
                         />
                         <OfferDeck
                             posts={declined}
                             deckType="declined"
                             {...deckExpansion('declined')}
-                            onHorizontalGestureStart={() => setScrollEnabled(false)}
-                            onGestureEnd={() => setScrollEnabled(true)}
+                            onHorizontalGestureStart={disableScroll}
+                            onGestureEnd={enableScroll}
                         />
                     </View>
                 )}
@@ -423,8 +427,8 @@ export default function ActiveTradesTestScreen() {
                                     game.partner.user.first_name,
                                     [...game.player.posts, ...game.partner.posts]
                                 )}
-                                onHorizontalGestureStart={() => setScrollEnabled(false)}
-                                onGestureEnd={() => setScrollEnabled(true)}
+                                onHorizontalGestureStart={disableScroll}
+                                onGestureEnd={enableScroll}
                             />
                         ))}
                     </View>
@@ -458,8 +462,8 @@ export default function ActiveTradesTestScreen() {
                                     game.partner.user.first_name,
                                     [...game.player.posts, ...game.partner.posts]
                                 )}
-                                onHorizontalGestureStart={() => setScrollEnabled(false)}
-                                onGestureEnd={() => setScrollEnabled(true)}
+                                onHorizontalGestureStart={disableScroll}
+                                onGestureEnd={enableScroll}
                             />
                         ))}
                         {renderHistorySection(

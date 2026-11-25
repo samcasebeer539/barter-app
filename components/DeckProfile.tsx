@@ -12,6 +12,7 @@ import TradeUI, { TradeAction } from './TradeActions';
 import { TRADE_ACTIONS, TradeActionType } from '../config/tradeConfig';
 import { deckStyles, makeIconButton, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { useTradeAction } from '../hooks/useTradeAction';
+import { useStableCallback } from '../hooks/useStableCallback';
 
 import { Post, User, Locations, OffererGroup } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
@@ -266,6 +267,27 @@ export default function ProfileDeck({
         if (pendingOpenRef.current) { pendingOpenRef.current = false; animateOpen(); }
     };
 
+    // Stable callbacks for the (memoized) decks. The screen's own handlers
+    // are wrapped too, since they're recreated on every screen render.
+    const handleQueryPostTap = useStableCallback((postIndex: number) => trade.setSubflowData(postIndex));
+    const handleSelectSecondaryPost = useStableCallback((postIndex: number) => {
+        if (trade.activeAction !== 'barter') {
+            trade.selectAction('barter', postIndex);
+        } else if (isDifferentGroup(postIndex)) {
+            trade.reset();
+            trade.selectAction('barter', postIndex);
+        } else {
+            trade.togglePost(postIndex);
+        }
+    });
+    const exitEdit = useStableCallback(() => setIsEditMode(false));
+    const enterEdit = useStableCallback(() => setIsEditMode(true));
+    const exitPostEdit = useStableCallback(() => setIsPostEditMode(false));
+    const enterPostEdit = useStableCallback(() => setIsPostEditMode(true));
+    const stableOnSaveUser = useStableCallback(onSaveUser);
+    const stableOnConfirmLocations = useStableCallback(onConfirmLocations);
+    const stableOnSelectLocation = useStableCallback(onSelectLocation);
+
     const handleTradeActionSelected = (action: TradeAction) => {
         const { actionType, subAction } = action;
 
@@ -517,20 +539,11 @@ export default function ProfileDeck({
                                 onTopCardGroupChange={setTopSecondaryGroupIndex}
                                 selectColor={colors.actions.trade}
                                 isUser={false}
-                                onSelectLocation={onSelectLocation}
+                                onSelectLocation={stableOnSelectLocation}
                                 isQueryMode={isQueryActive}
                                 querySelectedPostIndex={queryPostIndex}
-                                onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
-                                onSelectPost={(postIndex) => {
-                                    if (trade.activeAction !== 'barter') {
-                                        trade.selectAction('barter', postIndex);
-                                    } else if (isDifferentGroup(postIndex)) {
-                                        trade.reset();
-                                        trade.selectAction('barter', postIndex);
-                                    } else {
-                                        trade.togglePost(postIndex);
-                                    }
-                                }}
+                                onQueryPostTap={handleQueryPostTap}
+                                onSelectPost={handleSelectSecondaryPost}
                             />
                         </View>
                         <View style={styles.turnsAndButtonColumn}>
@@ -583,17 +596,17 @@ export default function ProfileDeck({
                                 onTopCardChange={handleTopPrimaryPostChange}
                                 isUser={true}
                                 isEditMode={isEditMode}
-                                onExitEdit={() => setIsEditMode(false)}
-                                onEnterEdit={() => setIsEditMode(true)}
+                                onExitEdit={exitEdit}
+                                onEnterEdit={enterEdit}
                                 isPostEditMode={isPostEditMode}
-                                onExitPostEdit={() => setIsPostEditMode(false)}
-                                onEnterPostEdit={() => setIsPostEditMode(true)}
-                                onSaveUser={onSaveUser}
+                                onExitPostEdit={exitPostEdit}
+                                onEnterPostEdit={enterPostEdit}
+                                onSaveUser={stableOnSaveUser}
                                 onSavePost={handleSavePost}
                                 onDiscardPost={handleDiscardPost}
                                 jumpToken={jumpToken}
                                 jumpToCardIndex={jumpToIndex}
-                                onConfirmLocations={onConfirmLocations}
+                                onConfirmLocations={stableOnConfirmLocations}
                             />
                         </View>
                         {isQueryDrawerOpen && (

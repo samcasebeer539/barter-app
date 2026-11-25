@@ -11,6 +11,7 @@ import { Post } from '@/types/index';
 import { OpenTradeItem } from '@/types'
 import { buildQueryTurns, buildOfferTurns, buildTradeTurns, sendOffer, sendQuery, rescindOffer } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
+import { useStableCallback } from '../hooks/useStableCallback';
 
 const { width } = Dimensions.get('window');
 
@@ -125,6 +126,16 @@ export default function OfferDeck({
         return prev;
     });
 }, [itemCount]);
+
+    // Stable callbacks for the (memoized) deck.
+    const handleQueryPostTap = useStableCallback((postIndex: number) => trade.setSubflowData(postIndex));
+    const handleSelectPost = useStableCallback((postIndex: number) => {
+        if (trade.activeAction !== 'offer') {
+            trade.selectAction('offer', postIndex);
+        } else {
+            trade.togglePost(postIndex);
+        }
+    });
 
     const handleActionSelected = (action: TradeAction) => {
         const { actionType, subAction } = action;
@@ -267,14 +278,8 @@ export default function OfferDeck({
                             selectColor={colors.actions.offer}
                             isQueryMode={isQueryActive}
                             querySelectedPostIndex={queryPostIndex}
-                            onQueryPostTap={(postIndex) => trade.setSubflowData(postIndex)}
-                            onSelectPost={(postIndex) => {
-                                if (trade.activeAction !== 'offer') {
-                                    trade.selectAction('offer', postIndex);
-                                } else {
-                                    trade.togglePost(postIndex);
-                                }
-                            }}
+                            onQueryPostTap={handleQueryPostTap}
+                            onSelectPost={handleSelectPost}
                             showUser={false}
                             showLocation={false}
                         />

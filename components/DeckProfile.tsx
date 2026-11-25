@@ -1,6 +1,8 @@
 import { useMemo, useRef, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
+import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import Deck, { DeckGroup } from './Deck';
 import TradeTurns, { TradeTurn } from './TradeTurns';
@@ -16,6 +18,8 @@ import { createPost, updatePost, deletePost } from '@/services/postService';
 import { IncomingQuery, IncomingOffer, resolvePostName, sendGameQuery } from '@/services/tradeService';
 
 const SLIDE_MARGIN = 0;
+// The offerers' deck slide: 440ms, ease in-out (as before).
+const SLIDE_TIMING = { duration: 440, easing: Easing.inOut(Easing.ease) };
 const { width } = Dimensions.get('window');
 
 
@@ -66,7 +70,10 @@ export default function ProfileDeck({
     incomingOffers = [],
     onQueryAnswered,
 }: ProfileDeckProps) {
-    const slideAnim = useRef(new Animated.Value(0)).current;
+    // 0 = offerers' deck hidden behind yours, 1 = fully slid out. Animated on
+    // the UI thread (Reanimated), so the slide stays smooth while the
+    // offerers' deck is still mounting on the JavaScript side.
+    const slide = useSharedValue(0);
     const hasIncomingQueries = incomingQueries.length > 0;
     const [showSecondary, setShowSecondary] = useState(false);
     const [secondaryHeight, setSecondaryHeight] = useState(0);
@@ -228,21 +235,25 @@ export default function ProfileDeck({
     );
 
     const animateOpen = useCallback(() => {
-        slideAnim.setValue(0);
-        Animated.timing(slideAnim, { toValue: 1, useNativeDriver: false, duration: 440 }).start();
-    }, [slideAnim]);
+        slide.value = 0;
+        slide.value = withTiming(1, SLIDE_TIMING);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [slide]);
+
+    const handleClosed = useCallback(() => {
+        setShowSecondary(false);
+        setSecondaryHeight(0);
+        trade.reset();
+        setScrolledActionType(tradeActions[0]?.actionType ?? null);
+        pendingOpenRef.current = false;
+    }, [trade, tradeActions]);
 
     const animateClose = useCallback(() => {
-        Animated.timing(slideAnim, { toValue: 0, useNativeDriver: false, duration: 440 }).start(({ finished }) => {
-            if (finished) {
-                setShowSecondary(false);
-                setSecondaryHeight(0);
-                trade.reset();
-                setScrolledActionType(tradeActions[0]?.actionType ?? null);
-                pendingOpenRef.current = false;
-            }
+        slide.value = withTiming(0, SLIDE_TIMING, finished => {
+            if (finished) scheduleOnRN(handleClosed);
         });
-    }, [slideAnim, trade, tradeActions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [slide, handleClosed]);
 
     useEffect(() => {
         if (isDeckRevealed) { pendingOpenRef.current = true; setShowSecondary(true); }
@@ -427,7 +438,10 @@ export default function ProfileDeck({
     }, [topCardType, topPrimaryPostIndex, posts, performDelete]);
 
     const cardWidth = Math.min(width - 36, 400);
-    const spacerHeight = slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, secondaryHeight + SLIDE_MARGIN] });
+    const spacerStyle = useAnimatedStyle(
+        () => ({ height: slide.value * (secondaryHeight + SLIDE_MARGIN) }),
+        [secondaryHeight],
+    );
     // New posts need at least one saved location (the location card says so).
     const hasSavedLocation = (primaryGroups[0]?.locations?.length ?? 0) > 0;
     const addPostDisabled = isPostEditMode || !hasSavedLocation;
@@ -545,7 +559,7 @@ export default function ProfileDeck({
                     </View>
                 )}
 
-                <Animated.View style={{ height: spacerHeight }} pointerEvents="none" />
+                <Reanimated.View style={spacerStyle} pointerEvents="none" />
 
                 {/* Primary deck — logged-in user, editable */}
                 <View style={styles.primaryDeckWrapper}>

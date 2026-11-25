@@ -154,12 +154,12 @@ export default function FeedDeck({
       backdropOpacity.setValue(0);
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: 0, useNativeDriver: true, duration: 440 }),
-        Animated.timing(backdropOpacity, { toValue: 1, duration: 700, useNativeDriver: false }),
+        Animated.timing(backdropOpacity, { toValue: 1, duration: 700, useNativeDriver: true }),
       ]).start();
     } else {
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: false }),
+        Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),
       ]).start(() => {
         setIsRendered(false);
         trade.reset();
@@ -173,7 +173,7 @@ export default function FeedDeck({
     Keyboard.dismiss();
     Animated.parallel([
       Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
-      Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: false }),
+      Animated.timing(backdropOpacity, { toValue: 0, duration: 80, useNativeDriver: true }),
     ]).start(() => onClose());
   };
 

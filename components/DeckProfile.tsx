@@ -438,10 +438,13 @@ export default function ProfileDeck({
     }, [topCardType, topPrimaryPostIndex, posts, performDelete]);
 
     const cardWidth = Math.min(width - 36, 400);
-    const spacerStyle = useAnimatedStyle(
-        () => ({ height: slide.value * (secondaryHeight + SLIDE_MARGIN) }),
-        [secondaryHeight],
-    );
+    // The offerers' section height, readable on the UI thread (a dependency
+    // list on useAnimatedStyle is web-only and warns on native).
+    const slideDistance = useSharedValue(0);
+    useEffect(() => {
+        slideDistance.value = secondaryHeight + SLIDE_MARGIN;
+    }, [secondaryHeight, slideDistance]);
+    const spacerStyle = useAnimatedStyle(() => ({ height: slide.value * slideDistance.value }));
     // New posts need at least one saved location (the location card says so).
     const hasSavedLocation = (primaryGroups[0]?.locations?.length ?? 0) > 0;
     const addPostDisabled = isPostEditMode || !hasSavedLocation;

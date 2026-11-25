@@ -5,7 +5,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { User } from '@/types/index';
-import { uploadProfilePhoto, getUserReviews, UserReview } from '@/services/userService';
+import { uploadProfilePhoto, getUserReviews, getCachedReviews, UserReview } from '@/services/userService';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
@@ -90,9 +90,15 @@ const UserCard: React.FC<UserCardProps> = ({
   useEffect(() => {
     if (!isReviewsOpen || !reviewsKey || reviewsLoadedFor.current === reviewsKey) return;
     reviewsLoadedFor.current = reviewsKey;
-    setReviews(null);
     setReviewsError(false);
-    getUserReviews(user._id!)
+    // Already fetched at this review count (this session): show it at once.
+    const cached = getCachedReviews(user._id!, reviewCount);
+    if (cached) {
+      setReviews(cached);
+      return;
+    }
+    setReviews(null);
+    getUserReviews(user._id!, reviewCount)
       .then(setReviews)
       .catch(err => {
         console.error('Failed to load reviews:', err);

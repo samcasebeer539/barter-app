@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { setLocationAllowedCache } from '@/hooks/useUserRegion';
+import { getSettings } from '@/lib/settingsCache';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
 import { colors, globalFonts } from '@/styles/globalStyles';
@@ -34,26 +35,24 @@ export default function SettingsScreen() {
         loadSettings();
     }, []);
     
+    // From the session's settings cache (the profile request fills it), so
+    // this usually doesn't hit the server; fetched once otherwise.
     const loadSettings = async () => {
-        const user = auth.currentUser;
-        if (!user) return;
-    
-        const token = await user.getIdToken();
-    
-        const response = await fetch(`${BASE_URL}/settings`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    
-        const data = await response.json();
+        if (!auth.currentUser) return;
+        let settings;
+        try {
+            settings = await getSettings();
+        } catch (err) {
+            console.log('Failed to load settings:', err);
+            return;
+        }
     
         // On only if it's on in your account and the phone allows it.
         const { status } = await Location.getForegroundPermissionsAsync();
-        const allowed = data.is_location_allowed !== false && status === 'granted';
+        const allowed = settings.locationAllowed && status === 'granted';
         setLocationEnabled(allowed);
         setLocationAllowedCache(allowed);
-        setNotificationsEnabled(data.notifications_enabled);
+        setNotificationsEnabled(settings.notificationsEnabled);
     };
 
     const handleBackPress = () => {

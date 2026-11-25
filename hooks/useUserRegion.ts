@@ -1,45 +1,25 @@
 // hooks/useUserRegion.ts
 //
 // The "Location Services" setting, and the area around the device for maps.
-// The setting is saved on the server (is_location_allowed); it's read once and
-// cached here, and the settings screen updates the cache when it changes.
+// The setting is saved on the server (is_location_allowed) and cached in
+// lib/settingsCache (filled by the profile request, or fetched once).
 import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
 import * as Location from 'expo-location';
-
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-let cachedAllowed: boolean | null = null;
-let pending: Promise<boolean> | null = null;
+import { getSettings, updateSettingsCache } from '@/lib/settingsCache';
 
 /** Whether the user has Location Services turned on in settings. */
 export async function getLocationAllowed(): Promise<boolean> {
-  if (cachedAllowed !== null) return cachedAllowed;
-  if (!pending) {
-    pending = (async () => {
-      try {
-        const token = await getAuth().currentUser?.getIdToken();
-        const res = await fetch(`${BASE_URL}/settings`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        cachedAllowed = data.is_location_allowed !== false;
-      } catch (err) {
-        console.error('Failed to load location setting:', err);
-        cachedAllowed = false;
-      } finally {
-        pending = null;
-      }
-      return cachedAllowed!;
-    })();
+  try {
+    return (await getSettings()).locationAllowed;
+  } catch (err) {
+    console.error('Failed to load location setting:', err);
+    return false;
   }
-  return pending;
 }
 
 /** Called by the settings screen whenever the toggle changes. */
 export function setLocationAllowedCache(value: boolean) {
-  cachedAllowed = value;
+  updateSettingsCache({ locationAllowed: value });
 }
 
 export interface Region {

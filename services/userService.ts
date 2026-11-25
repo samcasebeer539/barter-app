@@ -97,9 +97,22 @@ export interface UserReview {
 }
 
 /** Reviews other players left for this user, newest first. */
-export async function getUserReviews(userId: string): Promise<UserReview[]> {
+// Reviews already fetched this session, by user and review count. A new
+// review changes the count, so it's fetched fresh; otherwise reopening a
+// user's reviews (on any card, anywhere in the app) is instant.
+const reviewsCache = new Map<string, UserReview[]>();
+const reviewsKey = (userId: string, reviewCount: number) => `${userId}:${reviewCount}`;
+
+/** This user's reviews if already fetched at this review count. */
+export function getCachedReviews(userId: string, reviewCount: number): UserReview[] | undefined {
+  return reviewsCache.get(reviewsKey(userId, reviewCount));
+}
+
+export async function getUserReviews(userId: string, reviewCount?: number): Promise<UserReview[]> {
   const headers = await getAuthHeader();
   const res = await fetch(`${BASE_URL}/dev/users/${userId}/reviews`, { headers });
   if (!res.ok) throw new Error(`Failed to load reviews (${res.status})`);
-  return res.json();
+  const reviews: UserReview[] = await res.json();
+  if (reviewCount != null) reviewsCache.set(reviewsKey(userId, reviewCount), reviews);
+  return reviews;
 }

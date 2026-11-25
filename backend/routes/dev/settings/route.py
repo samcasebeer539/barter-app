@@ -22,11 +22,16 @@ def get_settings():
                 "error": "User not found"
             }), 404
 
-        return jsonify({
-            "is_location_allowed": user.get("is_location_allowed", True),
-            "notifications_enabled": user.get("notifications_enabled", True)
-        })
+        return jsonify(settings_for(user))
     
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+def settings_for(user):
+    """Location / notification settings, as GET /settings sends them."""
+    return {
+        "is_location_allowed": user.get("is_location_allowed", True),
+        "notifications_enabled": user.get("notifications_enabled", True),
+    }

@@ -20,6 +20,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Post, User, Locations } from '@/types/index';
 import { updateUser } from '@/services/userService';
 import { getProfilePage } from '@/services/profileService';
+import { setSettingsCache } from '@/lib/settingsCache';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
 import { getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
@@ -175,13 +176,18 @@ export default function ProfileScreen() {
   // just fetched all of this, so it's skipped (it used to fetch your user and
   // posts a second time at startup).
   const hasFocusedOnce = useRef(false);
+  // Version of the profile we have; the server sends nothing if it's current.
+  const profileVersion = useRef('');
   useFocusEffect(useCallback(() => {
     if (!hasFocusedOnce.current) {
       hasFocusedOnce.current = true;
       return;
     }
-    getProfilePage()
+    getProfilePage(profileVersion.current)
       .then(page => {
+        if (!page) return; // nothing changed while you were away
+        profileVersion.current = page.version;
+        setSettingsCache(page.settings);
         // Your rating can change while you're away (someone reviews you).
         setPrimaryUser(prev =>
           prev && (prev.rating !== page.user.rating || prev.reviewCount !== page.user.reviewCount)
@@ -213,7 +219,11 @@ export default function ProfileScreen() {
     const load = async () => {
       // ── Everything on the profile, in one request ─────────────────────────
       try {
-        const page = await getProfilePage();
+        const page = (await getProfilePage())!;
+        profileVersion.current = page.version;
+        // Your settings ride along, so the settings screen and the maps'
+        // centering don't need to fetch them.
+        setSettingsCache(page.settings);
         // Profiles before offers, so the offers never wait on a profile fetch.
         setOffererProfiles(page.offererProfiles);
         setIncomingOffers(page.incomingOffers);
@@ -332,7 +342,10 @@ export default function ProfileScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const page = await getProfilePage();
+      const page = await getProfilePage(profileVersion.current);
+      if (!page) return; // already up to date
+      profileVersion.current = page.version;
+      setSettingsCache(page.settings);
       setPrimaryUser(page.user);
       setPrimaryPosts(prev => [...prev.filter(p => !p._id), ...page.posts]);
       setOffererProfiles(page.offererProfiles);

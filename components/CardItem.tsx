@@ -280,7 +280,7 @@ const PostCard: React.FC<PostCardProps> = ({
               ) : null}
 
               <View style={styles.iconContainer}>
-                <FontAwesome6 name="arrows-rotate" size={24} color={colors.actions.trade} />
+                <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.cardsecondary} />
               </View>
             </View>
           </View>

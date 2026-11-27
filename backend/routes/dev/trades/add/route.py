@@ -43,6 +43,8 @@ def add_post():
         return jsonify({"error": "That post isn't one of the other player's"}), 400
     if post_id in game.post_ids():
         return jsonify({"error": "That post is already in the trade"}), 400
+    if Game.traded_post_ids([post_id]):
+        return jsonify({"error": "That item has already been traded"}), 409
 
     try:
         game.apply_transition("add", next_turn_user_id=partner_id, actor_id=user["_id"])

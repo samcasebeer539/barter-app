@@ -370,6 +370,61 @@ class Game:
             locked.update(doc.get("cards", {}).get(role, []))
         return locked
 
+    # Phases where the deal is final: its posts are spoken for.
+    FINAL_PHASES = ["agreed", "completed"]
+
+    @staticmethod
+    def _posts_query(post_ids) -> dict:
+        ids = list(post_ids)
+        return {"$or": [
+            {"target_post_id": {"$in": ids}},
+            {"cards.initiator": {"$in": ids}},
+            {"cards.receiver": {"$in": ids}},
+        ]}
+
+    @classmethod
+    def traded_post_ids(cls, post_ids) -> set:
+        """Which of post_ids are already in a finalized deal."""
+        ids = set(post_ids)
+        if not ids:
+            return set()
+        traded = set()
+        for doc in games_collection.find({**cls._posts_query(ids), "phase": {"$in": cls.FINAL_PHASES}}):
+            traded.update(ids & set(cls.from_doc(doc).post_ids()))
+        return traded
+
+    def decline_others_with_posts(self) -> int:
+        """Once this deal is final, every other ongoing game that involves
+        any of its posts (pending offers, open questions, barter, close) is
+        declined. The decline is credited to whoever in that game is part of
+        this deal, i.e. the owner of the traded post. Returns how many."""
+        mine = self.post_ids()
+        docs = games_collection.find({
+            **self._posts_query(mine),
+            "_id": {"$ne": self._id},
+            "phase": {"$nin": self.CLOSED_PHASES},
+        })
+        now = datetime.now(timezone.utc)
+        dealers = {self.initiator_user_id, self.receiver_user_id}
+        count = 0
+        for doc in docs:
+            other = Game.from_doc(doc)
+            actor = next((u for u in (other.receiver_user_id, other.initiator_user_id) if u in dealers),
+                         other.receiver_user_id)
+            other.advance("declined")
+            other.save()
+            trades_collection.insert_one({
+                "game_id": other._id,
+                "type": "decline",
+                "actor_id": actor,
+                "auto": True,
+                "reason": "post_traded",
+                "created_at": now,
+                "messages": [],
+            })
+            count += 1
+        return count
+
     def post_ids(self) -> list:
         """Every post in this game: both players' cards plus the target post."""
         ids = [self.target_post_id, *self.cards.get("initiator", []), *self.cards.get("receiver", [])]

@@ -29,6 +29,8 @@ def send_offer():
             return jsonify({"error": "Cannot offer on your own post"}), 400
         if target_post["user_id"] in blocked_ids_for(user):
             return jsonify({"error": "You can't trade with this user"}), 403
+        if Game.traded_post_ids([target_post_id]):
+            return jsonify({"error": "That item has already been traded"}), 409
 
         # Only one offer per player per post — duplicates are silently
         # ignored. Note: trade docs use actor_id, not initiator_user_id.

@@ -39,6 +39,8 @@ def send_barter():
     })
     if initiator_post_count != len(selected_post_ids):
         return jsonify({"error": "Selected posts must belong to the other player"}), 400
+    if Game.traded_post_ids(selected_post_ids + [game.target_post_id]):
+        return jsonify({"error": "One of those items has already been traded"}), 409
 
     try:
         game.apply_transition("barter", next_turn_user_id=game.initiator_user_id)

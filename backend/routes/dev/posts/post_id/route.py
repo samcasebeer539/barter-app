@@ -3,7 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import storage as firebase_storage
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, current_user, text_too_long, bad_post_fields
+from helpers import get_uid_from_request, current_user, text_too_long, bad_post_fields, pass_through_errors
 from models.game import Game
 
 posts_post_id_bp = Blueprint('posts_post_id', __name__)
@@ -19,7 +19,7 @@ def update_post(post_id):
             return jsonify({"error": "User not found"}), 404
 
         allowed_fields = {'post_title', 'description', 'photos', 'is_good'}
-        data = request.json
+        data = request.json or {}
         update = {k: v for k, v in data.items() if k in allowed_fields}
 
         if not update:
@@ -31,11 +31,17 @@ def update_post(post_id):
         if ObjectId(post_id) in Game.locked_post_ids_for(user["_id"]):
             return jsonify({"error": "This item is in an active trade and can't be edited"}), 409
 
-        posts_collection.update_one(
+        result = posts_collection.update_one(
             {"_id": ObjectId(post_id), "user_id": user["_id"]},
             {"$set": update}
         )
+        if result.matched_count == 0:
+            return jsonify({"error": "Post not found"}), 404
         return jsonify({"message": "Updated"}), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()
@@ -54,9 +60,11 @@ def delete_post(post_id):
         if ObjectId(post_id) in Game.locked_post_ids_for(user["_id"]):
             return jsonify({"error": "This item is in an active trade and can't be deleted"}), 409
 
-        posts_collection.delete_one(
+        result = posts_collection.delete_one(
             {"_id": ObjectId(post_id), "user_id": user["_id"]}
         )
+        if result.deleted_count == 0:
+            return jsonify({"error": "Post not found"}), 404
 
         # Pull the post's _id out of the user's posts array
         user_data_collection.update_one(
@@ -76,6 +84,10 @@ def delete_post(post_id):
             print(f"Storage cleanup warning: {storage_err}")
 
         return jsonify({"message": "Deleted"}), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

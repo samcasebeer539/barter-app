@@ -2,7 +2,7 @@ from flask import jsonify, Blueprint, request
 import traceback
 from bson.objectid import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
-from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user
+from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user, pass_through_errors
 from models.game import iso_utc
 
 userId_bp = Blueprint('userId', __name__)
@@ -40,6 +40,10 @@ def get_user_profile(user_id):
             "posts": owner_posts,
         }), 200
 
+    except pass_through_errors():
+
+        raise
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -74,6 +78,8 @@ def get_user_profiles():
             return jsonify({}), 200
 
         return jsonify(profiles_for(ids)), 200
+    except pass_through_errors():
+        raise
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -141,6 +147,8 @@ def get_user_reviews(user_id):
             }
             for r in reviews
         ]), 200
+    except pass_through_errors():
+        raise
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

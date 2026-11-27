@@ -28,10 +28,26 @@ python -m pytest tests -q
 - `test_safety.py`: block list and reports.
 - `test_trade_lists.py`: what each barter tab lists, turn-timer expiry on
   load, 204 caching, answers, post deletion.
+- `test_questions.py`: questions from the feed, from a post owner to the
+  person who offered, and as turns in barter / close.
+- `test_bad_requests.py`: every route given broken requests (missing or
+  malformed ids, unknown ids, no JSON, wrong phase, off turn, no profile
+  yet) answers with a clear 4xx, never a 500.
 
 A test marked `xfail` documents a known gap: it fails today on purpose,
 and the run stays green. When the gap is fixed it starts passing, which
-fails the run until the `xfail` mark is removed.
+fails the run until the `xfail` mark is removed. (None right now.)
+
+## Coverage
+
+About 89% of the server code (routes, models, helpers) runs under the
+tests. Most of the rest is each route's catch-all `except Exception` that
+turns an unexpected crash into a 500. To see it:
+
+```
+pip install pytest-cov
+python -m pytest tests -q --cov=routes --cov=models --cov=helpers.py --cov=init.py --cov-report=term-missing
+```
 
 ## Not covered
 

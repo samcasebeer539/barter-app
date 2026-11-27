@@ -1,7 +1,7 @@
 from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection
-from helpers import get_uid_from_request, current_user, text_too_long
+from helpers import get_uid_from_request, current_user, text_too_long, pass_through_errors
 
 locations_bp = Blueprint('locations', __name__)
 
@@ -17,6 +17,10 @@ def get_my_locations():
             return jsonify({"error": "User not found"}), 404
 
         return jsonify(user.get("locations", [])), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()
@@ -56,6 +60,10 @@ def save_my_locations():
             {"$set": {"locations": locations}}
         )
         return jsonify({"message": "Locations updated"}), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

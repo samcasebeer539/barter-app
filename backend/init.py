@@ -40,7 +40,14 @@ from routes.dev.feed.search.route import feed_search_bp
 
 
 from models.game import GameConflictError
+from bson.errors import InvalidId
 app = Flask(__name__)
+
+
+@app.errorhandler(InvalidId)
+def invalid_id(e):
+    """A malformed id anywhere in a request (ObjectId("nope"))."""
+    return jsonify({"error": "Invalid id"}), 400
 
 
 @app.errorhandler(GameConflictError)

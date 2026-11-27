@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection
-from helpers import get_uid_from_request
+from helpers import get_uid_from_request, pass_through_errors
 
 locations_userid_bp = Blueprint('locations_userid', __name__)
 
@@ -23,6 +23,10 @@ def get_user_locations(user_id):
             return jsonify({"error": "User not found"}), 404
 
         return jsonify(user.get("locations", [])), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

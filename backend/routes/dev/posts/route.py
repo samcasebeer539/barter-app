@@ -5,7 +5,7 @@ from backend import user_data_collection, posts_collection
 from bson import ObjectId
 from bson.errors import InvalidId
 from pymongo.errors import DuplicateKeyError
-from helpers import get_uid_from_request, serialize_post, current_user, text_too_long, bad_post_fields
+from helpers import get_uid_from_request, serialize_post, current_user, text_too_long, bad_post_fields, pass_through_errors
 from models.game import Game
 
 posts_bp = Blueprint('posts', __name__)
@@ -21,6 +21,10 @@ def get_posts():
             return jsonify({"error": "User not found"}), 404
 
         return jsonify(my_posts_for(user)), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()
@@ -72,6 +76,10 @@ def create_post():
 
         new_post = serialize_post(new_post)
         return jsonify(new_post), 201
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, with_distances, current_user, blocked_ids_for
+from helpers import get_uid_from_request, with_distances, current_user, blocked_ids_for, pass_through_errors
 
 feed_bp = Blueprint('feed', __name__)
 
@@ -22,6 +22,10 @@ def get_feed():
         posts = list(posts_collection.find(query).sort("date_posted", -1))
         posts = with_distances(posts, user)
         return jsonify(posts), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

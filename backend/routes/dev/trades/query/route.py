@@ -14,6 +14,8 @@ def get_queries():
         return err
 
     user = current_user()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
     return jsonify(open_queries_for(user)), 200
 
 

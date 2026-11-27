@@ -2,7 +2,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
-from helpers import current_user, get_uid_from_request
+from helpers import current_user, get_uid_from_request, pass_through_errors
 
 user_data_bp = Blueprint('user_data', __name__)
 
@@ -17,6 +17,10 @@ def get_user_data():
             return jsonify({"message": "No user found"}), 400
         
         return jsonify(own_user_json(existing_user)), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

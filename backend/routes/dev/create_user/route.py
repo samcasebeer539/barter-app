@@ -3,7 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
-from helpers import current_user, current_token, text_too_long
+from helpers import current_user, current_token, text_too_long, pass_through_errors
 
 create_user_bp = Blueprint('create_user', __name__)
 
@@ -51,6 +51,8 @@ def create_user():
         new_user_data["_id"] = str(result.inserted_id)
 
         return jsonify({"message": "User created", "User": new_user_data}), 201
+    except pass_through_errors():
+        raise
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

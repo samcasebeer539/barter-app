@@ -2,7 +2,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
-from helpers import get_uid_from_request, text_too_long
+from helpers import get_uid_from_request, text_too_long, pass_through_errors
 
 update_user_bp = Blueprint('update_user', __name__)
 
@@ -23,6 +23,10 @@ def update_user():
 
         user_data_collection.update_one({"firebase_uid": uid}, {"$set": update})
         return jsonify({"message": "Updated"}), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user
+from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user, pass_through_errors
 
 postId_bp = Blueprint('postId', __name__)
 
@@ -33,6 +33,10 @@ def get_feed_profile(post_id):
             "posts": owner_posts,
             "tapped_post_id": post_id,
         }), 200
+
+    except pass_through_errors():
+
+        raise
 
     except Exception as e:
         traceback.print_exc()

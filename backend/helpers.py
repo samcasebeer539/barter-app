@@ -1,6 +1,8 @@
 import hashlib
 import json
 from flask import jsonify, request, Response, g
+from werkzeug.exceptions import HTTPException
+from bson.errors import InvalidId
 from firebase_admin import auth as firebase_auth
 from bson import ObjectId
 import math
@@ -214,3 +216,11 @@ def bad_post_fields(data):
     if "is_good" in data and not isinstance(data["is_good"], bool):
         return jsonify({"error": "is_good must be true or false"}), 400
     return None
+
+
+# Errors a route's catch-all `except Exception` must re-raise rather than
+# turn into a 500: Flask's own 4xx (e.g. no JSON body), malformed ids
+# (InvalidId -> 400, see init.py) and racing moves (GameConflictError -> 409).
+def pass_through_errors():
+    from models.game import GameConflictError
+    return (HTTPException, InvalidId, GameConflictError)

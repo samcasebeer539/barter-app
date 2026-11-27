@@ -11,6 +11,8 @@ def get_incoming_offers():
         return err
 
     user = current_user()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
     return jsonify(incoming_offers_for(user)), 200
 
 
@@ -66,6 +68,8 @@ def get_incoming_queries():
         return err
 
     user = current_user()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
     return jsonify(incoming_queries_for(user)), 200
 
 

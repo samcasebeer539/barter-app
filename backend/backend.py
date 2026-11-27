@@ -47,18 +47,12 @@ except PyMongoError as err:
 
 db = client.dev
 user_data_collection = db.user_data
-user_data_collection.create_index("firebase_uid", unique=True)
 posts_collection = db.posts
 trades_collection = db.trades
 games_collection = db.games
 # Reports of users / posts, read by a person (in Atlas for now).
 reports_collection = db.reports
 
-# Indexes for the lookups the app makes constantly (barter page lists, turn
-# logs, profiles). create_index does nothing if the index already exists.
-games_collection.create_index([("initiator_user_id", 1), ("phase", 1)])
-games_collection.create_index([("receiver_user_id", 1), ("phase", 1)])
-games_collection.create_index([("initiator_user_id", 1), ("target_post_id", 1)])
-trades_collection.create_index([("game_id", 1), ("created_at", 1)])
-trades_collection.create_index([("actor_id", 1), ("type", 1), ("game_id", 1)])
-posts_collection.create_index("user_id")
+# All indexes live in db_indexes.py (the tests build the same ones).
+from db_indexes import create_indexes
+create_indexes(db)

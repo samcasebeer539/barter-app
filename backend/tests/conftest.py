@@ -1,9 +1,9 @@
 """Test setup for the Flask server.
 
-Nothing here touches the real Mongo or Firebase:
-- `backend` (the Mongo connection module) is replaced by an in-memory
-  mongomock database with the same collections and the unique index on
-  firebase_uid.
+Nothing here touches the real Atlas database or Firebase:
+- `backend` (the Mongo connection module) is replaced by a test database
+  with the same collections and indexes (db_indexes.py): in-memory
+  mongomock by default, or a local MongoDB if TEST_MONGO_URI is set.
 - `firebase_admin` is replaced by a stub. A request with
   `Authorization: Bearer alice` is logged in as the user whose firebase_uid
   is "alice". Storage calls are recorded in `storage_calls`.
@@ -59,10 +59,31 @@ def _install_fake_firebase():
     })
 
 
-# ── fake Mongo ───────────────────────────────────────────────────────────────
+# ── Mongo: in-memory fake, or a real server ─────────────────────────────────
+#
+# By default the tests use mongomock (fast, nothing to install). Set
+# TEST_MONGO_URI (e.g. mongodb://localhost:27017) to run the same tests
+# against a real MongoDB instead; CI does both. The test database is
+# dropped first, so never point this at the real Atlas database.
+
+TEST_DB_NAME = "wwtest"
+
+
+def _test_db():
+    uri = os.environ.get("TEST_MONGO_URI")
+    if not uri:
+        return mongomock.MongoClient()[TEST_DB_NAME]
+    if "mongodb.net" in uri:
+        raise RuntimeError("TEST_MONGO_URI points at Atlas; use a throwaway local MongoDB")
+    from pymongo import MongoClient
+    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    client.drop_database(TEST_DB_NAME)
+    return client[TEST_DB_NAME]
+
 
 def _install_fake_backend():
-    db = mongomock.MongoClient().dev
+    from db_indexes import create_indexes
+    db = _test_db()
     backend = types.ModuleType("backend")
     backend.db = db
     backend.user_data_collection = db.user_data
@@ -70,7 +91,7 @@ def _install_fake_backend():
     backend.trades_collection = db.trades
     backend.games_collection = db.games
     backend.reports_collection = db.reports
-    db.user_data.create_index("firebase_uid", unique=True)
+    create_indexes(db)  # the same indexes as the real server
     sys.modules["backend"] = backend
     return backend
 

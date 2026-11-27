@@ -159,6 +159,8 @@ export default function FeedDeck({
   // while the modal and deck were still being built (a varying amount each
   // time), so the visible slide looked faster on some opens than others.
   const pendingOpen = useRef(false);
+  const openBackstop = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (openBackstop.current) clearTimeout(openBackstop.current); }, []);
   const startOpenAnimation = () => {
     if (!pendingOpen.current) return;
     pendingOpen.current = false;
@@ -182,10 +184,11 @@ export default function FeedDeck({
       } else {
         setIsRendered(true);
         // Backstop in case a layout event never arrives.
-        setTimeout(startOpenAnimation, 500);
+        openBackstop.current = setTimeout(startOpenAnimation, 500);
       }
     } else {
       pendingOpen.current = false;
+      if (openBackstop.current) clearTimeout(openBackstop.current);
       Animated.parallel([
         Animated.timing(deckTranslateY, { toValue: height, duration: 80, useNativeDriver: true }),
         Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),

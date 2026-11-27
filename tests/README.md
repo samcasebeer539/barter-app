@@ -22,6 +22,10 @@ becomes a screen in expo-router.
 | `CardItem.test.tsx` | Post card: report vs edit buttons, locked posts, save needs a title and photo, cancel discards a new post, the 10-photo cap, the title limit |
 | `safety.test.tsx` | Block / unblock / report through the real alerts flow: confirm first, the button turning red, failures shown, "Other" needing details, Android without the text prompt |
 
+| `DeckFeed.test.tsx` | Feed deck: offer / query only on posts, an open question closes when you swipe to the user card, offers one post at a time, sent turns shown, ADD mode from a trade |
+| `DeckProfile.test.tsx` | Profile deck: barter / query / decline to offerers, one offerer's posts per barter, failed questions keep your text, the offer's history, the QUERIES drawer, counts |
+| `DeckTrade.test.tsx` | A trade: WAIT when it's not your turn or a question needs answering, which moves the wheel offers (subtract, final accept, review), every move sent for the right game, refused moves reported, ADD, where / when, review, the turn timer |
+
 Component tests find buttons by `testID` (e.g. `action-query`,
 `post-save`, `user-block`). The action wheel repeats every action, so use
 the first match: `getAllByTestId('action-query')[0]`. Icons are mocked to
@@ -29,3 +33,20 @@ render their name as text (`icon:circle`) so a test can tell which one shows.
 
 Mock a module with `jest.mock('path', () => ({...}))` at the top of a file.
 Variables used inside the factory must start with `mock` (Jest's rule).
+
+## Deck tests
+
+The decks are mostly gestures and animation, so their tests swap the card
+stack, wheel and turn log for stand-ins (`helpers/deckRecorders.tsx`) and
+test the deck's own decisions: what it tells the wheel, and what it sends.
+A test acts like a person:
+
+```ts
+await swipeTo(0, { deck: 'theirs' });   // their first post comes to the top
+await scrollWheelTo('query');           // scroll the wheel to QUERY
+await press('query');                   // tap its button
+await typeQuestion('Still have it?');
+await confirm('query');                 // tap the arrow
+expect(sendGameQuery).toHaveBeenCalledWith('g1', 'Still have it?', 'chair');
+expect(wheel().activeActionType).toBeNull();
+```

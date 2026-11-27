@@ -390,7 +390,7 @@ class Game:
             return set()
         traded = set()
         for doc in games_collection.find({**cls._posts_query(ids), "phase": {"$in": cls.FINAL_PHASES}}):
-            traded.update(ids & set(cls.from_doc(doc).post_ids()))
+            traded.update(ids & set(cls.from_doc(doc).card_ids()))
         return traded
 
     def decline_others_with_posts(self) -> int:
@@ -398,7 +398,7 @@ class Game:
         any of its posts (pending offers, open questions, barter, close) is
         declined. The decline is credited to whoever in that game is part of
         this deal, i.e. the owner of the traded post. Returns how many."""
-        mine = self.post_ids()
+        mine = self.card_ids()
         docs = games_collection.find({
             **self._posts_query(mine),
             "_id": {"$ne": self._id},
@@ -424,6 +424,11 @@ class Game:
             })
             count += 1
         return count
+
+    def card_ids(self) -> list:
+        """The posts actually on the table (both sides' cards). Unlike
+        post_ids, leaves out the target post if it was subtracted."""
+        return list(dict.fromkeys([*self.cards.get("initiator", []), *self.cards.get("receiver", [])]))
 
     def post_ids(self) -> list:
         """Every post in this game: both players' cards plus the target post."""

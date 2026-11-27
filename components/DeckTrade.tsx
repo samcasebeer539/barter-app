@@ -543,8 +543,8 @@ export default function TradeDeck({
               {partnerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {partnerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
               <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{partnerPosts.length}</Text>
+              <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
             </View>
-            <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
             <View style={deckStyles.cardLineup}>
@@ -552,8 +552,8 @@ export default function TradeDeck({
               {playerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {playerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
               <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{playerPosts.length}</Text>
+              <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
             </View>
-            <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
         </View>
 

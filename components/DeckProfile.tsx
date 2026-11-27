@@ -634,8 +634,8 @@ export default function ProfileDeck({
                                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
                                     <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />
                                     <Text style={[deckStyles.countText, { color: colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+                                    <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
                                 </View>
-                                <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
                             </View>
                         </View>
                     </View>

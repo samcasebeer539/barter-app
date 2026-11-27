@@ -167,8 +167,8 @@ countText: {
     fontFamily: globalFonts.bold,
     color: colors.ui.secondarydisabled,
 },
-// A deck's card icons and its post count, as shown on the bars: one row,
-// 4px apart, the same in every deck.
+// A deck's card icons, its post count and the switch / refresh icon, as
+// shown on the deck bars: one row, 4px apart, the same in every deck.
 cardLineup: {
     flexDirection: 'row',
     alignItems: 'center',

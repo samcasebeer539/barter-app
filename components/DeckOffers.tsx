@@ -259,8 +259,10 @@ export default function OfferDeck({
                         <Text style={[deckStyles.actionButtonText, { marginRight: 'auto', color: label.color }]}>
                             {label.text}
                         </Text>
-                        <Text style={deckStyles.countText}>0{itemCount}</Text>
-                        <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
+                        <View style={deckStyles.cardLineup}>
+                            <Text style={deckStyles.countText}>0{itemCount}</Text>
+                            <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
+                        </View>
                     </View>
                 </View>
 

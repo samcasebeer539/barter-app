@@ -341,10 +341,12 @@ export default function FeedDeck({
             <View style={deckStyles.column}>
               <View style={deckStyles.itemCountRow}>
                 <View style={styles.statusBar}>
-                  <FontAwesome6 name='circle-user' size={24} color={colors.ui.secondarydisabled} />
-                  <FontAwesome6 name='circle-dot' size={24} color={colors.ui.secondarydisabled} />
-                  <Text style={[deckStyles.countText]}>0{postCount}</Text>
-                  <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
+                  <View style={deckStyles.cardLineup}>
+                    <FontAwesome6 name='circle-user' size={24} color={colors.ui.secondarydisabled} />
+                    <FontAwesome6 name='circle-dot' size={24} color={colors.ui.secondarydisabled} />
+                    <Text style={deckStyles.countText}>0{postCount}</Text>
+                    <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
+                  </View>
                 </View>
               </View>
 

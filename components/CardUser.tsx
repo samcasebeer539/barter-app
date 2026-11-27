@@ -7,6 +7,8 @@ import { globalFonts, colors } from '../styles/globalStyles';
 import { User } from '@/types/index';
 import { uploadProfilePhoto, getUserReviews, getCachedReviews, UserReview } from '@/services/userService';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
+import { confirmBlock } from '@/lib/safety';
+import ReportSheet from './ReportSheet';
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
 
@@ -80,6 +82,7 @@ const UserCard: React.FC<UserCardProps> = ({
   // Reviews: tapping the stars or count opens the list in place of the
   // contacts and bio (and collapses the photo). Loaded on first open.
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const [reviews, setReviews] = useState<UserReview[] | null>(null);
   const [reviewsError, setReviewsError] = useState(false);
   const reviewsLoadedFor = useRef<string | null>(null);
@@ -234,6 +237,14 @@ const UserCard: React.FC<UserCardProps> = ({
       style={[styles.container, { transform: [{ scale }] }]}
       onStartShouldSetResponder={() => true}
     >
+      {!isUser && (
+        <ReportSheet
+          visible={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          userId={user._id}
+          name={user.first_name}
+        />
+      )}
       <View style={[styles.container, { transform: [{ scale }] }]} pointerEvents="box-none">
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
 
@@ -323,11 +334,19 @@ const UserCard: React.FC<UserCardProps> = ({
                 </>
               ) : (
                 <>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <FontAwesome6 name="ban" size={24} color={colors.ui.cardsecondary} />
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    disabled={!user._id}
+                    onPress={() => user._id && confirmBlock(user._id, user.first_name || 'this user')}
+                  >
+                    <FontAwesome6 name="ban" size={24} color={user._id ? colors.ui.cardsecondary : colors.ui.carddisabled} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <FontAwesome6 name="circle-exclamation" size={24} color={colors.ui.cardsecondary} />
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    disabled={!user._id}
+                    onPress={() => setIsReportOpen(true)}
+                  >
+                    <FontAwesome6 name="circle-exclamation" size={24} color={user._id ? colors.ui.cardsecondary : colors.ui.carddisabled} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionButton}>
                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />

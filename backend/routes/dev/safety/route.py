@@ -143,4 +143,4 @@ def report():
         "status": "open",
         "created_at": datetime.now(timezone.utc),
     })
-    return jsonify({"success": True}), 201
+    return jsonify({"success": True, "reportedUserId": str(reported_id)}), 201

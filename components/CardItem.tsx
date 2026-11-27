@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
+import ReportSheet from './ReportSheet';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import TextTicker from 'react-native-text-ticker';
@@ -15,6 +16,8 @@ interface PostCardProps {
   isSelectMode?: boolean;
   isSelected?: boolean;
   onSelect?: () => void;
+  /** The post owner's first name, for reporting (other people's posts). */
+  ownerName?: string;
   selectColor?: string;
   isUser?: boolean;
   isEditable?: boolean;
@@ -64,6 +67,7 @@ const PostCard: React.FC<PostCardProps> = ({
   isSelectMode = false,
   isSelected = false,
   onSelect,
+  ownerName,
   selectColor = colors.actions.offer,
   isUser = false,
   isEditable = false,
@@ -90,6 +94,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
   // Keeps the field you're typing in above the keyboard.
   const kbField = useKeyboardLiftField();
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const updateDraft = (field: keyof typeof draft, value: any) => {
     setDraft(prev => ({ ...prev, [field]: value }));
@@ -194,6 +199,14 @@ const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <View style={[styles.container, { transform: [{ scale }] }]} onStartShouldSetResponder={() => true}>
+      {!isUser && post._id && (
+        <ReportSheet
+          visible={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          postId={post._id}
+          name={ownerName}
+        />
+      )}
       <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
 
@@ -267,6 +280,11 @@ const PostCard: React.FC<PostCardProps> = ({
                     size={24}
                     color={post.inTrade ? colors.ui.carddisabled : colors.ui.cardsecondary}
                   />
+                </TouchableOpacity>
+              ) : !isUser && post._id ? (
+                // Someone else's post: report it.
+                <TouchableOpacity style={styles.iconContainer} onPress={() => setIsReportOpen(true)}>
+                  <FontAwesome6 name="circle-exclamation" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               ) : null}
 

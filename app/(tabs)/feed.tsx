@@ -6,6 +6,7 @@ import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
 import { deckStyles } from '../../styles/deckStyles';
+import { onUserBlocked } from '@/lib/safety';
 import { getFeedPosts, getFeedProfile, searchFeedPosts } from '@/services/feedService';
 import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -256,6 +257,12 @@ export default function FeedScreen() {
 
     const HEADER_HEIGHT = 52;
     const [refreshing, setRefreshing] = useState(false);
+
+    // After blocking someone: close their deck and reload without their posts.
+    useEffect(() => onUserBlocked(() => {
+        setShowDeck(false);
+        showBatch(searchQuery.length > 0 ? () => searchFeedPosts(searchQuery) : getFeedPosts);
+    }), [searchQuery, showBatch]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);

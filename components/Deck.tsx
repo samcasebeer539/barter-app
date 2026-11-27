@@ -71,7 +71,7 @@ interface DeckProps {
 
 type DeckItem =
   | { type: 'user'; groupIndex: number; user: User }
-  | { type: 'post'; groupIndex: number; post: Post; postIndex: number }
+  | { type: 'post'; groupIndex: number; post: Post; postIndex: number; owner?: User }
   | { type: 'datetime'; groupIndex: number; proposedTime: string | null }
   | { type: 'location'; groupIndex: number; locations: Locations[]; proposedLocation: Locations | null };
 
@@ -208,6 +208,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
             isEditable={isFront && isPostEditMode && !card.post.inTrade}
             onEnterEdit={onEnterPostEdit} onExitEdit={onExitPostEdit} onSave={onSavePost}
             onDiscard={onDiscardPost ? () => onDiscardPost(card.postIndex) : undefined}
+            ownerName={card.owner?.first_name}
             isQueryMode={isFront && isQueryMode}
             isQuerySelected={isQuerySelected}
             onSelect={
@@ -275,7 +276,7 @@ const Deck: React.FC<DeckProps> = ({
                 proposedLocation: group.proposedLocation ?? null,
             });
             group.posts.forEach(post => {
-                groupCards.push({ type: 'post', groupIndex, post, postIndex: globalPostIndex });
+                groupCards.push({ type: 'post', groupIndex, post, postIndex: globalPostIndex, owner: group.user });
                 globalPostIndex++;
             });
             return groupCards;

@@ -21,6 +21,7 @@ import { Post, User, Locations } from '@/types/index';
 import { updateUser } from '@/services/userService';
 import { getProfilePage } from '@/services/profileService';
 import { setSettingsCache } from '@/lib/settingsCache';
+import { onUserBlocked } from '@/lib/safety';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
 import { getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
@@ -338,8 +339,7 @@ export default function ProfileScreen() {
   // Pull to refresh, like the feed: reload everything on the profile. A new
   // post you haven't saved yet stays at the front of the deck.
   const [refreshing, setRefreshing] = useState(false);
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
+  const reloadProfile = useCallback(async () => {
     try {
       const page = await getProfilePage(profileVersion.current);
       if (!page) return; // already up to date
@@ -353,10 +353,19 @@ export default function ProfileScreen() {
       setMyLocations(page.locations);
     } catch (err) {
       console.warn('Failed to refresh profile:', err);
+    }
+  }, []);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reloadProfile();
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [reloadProfile]);
+
+  // Blocking someone declines their offers and questions: reload.
+  useEffect(() => onUserBlocked(() => { reloadProfile(); }), [reloadProfile]);
 
   useEffect(() => {
     if (deckReady || !primaryUser || !deckImagesLoaded || myLocations === null || !deckLaidOut) return;

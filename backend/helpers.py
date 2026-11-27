@@ -140,7 +140,7 @@ def current_user():
     return user
 
 # Never sent to anyone but the account owner.
-_PRIVATE_USER_FIELDS = {"firebase_uid", "email", "phone"}
+_PRIVATE_USER_FIELDS = {"firebase_uid", "email", "phone", "blocked_user_ids"}
 
 
 def public_user(user):

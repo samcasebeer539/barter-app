@@ -28,4 +28,7 @@ def own_user_json(user):
     out = dict(user)
     out["_id"] = str(out["_id"])
     out["posts"] = [str(p) for p in out.get("posts", [])]
+    # Ids of people you've blocked (ObjectIds can't be sent as JSON as is).
+    if "blocked_user_ids" in out:
+        out["blocked_user_ids"] = [str(i) for i in out["blocked_user_ids"]]
     return out

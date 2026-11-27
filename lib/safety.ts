@@ -3,7 +3,7 @@
 // Blocking and reporting other players. A block hides each of you from the
 // other (feed, search, profiles), stops offers and questions between you,
 // and declines your ongoing trades; reports are saved for review.
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { apiJson } from './api';
 
 export type ReportReason = 'spam' | 'scam' | 'inappropriate' | 'harassment' | 'other';
@@ -72,6 +72,47 @@ export function confirmBlock(userId: string, name: string, onBlocked?: () => voi
             .catch(err => Alert.alert("Couldn't block", err instanceof Error ? err.message : String(err)));
         },
       },
+    ],
+  );
+}
+
+/** Report a user or one of their posts with the system alerts (like
+ *  blocking): pick a reason, optionally add details (iOS), then it offers
+ *  to block them too. `name` is how they're shown ("Sam"). */
+export function startReport(target: { userId?: string; postId?: string; name?: string }) {
+  const who = target.name || 'this user';
+
+  const send = (reason: ReportReason, note?: string) => {
+    report({ userId: target.userId, postId: target.postId, reason, note: note?.trim() || undefined })
+      .then(reportedUserId => {
+        Alert.alert('Thanks for reporting', "We'll review it. Do you also want to block them?", [
+          { text: 'Not now', style: 'cancel' },
+          { text: `Block ${who}`, style: 'destructive', onPress: () => confirmBlock(reportedUserId, who) },
+        ]);
+      })
+      .catch(err => Alert.alert("Couldn't send the report", err instanceof Error ? err.message : String(err)));
+  };
+
+  // Optional details: iOS has a text-entry alert; Android sends without.
+  const askForDetails = (reason: ReportReason) => {
+    if (Platform.OS !== 'ios') return send(reason);
+    Alert.prompt(
+      'Add details?',
+      'Optional. Anything that would help us review it.',
+      [
+        { text: 'Skip', onPress: () => send(reason) },
+        { text: 'Send', onPress: (note?: string) => send(reason, note) },
+      ],
+      'plain-text',
+    );
+  };
+
+  Alert.alert(
+    target.postId ? 'Report this post' : `Report ${who}`,
+    'Why are you reporting this?',
+    [
+      ...REPORT_REASONS.map(r => ({ text: r.label, onPress: () => askForDetails(r.key) })),
+      { text: 'Cancel', style: 'cancel' as const },
     ],
   );
 }

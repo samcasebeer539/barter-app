@@ -7,13 +7,16 @@ import {
     TouchableOpacity,
     Switch,
     Alert,
+    useWindowDimensions,
     Linking,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { setLocationAllowedCache } from '@/hooks/useUserRegion';
 import { getSettings } from '@/lib/settingsCache';
 import { apiJson } from '@/lib/api';
-import { getBlockedUsers, unblockUser, BlockedUser } from '@/lib/safety';
+import { getBlockedUsers, onBlockChange } from '@/lib/safety';
+import Deck, { DeckGroup } from '@/components/Deck';
+import { User } from '@/types/index';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
 import { colors, globalFonts } from '@/styles/globalStyles';
@@ -29,10 +32,12 @@ export default function SettingsScreen() {
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
     const [locationEnabled, setLocationEnabled] = React.useState(true);
     const [helpExpanded, setHelpExpanded] = React.useState(false);
+    // Blocked users, shown as a deck of their user cards. Loaded fresh each
+    // time the section opens; a card's block button (lit while blocked)
+    // offers to unblock, which takes the card out of the deck.
     const [blockedExpanded, setBlockedExpanded] = React.useState(false);
-    const [blockedUsers, setBlockedUsers] = React.useState<BlockedUser[] | null>(null);
-
-    // Loaded fresh each time the list is opened.
+    const [blockedUsers, setBlockedUsers] = React.useState<User[] | null>(null);
+    const [scrollEnabled, setScrollEnabled] = React.useState(true);
     const toggleBlocked = () => {
         const opening = !blockedExpanded;
         setBlockedExpanded(opening);
@@ -43,24 +48,19 @@ export default function SettingsScreen() {
                 .catch(err => { console.warn('Failed to load blocked users:', err); setBlockedUsers([]); });
         }
     };
-
-    const handleUnblock = (u: BlockedUser) => {
-        Alert.alert(
-            `Unblock ${u.first_name}?`,
-            "You'll see each other's posts again and can trade. Trades that were declined when you blocked them stay declined.",
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Unblock',
-                    onPress: () => {
-                        unblockUser(u._id)
-                            .then(() => setBlockedUsers(prev => (prev ?? []).filter(b => b._id !== u._id)))
-                            .catch(err => Alert.alert("Couldn't unblock", err instanceof Error ? err.message : String(err)));
-                    },
-                },
-            ],
-        );
-    };
+    React.useEffect(() => onBlockChange((userId, blocked) => {
+        if (!blocked) setBlockedUsers(prev => prev && prev.filter(u => u._id !== userId));
+    }), []);
+    const blockedGroups: DeckGroup[] = React.useMemo(
+        () => (blockedUsers ?? []).map(user => ({ user, posts: [], locations: [] })),
+        [blockedUsers],
+    );
+    const { width: screenWidth } = useWindowDimensions();
+    // Fits inside a section (12px margins, 16px padding) with the deck's
+    // stacked cards.
+    const blockedCardWidth = Math.min(screenWidth - 24 - 32 - 12, 400);
+    const disableScroll = React.useCallback(() => setScrollEnabled(false), []);
+    const enableScroll = React.useCallback(() => setScrollEnabled(true), []);
     const [aboutExpanded, setAboutExpanded] = React.useState(false);
     const [termsExpanded, setTermsExpanded] = React.useState(false);
     
@@ -161,7 +161,10 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView style={[styles.scrollView, { marginTop: insets.top + HEADER_HEIGHT }]}>
+            <ScrollView
+                style={[styles.scrollView, { marginTop: insets.top + HEADER_HEIGHT }]}
+                scrollEnabled={scrollEnabled}
+            >
                 {/* Account Section */}
                 {/* <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account</Text>
@@ -215,35 +218,6 @@ export default function SettingsScreen() {
                         />
                     </View>
 
-                    {/* Blocked users: opens a list where you can unblock them. */}
-                    <TouchableOpacity style={styles.settingItem} onPress={toggleBlocked}>
-                        <View style={styles.settingLeft}>
-                            <Text style={styles.settingText}>Blocked Users</Text>
-                        </View>
-                        <FontAwesome6
-                            name={blockedExpanded ? "circle-chevron-up" : "circle-chevron-right"}
-                            size={22}
-                            color={blockedExpanded ? colors.text.primary : colors.ui.secondarydisabled}
-                        />
-                    </TouchableOpacity>
-                    {blockedExpanded && (
-                        <View style={styles.dropdownContainer}>
-                            {blockedUsers === null ? (
-                                <Text style={styles.dropdownText}>Loading…</Text>
-                            ) : blockedUsers.length === 0 ? (
-                                <Text style={styles.dropdownText}>You haven't blocked anyone.</Text>
-                            ) : (
-                                blockedUsers.map(u => (
-                                    <View key={u._id} style={styles.blockedRow}>
-                                        <Text style={styles.dropdownText}>{`${u.first_name} ${u.last_name}`.trim()}</Text>
-                                        <TouchableOpacity onPress={() => handleUnblock(u)} hitSlop={8}>
-                                            <Text style={styles.unblockText}>Unblock</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ))
-                            )}
-                        </View>
-                    )}
                     {/*
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
@@ -255,6 +229,47 @@ export default function SettingsScreen() {
                         </View>
                     </TouchableOpacity>
                     */}
+                </View>
+
+                {/* Safety: blocked users as a deck of their cards */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Safety</Text>
+                    <TouchableOpacity style={styles.settingItem} onPress={toggleBlocked}>
+                        <View style={styles.settingLeft}>
+                            <Text style={styles.settingText}>Blocked Users</Text>
+                        </View>
+                        <FontAwesome6
+                            name={blockedExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={blockedExpanded ? colors.text.primary : colors.ui.secondarydisabled}
+                        />
+                    </TouchableOpacity>
+                    {blockedExpanded && (
+                        blockedUsers === null ? (
+                            <View style={styles.dropdownContainer}>
+                                <Text style={styles.dropdownText}>Loading…</Text>
+                            </View>
+                        ) : blockedUsers.length === 0 ? (
+                            <View style={styles.dropdownContainer}>
+                                <Text style={styles.dropdownText}>You haven't blocked anyone.</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.blockedDeck}>
+                                {/* Cancels the deck's own left margin so it centers. */}
+                                <View style={{ marginLeft: -24 }}>
+                                    <Deck
+                                        groups={blockedGroups}
+                                        cardWidth={blockedCardWidth}
+                                        enabled
+                                        isUser={false}
+                                        showLocation={false}
+                                        onHorizontalGestureStart={disableScroll}
+                                        onGestureEnd={enableScroll}
+                                    />
+                                </View>
+                            </View>
+                        )
+                    )}
                 </View>
 
                 {/* Support Section */}
@@ -486,16 +501,10 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
     },
     
-    blockedRow: {
-        flexDirection: 'row',
+    blockedDeck: {
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 6,
-    },
-    unblockText: {
-        color: colors.actions.decline,
-        fontSize: 16,
-        fontFamily: globalFonts.bold,
+        paddingTop: 8,
+        paddingBottom: 12,
     },
     linkText: {
         color: "#4DA3FF",

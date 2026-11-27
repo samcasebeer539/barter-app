@@ -12,7 +12,7 @@ import { getOpenTab, getCloseTab, getCloseGamesIfChanged, getBarterGamesIfChange
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { onUserBlocked } from '@/lib/safety';
+import { onBlockChange } from '@/lib/safety';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
 
 const TOP_PADDING = 0;
@@ -262,7 +262,7 @@ export default function ActiveTradesTestScreen() {
     // Pull to refresh, like the feed: reload every list on the current tab.
     const [refreshing, setRefreshing] = useState(false);
     // Blocking someone declines your trades with them: reload every tab.
-    useEffect(() => onUserBlocked(() => {
+    useEffect(() => onBlockChange(() => {
         setOpenDeckKey(null);
         refreshOpenTab();
         refreshBarterGames();

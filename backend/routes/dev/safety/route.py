@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from bson.errors import InvalidId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection, reports_collection
-from helpers import get_uid_from_request, current_user
+from helpers import get_uid_from_request, current_user, public_user
 from models.game import Game
 
 safety_bp = Blueprint("safety", __name__)
@@ -86,23 +86,15 @@ def unblock_user(user_id):
 
 @safety_bp.route("/dev/blocked", methods=["GET"])
 def get_blocked_users():
-    """The users you've blocked, for the settings screen."""
+    """The users you've blocked, as their public profiles (shown as user
+    cards in settings), most recently blocked last."""
     uid, err = get_uid_from_request()
     if err:
         return err
     user = current_user()
     ids = (user or {}).get("blocked_user_ids", [])
-    users = {u["_id"]: u for u in user_data_collection.find(
-        {"_id": {"$in": ids}}, {"first_name": 1, "last_name": 1, "profile_photo": 1})}
-    return jsonify([
-        {
-            "_id": str(i),
-            "first_name": users[i].get("first_name", ""),
-            "last_name": users[i].get("last_name", ""),
-            "profile_photo": users[i].get("profile_photo", ""),
-        }
-        for i in ids if i in users
-    ]), 200
+    users = {u["_id"]: u for u in user_data_collection.find({"_id": {"$in": ids}})}
+    return jsonify([public_user(users[i]) for i in ids if i in users]), 200
 
 
 @safety_bp.route("/dev/report", methods=["POST"])

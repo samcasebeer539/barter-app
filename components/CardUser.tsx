@@ -7,7 +7,7 @@ import { globalFonts, colors } from '../styles/globalStyles';
 import { User } from '@/types/index';
 import { uploadProfilePhoto, getUserReviews, getCachedReviews, UserReview } from '@/services/userService';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
-import { confirmBlock, startReport } from '@/lib/safety';
+import { confirmBlock, confirmUnblock, startReport, useIsBlocked } from '@/lib/safety';
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
 
@@ -81,6 +81,7 @@ const UserCard: React.FC<UserCardProps> = ({
   // Reviews: tapping the stars or count opens the list in place of the
   // contacts and bio (and collapses the photo). Loaded on first open.
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const isBlocked = useIsBlocked(isUser ? undefined : user._id);
   const [reviews, setReviews] = useState<UserReview[] | null>(null);
   const [reviewsError, setReviewsError] = useState(false);
   const reviewsLoadedFor = useRef<string | null>(null);
@@ -324,12 +325,22 @@ const UserCard: React.FC<UserCardProps> = ({
                 </>
               ) : (
                 <>
+                  {/* Block toggle: red while blocked; tapping again offers to unblock. */}
                   <TouchableOpacity
                     style={styles.actionButton}
                     disabled={!user._id}
-                    onPress={() => user._id && confirmBlock(user._id, user.first_name || 'this user')}
+                    onPress={() => {
+                      if (!user._id) return;
+                      const name = user.first_name || 'this user';
+                      if (isBlocked) confirmUnblock(user._id, name);
+                      else confirmBlock(user._id, name);
+                    }}
                   >
-                    <FontAwesome6 name="ban" size={24} color={user._id ? colors.ui.cardsecondary : colors.ui.carddisabled} />
+                    <FontAwesome6
+                      name="ban"
+                      size={24}
+                      color={!user._id ? colors.ui.carddisabled : isBlocked ? colors.actions.decline : colors.ui.cardsecondary}
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.actionButton}

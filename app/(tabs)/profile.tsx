@@ -21,7 +21,7 @@ import { Post, User, Locations } from '@/types/index';
 import { updateUser } from '@/services/userService';
 import { getProfilePage } from '@/services/profileService';
 import { setSettingsCache } from '@/lib/settingsCache';
-import { onUserBlocked } from '@/lib/safety';
+import { onBlockChange } from '@/lib/safety';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
 import { getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
@@ -365,7 +365,7 @@ export default function ProfileScreen() {
   }, [reloadProfile]);
 
   // Blocking someone declines their offers and questions: reload.
-  useEffect(() => onUserBlocked(() => { reloadProfile(); }), [reloadProfile]);
+  useEffect(() => onBlockChange(() => { reloadProfile(); }), [reloadProfile]);
 
   useEffect(() => {
     if (deckReady || !primaryUser || !deckImagesLoaded || myLocations === null || !deckLaidOut) return;

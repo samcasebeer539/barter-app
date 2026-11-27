@@ -327,7 +327,11 @@ const Deck: React.FC<DeckProps> = ({
     }, [cards]);
 
     useEffect(() => {
-        const topCard = cardsRef.current[frontCardIndex];
+        // Wrapped like the slots' cards: when the deck loses cards (e.g. an
+        // offerer leaves after a barter), the index can be past the new end,
+        // and reading it raw reported no top card, so the screen kept the
+        // old group (and showed an empty turn log) until the next swipe.
+        const topCard = cardsRef.current.length > 0 ? cardsRef.current[ci(frontCardIndex)] : undefined;
         if (topCard?.type === 'post') onTopCardChange?.(topCard.postIndex);
         else onTopCardChange?.(null);
         if (topCard) {

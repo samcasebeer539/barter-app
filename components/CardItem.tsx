@@ -10,6 +10,9 @@ import TextTicker from 'react-native-text-ticker';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { Post } from '@/types/index';
 
+// Same cap as the server (MAX_POST_PHOTOS in backend/helpers.py).
+const MAX_POST_PHOTOS = 10;
+
 interface PostCardProps {
   post: Post;
   scale?: number;
@@ -382,8 +385,16 @@ const PostCard: React.FC<PostCardProps> = ({
                     ))}
                   </View>
 
-                  <TouchableOpacity style={styles.photoNavButton} onPress={handleAddPhoto}>
-                    <FontAwesome6 name="circle-plus" size={24} color={colors.ui.cardsecondary} />
+                  <TouchableOpacity
+                    style={styles.photoNavButton}
+                    onPress={handleAddPhoto}
+                    disabled={displayPhotos.length >= MAX_POST_PHOTOS}
+                  >
+                    <FontAwesome6
+                      name="circle-plus"
+                      size={24}
+                      color={displayPhotos.length >= MAX_POST_PHOTOS ? colors.ui.carddisabled : colors.ui.cardsecondary}
+                    />
                   </TouchableOpacity>
                 </View>
               </View>

@@ -19,6 +19,9 @@ import { createPost, updatePost, deletePost } from '@/services/postService';
 import { IncomingQuery, IncomingOffer, resolvePostName, sendGameQuery } from '@/services/tradeService';
 
 const SLIDE_MARGIN = 0;
+// "02/05": on the post on top / across all your posts.
+const formatCounts = (onPost: number, total: number) =>
+    `${String(onPost).padStart(2, '0')}/${String(total).padStart(2, '0')}`;
 // The offerers' deck slide: 440ms, ease in-out (as before).
 const SLIDE_TIMING = { duration: 440, easing: Easing.inOut(Easing.ease) };
 const { width } = Dimensions.get('window');
@@ -46,6 +49,9 @@ interface ProfileDeckProps {
     onDeclineSubmit?: (gameId: string) => void;
     incomingQueries?: IncomingQuery[];
     incomingOffers?: IncomingOffer[];
+    /** Questions / offers across all your posts (the counts' right number). */
+    totalQueryCount?: number;
+    totalOfferCount?: number;
     onQueryAnswered?: (query: IncomingQuery) => void;
 
 }
@@ -70,6 +76,8 @@ export default function ProfileDeck({
     incomingQueries = [],
     incomingOffers = [],
     onQueryAnswered,
+    totalQueryCount = 0,
+    totalOfferCount = 0,
 }: ProfileDeckProps) {
     // 0 = offerers' deck hidden behind yours, 1 = fully slid out. Animated on
     // the UI thread (Reanimated), so the slide stays smooth while the
@@ -511,11 +519,23 @@ export default function ProfileDeck({
                     ]}>
                         QUERIES
                     </Text>
-                    <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{queryCount}</Text>
+                    <Text style={[
+                        deckStyles.countText,
+                        { marginLeft: 'auto' },
+                        totalQueryCount > 0 && { color: colors.actions.query },
+                    ]}>
+                        {formatCounts(queryCount, totalQueryCount)}
+                    </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.offerButton} onPress={onToggleReveal} disabled={!toggleEnabled || !hasIncomingOffers}>
                     <Text style={[deckStyles.actionButtonText, { color: hasIncomingOffers ? colors.actions.offer : colors.ui.secondarydisabled }]}>OFFERS</Text>
-                    <Text style={[deckStyles.countText, { marginLeft: 'auto' }]}>0{offerCount}</Text>
+                    <Text style={[
+                        deckStyles.countText,
+                        { marginLeft: 'auto' },
+                        totalOfferCount > 0 && { color: colors.actions.offer },
+                    ]}>
+                        {formatCounts(offerCount, totalOfferCount)}
+                    </Text>
 
                 </TouchableOpacity>
             </View>

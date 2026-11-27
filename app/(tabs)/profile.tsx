@@ -433,6 +433,8 @@ export default function ProfileScreen() {
             onQueryAnswered={refreshIncomingQueries}
             onQueryAsked={refreshIncomingOffers}
             incomingOffers={offersForTopPost}
+            totalQueryCount={incomingQueries.length}
+            totalOfferCount={incomingOffers.length}
           />
         </View>
       </ScrollView>

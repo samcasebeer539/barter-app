@@ -537,28 +537,22 @@ export default function TradeDeck({
         <View style={deckStyles.itemCountRow}>
           {/* Each bar shows that deck's cards in order: user card, then the
               time and location cards when the deck has them, then the posts. */}
-          <TouchableOpacity
-            style={[styles.partnerBar, partnerShowsDateTime && partnerShowsLocation && styles.barFull]}
-            onPress={handleSwitchDecks}
-          >
-            <View style={styles.cardIcons}>
+          <TouchableOpacity style={styles.partnerBar} onPress={handleSwitchDecks}>
+            <View style={deckStyles.cardLineup}>
               <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
               {partnerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {partnerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
+              <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{partnerPosts.length}</Text>
             </View>
-            <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{partnerPosts.length}</Text>
             <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.playerBar, playerShowsDateTime && playerShowsLocation && styles.barFull]}
-            onPress={handleSwitchDecks}
-          >
-            <View style={styles.cardIcons}>
+          <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
+            <View style={deckStyles.cardLineup}>
               <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
               {playerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {playerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
+              <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{playerPosts.length}</Text>
             </View>
-            <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{playerPosts.length}</Text>
             <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
           </TouchableOpacity>
         </View>
@@ -751,19 +745,21 @@ const styles = StyleSheet.create({
   // 4px between list elements, matching TradeTurns' own gap.
   logGap: { marginBottom: 4 },
   answerGap: { marginTop: 4 },
+  // Both bars are always exactly half the row, whatever they hold.
   partnerBar: {
     ...makeCountBar('leftCap', 'flex-start'),
+    flex: 0,
+    width: (DECK_BAR_WIDTH - 4) / 2,
   },
   playerBar: {
     ...makeCountBar('rightCap', 'flex-end'),
+    flex: 0,
+    width: (DECK_BAR_WIDTH - 4) / 2,
   },
   activeText: {
     color: colors.actions.trade,
   },
-  // The deck's card icons sit a little closer together than the bar's
-  // other items; with all three, the bar's side padding shrinks so they fit.
-  cardIcons: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  barFull: { paddingHorizontal: 12 },
+
   deckClipWindow: {
     width: width,
     alignItems: 'flex-start',

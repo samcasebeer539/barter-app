@@ -630,9 +630,11 @@ export default function ProfileDeck({
                                 <FontAwesome6 name="circle-xmark" size={24} color={deleteDisabled ? colors.ui.secondarydisabled : '#fff'} />
                             </TouchableOpacity>
                             <View style={styles.myItemCountBar}>
-                                <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
-                                <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />
-                                <Text style={[deckStyles.countText, { color: colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+                                <View style={deckStyles.cardLineup}>
+                                    <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
+                                    <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />
+                                    <Text style={[deckStyles.countText, { color: colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+                                </View>
                                 <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
                             </View>
                         </View>

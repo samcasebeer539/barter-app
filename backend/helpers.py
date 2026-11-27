@@ -195,3 +195,22 @@ def public_user(user):
 def serialize_trade(trade):
     return clean(trade)
 
+
+MAX_POST_PHOTOS = 10
+
+
+def bad_post_fields(data):
+    """A 400 if photos / is_good have the wrong shape, else None. photos must
+    be a list of uploaded (http) URLs, so a broken post can't reach anyone's
+    feed."""
+    if "photos" in data:
+        photos = data["photos"]
+        if not isinstance(photos, list) or not all(
+            isinstance(p, str) and p.startswith(("https://", "http://")) and len(p) <= 2000 for p in photos
+        ):
+            return jsonify({"error": "photos must be a list of uploaded photo URLs"}), 400
+        if len(photos) > MAX_POST_PHOTOS:
+            return jsonify({"error": f"Posts can have up to {MAX_POST_PHOTOS} photos"}), 400
+    if "is_good" in data and not isinstance(data["is_good"], bool):
+        return jsonify({"error": "is_good must be true or false"}), 400
+    return None

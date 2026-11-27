@@ -41,16 +41,26 @@ function isLocalUri(uri: string): boolean {
   return uri.startsWith('file://') || uri.startsWith('content://');
 }
 
+// A new Mongo-style id (8 hex chars of seconds + 16 random), made here so a
+// new post's photos can be uploaded under its id before the post exists.
+function newObjectId(): string {
+  const hex = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  return Math.floor(Date.now() / 1000).toString(16).padStart(8, '0') + hex(16);
+}
+
 // Uploads any local photos and returns a new array of all remote URLs.
+// Each upload gets its own file name, so a new photo never overwrites one
+// that's still in the post (e.g. after removing an earlier photo).
 async function resolvePhotos(photos: string[], postId: string): Promise<string[]> {
   const uid = getAuth().currentUser?.uid;
+  const batch = Date.now();
   return Promise.all(
     photos.map(async (uri, index) => {
       if (!isLocalUri(uri)) return uri; // already a remote URL, keep as-is
       // Upload a smaller JPEG copy (see lib/shrinkPhoto).
       const response = await fetch(await shrinkPhoto(uri));
       const blob = await response.blob();
-      const storageRef = ref(storage, `post_photos/${uid}/${postId}/${index}`);
+      const storageRef = ref(storage, `post_photos/${uid}/${postId}/${batch}_${index}`);
       await uploadBytes(storageRef, blob);
       return await getDownloadURL(storageRef);
     })
@@ -60,17 +70,15 @@ async function resolvePhotos(photos: string[], postId: string): Promise<string[]
 // ─── Create ───────────────────────────────────────────────────────────────────
 
 export async function createPost(post: Omit<Post, '_id'>): Promise<Post> {
-  // Create the post first to get an _id, with photos as-is
-  const created = await apiJson<PostRecord>('/dev/posts', { method: 'POST', body: toPayload(post) });
-
-  // If there are local photos, upload them now that we have an _id
-  const hasLocalPhotos = post.photos.some(isLocalUri);
-  if (hasLocalPhotos) {
-    const remotePhotos = await resolvePhotos(post.photos, created._id);
-    await updatePost(created._id, { photos: remotePhotos });
-    return toPost({ ...created, photos: remotePhotos });
-  }
-
+  // Upload the photos first, under an id made here, then create the post
+  // with them. If an upload fails, nothing is created, so saving again
+  // just retries (no half-made post with broken photos).
+  const postId = newObjectId();
+  const photos = await resolvePhotos(post.photos, postId);
+  const created = await apiJson<PostRecord>('/dev/posts', {
+    method: 'POST',
+    body: { ...toPayload({ ...post, photos }), _id: postId },
+  });
   return toPost(created);
 }
 

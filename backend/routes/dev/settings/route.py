@@ -33,5 +33,7 @@ def settings_for(user):
     """Location / notification settings, as GET /settings sends them."""
     return {
         "is_location_allowed": user.get("is_location_allowed", True),
-        "notifications_enabled": user.get("notifications_enabled", True),
+        # The app saves this as is_notifications_allowed; fall back to the
+        # old name for accounts that have it.
+        "notifications_enabled": user.get("is_notifications_allowed", user.get("notifications_enabled", True)),
     }

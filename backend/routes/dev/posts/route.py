@@ -2,7 +2,10 @@ from datetime import datetime, timezone
 from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post, current_user, text_too_long
+from bson import ObjectId
+from bson.errors import InvalidId
+from pymongo.errors import DuplicateKeyError
+from helpers import get_uid_from_request, serialize_post, current_user, text_too_long, bad_post_fields
 from models.game import Game
 
 posts_bp = Blueprint('posts', __name__)
@@ -34,9 +37,19 @@ def create_post():
             return jsonify({"error": "User not found"}), 404
 
         data = request.json or {}
-        err = text_too_long({"post_title": data.get("post_title"), "description": data.get("description")})
+        err = text_too_long({"post_title": data.get("post_title"), "description": data.get("description")}) \
+            or bad_post_fields(data)
         if err: return err
+
+        # The app picks the post's id itself, so it can upload the photos
+        # (stored under the id) before the post exists. Otherwise make one.
+        try:
+            post_id = ObjectId(data["_id"]) if data.get("_id") else ObjectId()
+        except (InvalidId, TypeError):
+            return jsonify({"error": "Invalid post id"}), 400
+
         new_post = {
+            "_id": post_id,
             "user_id": user["_id"],
             "post_title": data.get("post_title", ""),
             "description": data.get("description", ""),
@@ -46,8 +59,10 @@ def create_post():
             "incoming_offers": [],
         }
 
-        result = posts_collection.insert_one(new_post)
-        post_id = result.inserted_id
+        try:
+            posts_collection.insert_one(new_post)
+        except DuplicateKeyError:
+            return jsonify({"error": "That post id is taken"}), 409
 
         # Push the new post's _id into the user's posts array
         user_data_collection.update_one(

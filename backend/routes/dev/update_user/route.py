@@ -13,7 +13,7 @@ def update_user():
         if err: return err
 
         data = request.json
-        allowed_fields = {'pronouns', 'bio', 'phone', 'profile_photo', 'email_visible', 'phone_visible', 'locations', 'is_location_allowed', 'is_notifications_allowed'}
+        allowed_fields = {'pronouns', 'bio', 'phone', 'profile_photo', 'email_visible', 'phone_visible', 'is_location_allowed', 'is_notifications_allowed'}
         update = {k: v for k, v in data.items() if k in allowed_fields}
 
         if not update:

@@ -1,8 +1,19 @@
 # Server tests
 
-Fast tests for the Flask server. They use an in-memory fake Mongo and a
-stubbed Firebase, so they never touch the real database, storage or auth,
+Fast tests for the Flask server. They use a test database and a stubbed
+Firebase, so they never touch the real Atlas database, storage or auth,
 and need no `.env`.
+
+By default the database is an in-memory fake (mongomock). Set
+`TEST_MONGO_URI` to run the same tests against a real, throwaway MongoDB
+(its `wwtest` database is wiped first; Atlas URIs are refused):
+
+```
+docker run -d -p 27017:27017 mongo:8.0
+TEST_MONGO_URI=mongodb://localhost:27017 python -m pytest tests -q
+```
+
+GitHub Actions runs both on every backend change.
 
 ## Run
 
@@ -30,6 +41,8 @@ python -m pytest tests -q
   load, 204 caching, answers, post deletion.
 - `test_questions.py`: questions from the feed, from a post owner to the
   person who offered, and as turns in barter / close.
+- `test_database.py`: the run is on the database it should be, the
+  server's indexes exist, and the unique index keeps one account per user.
 - `test_bad_requests.py`: every route given broken requests (missing or
   malformed ids, unknown ids, no JSON, wrong phase, off turn, no profile
   yet) answers with a clear 4xx, never a 500.
@@ -51,7 +64,6 @@ python -m pytest tests -q --cov=routes --cov=models --cov=helpers.py --cov=init.
 
 ## Not covered
 
-The fake Mongo doesn't know the real Atlas indexes (only the unique
-`firebase_uid` one is recreated) and can't reproduce truly simultaneous
-requests. Firebase token checks and storage are stubbed, so real sign-in and
+Indexes come from `db_indexes.py`, the same file the server uses. Truly
+simultaneous requests can't be reproduced (races are simulated). Firebase token checks and storage are stubbed, so real sign-in and
 real photo uploads/deletes aren't exercised.

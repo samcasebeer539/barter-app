@@ -198,7 +198,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
     const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
     const PLAY_FILL_HOLD_MS = 400;
 
-    const scrollViewRef = useRef<ScrollView>(null);
+    const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
     const isScrollingRef = useRef(false);
     const [currentActionIndex, setCurrentActionIndex] = useState(0);
     const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);

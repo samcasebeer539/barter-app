@@ -72,5 +72,5 @@ test("editing: a new photo can't overwrite one the post still uses", async () =>
 
 test('server post -> app post', () => {
   expect(toPost({ _id: 'p', post_title: 'Lamp', description: 'd', date_posted: 'x', in_trade: true } as any))
-    .toEqual({ _id: 'p', name: 'Lamp', description: 'd', photos: [], date_posted: 'x', incoming_offers: [], inTrade: true });
+    .toEqual({ _id: 'p', name: 'Lamp', description: 'd', photos: [], date_posted: 'x', inTrade: true });
 });

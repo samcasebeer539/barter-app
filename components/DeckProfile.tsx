@@ -17,6 +17,7 @@ import { useStableCallback } from '../hooks/useStableCallback';
 import { Post, User, Locations, OffererGroup } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
 import { IncomingQuery, IncomingOffer, resolvePostName, sendGameQuery } from '@/services/tradeService';
+import { showError } from '@/lib/errors';
 
 const SLIDE_MARGIN = 0;
 // "02/05": on the post on top / across all your posts. All of it is lit in
@@ -362,8 +363,7 @@ export default function ProfileDeck({
                     await sendGameQuery(gameId, question, postId);
                     onQueryAsked?.();
                 } catch (err) {
-                    console.error('Query failed:', err);
-                    Alert.alert("That question didn't go through", err instanceof Error ? err.message : String(err));
+                    showError("Your question didn't go through", err);
                     return; // keep the box open with your text
                 }
                 break;
@@ -400,7 +400,7 @@ export default function ProfileDeck({
                 newPosts = posts.map(p => (p._id === updated._id ? updated : p));
             }
             onPostsChange?.(newPosts);
-        } catch (err) { console.error('Failed to save post:', err); }
+        } catch (err) { showError("Couldn't save your post", err); }
     }, [posts, onPostsChange, topPrimaryPostIndex]);
 
     // A new post opens straight into edit mode, once the deck has jumped to
@@ -456,7 +456,7 @@ export default function ProfileDeck({
         onPostsChange?.(updated);
         if (postToDelete._id) {
             try { await deletePost(postToDelete._id); }
-            catch (err) { console.error('Failed to delete post:', err); onPostsChange?.(posts); }
+            catch (err) { showError("Couldn't delete your post", err); onPostsChange?.(posts); }
         }
     }, [topCardType, topPrimaryPostIndex, posts, onPostsChange]);
 

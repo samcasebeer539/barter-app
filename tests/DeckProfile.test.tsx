@@ -128,8 +128,9 @@ test("query: asks the offerer about their post on top, in that offer's game", as
 });
 
 test("a failed question says so and keeps the box open with what you typed", async () => {
-  (sendGameQuery as jest.Mock).mockRejectedValueOnce(new Error("It's not your turn"));
-  jest.spyOn(console, 'error').mockImplementation(() => {});
+  const { ApiError } = jest.requireActual('@/lib/apiError');
+  (sendGameQuery as jest.Mock).mockRejectedValueOnce(new ApiError('That item has already been traded', 409));
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
   const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   await open();
   await swipeTo(0, { deck: 'theirs', group: 0 });
@@ -137,7 +138,7 @@ test("a failed question says so and keeps the box open with what you typed", asy
   await press('query');
   await typeQuestion('Still have it?');
   await confirm('query');
-  expect(alert).toHaveBeenCalledWith("That question didn't go through", "It's not your turn");
+  expect(alert).toHaveBeenCalledWith("Your question didn't go through", 'That item has already been traded');
   expect(wheel()).toMatchObject({ activeActionType: 'query', isReady: true });
 });
 
@@ -190,4 +191,19 @@ test('OFFERS shows counts as on-this-post / total', async () => {
 test("with no offers, the offerers' deck isn't shown", async () => {
   await open({ secondaryOfferers: [], isDeckRevealed: false });
   expect(() => deck('theirs')).toThrow();
+});
+
+
+// ── your own posts ───────────────────────────────────────────────────────────
+
+test("a post that fails to save says why", async () => {
+  const { act } = require('@testing-library/react-native');
+  const { ApiError } = jest.requireActual('@/lib/apiError');
+  const { updatePost } = require('@/services/postService');
+  updatePost.mockRejectedValueOnce(new ApiError("This item is in an active trade and can't be edited", 409));
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  await open();
+  await act(async () => { await deck('mine').onSavePost({ ...myPosts[0], name: 'Desk lamp' }); });
+  expect(alert).toHaveBeenCalledWith("Couldn't save your post", "This item is in an active trade and can't be edited");
 });

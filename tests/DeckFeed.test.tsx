@@ -3,7 +3,9 @@
 // deckRecorders); everything the deck decides, and what it sends to the
 // server, is real.
 import React from 'react';
+import { Alert } from 'react-native';
 import { render } from '@testing-library/react-native';
+import { ApiError } from '@/lib/apiError';
 
 jest.mock('@/components/Deck', () => require('./helpers/deckRecorders').MockDeck);
 jest.mock('@/components/TradeActions', () => require('./helpers/deckRecorders').MockTradeActions);
@@ -27,7 +29,12 @@ const bob = { _id: 'bob1', first_name: 'Bob', last_name: 'T', locations: [] } as
 const post = (id: string, name: string) => ({ _id: id, name, description: '', photos: [], date_posted: '' });
 const profile = { user: bob, posts: [post('lamp', 'Lamp'), post('chair', 'Chair')], tappedPostId: 'chair' } as any;
 
-beforeEach(() => resetRecorders());
+let alert: jest.SpyInstance;
+beforeEach(() => {
+  resetRecorders();
+  alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
 
 async function open(props: Partial<React.ComponentProps<typeof DeckFeed>> = {}) {
   await render(<DeckFeed postId="chair" visible onClose={jest.fn()} prefetchedProfile={profile} {...props} />);
@@ -87,13 +94,26 @@ test('offer is one post at a time: picking another replaces it', async () => {
   expect(sendOffer).toHaveBeenCalledTimes(1);
 });
 
-test('a failed offer is not shown as sent', async () => {
-  (sendOffer as jest.Mock).mockRejectedValueOnce(new Error('offline'));
-  jest.spyOn(console, 'error').mockImplementation(() => {});
+test('a failed offer says why and is not shown as sent', async () => {
+  (sendOffer as jest.Mock).mockRejectedValueOnce(new ApiError('That item has already been traded', 409));
   await open();
   await swipeTo(0);
   await press('offer');
   await confirm('offer');
+  expect(alert).toHaveBeenCalledWith("Your offer didn't go through", 'That item has already been traded');
+  expect(shownTurns()).toEqual([]);
+});
+
+test('a failed question says why and keeps the box open with your text', async () => {
+  (sendQuery as jest.Mock).mockRejectedValueOnce(new ApiError('Network request failed', 0));
+  await open();
+  await swipeTo(0);
+  await scrollWheelTo('query');
+  await press('query');
+  await typeQuestion('Does it work?');
+  await confirm('query');
+  expect(alert).toHaveBeenCalledWith("Your question didn't go through", 'Check your connection and try again.');
+  expect(wheel()).toMatchObject({ activeActionType: 'query', isReady: true });
   expect(shownTurns()).toEqual([]);
 });
 

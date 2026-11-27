@@ -9,15 +9,8 @@ import { getAuth } from 'firebase/auth';
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const DEFAULT_TIMEOUT_MS = 10000;
 
-export class ApiError extends Error {
-  /** HTTP status, or 0 if the request never got an answer (offline, timeout). */
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-  }
-}
+import { ApiError } from './apiError';
+export { ApiError };
 
 export interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';

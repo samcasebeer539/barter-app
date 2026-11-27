@@ -6,6 +6,7 @@ import TradeUI, { TradeAction } from './TradeActions';
 import { getActionConfig, TradeActionType } from '../config/tradeConfig';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { answerQuery } from '@/services/tradeService';
+import { showError } from '@/lib/errors';
 
 const ANSWER_ACTION = getActionConfig('answer');
 
@@ -55,8 +56,9 @@ export default function QueryAnswer({
             await answerQuery(queryId, answer);
             onAnswered?.();
         } catch (err) {
-            console.error('Answer failed:', err);
-            onFailed?.(err);
+            if (onFailed) onFailed(err);
+            else showError("Your answer didn't go through", err);
+            return; // keep the box open with your answer
         }
         trade.reset();
         setAnswerText('');

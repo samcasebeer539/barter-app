@@ -1,5 +1,5 @@
-# Runs the app's Jest tests (tests/) on every push and pull request that
-# touches app code. Firebase and the server are mocked, so no secrets or
+# Type-checks the app and runs its Jest tests (tests/) on every push and
+# pull request that touches app code. Firebase and the server are mocked, so no secrets or
 # .env are needed.
 name: App tests
 
@@ -26,5 +26,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Type-check
+        run: npx tsc --noEmit
       - name: Run tests
         run: npx jest --ci

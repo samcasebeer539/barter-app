@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, RefreshControl, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl, Platform } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { deckStyles, makeCountBar } from '../../styles/deckStyles';
 import { colors } from '../../styles/globalStyles';
@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { onBlockChange } from '@/lib/safety';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
+import { showError } from '@/lib/errors';
 
 const TOP_PADDING = 0;
 const BOTTOM_PADDING = 110;
@@ -31,7 +32,7 @@ function keepIfSame<T>(next: T) {
 }
 
 export default function ActiveTradesTestScreen() {
-    const scrollViewRef = useRef<ScrollView>(null);
+    const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
     const scrollY = useRef(0);
     const [resetKey, setResetKey] = useState(0);
     const [tab, setTab] = useState<'open' | 'barter' | 'close'>('open');
@@ -201,8 +202,7 @@ export default function ActiveTradesTestScreen() {
     // A refused move means this screen was out of date (or the move was
     // invalid): say why, then reload so the wheel matches the server.
     const handleActionFailed = useCallback((refresh: () => void) => (_action: unknown, err: unknown) => {
-        const message = err instanceof Error ? err.message : String(err);
-        Alert.alert("That move didn't go through", message);
+        showError("That move didn't go through", err);
         refresh();
     }, []);
 

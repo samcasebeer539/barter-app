@@ -12,6 +12,7 @@ import { OpenTradeItem } from '@/types'
 import { buildQueryTurns, buildOfferTurns, buildTradeTurns, sendOffer, sendQuery, rescindOffer } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useStableCallback } from '../hooks/useStableCallback';
+import { showError } from '@/lib/errors';
 
 const { width } = Dimensions.get('window');
 
@@ -172,7 +173,7 @@ export default function OfferDeck({
                     await sendOffer(selectedItem.post._id);
                     onActionComplete?.('offer');
                 } catch (err) {
-                    console.error('Offer failed:', err);
+                    showError("Your offer didn't go through", err);
                 } finally {
                     setIsSubmittingOffer(false);
                 }
@@ -189,10 +190,11 @@ export default function OfferDeck({
                     await sendQuery(targetItem.post._id, queryText);
                     onActionComplete?.('query');
                 } catch (err) {
-                    console.error('Query failed:', err);
-                } finally {
+                    showError("Your question didn't go through", err);
                     setIsSubmittingQuery(false);
+                    return; // keep the box open with your text
                 }
+                setIsSubmittingQuery(false);
                 break;
             }
 
@@ -206,7 +208,7 @@ export default function OfferDeck({
                     await rescindOffer(selectedItem.post._id);
                     onActionComplete?.('rescind');
                 } catch (err) {
-                    console.error('Rescind failed:', err);
+                    showError("Couldn't take back your offer", err);
                 } finally {
                     setIsSubmittingRescind(false);
                 }

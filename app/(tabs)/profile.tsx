@@ -27,6 +27,7 @@ import { getUserLocations, saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
 import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
 import { FeedProfile, OffererGroup } from '@/types/index';
+import { showError } from '@/lib/errors';
 
 
 const TOP_PADDING = 0;
@@ -258,7 +259,7 @@ export default function ProfileScreen() {
       await updateUser(updated);
       setPrimaryUser(updated);
     } catch (err) {
-      console.error('Failed to save user:', err);
+      showError("Couldn't save your profile", err);
     }
   };
 
@@ -272,7 +273,7 @@ export default function ProfileScreen() {
     try {
       await saveMyLocations(updated);
     } catch (err) {
-      console.error('Failed to save locations:', err);
+      showError("Couldn't save your locations", err);
       setMyLocations(previous); // revert on failure
     }
   };
@@ -286,7 +287,7 @@ export default function ProfileScreen() {
 	try {
 		await sendBarter(gameId, selectedPostIds);
 	} catch (err) {
-		console.error('Barter failed:', err);
+		showError("That barter didn't go through", err);
 		return;
 	}
 
@@ -297,7 +298,7 @@ export default function ProfileScreen() {
 		try {
 			await declineTrade(gameId);
 		} catch (err) {
-			console.error('Decline failed:', err);
+			showError("Couldn't decline the offer", err);
 			return;
 		}
 
@@ -316,7 +317,7 @@ export default function ProfileScreen() {
 	setIncomingOffers(prev => prev.filter(o => o.gameId !== gameId));
 	};
 
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const scrollY = useRef(0);
   // Keeps the field you're typing in visible above the keyboard (shared with
   // the barter page and feed deck; see hooks/useKeyboardLift).

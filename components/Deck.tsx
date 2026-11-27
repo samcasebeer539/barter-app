@@ -138,8 +138,8 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
   // prop set directly is overwritten on the slot's next render, which made
   // the shadow vanish as soon as a swipe finished and setCard re-rendered.
   const [hasShadow, setHasShadow] = useState(false);
-  const wrapperRef = useRef<View>(null);
-  const cardRef = useRef<View>(null);
+  const wrapperRef = useRef<React.ComponentRef<typeof View>>(null);
+  const cardRef = useRef<React.ComponentRef<typeof View>>(null);
 
   useImperativeHandle(ref, () => ({
     setCard(item, front) { setCardState(item); setIsFront(front); },

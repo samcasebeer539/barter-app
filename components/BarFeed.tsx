@@ -1,6 +1,6 @@
 import { View, StyleSheet, TouchableOpacity, Animated, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { useState, useRef } from 'react';
+import { useState, useRef, type ComponentRef } from 'react';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TEXT_LIMITS } from '@/config/textLimits';
@@ -17,7 +17,7 @@ interface FeedBarProps {
 export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClear, onSortPress }: FeedBarProps) {
     const [searchText, setSearchText] = useState('');
     const [searchActive, setSearchActive] = useState(false);
-    const searchInputRef = useRef<TextInput>(null);
+    const searchInputRef = useRef<ComponentRef<typeof TextInput>>(null);
     const insets = useSafeAreaInsets();
 
     const handleSearchSubmit = () => {

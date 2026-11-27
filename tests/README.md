@@ -6,6 +6,7 @@ Firebase and the server are mocked, so they need no `.env` or network.
 ```
 npm test             # all of them
 npx jest tests/api   # one file
+npm run typecheck    # TypeScript (CI fails on any error)
 ```
 
 Tests live here, not next to the code, because anything under `app/`
@@ -18,6 +19,8 @@ becomes a screen in expo-router.
 | `useTradeAction.test.ts` | The action buttons' state: arming, picking posts, typed text, confirm |
 | `postService.test.ts` | Photos upload before a post is created, unique photo names, failed uploads create nothing |
 | `settings.test.ts` | Reading the server's settings response |
+| `errors.test.ts` | What people see when something fails: server messages as is, offline / crash / internal messages reworded |
+| `QueryAnswer.test.tsx` | Answering a question; a failed answer keeps your text (alert in the QUERIES drawer, the trade deck's handling in a trade) |
 | `TradeActions.test.tsx` | The action wheel: query / offer / barter / add hidden and untappable on non-post cards, barter's count, the confirm arrow (only when ready, once per tap), turn timers |
 | `CardItem.test.tsx` | Post card: report vs edit buttons, locked posts, save needs a title and photo, cancel discards a new post, the 10-photo cap, the title limit |
 | `safety.test.tsx` | Block / unblock / report through the real alerts flow: confirm first, the button turning red, failures shown, "Other" needing details, Android without the text prompt |

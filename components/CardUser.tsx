@@ -9,6 +9,7 @@ import { User } from '@/types/index';
 import { uploadProfilePhoto, getUserReviews, getCachedReviews, UserReview } from '@/services/userService';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import { confirmBlock, confirmUnblock, startReport, useIsBlocked } from '@/lib/safety';
+import { showError } from '@/lib/errors';
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
 
@@ -194,7 +195,7 @@ const UserCard: React.FC<UserCardProps> = ({
         const remoteUrl = await uploadProfilePhoto(result.assets[0].uri);
         updateDraft('profileImageUrl', remoteUrl);
       } catch (err) {
-        console.error('Photo upload failed:', err);
+        showError("Couldn't upload your photo", err);
       } finally {
         setIsUploadingPhoto(false);
       }

@@ -19,6 +19,7 @@ import { useKeyboardLift, KeyboardLiftContext } from '../hooks/useKeyboardLift';
 import { useStableCallback } from '../hooks/useStableCallback';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { showError } from '@/lib/errors';
 
 const { width, height } = Dimensions.get('window');
 const BOTTOM_BASE = 140;
@@ -49,7 +50,7 @@ export default function FeedDeck({
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const [topPostIndex, setTopPostIndex] = useState<number | null>(null);
   const [scrollEnabled, setScrollEnabled] = useState(true);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const scrollY = useRef(0);
   const [profile, setProfile] = useState<FeedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -276,7 +277,7 @@ export default function FeedDeck({
           await sendOffer(selectedPost._id);
           showSentTurn({ type: 'turnOffer', item: selectedPost.name, isUser: true });
         } catch (err) {
-          console.error('Offer failed:', err);
+          showError("Your offer didn't go through", err);
         } finally {
           setIsSubmittingOffer(false);
         }
@@ -311,10 +312,11 @@ export default function FeedDeck({
             question: queryText,
           });
         } catch (err) {
-          console.error('Query failed:', err);
-        } finally {
+          showError("Your question didn't go through", err);
           setIsSubmittingQuery(false);
+          return; // keep the box open with your text
         }
+        setIsSubmittingQuery(false);
         break;
       }
 

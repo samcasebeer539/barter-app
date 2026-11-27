@@ -1,4 +1,4 @@
-import { OpenTradeItem, Post, User, Locations } from '@/types';
+import { OpenTradeItem, Post, User, Locations, QueryMessage } from '@/types';
 import { getAuth } from 'firebase/auth';
 import { TradeTurn } from '@/components/TradeTurns';
 

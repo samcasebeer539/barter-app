@@ -34,7 +34,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
   queryColor = colors.actions.query,
 }) => {
   const [activeQueryText, setActiveQueryText] = useState('');
-  const activeQueryInputRef = useRef<TextInput | null>(null);
+  const activeQueryInputRef = useRef<React.ComponentRef<typeof TextInput> | null>(null);
 
   // Auto-focus the top query input when it opens
   useEffect(() => {

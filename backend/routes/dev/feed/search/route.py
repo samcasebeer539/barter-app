@@ -2,7 +2,7 @@ import re
 from flask import Blueprint, jsonify, request
 from backend import posts_collection, user_data_collection
 from firebase_admin import auth as firebase_auth
-from helpers import with_distances, current_user, get_uid_from_request
+from helpers import with_distances, current_user, get_uid_from_request, blocked_ids_for
 
 
 feed_search_bp = Blueprint("feed_search", __name__)
@@ -27,8 +27,8 @@ def search_feed():
 
     results = posts_collection.find(
         {
-            # Everyone's posts but your own.
-            **({"user_id": {"$ne": user["_id"]}} if user else {}),
+            # Everyone's posts but your own and blocked users'.
+            **({"user_id": {"$nin": [user["_id"], *blocked_ids_for(user)]}} if user else {}),
             "$or": [
                 {
                     "post_title": {

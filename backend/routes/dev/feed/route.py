@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, with_distances, current_user
+from helpers import get_uid_from_request, with_distances, current_user, blocked_ids_for
 
 feed_bp = Blueprint('feed', __name__)
 
@@ -15,8 +15,10 @@ def get_feed():
         user = current_user()
         exclude_user_id = user["_id"] if user else None
 
-        # Everyone's posts but your own.
-        query = {"user_id": {"$ne": exclude_user_id}} if exclude_user_id else {}
+        # Everyone's posts but your own and those of anyone you've blocked
+        # (or who blocked you).
+        hidden = [exclude_user_id, *blocked_ids_for(user)] if exclude_user_id else []
+        query = {"user_id": {"$nin": hidden}} if hidden else {}
         posts = list(posts_collection.find(query).sort("date_posted", -1))
         posts = with_distances(posts, user)
         return jsonify(posts), 200

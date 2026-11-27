@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for
 from models.game import Game
 
 trades_declined_bp = Blueprint("trades_declined", __name__)
@@ -31,6 +31,7 @@ def declined_offers_for(user):
     Turn logs, posts, owners and any re-offers are each fetched in one query
     for all the games."""
     my_id = user["_id"]
+    blocked = blocked_ids_for(user)
 
     games = [Game.from_doc(doc) for doc in games_collection.find({
         "initiator_user_id": my_id,
@@ -63,7 +64,7 @@ def declined_offers_for(user):
     seen_post_ids = set()
     for game in games:
         post_id = game.target_post_id
-        if post_id in seen_post_ids:
+        if post_id in seen_post_ids or game.receiver_user_id in blocked:
             continue
         turns = turns_by_game[game._id]
         types = {t["type"] for t in turns}

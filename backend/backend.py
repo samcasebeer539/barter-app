@@ -51,6 +51,8 @@ user_data_collection.create_index("firebase_uid", unique=True)
 posts_collection = db.posts
 trades_collection = db.trades
 games_collection = db.games
+# Reports of users / posts, read by a person (in Atlas for now).
+reports_collection = db.reports
 
 # Indexes for the lookups the app makes constantly (barter page lists, turn
 # logs, profiles). create_index does nothing if the index already exists.

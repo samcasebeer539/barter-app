@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post, public_user
+from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user
 
 postId_bp = Blueprint('postId', __name__)
 
@@ -21,7 +21,7 @@ def get_feed_profile(post_id):
 
         # Find the owner
         owner = user_data_collection.find_one({"_id": post["user_id"]})
-        if not owner:
+        if not owner or owner["_id"] in blocked_ids_for(current_user()):
             return jsonify({"error": "User not found"}), 404
 
         # Get all of the owner's posts

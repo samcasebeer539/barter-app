@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for
 from models.game import Game, NotYourTurnError
 
 trades_query_bp = Blueprint("trades_query", __name__)
@@ -76,6 +76,8 @@ def create_query():
 
     if not target_post:
         return jsonify({"error": "Post not found"}), 404
+    if target_post["user_id"] in blocked_ids_for(user):
+        return jsonify({"error": "You can't message this user"}), 403
 
     game = Game.get_or_create(
         initiator_id=user["_id"],
@@ -130,6 +132,8 @@ def _query_in_game(user, data):
         return jsonify({"error": "Game not found"}), 404
     if not game.is_participant(user["_id"]):
         return jsonify({"error": "Unauthorized"}), 403
+    if game.other_user(user["_id"]) in blocked_ids_for(user):
+        return jsonify({"error": "You can't message this user"}), 403
     if game.expire_if_overdue():
         return jsonify({"error": "Turn time ran out; the trade was declined"}), 409
 

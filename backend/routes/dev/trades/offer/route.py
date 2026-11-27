@@ -3,7 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
-from helpers import get_uid_from_request, current_user
+from helpers import get_uid_from_request, current_user, blocked_ids_for
 from models.game import Game
 
 trades_offer_bp = Blueprint('trades_offer', __name__)
@@ -27,6 +27,8 @@ def send_offer():
 
         if target_post["user_id"] == user["_id"]:
             return jsonify({"error": "Cannot offer on your own post"}), 400
+        if target_post["user_id"] in blocked_ids_for(user):
+            return jsonify({"error": "You can't trade with this user"}), 403
 
         # Only one offer per player per post — duplicates are silently
         # ignored. Note: trade docs use actor_id, not initiator_user_id.

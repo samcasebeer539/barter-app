@@ -116,6 +116,17 @@ def get_uid_from_request():
     return token["uid"], None
 
 
+def blocked_ids_for(user):
+    """Everyone this user has blocked or been blocked by. Neither side sees
+    the other's posts, and neither can send the other offers or questions."""
+    if not user:
+        return set()
+    ids = set(user.get("blocked_user_ids", []))
+    for u in user_data_collection.find({"blocked_user_ids": user["_id"]}, {"_id": 1}):
+        ids.add(u["_id"])
+    return ids
+
+
 _NO_USER = object()
 
 def current_user():

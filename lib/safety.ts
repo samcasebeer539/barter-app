@@ -93,14 +93,18 @@ export function startReport(target: { userId?: string; postId?: string; name?: s
       .catch(err => Alert.alert("Couldn't send the report", err instanceof Error ? err.message : String(err)));
   };
 
-  // Optional details: iOS has a text-entry alert; Android sends without.
+  // Details: iOS has a text-entry alert; Android sends without. Cancel
+  // drops the report. For "Other" the details are the point, so there's no
+  // Skip.
   const askForDetails = (reason: ReportReason) => {
     if (Platform.OS !== 'ios') return send(reason);
+    const isOther = reason === 'other';
     Alert.prompt(
-      'Add details?',
-      'Optional. Anything that would help us review it.',
+      isOther ? "What's wrong?" : 'Add details?',
+      isOther ? 'Tell us what happened.' : 'Optional. Anything that would help us review it.',
       [
-        { text: 'Skip', onPress: () => send(reason) },
+        { text: 'Cancel', style: 'cancel' },
+        ...(isOther ? [] : [{ text: 'Skip', onPress: () => send(reason) }]),
         { text: 'Send', onPress: (note?: string) => send(reason, note) },
       ],
       'plain-text',

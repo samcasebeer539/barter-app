@@ -252,7 +252,7 @@ export default function FeedDeck({
     sentOpacity.setValue(0);
     Animated.sequence([
       Animated.timing(sentOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-      Animated.delay(2200),
+      Animated.delay(3200),
       Animated.timing(sentOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
     ]).start(({ finished }) => { if (finished) setSentTurns([]); });
   };

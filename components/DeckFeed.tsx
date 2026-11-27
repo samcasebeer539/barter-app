@@ -7,7 +7,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import Deck from './Deck';
 import { colors } from '../styles/globalStyles';
 import TradeUI, { TradeAction } from './TradeActions';
-import TradeTurns from './TradeTurns';
+import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TRADE_ACTIONS, TradeActionType } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { getFeedProfile } from '@/services/feedService';
@@ -191,6 +191,7 @@ export default function FeedDeck({
         Animated.timing(backdropOpacity, { toValue: 0, duration: 440, useNativeDriver: true }),
       ]).start(() => {
         setIsRendered(false);
+        setSentTurns([]);
         trade.reset();
         setQueryText('');
         setScrolledActionType(feedActions[0]?.actionType ?? null);
@@ -241,6 +242,21 @@ export default function FeedDeck({
     trade.selectAction(actionType);
   };
 
+  // After an offer or question goes through, its turn shows under the wheel
+  // for a moment, like it would in a trade's history, then fades away.
+  const [sentTurns, setSentTurns] = useState<TradeTurn[]>([]);
+  const sentOpacity = useRef(new Animated.Value(0)).current;
+  const showSentTurn = (turn: TradeTurn) => {
+    setSentTurns([turn]);
+    sentOpacity.stopAnimation();
+    sentOpacity.setValue(0);
+    Animated.sequence([
+      Animated.timing(sentOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(2200),
+      Animated.timing(sentOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
+    ]).start(({ finished }) => { if (finished) setSentTurns([]); });
+  };
+
   const handleConfirm = async () => {
     if (!effectiveIsReady || !trade.activeAction) return;
 
@@ -255,6 +271,7 @@ export default function FeedDeck({
         setIsSubmittingOffer(true);
         try {
           await sendOffer(selectedPost._id);
+          showSentTurn({ type: 'turnOffer', item: selectedPost.name, isUser: true });
         } catch (err) {
           console.error('Offer failed:', err);
         } finally {
@@ -285,6 +302,7 @@ export default function FeedDeck({
         setIsSubmittingQuery(true);
         try {
           await sendQuery(targetPost._id, queryText);
+          showSentTurn({ type: 'turnQuery', item: queryText.trim(), isUser: true });
           onQuerySubmit?.({
             postIndex: topPostIndex,
             question: queryText,
@@ -399,6 +417,11 @@ export default function FeedDeck({
                     onActionChange={setScrolledActionType}
                   />
                 </View>
+                {sentTurns.length > 0 && (
+                  <Animated.View style={[styles.sentTurnsRow, { opacity: sentOpacity }]} pointerEvents="none">
+                    <TradeTurns turns={sentTurns} />
+                  </Animated.View>
+                )}
               </View>
             </View>
           </ScrollView>
@@ -420,4 +443,6 @@ const styles = StyleSheet.create({
   turnsAndButtonColumn: { flexDirection: 'column', width: DECK_BAR_WIDTH },
   queryRow: {},
   actionRow: {},
+  // Same gap under the wheel as the open tab decks' turn log.
+  sentTurnsRow: { marginTop: -2 },
 });

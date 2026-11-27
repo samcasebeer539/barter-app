@@ -19,9 +19,19 @@ import { createPost, updatePost, deletePost } from '@/services/postService';
 import { IncomingQuery, IncomingOffer, resolvePostName, sendGameQuery } from '@/services/tradeService';
 
 const SLIDE_MARGIN = 0;
-// "02/05": on the post on top / across all your posts.
-const formatCounts = (onPost: number, total: number) =>
-    `${String(onPost).padStart(2, '0')}/${String(total).padStart(2, '0')}`;
+// "02/05": on the post on top / across all your posts. All of it is lit in
+// the action's color when the post on top has some; if only other posts do,
+// just the total is lit.
+const pad2 = (n: number) => String(n).padStart(2, '0');
+function CountPair({ onPost, total, color }: { onPost: number; total: number; color: string }) {
+    const litOnPost = onPost > 0;
+    return (
+        <Text style={[deckStyles.countText, { marginLeft: 'auto' }, litOnPost && { color }]}>
+            {pad2(onPost)}/
+            <Text style={total > 0 ? { color } : undefined}>{pad2(total)}</Text>
+        </Text>
+    );
+}
 // The offerers' deck slide: 440ms, ease in-out (as before).
 const SLIDE_TIMING = { duration: 440, easing: Easing.inOut(Easing.ease) };
 const { width } = Dimensions.get('window');
@@ -519,23 +529,11 @@ export default function ProfileDeck({
                     ]}>
                         QUERIES
                     </Text>
-                    <Text style={[
-                        deckStyles.countText,
-                        { marginLeft: 'auto' },
-                        totalQueryCount > 0 && { color: colors.actions.query },
-                    ]}>
-                        {formatCounts(queryCount, totalQueryCount)}
-                    </Text>
+                    <CountPair onPost={queryCount} total={totalQueryCount} color={colors.actions.query} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.offerButton} onPress={onToggleReveal} disabled={!toggleEnabled || !hasIncomingOffers}>
                     <Text style={[deckStyles.actionButtonText, { color: hasIncomingOffers ? colors.actions.offer : colors.ui.secondarydisabled }]}>OFFERS</Text>
-                    <Text style={[
-                        deckStyles.countText,
-                        { marginLeft: 'auto' },
-                        totalOfferCount > 0 && { color: colors.actions.offer },
-                    ]}>
-                        {formatCounts(offerCount, totalOfferCount)}
-                    </Text>
+                    <CountPair onPost={offerCount} total={totalOfferCount} color={colors.actions.offer} />
 
                 </TouchableOpacity>
             </View>

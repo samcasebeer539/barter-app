@@ -297,7 +297,7 @@ const UserCard: React.FC<UserCardProps> = ({
               {isEditable ? (
                 <>
                   <TouchableOpacity style={styles.actionButton} onPress={handleSave} disabled={isUploadingPhoto}>
-                    <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.cardsecondary : colors.actions.review} />
+                    <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.carddisabled : colors.actions.review} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionButton} onPress={handleCancel}>
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />

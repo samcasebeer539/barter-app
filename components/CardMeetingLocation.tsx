@@ -328,11 +328,11 @@ const CardLocation: React.FC<CardLocationProps> = ({
               <FontAwesome6
                 name="circle-plus"
                 size={24}
-                color={pinReady ? colors.actions.location : colors.ui.cardsecondary}
+                color={pinReady ? colors.actions.location : colors.ui.carddisabled}
               />
               <Text style={[
                 styles.addLocationText,
-                { color: pinReady ? colors.actions.location : colors.ui.cardsecondary }
+                { color: pinReady ? colors.actions.location : colors.ui.carddisabled }
               ]}>
                 Location
               </Text>
@@ -357,7 +357,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   <FontAwesome6
                     name="circle-check"
                     size={24}
-                    color={!nameInput.trim() ? colors.ui.cardsecondary : colors.actions.location}
+                    color={!nameInput.trim() ? colors.ui.carddisabled : colors.actions.location}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleCancelNaming} hitSlop={8}>

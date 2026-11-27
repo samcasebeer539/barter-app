@@ -47,6 +47,7 @@ export const colors = {
     secondary: '#372788',     // 270e96 Secondary button color (purple-grey) 5c5579  4a4468 372788
     secondarydisabled: '#8779ee',
     cardsecondary: '#8779ee',
+    carddisabled: '#d2cdf9',  // Disabled controls on cards (lighter cardsecondary), mainly edit mode
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
     background: '#000000',    // Main app background
   },

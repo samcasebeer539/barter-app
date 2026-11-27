@@ -252,17 +252,21 @@ const PostCard: React.FC<PostCardProps> = ({
               {isEditable ? (
                 <>
                   <TouchableOpacity style={styles.iconContainer} onPress={handleSave} disabled={!canSave}>
-                    <FontAwesome6 name="circle-check" size={24} color={canSave ? colors.actions.trade : colors.ui.cardsecondary} />
+                    <FontAwesome6 name="circle-check" size={24} color={canSave ? colors.actions.trade : colors.ui.carddisabled} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.iconContainer} onPress={handleCancel}>
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                 </>
-              ) : isUser && onEnterEdit && !post.inTrade ? (
+              ) : isUser && onEnterEdit ? (
                 // No edit button in decks that can't edit (e.g. the trade
-                // deck) or for posts in an active trade.
-                <TouchableOpacity style={styles.iconContainer} onPress={onEnterEdit}>
-                  <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
+                // deck). Posts in an active trade show it disabled.
+                <TouchableOpacity style={styles.iconContainer} onPress={onEnterEdit} disabled={!!post.inTrade}>
+                  <FontAwesome6
+                    name="square-pen"
+                    size={24}
+                    color={post.inTrade ? colors.ui.carddisabled : colors.ui.cardsecondary}
+                  />
                 </TouchableOpacity>
               ) : null}
 
@@ -351,7 +355,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     <FontAwesome6
                       name="circle-minus"
                       size={24}
-                      color={displayPhotos.length === 0 ? 'transparent' : colors.ui.cardsecondary}
+                      color={displayPhotos.length === 0 ? colors.ui.carddisabled : colors.ui.cardsecondary}
                     />
                   </TouchableOpacity>
 

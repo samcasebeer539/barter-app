@@ -127,6 +127,42 @@ def blocked_ids_for(user):
     return ids
 
 
+# ── Text length limits (the app's text fields use the same numbers) ──────
+TEXT_LIMITS = {
+    "first_name": 40,
+    "last_name": 40,
+    "post_title": 60,
+    "description": 1000,   # post description
+    "bio": 300,
+    "pronouns": 30,
+    "phone": 20,
+    "location_name": 40,
+    "location_description": 200,
+    "message": 500,        # questions and answers
+}
+
+_LABELS = {
+    "first_name": "First name", "last_name": "Last name", "post_title": "Title",
+    "description": "Description", "bio": "Bio", "pronouns": "Pronouns", "phone": "Phone",
+    "location_name": "Location name", "location_description": "Location description",
+    "message": "Message",
+}
+
+
+def text_too_long(fields):
+    """An error response if any {limit_key: value} is a string longer than
+    its limit (or isn't text at all), else None."""
+    for key, value in fields.items():
+        if value is None:
+            continue
+        label = _LABELS.get(key, key)
+        if not isinstance(value, str):
+            return jsonify({"error": f"{label} must be text"}), 400
+        if len(value) > TEXT_LIMITS[key]:
+            return jsonify({"error": f"{label} is too long (max {TEXT_LIMITS[key]} characters)"}), 400
+    return None
+
+
 _NO_USER = object()
 
 def current_user():

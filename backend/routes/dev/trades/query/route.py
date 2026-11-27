@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for, text_too_long
 from models.game import Game, NotYourTurnError
 
 trades_query_bp = Blueprint("trades_query", __name__)
@@ -70,6 +70,9 @@ def create_query():
 
     if not target_post_id or not message:
         return jsonify({"error": "Missing fields"}), 400
+    err = text_too_long({"message": message})
+    if err:
+        return err
 
     target_post_id = ObjectId(target_post_id)
     target_post = posts_collection.find_one({"_id": target_post_id})
@@ -126,6 +129,9 @@ def _query_in_game(user, data):
     message = (data.get("message") or "").strip()
     if not message:
         return jsonify({"error": "Missing message"}), 400
+    err = text_too_long({"message": message})
+    if err:
+        return err
 
     game = Game.get(ObjectId(data["gameId"]))
     if not game:

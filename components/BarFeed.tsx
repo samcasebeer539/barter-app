@@ -3,6 +3,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import { globalFonts, colors } from '../styles/globalStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TEXT_LIMITS } from '@/config/textLimits';
 
 interface FeedBarProps {
     showLocation: boolean;
@@ -58,6 +59,7 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                         ref={searchInputRef}
                         style={styles.searchInput}
                         placeholder="Search"
+                        maxLength={TEXT_LIMITS.search}
                         placeholderTextColor={colors.ui.secondarydisabled}
                         value={searchText}
                         onChangeText={setSearchText}

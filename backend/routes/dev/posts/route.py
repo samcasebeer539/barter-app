@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post, current_user
+from helpers import get_uid_from_request, serialize_post, current_user, text_too_long
 from models.game import Game
 
 posts_bp = Blueprint('posts', __name__)
@@ -33,7 +33,9 @@ def create_post():
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        data = request.json
+        data = request.json or {}
+        err = text_too_long({"post_title": data.get("post_title"), "description": data.get("description")})
+        if err: return err
         new_post = {
             "user_id": user["_id"],
             "post_title": data.get("post_title", ""),

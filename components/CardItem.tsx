@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Animated, TextInput, Alert } from 'react-native';
 import { Image } from 'expo-image';
+import { TEXT_LIMITS } from '@/config/textLimits';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import { startReport } from '@/lib/safety';
 import * as ImagePicker from 'expo-image-picker';
@@ -213,6 +214,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     onFocus={kbField.onFocus}
                     onChangeText={v => { updateDraft('name', v); kbField.requestLift(); }}
                     placeholder="Item title"
+                    maxLength={TEXT_LIMITS.postTitle}
                     returnKeyType="done"
                     placeholderTextColor={colors.ui.cardsecondary}
                   />
@@ -394,6 +396,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('description', v); kbField.requestLift(); }}
                   placeholder="Describe this item (optional)"
+                  maxLength={TEXT_LIMITS.postDescription}
                   returnKeyType="done"
                   submitBehavior="blurAndSubmit"
                   placeholderTextColor={colors.ui.cardsecondary}

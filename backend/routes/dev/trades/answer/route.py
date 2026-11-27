@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from bson.errors import InvalidId
 from backend import user_data_collection, trades_collection
-from helpers import get_uid_from_request, current_user
+from helpers import get_uid_from_request, current_user, text_too_long
 from models.game import Game
 
 trades_answer_bp = Blueprint("trades_answer", __name__)
@@ -26,6 +26,9 @@ def answer_query():
     message = (data.get("message") or "").strip()
     if not data.get("queryId") or not message:
         return jsonify({"error": "Missing queryId or message"}), 400
+    err = text_too_long({"message": message})
+    if err:
+        return err
 
     try:
         query_id = ObjectId(data["queryId"])

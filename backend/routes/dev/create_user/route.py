@@ -3,7 +3,7 @@ from flask import jsonify, request, Blueprint
 import traceback
 from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
-from helpers import current_user, current_token
+from helpers import current_user, current_token, text_too_long
 
 create_user_bp = Blueprint('create_user', __name__)
 
@@ -16,12 +16,14 @@ def create_user():
         uid = decoded_token['uid']
         email = decoded_token['email']
         
-        data = request.json
-        first_name = data.get("firstName").strip()
-        last_name = data.get("lastName").strip()
+        data = request.json or {}
+        first_name = (data.get("firstName") or "").strip()
+        last_name = (data.get("lastName") or "").strip()
 
         if not first_name or not last_name:
             return jsonify({"error": "Missing name fields"}), 400
+        err = text_too_long({"first_name": first_name, "last_name": last_name})
+        if err: return err
 
         existing_user = current_user()
         if existing_user:

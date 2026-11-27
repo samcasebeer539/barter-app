@@ -4,6 +4,7 @@ import { auth } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { colors, globalFonts } from '../../styles/globalStyles';
 import { apiJson } from '@/lib/api';
+import { TEXT_LIMITS } from '@/config/textLimits';
 
 export default function HandleLogin() {
     const [email, setEmail] = useState('');
@@ -95,6 +96,7 @@ export default function HandleLogin() {
                         value={firstName}
                         onChangeText={setFirstName}
                         placeholder='First Name'
+                        maxLength={TEXT_LIMITS.firstName}
                         placeholderTextColor={colors.ui.cardsecondary}
                     />
                 )}
@@ -106,6 +108,7 @@ export default function HandleLogin() {
                         value={lastName}
                         onChangeText={setLastName}
                         placeholder='Last Name'
+                        maxLength={TEXT_LIMITS.lastName}
                         placeholderTextColor={colors.ui.cardsecondary}
                     />
                 )}
@@ -118,6 +121,7 @@ export default function HandleLogin() {
                     autoCapitalize="none"
                     keyboardType='email-address'
                     placeholder='Email'
+                    maxLength={TEXT_LIMITS.email}
                     placeholderTextColor={colors.ui.cardsecondary}
                 />
                 <TextInput
@@ -128,6 +132,7 @@ export default function HandleLogin() {
                     onChangeText={setPassword}
                     secureTextEntry
                     placeholder='Password'
+                    maxLength={TEXT_LIMITS.password}
                     placeholderTextColor={colors.ui.cardsecondary}
                 />
 

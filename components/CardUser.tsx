@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { Image } from 'expo-image';
+import { TEXT_LIMITS } from '@/config/textLimits';
 import { FontAwesome6 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { globalFonts, colors } from '../styles/globalStyles';
@@ -366,6 +367,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('pronouns', v); kbField.requestLift(); }}
                   placeholder="Pronouns (optional)"
+                  maxLength={TEXT_LIMITS.pronouns}
                   returnKeyType="done"
                   placeholderTextColor={colors.ui.cardsecondary}
                 />
@@ -412,6 +414,7 @@ const UserCard: React.FC<UserCardProps> = ({
                       onBlur={() => { setIsEditingPhone(false); setPhoneDoneKey(false); }}
                       onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
                       placeholder="Phone (optional)"
+                      maxLength={TEXT_LIMITS.phone}
                       placeholderTextColor={colors.ui.cardsecondary}
                       keyboardType="numbers-and-punctuation"
                       returnKeyType={phoneDoneKey ? 'done' : 'default'}
@@ -449,6 +452,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   onFocus={kbField.onFocus}
                   onChangeText={v => { updateDraft('bio', v); kbField.requestLift(); }}
                   placeholder="Tell others about yourself (optional)"
+                  maxLength={TEXT_LIMITS.bio}
                   returnKeyType="done"
                   submitBehavior="blurAndSubmit"
                   placeholderTextColor={colors.ui.cardsecondary}

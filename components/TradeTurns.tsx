@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, Keyboard } from 'react-native';
 import { colors, globalFonts } from '../styles/globalStyles';
 import { TradeTurnType, getTurnConfig } from '../config/tradeConfig';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
+import { TEXT_LIMITS } from '@/config/textLimits';
 
 export interface TradeTurn {
   type: TradeTurnType;
@@ -118,6 +119,7 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             ref={activeQueryInputRef}
             style={[styles.answerInput, { color: queryColor }]}
             placeholder={queryPlaceholder}
+            maxLength={TEXT_LIMITS.message}
             placeholderTextColor={queryColor}
             value={activeQueryText}
             onFocus={() => { kbField.onFocus(); setDoneKey(true); }}

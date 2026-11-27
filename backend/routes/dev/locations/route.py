@@ -1,7 +1,7 @@
 from flask import jsonify, request, Blueprint
 import traceback
 from backend import user_data_collection
-from helpers import get_uid_from_request, current_user
+from helpers import get_uid_from_request, current_user, text_too_long
 
 locations_bp = Blueprint('locations', __name__)
 
@@ -48,6 +48,8 @@ def save_my_locations():
             if not required_keys.issubset(loc.keys()):
                 return jsonify({"error": f"Each location requires: {required_keys}"}), 400
             loc.setdefault("description", "")
+            err = text_too_long({"location_name": loc["name"], "location_description": loc["description"]})
+            if err: return err
 
         user_data_collection.update_one(
             {"firebase_uid": uid},

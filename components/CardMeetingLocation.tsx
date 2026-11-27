@@ -6,6 +6,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { Locations, LocationEntry } from '@/types/index';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import { useUserRegion } from '@/hooks/useUserRegion';
+import { TEXT_LIMITS } from '@/config/textLimits';
 
 const MAX_LOCATIONS = 3;
 
@@ -349,6 +350,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   onFocus={() => { kbField.onFocus(); setDoneKey(true); }}
                   onChangeText={v => { setNameInput(v); kbField.requestLift(); }}
                   placeholder="Name"
+                  maxLength={TEXT_LIMITS.locationName}
                   placeholderTextColor={colors.ui.cardsecondary}
                   autoFocus
                   returnKeyType={doneKey ? 'done' : 'default'}
@@ -371,6 +373,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 onFocus={kbField.onFocus}
                 onChangeText={v => { setDescInput(v); kbField.requestLift(); }}
                 placeholder="Description (optional)"
+                maxLength={TEXT_LIMITS.locationDescription}
                 placeholderTextColor={colors.ui.cardsecondary}
                 returnKeyType="done"
                 onSubmitEditing={handleSave}

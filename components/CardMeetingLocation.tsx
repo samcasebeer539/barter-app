@@ -504,10 +504,11 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   nameInput: {
     flex: 1,
+    marginRight: 4,
     fontSize: 18,
     fontFamily: globalFonts.bold,
     color: '#000',

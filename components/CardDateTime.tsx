@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   rowIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   emptyText: {
     fontSize: 16,

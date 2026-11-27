@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     height: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   title: {
     fontSize: 18,
@@ -455,6 +455,7 @@ const styles = StyleSheet.create({
   },
   titleEditWrapper: {
     flex: 1,
+    marginRight: 4,
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 4,

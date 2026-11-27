@@ -558,6 +558,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontFamily: globalFonts.bold,
     marginRight: 'auto',
+    paddingRight: 4,
   },
   pronouns: {
     fontSize: 18,
@@ -677,9 +678,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
     paddingVertical: 0,
     paddingHorizontal: 0,
+    marginRight: 4,
   },
   actionButton: {
-    marginLeft: 8,
+    marginLeft: 4,
   },
   bioEditArea: {
     flex: 1,

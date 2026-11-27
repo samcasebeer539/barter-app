@@ -13,6 +13,7 @@ import * as Location from 'expo-location';
 import { setLocationAllowedCache } from '@/hooks/useUserRegion';
 import { getSettings } from '@/lib/settingsCache';
 import { apiJson } from '@/lib/api';
+import { getBlockedUsers, unblockUser, BlockedUser } from '@/lib/safety';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
 import { colors, globalFonts } from '@/styles/globalStyles';
@@ -28,6 +29,38 @@ export default function SettingsScreen() {
     const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
     const [locationEnabled, setLocationEnabled] = React.useState(true);
     const [helpExpanded, setHelpExpanded] = React.useState(false);
+    const [blockedExpanded, setBlockedExpanded] = React.useState(false);
+    const [blockedUsers, setBlockedUsers] = React.useState<BlockedUser[] | null>(null);
+
+    // Loaded fresh each time the list is opened.
+    const toggleBlocked = () => {
+        const opening = !blockedExpanded;
+        setBlockedExpanded(opening);
+        if (opening) {
+            setBlockedUsers(null);
+            getBlockedUsers()
+                .then(setBlockedUsers)
+                .catch(err => { console.warn('Failed to load blocked users:', err); setBlockedUsers([]); });
+        }
+    };
+
+    const handleUnblock = (u: BlockedUser) => {
+        Alert.alert(
+            `Unblock ${u.first_name}?`,
+            "You'll see each other's posts again and can trade. Trades that were declined when you blocked them stay declined.",
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Unblock',
+                    onPress: () => {
+                        unblockUser(u._id)
+                            .then(() => setBlockedUsers(prev => (prev ?? []).filter(b => b._id !== u._id)))
+                            .catch(err => Alert.alert("Couldn't unblock", err instanceof Error ? err.message : String(err)));
+                    },
+                },
+            ],
+        );
+    };
     const [aboutExpanded, setAboutExpanded] = React.useState(false);
     const [termsExpanded, setTermsExpanded] = React.useState(false);
     
@@ -181,6 +214,36 @@ export default function SettingsScreen() {
                             thumbColor="#fff"
                         />
                     </View>
+
+                    {/* Blocked users: opens a list where you can unblock them. */}
+                    <TouchableOpacity style={styles.settingItem} onPress={toggleBlocked}>
+                        <View style={styles.settingLeft}>
+                            <Text style={styles.settingText}>Blocked Users</Text>
+                        </View>
+                        <FontAwesome6
+                            name={blockedExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={blockedExpanded ? colors.text.primary : colors.ui.secondarydisabled}
+                        />
+                    </TouchableOpacity>
+                    {blockedExpanded && (
+                        <View style={styles.dropdownContainer}>
+                            {blockedUsers === null ? (
+                                <Text style={styles.dropdownText}>Loading…</Text>
+                            ) : blockedUsers.length === 0 ? (
+                                <Text style={styles.dropdownText}>You haven't blocked anyone.</Text>
+                            ) : (
+                                blockedUsers.map(u => (
+                                    <View key={u._id} style={styles.blockedRow}>
+                                        <Text style={styles.dropdownText}>{`${u.first_name} ${u.last_name}`.trim()}</Text>
+                                        <TouchableOpacity onPress={() => handleUnblock(u)} hitSlop={8}>
+                                            <Text style={styles.unblockText}>Unblock</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))
+                            )}
+                        </View>
+                    )}
                     {/*
                     <TouchableOpacity style={styles.settingItem}>
                         <View style={styles.settingLeft}>
@@ -423,6 +486,17 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.regular,
     },
     
+    blockedRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 6,
+    },
+    unblockText: {
+        color: colors.actions.decline,
+        fontSize: 16,
+        fontFamily: globalFonts.bold,
+    },
     linkText: {
         color: "#4DA3FF",
         textDecorationLine: "underline",

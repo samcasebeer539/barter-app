@@ -104,13 +104,14 @@ class Api:
     def __init__(self, client):
         self.client = client
 
-    def _call(self, method, path, as_=None, json=None):
-        headers = {"Authorization": f"Bearer {as_}"} if as_ else {}
+    def _call(self, method, path, as_=None, json=None, headers=None):
+        headers = {**({"Authorization": f"Bearer {as_}"} if as_ else {}), **(headers or {})}
         r = getattr(self.client, method)(path, json=json, headers=headers)
+        self.last = r  # the raw response, for headers
         return r.status_code, r.get_json(silent=True)
 
-    def get(self, path, as_=None):
-        return self._call("get", path, as_)
+    def get(self, path, as_=None, headers=None):
+        return self._call("get", path, as_, headers=headers)
 
     def post(self, path, as_=None, json=None):
         return self._call("post", path, as_, {} if json is None else json)

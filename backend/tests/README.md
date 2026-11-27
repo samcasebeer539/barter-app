@@ -22,10 +22,20 @@ python -m pytest tests -q
 - `test_trade_flow.py`: whole trades through the API, offer to completed.
 - `test_cascades.py`: finalizing a deal and blocking someone.
 - `test_rules_and_validation.py`: permissions, bad input, text limits.
+- `test_feed_and_search.py`: feed, search, opening a post's owner.
+- `test_profile_and_users.py`: sign up, your profile page, other players'
+  profiles, reviews, locations, settings.
+- `test_safety.py`: block list and reports.
+- `test_trade_lists.py`: what each barter tab lists, turn-timer expiry on
+  load, 204 caching, answers, post deletion.
+
+A test marked `xfail` documents a known gap: it fails today on purpose,
+and the run stays green. When the gap is fixed it starts passing, which
+fails the run until the `xfail` mark is removed.
 
 ## Not covered
 
 The fake Mongo doesn't know the real Atlas indexes (only the unique
 `firebase_uid` one is recreated) and can't reproduce truly simultaneous
-requests. Firebase token checks and storage are stubbed. The profile page,
-feed search, report and user routes have little or no coverage yet.
+requests. Firebase token checks and storage are stubbed, so real sign-in and
+real photo uploads/deletes aren't exercised.

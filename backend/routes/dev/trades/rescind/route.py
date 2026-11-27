@@ -4,7 +4,7 @@ import traceback
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
 from helpers import get_uid_from_request, current_user
-from models.game import Game
+from models.game import Game, GameConflictError
 
 trades_rescind_bp = Blueprint('trades_rescind', __name__)
 
@@ -55,6 +55,8 @@ def rescind_offer():
 
         return jsonify({"success": True, "gameId": str(game._id)}), 200
 
+    except GameConflictError:
+        raise
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

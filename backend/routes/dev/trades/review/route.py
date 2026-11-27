@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from bson.errors import InvalidId
 from pymongo import ReturnDocument
-from backend import user_data_collection, trades_collection
+from backend import user_data_collection, trades_collection, games_collection
 from helpers import get_uid_from_request, current_user
 from models.game import Game
 
@@ -77,8 +77,13 @@ def review_trade():
     # Both reviewed: the trade is done.
     review_count = trades_collection.count_documents({"game_id": game._id, "type": "review"})
     if review_count >= 2:
-        game.advance("completed")
-        game.save()
+        # Atomic, so both players reviewing at once can't trip over each other.
+        games_collection.update_one(
+            {"_id": game._id, "phase": "agreed"},
+            {"$set": {"phase": "completed", "completed_at": now, "updated_at": now},
+             "$inc": {"rev": 1}},
+        )
+        game.phase = "completed"
 
     return jsonify({
         "success": True,

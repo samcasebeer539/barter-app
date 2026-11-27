@@ -13,7 +13,6 @@ from routes.dev.posts.route import posts_bp
 from routes.dev.trades.offer.route import trades_offer_bp
 from routes.dev.trades.query.route import trades_query_bp
 from routes.dev.trades.barter.route import trades_barter_bp
-from routes.dev.trades.closed.route import trades_closed_bp
 from routes.dev.trades.open.route import trades_open_bp
 from routes.dev.trades.rescind.route import trades_rescind_bp
 from routes.dev.trades.stall.route import trades_stall_bp
@@ -30,10 +29,8 @@ from routes.dev.trades.tabs.route import trades_tabs_bp
 from routes.dev.profile_page.route import profile_page_bp
 from routes.dev.safety.route import safety_bp
 from routes.dev.trades.trade_details.accept.route import trades_detail_accept_bp
-from routes.dev.trades.trade_details.counter.route import trades_detail_counter_bp
 from routes.dev.trades.trade_details.decline.route import trades_detail_decline_bp
 from routes.dev.trades.trade_details.get_trade.route import trades_detail_get_trade_bp
-from routes.dev.trades.trade_details.message.route import trades_detail_message_bp
 from routes.dev.update_user.route import update_user_bp
 from routes.dev.user_data.route import user_data_bp
 from routes.dev.user_id.route import userId_bp
@@ -42,7 +39,15 @@ from routes.dev.settings.route import settings_bp
 from routes.dev.feed.search.route import feed_search_bp
 
 
+from models.game import GameConflictError
 app = Flask(__name__)
+
+
+@app.errorhandler(GameConflictError)
+def game_conflict(e):
+    """Two moves raced on one game (see Game.save); the later one is refused."""
+    return jsonify({"error": str(e)}), 409
+
 
 @app.before_request
 def require_firebase_token():
@@ -72,13 +77,10 @@ app.register_blueprint(posts_bp)
 app.register_blueprint(trades_offer_bp)
 app.register_blueprint(trades_query_bp)
 app.register_blueprint(trades_barter_bp)
-app.register_blueprint(trades_closed_bp)
 app.register_blueprint(trades_open_bp)
 app.register_blueprint(trades_detail_accept_bp)
-app.register_blueprint(trades_detail_counter_bp)
 app.register_blueprint(trades_detail_decline_bp)
 app.register_blueprint(trades_detail_get_trade_bp)
-app.register_blueprint(trades_detail_message_bp)
 app.register_blueprint(update_user_bp)
 app.register_blueprint(user_data_bp)
 app.register_blueprint(userId_bp)

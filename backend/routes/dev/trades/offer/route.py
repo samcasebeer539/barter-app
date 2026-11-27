@@ -4,7 +4,7 @@ import traceback
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
 from helpers import get_uid_from_request, current_user, blocked_ids_for
-from models.game import Game
+from models.game import Game, GameConflictError
 
 trades_offer_bp = Blueprint('trades_offer', __name__)
 
@@ -50,6 +50,14 @@ def send_offer():
             }), 200
 
 
+        if game.phase == "open":
+            game.add_card("receiver", target_post_id)
+            try:
+                game.apply_transition("offer", next_turn_user_id=target_post["user_id"])
+            except ValueError as e:
+                return jsonify({"error": str(e)}), 400
+            game.save()
+
         trade = {
             "game_id": game._id,
             "type": "offer",
@@ -60,20 +68,14 @@ def send_offer():
         }
         result = trades_collection.insert_one(trade)
 
-        if game.phase == "open":
-            game.add_card("receiver", target_post_id)
-            try:
-                game.apply_transition("offer", next_turn_user_id=target_post["user_id"])
-            except ValueError as e:
-                return jsonify({"error": str(e)}), 400
-            game.save()
-
         return jsonify({
             "success": True,
             "tradeId": str(result.inserted_id),
             "gameId": str(game._id),
         }), 201
 
+    except GameConflictError:
+        raise
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

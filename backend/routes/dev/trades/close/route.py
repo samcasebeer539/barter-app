@@ -22,6 +22,14 @@ def get_close_games():
     return json_with_version(close_games_for(user))
 
 
+def reviewed_by(game, user):
+    """Whether user has reviewed this (serialized) game."""
+    me = str(user["_id"])
+    return any(t.get("type") == "review" and t.get("actor_id") == me for t in game["turns"])
+
+
 def close_games_for(user):
-    # Agreed deals stay in the close tab.
-    return games_in_phase_for_user(user, ["close", "agreed"])
+    # Agreed deals stay in the close tab until you've reviewed; then they're
+    # in your ACCEPTED TRADES, even if the other player hasn't reviewed yet.
+    return [g for g in games_in_phase_for_user(user, ["close", "agreed"])
+            if not (g["phase"] == "agreed" and reviewed_by(g, user))]

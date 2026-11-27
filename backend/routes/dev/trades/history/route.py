@@ -32,7 +32,19 @@ def get_trade_history():
 
 def history_for(user, status):
     """Finished trades with `status` (call Game.expire_overdue_for_user first)."""
-    games = games_in_phase_for_user(user, status)
+    if status == "completed":
+        # Plus deals you've reviewed that are waiting on the other player's
+        # review; they're done as far as you're concerned.
+        from routes.dev.trades.close.route import reviewed_by
+        games = []
+        for g in games_in_phase_for_user(user, ["completed", "agreed"]):
+            if g["phase"] == "agreed":
+                if not reviewed_by(g, user):
+                    continue
+                g["phase"] = "completed"
+            games.append(g)
+    else:
+        games = games_in_phase_for_user(user, status)
     if status == "declined":
         games = [g for g in games if any(t.get("type") == "barter" for t in g["turns"])]
 
@@ -47,6 +59,10 @@ def history_counts_for(user):
     history_for; call Game.expire_overdue_for_user first."""
     mine = {"$or": [{"initiator_user_id": user["_id"]}, {"receiver_user_id": user["_id"]}]}
     completed = games_collection.count_documents({**mine, "phase": "completed"})
+    agreed_ids = [g["_id"] for g in games_collection.find({**mine, "phase": "agreed"}, {"_id": 1})]
+    if agreed_ids:
+        completed += len(trades_collection.distinct("game_id", {
+            "game_id": {"$in": agreed_ids}, "type": "review", "actor_id": user["_id"]}))
     declined_ids = [g["_id"] for g in games_collection.find({**mine, "phase": "declined"}, {"_id": 1})]
     declined = len(trades_collection.distinct(
         "game_id", {"game_id": {"$in": declined_ids}, "type": "barter"})) if declined_ids else 0

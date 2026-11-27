@@ -79,6 +79,8 @@ def create_query():
 
     if not target_post:
         return jsonify({"error": "Post not found"}), 404
+    if target_post["user_id"] == user["_id"]:
+        return jsonify({"error": "You can't ask about your own post"}), 400
     if target_post["user_id"] in blocked_ids_for(user):
         return jsonify({"error": "You can't message this user"}), 403
 

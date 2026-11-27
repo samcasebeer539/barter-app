@@ -24,6 +24,12 @@ class NotYourTurnError(Exception):
     """Raised when a player acts out of turn in a turn-based phase."""
 
 
+class GameConflictError(Exception):
+    """Raised by save() when someone else changed the game after it was
+    loaded (e.g. a double tap, or both players moving at once). Nothing is
+    written; the app shows a 409 and reloads."""
+
+
 class Game:
     def __init__(
         self,
@@ -39,8 +45,11 @@ class Game:
         updated_at: datetime = None,
         completed_at: datetime = None,
         turn_started_at: datetime = None,
+        rev: int = None,
     ):
         self._id = _id
+        # Bumped on every save; a save only lands if it still matches (see save).
+        self.rev = rev
         self.initiator_user_id = initiator_user_id
         self.receiver_user_id = receiver_user_id
         self.target_post_id = target_post_id
@@ -128,6 +137,7 @@ class Game:
             # Games saved before turn timers existed have no start time; they
             # get a fresh clock from now (persisted on their next save).
             turn_started_at=doc.get("turn_started_at"),
+            rev=doc.get("rev"),
         )
 
     def to_doc(self) -> dict:
@@ -143,6 +153,7 @@ class Game:
             "updated_at": self.updated_at,
             "completed_at": self.completed_at,
             "turn_started_at": self.turn_started_at,
+            "rev": self.rev,
         }
         if self._id:
             doc["_id"] = self._id
@@ -174,18 +185,54 @@ class Game:
         if existing:
             return existing
 
-        game = cls(initiator_id, receiver_id, target_post_id)
+        game = cls(initiator_id, receiver_id, target_post_id, rev=0)
         result = games_collection.insert_one(game.to_doc())
         game._id = result.inserted_id
         return game
 
     def save(self):
+        """Write the game back, but only if nobody else saved it since it was
+        loaded; otherwise raise GameConflictError. Two requests racing on the
+        same turn (a double tap) can't both land. Games saved before revisions
+        existed have no rev, which {"rev": None} matches."""
+        loaded_rev = self.rev
+        self.rev = (loaded_rev or 0) + 1
         self.updated_at = datetime.now(timezone.utc)
-        games_collection.update_one(
-            {"_id": self._id},
+        result = games_collection.update_one(
+            {"_id": self._id, "rev": loaded_rev},
             {"$set": self.to_doc()},
-            upsert=True,
         )
+        if result.matched_count == 0:
+            self.rev = loaded_rev
+            raise GameConflictError("This trade just changed. Refresh and try again.")
+
+    @classmethod
+    def force_decline(cls, game_id: ObjectId, actor_id_for, reason: str, now: datetime = None) -> bool:
+        """Decline a game no matter what's happening in it (blocking, its post
+        being traded). Retries if a player's move lands at the same moment.
+        actor_id_for(game) picks who the decline is credited to. Returns True
+        if it declined the game, False if it had already ended."""
+        now = now or datetime.now(timezone.utc)
+        for _ in range(5):
+            game = cls.get(game_id)
+            if not game or game.is_closed():
+                return False
+            game.advance("declined")
+            try:
+                game.save()
+            except GameConflictError:
+                continue
+            trades_collection.insert_one({
+                "game_id": game._id,
+                "type": "decline",
+                "actor_id": actor_id_for(game),
+                "auto": True,
+                "reason": reason,
+                "created_at": now,
+                "messages": [],
+            })
+            return True
+        return False
 
     def next_phase(self, action_type: str) -> str:
         """Look up the phase this game moves to after `action_type`.
@@ -331,7 +378,10 @@ class Game:
 
         timed_out_user = self.turn_user_id
         self.advance("declined")
-        self.save()
+        try:
+            self.save()
+        except GameConflictError:
+            return False  # someone just changed it; checked again next load
         trades_collection.insert_one({
             "game_id": self._id,
             "type": "decline",
@@ -406,24 +456,9 @@ class Game:
         })
         now = datetime.now(timezone.utc)
         dealers = {self.initiator_user_id, self.receiver_user_id}
-        count = 0
-        for doc in docs:
-            other = Game.from_doc(doc)
-            actor = next((u for u in (other.receiver_user_id, other.initiator_user_id) if u in dealers),
-                         other.receiver_user_id)
-            other.advance("declined")
-            other.save()
-            trades_collection.insert_one({
-                "game_id": other._id,
-                "type": "decline",
-                "actor_id": actor,
-                "auto": True,
-                "reason": "post_traded",
-                "created_at": now,
-                "messages": [],
-            })
-            count += 1
-        return count
+        owner = lambda g: next((u for u in (g.receiver_user_id, g.initiator_user_id) if u in dealers),
+                               g.receiver_user_id)
+        return sum(Game.force_decline(doc["_id"], owner, "post_traded", now) for doc in docs)
 
     def card_ids(self) -> list:
         """The posts actually on the table (both sides' cards). Unlike

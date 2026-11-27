@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
+from bson.errors import InvalidId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, json_with_version, current_user
-from models.game import Game, iso_utc
+from helpers import get_uid_from_request, serialize_post, serialize_trade, json_with_version, current_user, blocked_ids_for
+from models.game import Game, GameConflictError, iso_utc
 
 trades_barter_bp = Blueprint("trades_barter", __name__)
 
@@ -14,15 +15,21 @@ def send_barter():
         return err
 
     user = current_user()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
-    data = request.json
+    data = request.json or {}
     game_id = data.get("gameId")
     selected_post_ids = data.get("selectedPostIds")
 
-    if not game_id or not selected_post_ids:
+    if not game_id or not selected_post_ids or not isinstance(selected_post_ids, list):
         return jsonify({"error": "Missing fields"}), 400
 
-    game_id = ObjectId(game_id)
+    try:
+        game_id = ObjectId(game_id)
+        selected_post_ids = [ObjectId(pid) for pid in selected_post_ids]
+    except (InvalidId, TypeError):
+        return jsonify({"error": "Invalid gameId or postId"}), 400
     game = Game.get(game_id)
 
     if not game:
@@ -30,8 +37,10 @@ def send_barter():
 
     if game.receiver_user_id != user["_id"]:
         return jsonify({"error": "Only the receiver can barter"}), 403
-
-    selected_post_ids = [ObjectId(pid) for pid in selected_post_ids]
+    if game.initiator_user_id in blocked_ids_for(user):
+        return jsonify({"error": "You can't trade with this user"}), 403
+    if game.expire_if_overdue():
+        return jsonify({"error": "Turn time ran out; the trade was declined"}), 409
 
     initiator_post_count = posts_collection.count_documents({
         "_id": {"$in": selected_post_ids},
@@ -128,7 +137,10 @@ def games_in_phase_for_user(user, phase):
         if game_obj.expire_if_overdue():
             continue
         if "turn_started_at" not in game:
-            game_obj.save()  # start the clock for games from before turn timers
+            try:
+                game_obj.save()  # start the clock for games from before turn timers
+            except GameConflictError:
+                pass  # someone just moved; it has a clock now
         live.append((game, game_obj))
     if not live:
         return []

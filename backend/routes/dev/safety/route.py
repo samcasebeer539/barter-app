@@ -30,22 +30,9 @@ def _decline_games_between(me, other_id):
         ],
         "phase": {"$nin": Game.CLOSED_PHASES},
     })
+    # No turn rules: blocking always ends it, even mid-move.
     now = datetime.now(timezone.utc)
-    count = 0
-    for doc in docs:
-        game = Game.from_doc(doc)
-        game.advance("declined")  # no turn rules: blocking always ends it
-        game.save()
-        trades_collection.insert_one({
-            "game_id": game._id,
-            "type": "decline",
-            "actor_id": me,
-            "reason": "blocked",
-            "created_at": now,
-            "messages": [],
-        })
-        count += 1
-    return count
+    return sum(Game.force_decline(doc["_id"], lambda g: me, "blocked", now) for doc in docs)
 
 
 @safety_bp.route("/dev/block", methods=["POST"])

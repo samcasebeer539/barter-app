@@ -117,11 +117,15 @@ def test_profiles_batch(api, user, post):
     assert api.get("/dev/profiles?ids=", as_="alice")[1] == {}
 
 
-@pytest.mark.xfail(reason="known gap: /dev/users/<id> and /dev/profiles don't check blocks", strict=True)
-def test_blocked_users_cant_load_each_others_profiles(api, user):
+@pytest.mark.parametrize("blocker", ["alice", "bob"])
+def test_blocked_users_cant_load_each_others_profiles(api, user, blocker):
     alice, bob = user("alice"), user("bob")
-    api.post("/dev/block", as_="alice", json={"userId": str(bob["_id"])})
+    other = bob if blocker == "alice" else alice
+    api.post("/dev/block", as_=blocker, json={"userId": str(other["_id"])})
     assert api.get(f"/dev/users/{alice['_id']}", as_="bob")[0] == 404
+    assert api.get(f"/dev/users/{bob['_id']}", as_="alice")[0] == 404
+    assert api.get(f"/dev/profiles?ids={alice['_id']}", as_="bob")[1] == {}
+    assert api.get(f"/dev/profiles?ids={bob['_id']}", as_="alice")[1] == {}
 
 
 def test_reviews_list(api, user, game, turn, db):

@@ -2,7 +2,7 @@ from flask import jsonify, Blueprint, request
 import traceback
 from bson.objectid import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
-from helpers import get_uid_from_request, serialize_post, public_user
+from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user
 from models.game import iso_utc
 
 userId_bp = Blueprint('userId', __name__)
@@ -27,7 +27,8 @@ def get_user_profile(user_id):
         if not owner:
             owner = user_data_collection.find_one({"uid": user_id})
 
-        if not owner:
+        # Blocked either way: as if they don't exist.
+        if not owner or owner["_id"] in blocked_ids_for(current_user()):
             return jsonify({"error": "User not found"}), 404
 
         # Get all of their posts
@@ -67,7 +68,8 @@ def get_user_profiles():
                 ids.append(ObjectId(raw))
             except Exception:
                 return jsonify({"error": f"Invalid id: {raw}"}), 400
-        ids = list(dict.fromkeys(ids))[:MAX_PROFILE_BATCH]
+        blocked = blocked_ids_for(current_user())
+        ids = [i for i in dict.fromkeys(ids) if i not in blocked][:MAX_PROFILE_BATCH]
         if not ids:
             return jsonify({}), 200
 

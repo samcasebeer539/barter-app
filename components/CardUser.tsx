@@ -314,6 +314,7 @@ const UserCard: React.FC<UserCardProps> = ({
                   {/* Only where the card can actually be edited (the profile). */}
                   {onEnterEdit && (
                     <TouchableOpacity
+                      testID="user-edit"
                       style={styles.actionButton}
                       onPress={e => { e.stopPropagation(); onEnterEdit(); }}
                     >
@@ -328,6 +329,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 <>
                   {/* Block toggle: red while blocked; tapping again offers to unblock. */}
                   <TouchableOpacity
+                    testID="user-block"
                     style={styles.actionButton}
                     disabled={!user._id}
                     onPress={() => {
@@ -344,6 +346,7 @@ const UserCard: React.FC<UserCardProps> = ({
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
+                    testID="user-report"
                     style={styles.actionButton}
                     disabled={!user._id}
                     onPress={() => startReport({ userId: user._id, name: user.first_name })}

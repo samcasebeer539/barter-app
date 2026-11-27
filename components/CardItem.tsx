@@ -260,17 +260,17 @@ const PostCard: React.FC<PostCardProps> = ({
 
               {isEditable ? (
                 <>
-                  <TouchableOpacity style={styles.iconContainer} onPress={handleSave} disabled={!canSave}>
+                  <TouchableOpacity testID="post-save" style={styles.iconContainer} onPress={handleSave} disabled={!canSave}>
                     <FontAwesome6 name="circle-check" size={24} color={canSave ? colors.actions.trade : colors.ui.carddisabled} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer} onPress={handleCancel}>
+                  <TouchableOpacity testID="post-cancel" style={styles.iconContainer} onPress={handleCancel}>
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                 </>
               ) : isUser && onEnterEdit ? (
                 // No edit button in decks that can't edit (e.g. the trade
                 // deck). Posts in an active trade show it disabled.
-                <TouchableOpacity style={styles.iconContainer} onPress={onEnterEdit} disabled={!!post.inTrade}>
+                <TouchableOpacity testID="post-edit" style={styles.iconContainer} onPress={onEnterEdit} disabled={!!post.inTrade}>
                   <FontAwesome6
                     name="square-pen"
                     size={24}
@@ -279,7 +279,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 </TouchableOpacity>
               ) : !isUser && post._id ? (
                 // Someone else's post: report it.
-                <TouchableOpacity style={styles.iconContainer} onPress={() => startReport({ postId: post._id, name: ownerName })}>
+                <TouchableOpacity testID="post-report" style={styles.iconContainer} onPress={() => startReport({ postId: post._id, name: ownerName })}>
                   <FontAwesome6 name="circle-exclamation" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               ) : null}
@@ -362,6 +362,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
                 <View style={styles.editPhotoControls}>
                   <TouchableOpacity
+                    testID="photo-remove"
                     style={styles.photoNavButton}
                     onPress={() => handleRemovePhoto(currentPhotoIndex)}
                     disabled={displayPhotos.length === 0}
@@ -386,6 +387,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   </View>
 
                   <TouchableOpacity
+                    testID="photo-add"
                     style={styles.photoNavButton}
                     onPress={handleAddPhoto}
                     disabled={displayPhotos.length >= MAX_POST_PHOTOS}

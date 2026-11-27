@@ -16,6 +16,7 @@ import { getSettings } from '@/lib/settingsCache';
 import { apiJson } from '@/lib/api';
 import { getBlockedUsers, onBlockChange } from '@/lib/safety';
 import Deck, { DeckGroup } from '@/components/Deck';
+import { deckStyles } from '@/styles/deckStyles';
 import { User } from '@/types/index';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from 'expo-router';
@@ -56,9 +57,8 @@ export default function SettingsScreen() {
         [blockedUsers],
     );
     const { width: screenWidth } = useWindowDimensions();
-    // Fits inside a section (12px margins, 16px padding) with the deck's
-    // stacked cards.
-    const blockedCardWidth = Math.min(screenWidth - 24 - 32 - 12, 400);
+    // Same size as the profile's deck.
+    const blockedCardWidth = Math.min(screenWidth - 36, 400);
     const disableScroll = React.useCallback(() => setScrollEnabled(false), []);
     const enableScroll = React.useCallback(() => setScrollEnabled(true), []);
     const [aboutExpanded, setAboutExpanded] = React.useState(false);
@@ -253,24 +253,27 @@ export default function SettingsScreen() {
                             <View style={styles.dropdownContainer}>
                                 <Text style={styles.dropdownText}>You haven't blocked anyone.</Text>
                             </View>
-                        ) : (
-                            <View style={styles.blockedDeck}>
-                                {/* Cancels the deck's own left margin so it centers. */}
-                                <View style={{ marginLeft: -24 }}>
-                                    <Deck
-                                        groups={blockedGroups}
-                                        cardWidth={blockedCardWidth}
-                                        enabled
-                                        isUser={false}
-                                        showLocation={false}
-                                        onHorizontalGestureStart={disableScroll}
-                                        onGestureEnd={enableScroll}
-                                    />
-                                </View>
-                            </View>
-                        )
+                        ) : null
                     )}
                 </View>
+
+                {/* The blocked users' deck, under the section at full size
+                    (same width and centering as the profile's deck). */}
+                {blockedExpanded && blockedUsers && blockedUsers.length > 0 && (
+                    <View style={styles.blockedDeck}>
+                        <View style={deckStyles.deckWrapper}>
+                            <Deck
+                                groups={blockedGroups}
+                                cardWidth={blockedCardWidth}
+                                enabled
+                                isUser={false}
+                                showLocation={false}
+                                onHorizontalGestureStart={disableScroll}
+                                onGestureEnd={enableScroll}
+                            />
+                        </View>
+                    </View>
+                )}
 
                 {/* Support Section */}
                 <View style={styles.section}>
@@ -503,8 +506,7 @@ const styles = StyleSheet.create({
     
     blockedDeck: {
         alignItems: 'center',
-        paddingTop: 8,
-        paddingBottom: 12,
+        marginTop: 8,
     },
     linkText: {
         color: "#4DA3FF",

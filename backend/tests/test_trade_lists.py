@@ -118,3 +118,48 @@ def test_cant_edit_or_delete_someone_elses_post(api, user, post, db):
     api.patch(f"/dev/posts/{lamp}", as_="alice", json={"post_title": "Mine now"})
     api.delete(f"/dev/posts/{lamp}", as_="alice")
     assert db.posts_collection.find_one({"_id": lamp})["post_title"] == "Lamp"
+
+
+def test_open_tab_cards_carry_the_whole_game_history(api, user, post):
+    """QUERIES and OFFERS cards show everything that happened in that game:
+    your questions and their answers, their questions to you, the offer."""
+    alice, bob = user("alice"), user("bob")
+    lamp, chair = post(bob, "Lamp"), post(alice, "Chair")
+
+    api.post("/dev/trades/query", as_="alice", json={"targetPostId": str(lamp), "message": "Dimmable?"})
+    _, offer = api.post("/dev/trades/offer", as_="alice", json={"targetPostId": str(lamp)})
+    gid = offer["gameId"]
+    q = api.get("/dev/trades/incoming_queries", as_="bob")[1][0]
+    api.post("/dev/trades/answer", as_="bob", json={"queryId": q["tradeId"], "message": "Yes"})
+    # Bob (the owner) asks Alice about her chair before deciding.
+    api.post("/dev/trades/query", as_="bob", json={"gameId": gid, "targetPostId": str(chair), "message": "Scratches?"})
+
+    _, tab = api.get("/dev/trades/open_tab", as_="alice")
+    for card in (tab["offers"][0], tab["queries"][0]):
+        assert [t["type"] for t in card["turns"]] == ["query", "offer", "query"]
+        assert card["turns"][0]["messages"][1]["message"] == "Yes"          # Bob's answer
+        assert card["turns"][2]["actor_id"] == str(bob["_id"])               # Bob's question
+        assert (card["my_id"], card["partner_name"]) == (str(alice["_id"]), "Bob")
+        assert {p["post_title"] for p in card["turn_posts"]} == {"Lamp", "Chair"}
+
+
+def test_owner_asking_an_offerer_sees_the_history_too(api, user, post):
+    """Questions you asked someone who offered on your post are in your
+    QUERIES; the card's partner is the offerer."""
+    alice, bob = user("alice"), user("bob")
+    lamp, chair = post(bob, "Lamp"), post(alice, "Chair")
+    _, offer = api.post("/dev/trades/offer", as_="alice", json={"targetPostId": str(lamp)})
+    api.post("/dev/trades/query", as_="bob", json={"gameId": offer["gameId"], "targetPostId": str(chair), "message": "Size?"})
+    card = api.get("/dev/trades/open_tab", as_="bob")[1]["queries"][0]
+    assert card["partner_name"] == "Alice" and [t["type"] for t in card["turns"]] == ["offer", "query"]
+
+
+def test_declined_cards_name_the_posts_in_their_history(api, user, post, game, turn):
+    alice, bob = user("alice"), user("bob")
+    lamp, chair = post(bob, "Lamp"), post(alice, "Chair")
+    gid = game(alice, bob, lamp, phase="declined")
+    turn(gid, "offer", alice, target_post_id=lamp)
+    turn(gid, "query", bob, target_post_id=chair, messages=[{"message": "?"}])
+    turn(gid, "decline", bob)
+    card = api.get("/dev/trades/open_tab", as_="alice")[1]["declined"][0]
+    assert {p["post_title"] for p in card["turn_posts"]} == {"Lamp", "Chair"}

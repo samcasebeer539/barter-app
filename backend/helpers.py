@@ -7,7 +7,7 @@ from firebase_admin import auth as firebase_auth
 from bson import ObjectId
 import math
 from datetime import datetime, timezone
-from backend import games_collection, user_data_collection
+from backend import games_collection, user_data_collection, trades_collection, posts_collection
 
 
 def clean(obj):
@@ -230,3 +230,44 @@ def bad_post_fields(data):
 def pass_through_errors():
     from models.game import GameConflictError
     return (HTTPException, InvalidId, GameConflictError)
+
+
+def game_histories(game_ids, user):
+    """Each game's whole history, for the open tab's decks:
+    {game_id: {"turns": [...] oldest first, "my_id", "partner_name",
+               "turn_posts": [{_id, post_title}] for every post the turns name}}.
+    Games, turns, partners and posts are each one query for all the games."""
+    if not game_ids:
+        return {}
+    my_id = user["_id"]
+    games = {g["_id"]: g for g in games_collection.find({"_id": {"$in": list(game_ids)}})}
+    turns = {gid: [] for gid in games}
+    for t in trades_collection.find({"game_id": {"$in": list(games)}}).sort("created_at", 1):
+        turns[t["game_id"]].append(t)
+
+    def partner_of(g):
+        return g["receiver_user_id"] if g["initiator_user_id"] == my_id else g["initiator_user_id"]
+    names = {u["_id"]: u.get("first_name", "") for u in user_data_collection.find(
+        {"_id": {"$in": list({partner_of(g) for g in games.values()})}}, {"first_name": 1})}
+
+    def named_posts(ts):
+        ids = set()
+        for t in ts:
+            for key in ("target_post_id", "post_id"):
+                if t.get(key):
+                    ids.add(t[key])
+            ids.update(t.get("selected_post_ids") or [])
+        return ids
+    all_ids = set().union(*(named_posts(ts) for ts in turns.values()))
+    titles = {p["_id"]: p.get("post_title", "") for p in posts_collection.find(
+        {"_id": {"$in": list(all_ids)}}, {"post_title": 1})} if all_ids else {}
+
+    return {
+        gid: {
+            "turns": [serialize_trade(t) for t in turns[gid]],
+            "my_id": str(my_id),
+            "partner_name": names.get(partner_of(g), ""),
+            "turn_posts": [{"_id": str(i), "post_title": titles[i]} for i in named_posts(turns[gid]) if i in titles],
+        }
+        for gid, g in games.items()
+    }

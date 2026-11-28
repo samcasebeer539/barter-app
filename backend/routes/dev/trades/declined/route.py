@@ -1,6 +1,7 @@
+from bson import ObjectId
 from flask import Blueprint, jsonify
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for, game_histories
 from models.game import Game
 
 trades_declined_bp = Blueprint("trades_declined", __name__)
@@ -96,4 +97,8 @@ def declined_offers_for(user):
             "partner_name": (owner or {}).get("first_name", ""),
         })
 
+    # Names of the posts the history mentions (like the other open decks).
+    histories = game_histories({ObjectId(r["game_id"]) for r in results}, user)
+    for r in results:
+        r["turn_posts"] = histories.get(ObjectId(r["game_id"]), {}).get("turn_posts", [])
     return results

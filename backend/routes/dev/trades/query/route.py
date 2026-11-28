@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for, text_too_long
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for, text_too_long, game_histories
 from models.game import Game, NotYourTurnError
 
 trades_query_bp = Blueprint("trades_query", __name__)
@@ -43,12 +43,15 @@ def open_queries_for(user):
     # All the target posts in one query.
     posts = {p["_id"]: p for p in posts_collection.find(
         {"_id": {"$in": [ObjectId(q["target_post_id"]) for q in queries]}})}
+    # Each card shows its game's whole history.
+    histories = game_histories({q["game_id"] for q in queries}, user)
     out = []
     for q in queries:
         post = posts.get(ObjectId(q["target_post_id"]))
         item = serialize_trade(q)
         if post:
             item["post"] = serialize_post(post)
+        item.update(histories.get(q["game_id"], {}))
         out.append(item)
     return out
 

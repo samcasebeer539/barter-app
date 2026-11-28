@@ -240,17 +240,19 @@ export default function OfferDeck({
         if (topPostIndex === null) return [];
         const topItem = itemsWithPost[topPostIndex];
         if (!topItem) return [];
-        if (isQueryDeck) return buildQueryTurns(topItem);
-        if (isOffersDeck) return buildOfferTurns(topItem);
-        // Declined offers: the whole game's history, read-only.
-        if (deckType === 'declined') {
+        // Every deck shows the card's whole game history: questions both
+        // ways with their answers, the offer, a decline.
+        if (topItem.rawTurns) {
             return buildTradeTurns(
-                topItem.rawTurns ?? [],
+                topItem.rawTurns,
                 topItem.myId ?? '',
                 topItem.partnerName ?? '',
-                topItem.post ? [topItem.post] : [],
+                [...(topItem.post ? [topItem.post] : []), ...(topItem.turnPosts ?? [])],
             );
         }
+        // A server from before histories were sent: just your side.
+        if (isQueryDeck) return buildQueryTurns(topItem);
+        if (isOffersDeck) return buildOfferTurns(topItem);
         return [];
     }, [isQueryDeck, isOffersDeck, deckType, topPostIndex, itemsWithPost]);
 

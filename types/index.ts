@@ -94,10 +94,13 @@ export interface OpenTradeItem {
     post: Post | null;
     actorId?: string;
     messages?: QueryMessage[];
-    /** Declined offers: the game's raw turns (oldest first), your id and the other player's first name, for the turn log. */
+    /** The game's whole history for the card's turn log: its raw turns
+     *  (oldest first), your id, the other player's first name, and the posts
+     *  the turns mention (for their names). */
     rawTurns?: any[];
     myId?: string;
     partnerName?: string;
+    turnPosts?: Post[];
 }
 
 // Pairs an offerer's profile with the gameId of their pending offer, so

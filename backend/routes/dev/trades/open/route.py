@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, trades_collection, posts_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user
+from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, game_histories
 
 trades_open_bp = Blueprint("trades_open", __name__)
 
@@ -36,11 +36,14 @@ def open_offers_for(user):
     # All the target posts in one query.
     posts = {p["_id"]: p for p in posts_collection.find(
         {"_id": {"$in": [t.get("target_post_id") for t in trades]}})}
+    # Each card shows its game's whole history.
+    histories = game_histories({t["game_id"] for t in trades}, user)
     out = []
     for t in trades:
         post = posts.get(t.get("target_post_id"))
         item = serialize_trade(t)
         if post:
             item["post"] = serialize_post(post)
+        item.update(histories.get(t["game_id"], {}))
         out.append(item)
     return out

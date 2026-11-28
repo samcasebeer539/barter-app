@@ -58,6 +58,7 @@ function normalizeTradeItem(raw: any): OpenTradeItem {
         rawTurns: raw.turns,
         myId: raw.my_id,
         partnerName: raw.partner_name,
+        turnPosts: (raw.turn_posts ?? []).map(normalizePost),
     };
 }
 export function getCurrentUserId(): string | undefined {

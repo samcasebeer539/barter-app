@@ -56,5 +56,6 @@ logs/
 bartervenv/
 __pycache__/
 *.pyc
-winwinvenv/.coverage
+winwinvenv/
+.coverage
 coverage/

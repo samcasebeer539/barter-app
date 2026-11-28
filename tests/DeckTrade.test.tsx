@@ -25,24 +25,22 @@ jest.mock('@/services/tradeService', () => {
 });
 
 import DeckTrade from '@/components/DeckTrade';
-import { TRADE_ACTIONS } from '@/config/tradeConfig';
+import { BARTER_TAB_ACTIONS, CLOSE_TAB_ACTIONS } from '@/config/tradeConfig';
 import { getFeedProfile } from '@/services/feedService';
 import * as trade from '@/services/tradeService';
 import {
   resetRecorders, wheel, deck, swipeTo, scrollWheelTo, press, confirm, typeQuestion,
 } from './helpers/deckRecorders';
 
-const pick = (...types: string[]) => TRADE_ACTIONS.filter(a => types.includes(a.actionType));
 // What the barter page passes for the barter and close tabs.
-const BARTER_ACTIONS = pick('query', 'add', 'subtract', 'stall', 'accept', 'decline', 'wait', 'play');
-const CLOSE_ACTIONS = pick('where', 'when', 'query', 'acceptFinal', 'decline', 'wait', 'play');
+const BARTER_ACTIONS = BARTER_TAB_ACTIONS;
+const CLOSE_ACTIONS = CLOSE_TAB_ACTIONS;
 
 const post = (id: string, name: string) => ({ _id: id, name, description: '', photos: [], date_posted: '' });
 const me = { _id: 'me', first_name: 'Alice', locations: [{ id: 'loc1', name: 'Library', latitude: 1, longitude: 2 }] } as any;
 const bob = { _id: 'bob', first_name: 'Bob', last_name: 'T' } as any;
 
 const types = () => wheel().actions.map((a: any) => a.actionType);
-const order = (list: string[]) => TRADE_ACTIONS.map(a => a.actionType).filter(t => list.includes(t));
 
 beforeEach(() => { resetRecorders(); Object.keys(mockSeen).forEach(k => delete mockSeen[k]); });
 
@@ -58,9 +56,18 @@ async function open(props: Partial<React.ComponentProps<typeof DeckTrade>> = {})
 
 // ── whose move ───────────────────────────────────────────────────────────────
 
-test('your turn in barter: every barter move, no WAIT / ANSWER / REVIEW', async () => {
+test('your turn in barter: *ACCEPT, ADD, SUBTRACT, QUERY, STALL, DECLINE (in that order, no WAIT)', async () => {
   await open();
-  expect(types()).toEqual(order(['query', 'add', 'subtract', 'stall', 'accept', 'decline', 'play']));
+  expect(types()).toEqual(['accept', 'add', 'subtract', 'query', 'stall', 'decline']);
+});
+
+test('your turn in close: ACCEPT, WHERE, WHEN, QUERY, DECLINE (in that order)', async () => {
+  const rawTurns = [
+    { type: 'where', actor_id: 'bob', location: { id: 'x', name: 'Park' } },
+    { type: 'when', actor_id: 'me', proposed_time: 'Mon at 3' },
+  ];
+  await open({ actions: CLOSE_ACTIONS, phase: 'close', rawTurns });
+  expect(types()).toEqual(['acceptFinal', 'where', 'when', 'query', 'decline']);
 });
 
 test("their turn: the wheel is only WAIT, and nothing can be armed", async () => {
@@ -143,6 +150,7 @@ test('a refused move is reported so the screen reloads the real state', async ()
 test("query: needs text; tags their post on top if there is one", async () => {
   const h = await open();
   await swipeTo(1, { deck: 'theirs' });
+  await scrollWheelTo('query');
   await press('query');
   expect(wheel().isReady).toBe(false);
   await typeQuestion('Is the desk solid wood?');
@@ -157,6 +165,7 @@ test('query with their user card on top: still allowed, just not about a post', 
   await open();
   await swipeTo(null, { deck: 'theirs' });
   expect(wheel().queryBlocked).toBeFalsy();
+  await scrollWheelTo('query');
   await press('query');
   await typeQuestion('When are you free?');
   await confirm('query');

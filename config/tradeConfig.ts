@@ -262,3 +262,14 @@ export const getTurnConfig = (turnType: TradeTurnType): TurnDisplayConfig | null
 
 export const getActionConfig = (actionType: TradeActionType): TradeActionConfig | null =>
   TRADE_ACTIONS.find(a => a.actionType === actionType) ?? null;
+
+/** These actions, in this order (the order the wheel shows them). */
+export const actionsInOrder = (types: TradeActionType[]): TradeActionConfig[] =>
+  types.map(t => getActionConfig(t)).filter((a): a is TradeActionConfig => a !== null);
+
+// The trade wheels on the barter page. WAIT is last: it only shows (alone)
+// when it isn't your move.
+/** BARTER tab: *ACCEPT, ADD, SUBTRACT, QUERY, STALL, DECLINE. */
+export const BARTER_TAB_ACTIONS = actionsInOrder(['accept', 'add', 'subtract', 'query', 'stall', 'decline', 'wait']);
+/** CLOSE tab: ACCEPT, WHERE, WHEN, QUERY, DECLINE. */
+export const CLOSE_TAB_ACTIONS = actionsInOrder(['acceptFinal', 'where', 'when', 'query', 'decline', 'wait']);

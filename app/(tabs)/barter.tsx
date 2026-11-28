@@ -6,7 +6,7 @@ import { colors } from '../../styles/globalStyles';
 import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
-import { TRADE_ACTIONS } from '../../config/tradeConfig';
+import { TRADE_ACTIONS, BARTER_TAB_ACTIONS, CLOSE_TAB_ACTIONS } from '../../config/tradeConfig';
 import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import { getOpenTab, getCloseTab, getCloseGamesIfChanged, getBarterGamesIfChanged, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
@@ -59,18 +59,10 @@ export default function ActiveTradesTestScreen() {
         () => TRADE_ACTIONS.filter(a => ['query', 'rescind'].includes(a.actionType)),
         []
     );
-    const tradesActions = useMemo(
-        () => TRADE_ACTIONS.filter(a =>
-            ['query', 'add', 'subtract', 'stall', 'accept', 'decline', 'wait', 'play'].includes(a.actionType)
-        ),
-        []
-    );
-    const dealsActions = useMemo(
-        () => TRADE_ACTIONS.filter(a =>
-            ['where', 'when', 'query', 'acceptFinal', 'decline', 'wait', 'play'].includes(a.actionType)
-        ),
-        []
-    );
+    // Wheel order for each tab: config/tradeConfig (BARTER_TAB_ACTIONS,
+    // CLOSE_TAB_ACTIONS).
+    const tradesActions = BARTER_TAB_ACTIONS;
+    const dealsActions = CLOSE_TAB_ACTIONS;
 
     // Keeps the field you're typing in visible above the keyboard (shared
     // with the profile and feed deck; see hooks/useKeyboardLift).

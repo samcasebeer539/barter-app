@@ -443,6 +443,7 @@ const Deck: React.FC<DeckProps> = ({
 
     return (
         <View
+        testID="deck"
         style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
         {...(enabled ? panResponder.panHandlers : {})}
         >

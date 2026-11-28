@@ -9,6 +9,9 @@ npx jest tests/api   # one file
 npm run typecheck    # TypeScript (CI fails on any error)
 ```
 
+Tests run in Los Angeles time (`tests/globalSetup.js`) on every machine, so
+date tests behave the same locally and in CI.
+
 Tests live here, not next to the code, because anything under `app/`
 becomes a screen in expo-router.
 
@@ -26,6 +29,13 @@ becomes a screen in expo-router.
 | `CardMeetingLocation.test.tsx` | Location card: adding / removing (3 max, name required), WHERE picking, proposed spot, someone else's spots, where the map starts |
 | `settingsScreen.test.tsx` | Settings: the toggles (saved on the server, remembered in the app, flipped back with a message on failure), Location Services asking the phone, blocked users, log out |
 | `TradeTurns.test.tsx` | The turn log's sentences, and the question box (limit, cleared on close, Done key, focuses itself) |
+| `routingAndServices.test.tsx` | Sign-in routing (login vs feed), the user service (field names, profile photo path), photo shrinking |
+| `Deck.test.tsx` | The card stack's logic: card order, what's on top (and reported), jumps, wrapping, swipes (fed in as a recorded drag), several players' cards |
+| `smallComponents.test.tsx` | Review stars, the feed's search / sort bar, the OPEN / BARTER / CLOSE bar |
+| `CardUser.test.tsx` | User card: visible contacts, editing (eyes, dots per character, the hidden phone field, save / cancel), reviews |
+| `CardDateTime.test.tsx` | Time card: date then time, the exact moment sent for WHEN (phone's time zone), clearing, a proposed time |
+| `useKeyboardLift.test.tsx` | Keeping the focused field above the keyboard, only on the screen that owns it |
+| `servicesMore.test.ts` | Settings cache (fetched once, shared), profile page and offerer profiles |
 | `login.test.tsx` | Sign in / sign up, name check, failures, field limits |
 | `feedPaging.test.tsx` | Feed pages: first page, the next one near the bottom (once, until there are no more, no repeats), sort and search starting over |
 | `QueryAnswer.test.tsx` | Answering a question; a failed answer keeps your text (alert in the QUERIES drawer, the trade deck's handling in a trade) |

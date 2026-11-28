@@ -3,9 +3,12 @@
 // explained below.
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
+// Turns off ESLint's formatting rules: Prettier does the formatting.
+const prettierConfig = require('eslint-config-prettier/flat');
 
 module.exports = defineConfig([
   expoConfig,
+  prettierConfig,
   {
     ignores: ['dist/*', 'backend/*', 'coverage/*', '.expo/*', 'node_modules/*'],
   },

@@ -6,10 +6,10 @@
 // it sent one (e.g. "It's not your turn"), so screens can show it as is.
 import { getAuth } from 'firebase/auth';
 
+import { ApiError } from './apiError';
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const DEFAULT_TIMEOUT_MS = 10000;
-
-import { ApiError } from './apiError';
 export { ApiError };
 
 export interface ApiOptions {

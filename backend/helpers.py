@@ -9,7 +9,7 @@ from bson.errors import InvalidId
 from firebase_admin import auth as firebase_auth
 from bson import ObjectId
 import math
-from datetime import datetime, timezone
+from datetime import datetime
 from backend import games_collection, user_data_collection, trades_collection, posts_collection
 
 

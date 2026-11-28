@@ -2,7 +2,7 @@
 // time; what's sent for WHEN (the exact moment, in the phone's time zone);
 // clearing it; and showing a proposed time.
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');

@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify
 from bson import ObjectId
-from backend import user_data_collection
 from helpers import get_uid_from_request, json_with_version, current_user
 from routes.dev.settings.route import settings_for
 from routes.dev.user_data.route import own_user_json

@@ -1,5 +1,4 @@
 from flask import Blueprint, jsonify, request
-from backend import user_data_collection
 from helpers import get_uid_from_request, version_of, current_user
 from models.game import Game
 from routes.dev.trades.open.route import open_offers_for

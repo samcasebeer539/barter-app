@@ -224,6 +224,7 @@ const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
     </View>
   );
 });
+CardSlot.displayName = 'CardSlot';
 
 const slotStyles = StyleSheet.create({
   wrapper: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
@@ -316,7 +317,7 @@ const Deck: React.FC<DeckProps> = ({
         slotRefs[0].current?.setShadow(true);
         slotRefs[1].current?.setShadow(true);
         slotRefs[2].current?.setShadow(false);
-    }, []);
+    }, [slotRefs]);
 
     useEffect(() => {
         const front = rotatingFrontRef.current;
@@ -325,7 +326,7 @@ const Deck: React.FC<DeckProps> = ({
         slotRefs[front].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current)], true);
         slotRefs[second].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 1)], false);
         slotRefs[third].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 2)], false);
-    }, [cards]);
+    }, [cards, ci, slotRefs]);
 
     useEffect(() => {
         // Wrapped like the slots' cards: when the deck loses cards (e.g. an
@@ -339,6 +340,7 @@ const Deck: React.FC<DeckProps> = ({
             onTopCardTypeChange?.(topCard.type);
             onTopCardGroupChange?.(topCard.groupIndex);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- report when the top card changes; the parent's callbacks are new each render.
     }, [frontCardIndex, cards]);
 
     const prevJumpToken = useRef<number | undefined>(undefined);
@@ -360,6 +362,7 @@ const Deck: React.FC<DeckProps> = ({
         slotRefs[third].current?.setShadow(false);
         frontCardIndexRef.current = f;
         setFrontCardIndex(f);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- a jump happens when the token changes; jumpToCardIndex is read with it.
     }, [jumpToken]);
 
     const swipeOut = (direction: number) => {

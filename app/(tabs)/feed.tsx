@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, useWindowDimensions, ActivityIndicator, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, useWindowDimensions, ActivityIndicator, Modal, Pressable, RefreshControl, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -11,7 +11,6 @@ import { getFeedPage, getFeedProfile, FeedSort } from '@/services/feedService';
 import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RefreshControl, Platform } from 'react-native';
 
 
 // How long one image may hold up a batch before it falls back to a square.

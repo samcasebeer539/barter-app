@@ -3,7 +3,6 @@ time, sorted on the server."""
 from datetime import timedelta
 
 import pytest
-from bson import ObjectId
 
 from conftest import NOW
 
@@ -22,7 +21,7 @@ def page(api, who, path="/dev/feed", **args):
 # ── traded posts ─────────────────────────────────────────────────────────────
 
 def test_agreeing_a_deal_takes_its_posts_out_of_everyone_elses_lists(api, user, post, game, turn, db):
-    alice, bob, cara = user("alice"), user("bob"), user("cara")
+    alice, bob, _cara = user("alice"), user("bob"), user("cara")
     lamp, chair, spare = post(alice, "Lamp"), post(bob, "Chair"), post(bob, "Spare")
     deal = game(bob, alice, lamp, phase="close", initiator_cards=[chair], turn=alice)
     turn(deal, "where", alice, location={"id": "x"}), turn(deal, "when", bob, proposed_time="Sun")
@@ -53,7 +52,8 @@ def test_blocking_cancels_an_agreed_deal_and_its_posts_come_back(api, user, post
 
 
 def test_backfill_marks_existing_deals(user, post, game, db):
-    import importlib, sys
+    import importlib
+    import sys
     alice, bob = user("alice"), user("bob")
     lamp, chair, free = post(alice), post(bob), post(bob)
     game(bob, alice, lamp, phase="completed", initiator_cards=[chair])

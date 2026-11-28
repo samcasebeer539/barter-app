@@ -2,7 +2,6 @@
 never a server error: missing fields, malformed ids, ids that don't exist,
 and a signed-in Firebase user who has no profile yet."""
 import pytest
-from bson import ObjectId
 
 from conftest import future_iso
 

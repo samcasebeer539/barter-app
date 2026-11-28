@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from backend import user_data_collection, posts_collection, games_collection, trades_collection
-from helpers import get_uid_from_request, serialize_post, current_user
+from helpers import get_uid_from_request, current_user
 
 trades_incoming_bp = Blueprint("trades_incoming", __name__)
 

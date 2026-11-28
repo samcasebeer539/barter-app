@@ -10,10 +10,9 @@ import QueryAnswer from './QueryAnswer';
 import StarPicker from './StarPicker';
 import FeedDeck from './DeckFeed';
 import { getFeedProfile } from '@/services/feedService';
-import { FeedProfile } from '@/types/index';
+import { FeedProfile, Post, Locations, User } from '@/types/index';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
-import { Post, Locations, User } from '@/types/index';
 import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost, getLatestProposals, submitReview } from '@/services/tradeService';
 import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
@@ -224,6 +223,7 @@ export default function TradeDeck({
   useEffect(() => {
     trade.reset();
     setScrolledActionType(visibleActions[0]?.actionType ?? null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `trade` is a new object each render; trade.reset is the stable part.
   }, [visibleActions, trade.reset]);
 
   const slideAnim = useRef(new Animated.Value(-12)).current;

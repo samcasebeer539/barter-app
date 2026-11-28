@@ -109,6 +109,7 @@ const UserCard: React.FC<UserCardProps> = ({
         setReviewsError(true);
         reviewsLoadedFor.current = null; // retry on next open
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reviewsKey is user._id + reviewCount.
   }, [isReviewsOpen, reviewsKey]);
 
   useEffect(() => {
@@ -210,7 +211,7 @@ const UserCard: React.FC<UserCardProps> = ({
       damping: 40,
       stiffness: 270,
     }).start();
-  }, [isInfoExpanded, isEditable, isReviewsOpen]);
+  }, [isInfoExpanded, isEditable, isReviewsOpen, photoHeight, photoExpanded]);
 
   // Stars + "(N reviews)", left-aligned; tap to show or hide the reviews.
   const reviewSummary = (

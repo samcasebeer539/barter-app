@@ -1,7 +1,6 @@
 from pymongo.errors import DuplicateKeyError
 from flask import jsonify, request, Blueprint
 import traceback
-from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
 from helpers import current_user, current_token, text_too_long, pass_through_errors
 
@@ -15,7 +14,7 @@ def create_user():
             return jsonify({"error": "Missing token"}), 401
         uid = decoded_token['uid']
         email = decoded_token['email']
-        
+
         data = request.json or {}
         first_name = (data.get("firstName") or "").strip()
         last_name = (data.get("lastName") or "").strip()

@@ -1,7 +1,6 @@
 """What the barter page's tabs list, and smaller route edge cases."""
 from datetime import datetime, timezone
 
-from bson import ObjectId
 
 OLD = datetime(2020, 1, 1, tzinfo=timezone.utc)
 

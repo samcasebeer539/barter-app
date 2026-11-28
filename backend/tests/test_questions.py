@@ -9,7 +9,7 @@ def queries_tab(api, who):
 
 
 def test_asking_about_a_post_from_the_feed(api, user, post, db, phase_of):
-    alice, bob = user("alice"), user("bob")
+    _alice, bob = user("alice"), user("bob")
     lamp = post(bob, "Lamp")
     status, body = api.post("/dev/trades/query", as_="alice", json={"targetPostId": str(lamp), "message": "Size?"})
     assert status == 201

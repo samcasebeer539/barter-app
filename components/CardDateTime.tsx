@@ -101,6 +101,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
   useEffect(() => {
     if (!isSelectMode) return;
     onProposeTime?.(picked ? toProposedTime(picked) : null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- the parent's callback is new each render; reporting on every render would loop.
   }, [isSelectMode, picked]);
 
   const chooseDate = (date: UpcomingDate) => {

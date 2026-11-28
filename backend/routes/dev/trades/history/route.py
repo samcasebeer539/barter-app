@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from backend import user_data_collection, games_collection, trades_collection
+from backend import games_collection, trades_collection
 from helpers import get_uid_from_request, current_user
 from models.game import Game
 from routes.dev.trades.barter.route import games_in_phase_for_user

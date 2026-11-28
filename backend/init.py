@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, g, jsonify
 from firebase_admin import auth
-import backend
+import backend  # noqa: F401  (connects to MongoDB and Firebase on import)
 
 from routes.dev.create_user.route import create_user_bp
 from routes.dev.feed.route import feed_bp

@@ -7,7 +7,6 @@ import TradeDeck from '../../components/DeckTrade';
 import OfferDeck from '../../components/DeckOffers';
 import OffersTradesDealsBar from '../../components/BarBarter';
 import { TRADE_ACTIONS, BARTER_TAB_ACTIONS, CLOSE_TAB_ACTIONS } from '../../config/tradeConfig';
-import TradeTurns, { TradeTurn } from '../../components/TradeTurns';
 import { getOpenTab, getCloseTab, getCloseGamesIfChanged, getBarterGamesIfChanged, BarterGame, buildTradeTurns } from '@/services/tradeService';
 import { OpenTradeItem } from '@/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

@@ -1,5 +1,4 @@
 """Deleting your account."""
-from bson import ObjectId
 
 import conftest
 

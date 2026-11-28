@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from bson.errors import InvalidId
 from backend import user_data_collection, posts_collection, trades_collection, games_collection
-from helpers import get_uid_from_request, serialize_post, serialize_trade, json_with_version, current_user, blocked_ids_for
+from helpers import get_uid_from_request, serialize_trade, json_with_version, current_user, blocked_ids_for
 from models.game import Game, GameConflictError, iso_utc
 
 trades_barter_bp = Blueprint("trades_barter", __name__)

@@ -68,7 +68,7 @@ class Game:
             "query": "open",
             "offer": "offer_pending",
             "decline": "declined",
-            
+
         },
         "offer_pending": {
             "query": "offer_pending",
@@ -459,8 +459,8 @@ class Game:
         })
         now = datetime.now(timezone.utc)
         dealers = {self.initiator_user_id, self.receiver_user_id}
-        owner = lambda g: next((u for u in (g.receiver_user_id, g.initiator_user_id) if u in dealers),
-                               g.receiver_user_id)
+        def owner(g):
+            return next((u for u in (g.receiver_user_id, g.initiator_user_id) if u in dealers), g.receiver_user_id)
         return sum(Game.force_decline(doc["_id"], owner, "post_traded", now) for doc in docs)
 
     def set_cards_traded(self, traded: bool = True):

@@ -1,5 +1,4 @@
 from flask import Blueprint, jsonify
-from backend import user_data_collection
 from helpers import get_uid_from_request, json_with_version, current_user
 from routes.dev.trades.barter.route import games_in_phase_for_user
 

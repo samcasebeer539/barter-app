@@ -84,7 +84,7 @@ def test_profile_photo_can_be_set_or_cleared(api, user, db):
 # ── cleaning up ──────────────────────────────────────────────────────────────
 
 def test_photos_removed_from_a_post_are_deleted(api, user, post):
-    alice, bob = user("alice"), user("bob")
+    alice, _bob = user("alice"), user("bob")
     pid, other = post(alice), post(alice)
     conftest.storage_files.update({
         f"post_photos/alice/{pid}/1_0", f"post_photos/alice/{pid}/1_1",

@@ -1,7 +1,5 @@
 """Things that end other games: a deal being finalized, and blocking."""
-from bson import ObjectId
 
-from conftest import future_iso
 
 
 def finalize(api, gid, a, b, turn):

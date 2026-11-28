@@ -1,5 +1,5 @@
-# Runs the Flask server's tests (backend/tests) on every push and pull
-# request that touches the backend, twice:
+# Lints the Flask server with Ruff, then runs its tests (backend/tests) on
+# every push and pull request that touches the backend, twice:
 #   fake-mongo  in-memory mongomock (the same way they run on a laptop)
 #   real-mongo  against a real MongoDB server started just for this run
 # Firebase is stubbed and the real Atlas database is never touched, so no
@@ -18,6 +18,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install Ruff
+        run: pip install "$(grep -i '^ruff' requirements-dev.txt)"
+      - name: Lint (Ruff)
+        run: ruff check .
+
   fake-mongo:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -20,7 +20,7 @@ export default function RootLayout() {
             if (currentUid !== undefined && uid !== currentUid) clearSessionCaches();
             currentUid = uid;
             setUser(user);
-            if (initializing) setInitializing(false);
+            setInitializing(false);
         });
       
         return unsubscribe;
@@ -42,7 +42,7 @@ export default function RootLayout() {
             router.replace('/feed');
         }
 
-    }, [user, initializing, segments]
+    }, [user, initializing, segments, router]
     )
 
     if (initializing) 

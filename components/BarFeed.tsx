@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Animated, TextInput } from 'react-native';
+import { StyleSheet, TouchableOpacity, Animated, TextInput } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useState, useRef, type ComponentRef } from 'react';
 import { globalFonts, colors } from '../styles/globalStyles';

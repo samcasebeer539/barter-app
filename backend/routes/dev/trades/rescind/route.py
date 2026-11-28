@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 import traceback
 from bson import ObjectId
-from backend import user_data_collection, posts_collection, trades_collection
+from backend import posts_collection, trades_collection
 from helpers import get_uid_from_request, current_user, pass_through_errors
 from models.game import Game
 

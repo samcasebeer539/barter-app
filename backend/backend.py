@@ -54,5 +54,5 @@ games_collection = db.games
 reports_collection = db.reports
 
 # All indexes live in db_indexes.py (the tests build the same ones).
-from db_indexes import create_indexes
+from db_indexes import create_indexes  # noqa: E402  (needs `db` above)
 create_indexes(db)

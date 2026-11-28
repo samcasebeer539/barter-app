@@ -9,7 +9,6 @@
 //   jest.mock('@/components/Deck', () => require('./helpers/deckRecorders').MockDeck);
 //   jest.mock('@/components/TradeActions', () => require('./helpers/deckRecorders').MockTradeActions);
 //   jest.mock('@/components/TradeTurns', () => require('./helpers/deckRecorders').MockTradeTurns);
-import React from 'react';
 import { act } from '@testing-library/react-native';
 
 type Props = Record<string, any>;

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
-from backend import user_data_collection, posts_collection, trades_collection, games_collection
+from backend import posts_collection, trades_collection, games_collection
 from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, blocked_ids_for, text_too_long, game_histories
 from models.game import Game, NotYourTurnError
 

@@ -1,7 +1,6 @@
 // components/TradeActions.tsx: the action wheel every deck uses. Which
 // buttons can be tapped, what they show, and the confirm arrow.
 import React from 'react';
-import { Text } from 'react-native';
 import { render, screen, fireEvent, within, act } from '@testing-library/react-native';
 
 // Icons render as text ("icon:circle") so tests can see which one shows.

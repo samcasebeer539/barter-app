@@ -1,7 +1,5 @@
-from flask import jsonify, request, Blueprint
+from flask import jsonify, Blueprint
 import traceback
-from firebase_admin import auth as firebase_auth
-from backend import user_data_collection
 from helpers import get_uid_from_request, current_user, pass_through_errors
 
 settings_bp = Blueprint("settings", __name__)
@@ -10,7 +8,7 @@ settings_bp = Blueprint("settings", __name__)
 @settings_bp.route("/settings", methods=["GET"])
 def get_settings():
 
-    try: 
+    try:
         uid, err = get_uid_from_request()
         if err: return err
 
@@ -23,11 +21,11 @@ def get_settings():
             }), 404
 
         return jsonify(settings_for(user))
-    
+
     except pass_through_errors():
-    
+
         raise
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

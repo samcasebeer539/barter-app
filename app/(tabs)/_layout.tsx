@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useFonts } from 'expo-font';
 import { colors, globalFonts } from '@/styles/globalStyles';
@@ -54,8 +54,6 @@ export default function RootLayout() {
                 accessibilityLabel,
                 accessibilityRole,
                 accessibilityState,
-                style,
-                ...rest 
                 } = props as any;
                 
                 const href = props.href as string;

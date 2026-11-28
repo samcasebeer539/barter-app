@@ -1,6 +1,5 @@
 from flask import jsonify, request, Blueprint
 import traceback
-from firebase_admin import auth as firebase_auth
 from backend import user_data_collection
 from helpers import (get_uid_from_request, text_too_long, pass_through_errors,
                      storage_path, is_own_profile_photo, profile_photo_prefix, delete_storage_files)

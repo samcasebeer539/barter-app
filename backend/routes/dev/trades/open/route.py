@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from backend import user_data_collection, trades_collection, posts_collection, games_collection
+from backend import trades_collection, posts_collection, games_collection
 from helpers import get_uid_from_request, serialize_post, serialize_trade, current_user, game_histories
 
 trades_open_bp = Blueprint("trades_open", __name__)

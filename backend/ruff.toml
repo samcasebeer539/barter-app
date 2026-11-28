@@ -1,0 +1,17 @@
+# Ruff (Python linter) for the server: run `ruff check .` in backend/.
+target-version = "py311"
+line-length = 120
+
+[lint]
+# F: real errors (undefined names, unused imports/variables)
+# E, W: basic style (pycodestyle)   B: likely bugs (flake8-bugbear)
+select = ["F", "E", "W", "B"]
+ignore = [
+    "E501",   # long lines: not worth reflowing working code
+    "B904",   # `raise ... from err` inside except: the routes return JSON instead
+    "E701",   # `if err: return err` on one line is the house style
+]
+
+[lint.per-file-ignores]
+# conftest installs fake modules before importing the app, on purpose.
+"tests/conftest.py" = ["E402", "E731"]

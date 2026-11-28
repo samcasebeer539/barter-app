@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import jsonify, request, Blueprint
 import traceback
 from bson import ObjectId
-from backend import user_data_collection, posts_collection, trades_collection
+from backend import posts_collection, trades_collection
 from helpers import get_uid_from_request, current_user, blocked_ids_for, pass_through_errors
 from models.game import Game
 

@@ -7,8 +7,7 @@ import TradeUI, { TradeAction } from './TradeActions';
 import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TradeActionConfig } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
-import { Post } from '@/types/index';
-import { OpenTradeItem } from '@/types'
+import { Post, OpenTradeItem } from '@/types/index';
 import { buildQueryTurns, buildOfferTurns, buildTradeTurns, sendOffer, sendQuery, rescindOffer } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useStableCallback } from '../hooks/useStableCallback';
@@ -254,7 +253,7 @@ export default function OfferDeck({
         if (isQueryDeck) return buildQueryTurns(topItem);
         if (isOffersDeck) return buildOfferTurns(topItem);
         return [];
-    }, [isQueryDeck, isOffersDeck, deckType, topPostIndex, itemsWithPost]);
+    }, [isQueryDeck, isOffersDeck, topPostIndex, itemsWithPost]);
 
     return (
         <View style={styles.modalContent} pointerEvents="box-none">

@@ -168,7 +168,7 @@ const PostCard: React.FC<PostCardProps> = ({
       toValue: isDescriptionMode ? BOTTOM_ZONE_EXPANDED : BOTTOM_ZONE_COLLAPSED,
       useNativeDriver: false, damping: 40, stiffness: 270,
     }).start();
-  }, [isDescriptionMode]);
+  }, [isDescriptionMode, descriptionHeight, animatedZoneHeight, bottomZoneHeight]);
 
   const toggleMode = () => { if (!isEditable) setIsDescriptionMode(v => !v); };
 

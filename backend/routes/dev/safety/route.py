@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from bson.errors import InvalidId
-from backend import user_data_collection, posts_collection, trades_collection, games_collection, reports_collection
+from backend import user_data_collection, posts_collection, games_collection, reports_collection
 from helpers import get_uid_from_request, current_user, public_user
 from models.game import Game
 

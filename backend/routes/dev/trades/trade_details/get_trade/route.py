@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
-from backend import user_data_collection, trades_collection
+from backend import trades_collection
 from helpers import get_uid_from_request, serialize_trade, current_user
 from models.game import Game
 

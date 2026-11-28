@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Text, TouchableOpacity, TextInput } from 'react-native';
 import MapView, { Marker, MapPressEvent } from 'react-native-maps';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { Locations, LocationEntry } from '@/types/index';
+import { Locations } from '@/types/index';
 import { useKeyboardLiftField } from '@/hooks/useKeyboardLift';
 import { useUserRegion } from '@/hooks/useUserRegion';
 import { TEXT_LIMITS } from '@/config/textLimits';

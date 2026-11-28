@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity, Animated } from 'react-native';
-import { globalFonts, colors } from '../styles/globalStyles';
+import { globalFonts } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tradeConfig';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -245,7 +245,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
         };
         runShimmer(shimmerAnim, 0);
         return () => { stopped = true; current?.stop(); };
-    }, []);
+    }, [shimmerAnim]);
 
     const shimmerTranslate = shimmerAnim.interpolate({ inputRange: [0, 1], outputRange: [400, -400] });
 
@@ -325,7 +325,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
         if (!action.hasButtons) return null;
         const color = currentAction?.color;
         const disabled = !active;
-        const opacity = active ? 1 : 0.3;
         const isArmed = action.actionType === activeActionType;
         const testID = `action-${action.actionType}`;
         // Screen-reader name: the action's own word, e.g. "Barter".
@@ -590,7 +589,6 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const BORDER_RADIUS = { tl2br25: { borderTopLeftRadius: 2, borderBottomLeftRadius: 25 }, tr25bl2: { borderTopRightRadius: 25, borderBottomRightRadius: 2 } };
 
 const styles = StyleSheet.create({
     container: { flex: 1, alignItems: 'flex-start', width: '100%', overflow: 'hidden' },

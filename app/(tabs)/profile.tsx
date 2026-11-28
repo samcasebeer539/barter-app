@@ -17,16 +17,15 @@ import { colors } from '@/styles/globalStyles';
 import { deckStyles, barRadius, DECK_BAR_WIDTH } from '@/styles/deckStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Post, User, Locations } from '@/types/index';
+import { Post, User, Locations, FeedProfile, OffererGroup } from '@/types/index';
 import { updateUser } from '@/services/userService';
 import { getProfilePage } from '@/services/profileService';
 import { setSettingsCache } from '@/lib/settingsCache';
 import { onBlockChange } from '@/lib/safety';
 import { useKeyboardLift, KeyboardLiftContext } from '@/hooks/useKeyboardLift';
-import { getUserLocations, saveMyLocations } from '@/services/locationService';
+import { saveMyLocations } from '@/services/locationService';
 import { getOffererProfiles } from '@/services/offererService';
 import { getIncomingOffers, IncomingOffer, declineTrade, getIncomingQueries, IncomingQuery, sendBarter } from '@/services/tradeService';
-import { FeedProfile, OffererGroup } from '@/types/index';
 import { showError } from '@/lib/errors';
 
 
@@ -50,11 +49,6 @@ function prefetchDeckImages(user: User, posts: Post[]): Promise<void> {
 const BOTTOM_PADDING = 20;
 
 const SAFE_AREA_EDGES: Edges = Platform.OS === 'android' ? [] : ['top', 'right', 'bottom', 'left'];
-
-// TODO: replace with the real secondary user's MongoDB _id from routing/auth.
-// Leave empty to skip the secondary locations fetch until you have a real id —
-// a fake id will cause ObjectId() to throw a 404 on the backend.
-const SECONDARY_USER_ID = '';
 
 // Pairs an offerer's profile with the gameId of their pending offer, so
 // downstream components (ProfileDeck) never need to reverse-engineer which
@@ -122,7 +116,6 @@ export default function ProfileScreen() {
   const [deckLaidOut, setDeckLaidOut] = useState(false);
   // null until loaded from the server.
   const [myLocations, setMyLocations] = useState<Locations[] | null>(null);
-  const [theirLocations, setTheirLocations] = useState<Locations[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -240,15 +233,6 @@ export default function ProfileScreen() {
         return;
       }
 
-      // ── Their locations: only fetch if we have a valid MongoDB _id ────────
-      if (SECONDARY_USER_ID) {
-        try {
-          const theirLocs = await getUserLocations(SECONDARY_USER_ID);
-          setTheirLocations(theirLocs);
-        } catch (err) {
-          console.warn('Could not load their locations:', err);
-        }
-      }
     };
 
     load();

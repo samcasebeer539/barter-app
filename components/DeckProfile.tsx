@@ -258,7 +258,6 @@ export default function ProfileDeck({
     const animateOpen = useCallback(() => {
         slide.value = 0;
         slide.value = withTiming(1, SLIDE_TIMING);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slide]);
 
     const handleClosed = useCallback(() => {
@@ -273,12 +272,12 @@ export default function ProfileDeck({
         slide.value = withTiming(0, SLIDE_TIMING, finished => {
             if (finished) scheduleOnRN(handleClosed);
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slide, handleClosed]);
 
     useEffect(() => {
         if (isDeckRevealed) { pendingOpenRef.current = true; setShowSecondary(true); }
         else { animateClose(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- animateClose changes with the trade; that mustn't replay the close.
     }, [isDeckRevealed]);
 
     const handleSecondaryLayout = (h: number) => {
@@ -510,12 +509,13 @@ export default function ProfileDeck({
         if (isQueryDrawerOpen && !hasIncomingQueries) {
             setIsQueryDrawerOpen(false);
         }
-    }, [topPrimaryPostIndex, hasIncomingQueries]);
+    }, [topPrimaryPostIndex, hasIncomingQueries, isQueryDrawerOpen]);
 
     useEffect(() => {
         if (isDeckRevealed && !hasIncomingOffers) {
             onToggleReveal?.();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- a toggle: re-running before the parent updates would flip it back open.
     }, [topPrimaryPostIndex, hasIncomingOffers]);
 
     return (

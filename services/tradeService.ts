@@ -350,7 +350,6 @@ export function getIncomingQueries(): Promise<IncomingQuery[]> {
 }
 
 export function buildQueryTurns(item: OpenTradeItem): TradeTurn[] {
-  const postName = item.post?.name ?? '';
   const messages = item.messages ?? [];
 
   // Group each question with the answer that follows it, then put the

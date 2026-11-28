@@ -11,8 +11,7 @@ import TradeTurns, { TradeTurn } from './TradeTurns';
 import { TRADE_ACTIONS, TradeActionType } from '@/config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
 import { getFeedProfile } from '@/services/feedService';
-import { FeedProfile } from '@/types/index';
-import { Post, User, Locations } from '@/types/index';
+import { FeedProfile, Post, User, Locations } from '@/types/index';
 import { sendOffer, sendQuery, addPost } from '@/services/tradeService';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useKeyboardLift, KeyboardLiftContext } from '../hooks/useKeyboardLift';
@@ -149,6 +148,7 @@ export default function FeedDeck({
         .catch(err => console.error('FeedDeck profile load error:', err))
         .finally(() => setIsLoading(false));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- load once per post; a changed exclude list doesn't refetch the profile.
   }, [postId, prefetchedProfile]);
 
   // Keeps the field you're typing in visible above the keyboard (shared with
@@ -202,6 +202,7 @@ export default function FeedDeck({
         setScrolledActionType(feedActions[0]?.actionType ?? null);
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- open or close only when `visible` changes, not on every re-render.
   }, [visible]);
 
   const handleCloseModal = () => {

@@ -56,7 +56,7 @@ async function open(props: Partial<React.ComponentProps<typeof DeckTrade>> = {})
 
 // ── whose move ───────────────────────────────────────────────────────────────
 
-test('your turn in barter: *ACCEPT, ADD, SUBTRACT, QUERY, STALL, DECLINE (in that order, no WAIT)', async () => {
+test('your turn in barter: *ACCEPT, ADD, REMOVE, QUERY, STALL, DECLINE (in that order, no WAIT)', async () => {
   await open();
   expect(types()).toEqual(['accept', 'add', 'subtract', 'query', 'stall', 'decline']);
 });
@@ -84,7 +84,7 @@ test('a question waiting for your answer: WAIT until you answer it', async () =>
   expect(mockSeen.answer).toMatchObject({ queryId: 'q1', placeholder: 'Answer to begin your turn' });
 });
 
-test('SUBTRACT only when you would still have an item left', async () => {
+test('REMOVE (subtract) only when you would still have an item left', async () => {
   await open({ playerPosts: [post('lamp', 'Lamp')] });
   expect(types()).not.toContain('subtract');
 });

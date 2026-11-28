@@ -79,7 +79,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     actionType: 'answer',
     turnType: 'turnAnswer',
   },
-  // ADD / SUBTRACT replace COUNTER.
+  // ADD / REMOVE (subtract) replace COUNTER.
   {
     text: 'ADD',
     color: colors.actions.verify,
@@ -88,7 +88,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     turnType: 'turnAdd',
   },
   {
-    text: 'SUBTRACT',
+    text: 'REMOVE',
     color: colors.actions.counter,
     hasButtons: true,
     actionType: 'subtract',
@@ -198,7 +198,7 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
     isSent: true,
   },
   turnSubtract: {
-    actionText: 'SUBTRACT',
+    actionText: 'REMOVE',
     colorStyle: { color: colors.actions.counter, fontFamily: globalFonts.extrabold },
     templateUser: 'You removed {item}',
     templatePartner: '{user} removed {item}',
@@ -269,7 +269,7 @@ export const actionsInOrder = (types: TradeActionType[]): TradeActionConfig[] =>
 
 // The trade wheels on the barter page. WAIT is last: it only shows (alone)
 // when it isn't your move.
-/** BARTER tab: *ACCEPT, ADD, SUBTRACT, QUERY, STALL, DECLINE. */
+/** BARTER tab: *ACCEPT, ADD, REMOVE, QUERY, STALL, DECLINE. */
 export const BARTER_TAB_ACTIONS = actionsInOrder(['accept', 'add', 'subtract', 'query', 'stall', 'decline', 'wait']);
 /** CLOSE tab: ACCEPT, WHERE, WHEN, QUERY, DECLINE. */
 export const CLOSE_TAB_ACTIONS = actionsInOrder(['acceptFinal', 'where', 'when', 'query', 'decline', 'wait']);

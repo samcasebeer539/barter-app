@@ -15,3 +15,7 @@ Things in the code that are deliberately unfinished until release.
       Privacy Policy: name, email, phone (optional), photos, user content,
       coarse location is not collected (device location stays on the phone).
 - [ ] **Age rating:** the Terms say 18+; set the App Store age rating to match.
+- [ ] **`FIREBASE_STORAGE_BUCKET` is set on the server**, exactly as it appears
+      in photo URLs (the part after `/v0/b/`, e.g. `your-app.firebasestorage.app`).
+      The server only accepts photos from that bucket, so without it every
+      new photo upload is refused.

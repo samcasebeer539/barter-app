@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from models.game import Game
 
-PHOTO = "https://firebasestorage.googleapis.com/v0/b/x/o/photo.jpg"
+from conftest import photo_url
 
 
 # ── auth ─────────────────────────────────────────────────────────────────────
@@ -100,9 +100,10 @@ def test_review_rules(api, user, post, game):
 def test_post_made_with_an_id_the_app_picked(api, user, db):
     user("alice"), user("bob")
     pid = str(ObjectId())
-    status, body = api.post("/dev/posts", as_="alice", json={"_id": pid, "post_title": "Lamp", "photos": [PHOTO]})
+    photo = photo_url(f"post_photos/alice/{pid}/1_0")
+    status, body = api.post("/dev/posts", as_="alice", json={"_id": pid, "post_title": "Lamp", "photos": [photo]})
     assert status == 201 and body["_id"] == pid
-    assert db.posts_collection.find_one({"_id": ObjectId(pid)})["photos"] == [PHOTO]
+    assert db.posts_collection.find_one({"_id": ObjectId(pid)})["photos"] == [photo]
     assert api.post("/dev/posts", as_="bob", json={"_id": pid, "post_title": "Mine"})[0] == 409
     assert api.post("/dev/posts", as_="alice", json={"_id": "nope", "post_title": "x"})[0] == 400
     assert api.post("/dev/posts", as_="alice", json={"post_title": "No id"})[0] == 201
@@ -111,13 +112,16 @@ def test_post_made_with_an_id_the_app_picked(api, user, db):
 @pytest.mark.parametrize("fields", [
     {"photos": "not a list"},
     {"photos": ["file:///on/my/phone.jpg"]},
-    {"photos": [PHOTO] * 11},
+    {"photos": ["{own}"] * 11},
     {"is_good": "yes"},
 ])
 def test_bad_post_fields_are_refused(api, user, post, fields):
     alice = user("alice")
-    assert api.post("/dev/posts", as_="alice", json={"post_title": "x", **fields})[0] == 400
-    assert api.patch(f"/dev/posts/{post(alice)}", as_="alice", json=fields)[0] == 400
+    pid = post(alice)
+    if fields.get("photos") and fields["photos"][0] == "{own}":
+        fields = {"photos": [photo_url(f"post_photos/alice/{pid}/{i}") for i in range(11)]}
+    assert api.post("/dev/posts", as_="alice", json={"_id": str(ObjectId()), "post_title": "x", **fields})[0] == 400
+    assert api.patch(f"/dev/posts/{pid}", as_="alice", json=fields)[0] == 400
 
 
 def test_items_in_an_active_trade_are_locked(api, user, post, game):

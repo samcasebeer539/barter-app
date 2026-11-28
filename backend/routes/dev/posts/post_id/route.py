@@ -1,9 +1,9 @@
 from bson.objectid import ObjectId
 from flask import jsonify, request, Blueprint
 import traceback
-from firebase_admin import storage as firebase_storage
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, current_user, text_too_long, bad_post_fields, pass_through_errors
+from helpers import (get_uid_from_request, current_user, text_too_long, bad_post_fields, pass_through_errors,
+                     storage_path, post_photo_prefix, delete_storage_files)
 from models.game import Game
 
 posts_post_id_bp = Blueprint('posts_post_id', __name__)
@@ -24,8 +24,11 @@ def update_post(post_id):
 
         if not update:
             return jsonify({"error": "No valid fields to update"}), 400
+        current = posts_collection.find_one({"_id": ObjectId(post_id), "user_id": user["_id"]}, {"photos": 1})
+        if not current:
+            return jsonify({"error": "Post not found"}), 404
         err = text_too_long({k: update[k] for k in ("post_title", "description") if k in update}) \
-            or bad_post_fields(update)
+            or bad_post_fields(update, uid, post_id, current.get("photos") or [])
         if err: return err
 
         if ObjectId(post_id) in Game.locked_post_ids_for(user["_id"]):
@@ -37,6 +40,11 @@ def update_post(post_id):
         )
         if result.matched_count == 0:
             return jsonify({"error": "Post not found"}), 404
+
+        # Photos taken off the post (and uploads from saves that never
+        # finished) are deleted, so they don't linger after you removed them.
+        if "photos" in update:
+            delete_storage_files(post_photo_prefix(uid, post_id), keep={storage_path(p) for p in update["photos"]})
         return jsonify({"message": "Updated"}), 200
 
     except pass_through_errors():
@@ -73,15 +81,7 @@ def delete_post(post_id):
         )
 
         # Delete all photos for this post from Firebase Storage
-        try:
-            bucket = firebase_storage.bucket()
-            prefix = f"post_photos/{uid}/{post_id}/"
-            blobs = bucket.list_blobs(prefix=prefix)
-            for blob in blobs:
-                blob.delete()
-        except Exception as storage_err:
-            # Non-fatal — log but don't fail the request
-            print(f"Storage cleanup warning: {storage_err}")
+        delete_storage_files(post_photo_prefix(uid, post_id))
 
         return jsonify({"message": "Deleted"}), 200
 

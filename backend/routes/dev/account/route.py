@@ -11,9 +11,9 @@ Reviews you left stay, shown as from a "Former member".
 """
 import traceback
 from flask import Blueprint, jsonify
-from firebase_admin import auth as firebase_auth, storage as firebase_storage
+from firebase_admin import auth as firebase_auth
 from backend import user_data_collection, posts_collection, games_collection
-from helpers import get_uid_from_request, current_user
+from helpers import get_uid_from_request, current_user, delete_storage_files, profile_photo_prefix
 from models.game import Game
 
 account_bp = Blueprint("account", __name__)
@@ -22,13 +22,8 @@ account_bp = Blueprint("account", __name__)
 def _delete_photos(uid):
     """Every file under your post photos and your profile photo. A storage
     hiccup is logged, not fatal: the account still goes."""
-    try:
-        bucket = firebase_storage.bucket()
-        for prefix in (f"post_photos/{uid}/", f"profile_photos/{uid}."):
-            for blob in bucket.list_blobs(prefix=prefix):
-                blob.delete()
-    except Exception as err:
-        print(f"Storage cleanup warning (account {uid}): {err}")
+    delete_storage_files(f"post_photos/{uid}/")
+    delete_storage_files(profile_photo_prefix(uid))
 
 
 @account_bp.route("/dev/account", methods=["DELETE"])

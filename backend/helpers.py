@@ -1,5 +1,8 @@
 import hashlib
 import json
+import os
+import re
+from urllib.parse import urlparse, unquote
 from flask import jsonify, request, Response, g
 from werkzeug.exceptions import HTTPException
 from bson.errors import InvalidId
@@ -207,16 +210,75 @@ NOT_TRADED = {"traded": {"$ne": True}}
 MAX_POSTS = 99
 
 
-def bad_post_fields(data):
+# ── photos in Firebase Storage ───────────────────────────────────────────────
+#
+# The app uploads photos to this project's Storage bucket and saves their
+# download URLs, which look like
+#   https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<path, URL-encoded>?alt=media&token=…
+# Only those are accepted, and only for your own files, so a post or profile
+# can't point at some other site or at someone else's photo.
+
+STORAGE_HOST = "firebasestorage.googleapis.com"
+_DOWNLOAD_PATH = re.compile(r"/v0/b/([^/]+)/o/([^/]+)")
+
+
+def storage_path(url):
+    """The Storage path (e.g. "post_photos/<uid>/<post>/1_0") of a download
+    URL from this app's bucket, or None if it's anything else."""
+    if not isinstance(url, str) or len(url) > 2000:
+        return None
+    try:
+        u = urlparse(url)
+    except ValueError:
+        return None
+    m = _DOWNLOAD_PATH.fullmatch(u.path)
+    bucket = os.getenv("FIREBASE_STORAGE_BUCKET")
+    if u.scheme != "https" or u.hostname != STORAGE_HOST or not m or not bucket or m.group(1) != bucket:
+        return None
+    path = unquote(m.group(2))
+    return None if ".." in path.split("/") else path
+
+
+def post_photo_prefix(uid, post_id):
+    return f"post_photos/{uid}/{post_id}/"
+
+
+def profile_photo_prefix(uid):
+    # The app saves profile_photos/<uid>.<extension>; the dot keeps "alice."
+    # from matching "alicex.jpg".
+    return f"profile_photos/{uid}."
+
+
+def is_own_profile_photo(url, uid):
+    path = storage_path(url)
+    return bool(path) and re.fullmatch(re.escape(profile_photo_prefix(uid)) + r"\w+", path) is not None
+
+
+def delete_storage_files(prefix, keep=()):
+    """Delete the files under `prefix` except the paths in `keep`. Storage
+    trouble never fails the request: at worst a file is left behind."""
+    try:
+        from firebase_admin import storage as firebase_storage
+        for blob in firebase_storage.bucket().list_blobs(prefix=prefix):
+            if blob.name not in keep:
+                blob.delete()
+    except Exception as e:
+        print(f"Storage cleanup warning ({prefix}): {e}")
+
+
+def bad_post_fields(data, uid, post_id, current_photos=()):
     """A 400 if photos / is_good have the wrong shape, else None. photos must
-    be a list of uploaded (http) URLs, so a broken post can't reach anyone's
-    feed."""
+    be a list of this post's own uploads (see storage_path), so a broken or
+    borrowed photo can't reach anyone's feed. Photos the post already has
+    are kept as they are, so older posts can still be edited."""
     if "photos" in data:
         photos = data["photos"]
+        prefix = post_photo_prefix(uid, post_id)
         if not isinstance(photos, list) or not all(
-            isinstance(p, str) and p.startswith(("https://", "http://")) and len(p) <= 2000 for p in photos
+            (isinstance(p, str) and p in current_photos) or (storage_path(p) or "").startswith(prefix)
+            for p in photos
         ):
-            return jsonify({"error": "photos must be a list of uploaded photo URLs"}), 400
+            return jsonify({"error": "photos must be a list of this post's uploaded photos"}), 400
         if len(photos) > MAX_POST_PHOTOS:
             return jsonify({"error": f"Posts can have up to {MAX_POST_PHOTOS} photos"}), 400
     if "is_good" in data and not isinstance(data["is_good"], bool):

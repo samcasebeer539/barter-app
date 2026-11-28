@@ -20,6 +20,9 @@ import mongomock
 import pytest
 from bson import ObjectId
 
+# Photo URLs must come from this bucket (helpers.storage_path).
+os.environ["FIREBASE_STORAGE_BUCKET"] = "test-bucket"
+
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BACKEND_DIR)
 
@@ -176,6 +179,12 @@ def api():
 # ── factories ────────────────────────────────────────────────────────────────
 
 NOW = lambda: datetime.now(timezone.utc)  # noqa: E731
+
+def photo_url(path, bucket="test-bucket"):
+    """A Firebase download URL for a Storage path, like the app saves."""
+    from urllib.parse import quote
+    return f"https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{quote(path, safe='')}?alt=media&token=t"
+
 
 LOCATION = {"id": "loc1", "latitude": 36.97, "longitude": -122.03, "name": "Library", "description": ""}
 

@@ -41,12 +41,6 @@ def create_post():
             return jsonify({"error": "User not found"}), 404
 
         data = request.json or {}
-        err = text_too_long({"post_title": data.get("post_title"), "description": data.get("description")}) \
-            or bad_post_fields(data)
-        if err: return err
-
-        if posts_collection.count_documents({"user_id": user["_id"]}) >= MAX_POSTS:
-            return jsonify({"error": f"You can have up to {MAX_POSTS} posts"}), 400
 
         # The app picks the post's id itself, so it can upload the photos
         # (stored under the id) before the post exists. Otherwise make one.
@@ -54,6 +48,13 @@ def create_post():
             post_id = ObjectId(data["_id"]) if data.get("_id") else ObjectId()
         except (InvalidId, TypeError):
             return jsonify({"error": "Invalid post id"}), 400
+
+        err = text_too_long({"post_title": data.get("post_title"), "description": data.get("description")}) \
+            or bad_post_fields(data, uid, post_id)
+        if err: return err
+
+        if posts_collection.count_documents({"user_id": user["_id"]}) >= MAX_POSTS:
+            return jsonify({"error": f"You can have up to {MAX_POSTS} posts"}), 400
 
         new_post = {
             "_id": post_id,

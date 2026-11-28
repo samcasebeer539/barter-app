@@ -5,7 +5,7 @@ from backend import user_data_collection, posts_collection
 from bson import ObjectId
 from bson.errors import InvalidId
 from pymongo.errors import DuplicateKeyError
-from helpers import get_uid_from_request, serialize_post, current_user, text_too_long, bad_post_fields, pass_through_errors
+from helpers import get_uid_from_request, serialize_post, current_user, text_too_long, bad_post_fields, MAX_POSTS, pass_through_errors
 from models.game import Game
 
 posts_bp = Blueprint('posts', __name__)
@@ -44,6 +44,9 @@ def create_post():
         err = text_too_long({"post_title": data.get("post_title"), "description": data.get("description")}) \
             or bad_post_fields(data)
         if err: return err
+
+        if posts_collection.count_documents({"user_id": user["_id"]}) >= MAX_POSTS:
+            return jsonify({"error": f"You can have up to {MAX_POSTS} posts"}), 400
 
         # The app picks the post's id itself, so it can upload the photos
         # (stored under the id) before the post exists. Otherwise make one.

@@ -181,3 +181,26 @@ def test_private_fields_never_reach_other_players(api, user, post):
     _, body = api.get(f"/dev/feed/{lamp}", as_="bob")
     for field in ("firebase_uid", "email", "phone", "blocked_user_ids"):
         assert field not in body["user"]
+
+
+# ── caps ─────────────────────────────────────────────────────────────────────
+
+def test_up_to_99_posts(api, user, post):
+    from helpers import MAX_POSTS
+    alice = user("alice")
+    for _ in range(MAX_POSTS - 1):
+        post(alice)
+    assert api.post("/dev/posts", as_="alice", json={"post_title": "99th"})[0] == 201
+    status, body = api.post("/dev/posts", as_="alice", json={"post_title": "100th"})
+    assert status == 400 and body["error"] == "You can have up to 99 posts"
+
+
+def test_a_meetup_time_needs_two_days_notice(api, user, post, game):
+    from conftest import future_iso
+    alice, bob = user("alice"), user("bob")
+    gid = str(game(bob, alice, post(alice), phase="close", turn=alice))
+    status, body = api.post("/dev/trades/when", as_="alice",
+                            json={"gameId": gid, "proposedAt": future_iso(hours=47), "label": "Too soon"})
+    assert status == 400 and body["error"] == "Pick a time at least 2 days from now"
+    assert api.post("/dev/trades/when", as_="alice",
+                    json={"gameId": gid, "proposedAt": future_iso(hours=49), "label": "OK"})[0] == 201

@@ -18,6 +18,7 @@ import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, 
 import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useStableCallback } from '../hooks/useStableCallback';
+import { pad2 } from '@/lib/format';
 
 const { width } = Dimensions.get('window');
 
@@ -542,7 +543,7 @@ export default function TradeDeck({
               <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
               {partnerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {partnerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
-              <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>0{partnerPosts.length}</Text>
+              <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>{pad2(partnerPosts.length)}</Text>
               <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
             </View>
           </TouchableOpacity>
@@ -551,7 +552,7 @@ export default function TradeDeck({
               <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
               {playerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {playerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
-              <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>0{playerPosts.length}</Text>
+              <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>{pad2(playerPosts.length)}</Text>
               <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
             </View>
           </TouchableOpacity>

@@ -246,5 +246,5 @@ def phase_of(db):
     return lambda game_id: db.games_collection.find_one({"_id": game_id})["phase"]
 
 
-def future_iso(hours=24):
+def future_iso(hours=72):
     return (NOW() + timedelta(hours=hours)).isoformat()

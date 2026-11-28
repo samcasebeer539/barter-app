@@ -50,7 +50,7 @@ def test_full_trade_offer_to_completed(api, user, post, db, phase_of):
     assert api.post("/dev/trades/where", as_="bob",
                     json={"gameId": str(gid), "locationId": "bob-loc"})[0] == 201
     assert api.post("/dev/trades/when", as_="alice",
-                    json={"gameId": str(gid), "proposedAt": future_iso(), "label": "Tomorrow at 3"})[0] == 201
+                    json={"gameId": str(gid), "proposedAt": future_iso(), "label": "Sun at 3"})[0] == 201
     assert api.post("/dev/trades/trade_details/accept", as_="bob", json={"gameId": str(gid)})[0] == 200
     assert api.post("/dev/trades/trade_details/accept", as_="alice", json={"gameId": str(gid)})[0] == 200
     assert phase_of(gid) == "agreed"

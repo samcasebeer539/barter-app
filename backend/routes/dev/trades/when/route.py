@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -9,6 +9,9 @@ from models.game import Game, NotYourTurnError
 trades_when_bp = Blueprint("trades_when", __name__)
 
 MAX_LABEL_LENGTH = 60
+# A meetup needs notice: the app's time card skips the next two days, and
+# every time it offers is at least this far away.
+MIN_NOTICE = timedelta(hours=48)
 
 
 @trades_when_bp.route("/dev/trades/when", methods=["POST"])
@@ -39,6 +42,8 @@ def propose_time():
         return jsonify({"error": "proposedAt needs a time zone"}), 400
     if proposed_at <= datetime.now(timezone.utc):
         return jsonify({"error": "Pick a time in the future"}), 400
+    if proposed_at < datetime.now(timezone.utc) + MIN_NOTICE:
+        return jsonify({"error": "Pick a time at least 2 days from now"}), 400
 
     try:
         game = Game.get(ObjectId(data["gameId"]))

@@ -20,6 +20,7 @@ import { useStableCallback } from '../hooks/useStableCallback';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { showError } from '@/lib/errors';
+import { pad2 } from '@/lib/format';
 
 const { width, height } = Dimensions.get('window');
 const BOTTOM_BASE = 140;
@@ -367,7 +368,7 @@ export default function FeedDeck({
                   <View style={deckStyles.cardLineup}>
                     <FontAwesome6 name='circle-user' size={24} color={colors.ui.secondarydisabled} />
                     <FontAwesome6 name='circle-dot' size={24} color={colors.ui.secondarydisabled} />
-                    <Text style={deckStyles.countText}>0{postCount}</Text>
+                    <Text style={deckStyles.countText}>{pad2(postCount)}</Text>
                     <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
                   </View>
                 </View>

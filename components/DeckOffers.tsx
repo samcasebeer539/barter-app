@@ -13,6 +13,7 @@ import { buildQueryTurns, buildOfferTurns, buildTradeTurns, sendOffer, sendQuery
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useStableCallback } from '../hooks/useStableCallback';
 import { showError } from '@/lib/errors';
+import { pad2 } from '@/lib/format';
 
 const { width } = Dimensions.get('window');
 
@@ -262,7 +263,7 @@ export default function OfferDeck({
                             {label.text}
                         </Text>
                         <View style={deckStyles.cardLineup}>
-                            <Text style={deckStyles.countText}>0{itemCount}</Text>
+                            <Text style={deckStyles.countText}>{pad2(itemCount)}</Text>
                             <FontAwesome6 name='arrows-rotate' size={24} color={colors.ui.secondarydisabled} />
                         </View>
                     </View>

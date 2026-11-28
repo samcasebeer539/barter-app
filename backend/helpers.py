@@ -199,6 +199,9 @@ def serialize_trade(trade):
 
 
 MAX_POST_PHOTOS = 10
+# Posts per account (the app turns ADD POST off at the same number,
+# config/limits.ts).
+MAX_POSTS = 99
 
 
 def bad_post_fields(data):

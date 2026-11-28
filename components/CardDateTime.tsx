@@ -49,10 +49,17 @@ const TIME_OPTIONS = [
   '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
 ];
 
-function getUpcomingDates(count: number): UpcomingDate[] {
+// The next two days can't be picked (a meetup needs some notice), so the
+// first date is three days from today. The server checks this too: a
+// proposed time must be at least MIN_NOTICE_HOURS (48) away, which every
+// time on these dates is.
+export const FIRST_DAY_OFFSET = 3;
+
+export function getUpcomingDates(count: number, from: Date = new Date()): UpcomingDate[] {
   const formatter = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const dates: UpcomingDate[] = [];
-  const d = new Date();
+  const d = new Date(from);
+  d.setDate(d.getDate() + FIRST_DAY_OFFSET - 1);
   for (let i = 0; i < count; i++) {
     d.setDate(d.getDate() + 1);
     dates.push({ label: formatter.format(d), year: d.getFullYear(), month: d.getMonth(), day: d.getDate() });

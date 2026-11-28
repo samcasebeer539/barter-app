@@ -18,12 +18,13 @@ import { Post, User, Locations, OffererGroup } from '@/types/index';
 import { createPost, updatePost, deletePost } from '@/services/postService';
 import { IncomingQuery, IncomingOffer, resolvePostName, sendGameQuery } from '@/services/tradeService';
 import { showError } from '@/lib/errors';
+import { pad2 } from '@/lib/format';
+import { MAX_POSTS } from '@/config/limits';
 
 const SLIDE_MARGIN = 0;
 // "02/05": on the post on top / across all your posts. All of it is lit in
 // the action's color when the post on top has some; if only other posts do,
 // just the total is lit.
-const pad2 = (n: number) => String(n).padStart(2, '0');
 function CountPair({ onPost, total, color }: { onPost: number; total: number; color: string }) {
     const litOnPost = onPost > 0;
     return (
@@ -487,7 +488,9 @@ export default function ProfileDeck({
     const spacerStyle = useAnimatedStyle(() => ({ height: slide.value * slideDistance.value }));
     // New posts need at least one saved location (the location card says so).
     const hasSavedLocation = (primaryGroups[0]?.locations?.length ?? 0) > 0;
-    const addPostDisabled = isPostEditMode || !hasSavedLocation;
+    // And at the post cap (MAX_POSTS, the server's limit too).
+    const atPostLimit = posts.length >= MAX_POSTS;
+    const addPostDisabled = isPostEditMode || !hasSavedLocation || atPostLimit;
 
     // Posts in an active trade can't be deleted (or edited).
     const deleteDisabled =
@@ -641,7 +644,7 @@ export default function ProfileDeck({
                         )}
                         <View style={styles.buttonRow}>
                             {/* Disabled while a post is being edited. */}
-                            <TouchableOpacity style={styles.addButton} onPress={handleAddPost} disabled={addPostDisabled}>
+                            <TouchableOpacity testID="add-post" style={styles.addButton} onPress={handleAddPost} disabled={addPostDisabled}>
                                 <FontAwesome6 name="circle-plus" size={24} color={addPostDisabled ? colors.ui.secondarydisabled : '#fff'} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTopPost} disabled={deleteDisabled}>
@@ -651,7 +654,7 @@ export default function ProfileDeck({
                                 <View style={deckStyles.cardLineup}>
                                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
                                     <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />
-                                    <Text style={[deckStyles.countText, { color: colors.ui.secondarydisabled }]}>0{itemCount}</Text>
+                                    <Text style={[deckStyles.countText, { color: colors.ui.secondarydisabled }]}>{pad2(itemCount)}</Text>
                                     <FontAwesome6 name="arrows-rotate" size={24} color={colors.ui.secondarydisabled} />
                                 </View>
                             </View>

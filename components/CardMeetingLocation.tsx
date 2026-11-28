@@ -59,14 +59,18 @@ interface CardLocationProps {
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 
+// One shared empty list for the default, so "no locations passed" is the same
+// list every render (a new [] each time would look like a change).
+const NO_LOCATIONS: Locations[] = [];
+
 const CardLocation: React.FC<CardLocationProps> = ({
   scale = 1,
   cardWidth,
   mapActiveRef,
   isUser = true,
-  initialLocations = [],
+  initialLocations = NO_LOCATIONS,
   onConfirm,
-  externalLocations = [],
+  externalLocations = NO_LOCATIONS,
   onSelectLocation,
   isSelectMode = false,
   onProposeLocation,
@@ -80,11 +84,11 @@ const CardLocation: React.FC<CardLocationProps> = ({
   // ── User (editable) state ─────────────────────────────────────────────────
   const [locations, setLocations] = useState<Locations[]>(initialLocations);
 
-  // Sync when initialLocations arrives from the backend after mount
+  // Follow the screen's list: when it arrives from the server after mount,
+  // and when the screen puts the old list back after a failed save (even if
+  // that's no locations at all).
   useEffect(() => {
-    if (initialLocations.length > 0) {
-      setLocations(initialLocations);
-    }
+    setLocations(initialLocations);
   }, [initialLocations]);
   const [pendingPin, setPendingPin] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isNaming, setIsNaming] = useState(false);
@@ -321,6 +325,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
 
           {!showProposal && isUser && canAddMore && !isNaming && !isSelectMode && (
             <TouchableOpacity
+              testID="location-add"
               style={styles.addLocationBtn}
               onPress={handleAddLocationPress}
               disabled={!pinReady}

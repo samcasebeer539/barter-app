@@ -20,11 +20,13 @@ export default function HandleLogin() {
     const signUp = async () => {
         // If there is currently a sign in happening, stop the extra sign in
         if (loading) return;
-        setLoading(true);
+        // Checked before loading starts (it used to leave the form stuck on
+        // the spinner after this alert).
         if (!firstName.trim() || !lastName.trim()) {
             alert('Please enter your first and last name.');
             return;
         }
+        setLoading(true);
         try {
             await createUserWithEmailAndPassword(auth, email, password);
             // Creates the account's record on the server, with first and last

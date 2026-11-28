@@ -21,6 +21,10 @@ becomes a screen in expo-router.
 | `settings.test.ts` | Reading the server's settings response |
 | `errors.test.ts` | What people see when something fails: server messages as is, offline / crash / internal messages reworded |
 | `DeckOffers.test.tsx` | MY QUERIES / MY OFFERS / DECLINED OFFERS: each card shows its game's whole history |
+| `barterScreen.test.tsx` | Barter page: each tab's loads, the background check while waiting (every 5s backing off to a minute, only while waiting, stops when you leave), history dropdowns, reloads after a refused move or a block |
+| `profileScreen.test.tsx` | Profile screen: one-request load, the quiet refresh on return (locks, rating, offers; keeps an unsaved post), barter / decline removing the offerer, saves and their failures |
+| `CardMeetingLocation.test.tsx` | Location card: adding / removing (3 max, name required), WHERE picking, proposed spot, someone else's spots, where the map starts |
+| `login.test.tsx` | Sign in / sign up, name check, failures, field limits |
 | `feedPaging.test.tsx` | Feed pages: first page, the next one near the bottom (once, until there are no more, no repeats), sort and search starting over |
 | `QueryAnswer.test.tsx` | Answering a question; a failed answer keeps your text (alert in the QUERIES drawer, the trade deck's handling in a trade) |
 | `TradeActions.test.tsx` | The action wheel: query / offer / barter / add hidden and untappable on non-post cards, barter's count, the confirm arrow (only when ready, once per tap), turn timers |

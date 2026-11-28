@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from bson import ObjectId
-from backend import games_collection, trades_collection
+from backend import games_collection, trades_collection, posts_collection
 
 
 def _as_utc(dt: Optional[datetime]) -> Optional[datetime]:
@@ -217,11 +217,14 @@ class Game:
             game = cls.get(game_id)
             if not game or game.is_closed():
                 return False
+            was_agreed = game.phase == "agreed"
             game.advance("declined")
             try:
                 game.save()
             except GameConflictError:
                 continue
+            if was_agreed:
+                game.set_cards_traded(False)  # the deal is off: back in the feed
             trades_collection.insert_one({
                 "game_id": game._id,
                 "type": "decline",
@@ -459,6 +462,18 @@ class Game:
         owner = lambda g: next((u for u in (g.receiver_user_id, g.initiator_user_id) if u in dealers),
                                g.receiver_user_id)
         return sum(Game.force_decline(doc["_id"], owner, "post_traded", now) for doc in docs)
+
+    def set_cards_traded(self, traded: bool = True):
+        """Mark (or unmark) this deal's posts as traded. Traded posts are
+        left out of everyone else's lists (feed, search, profiles); see
+        helpers.NOT_TRADED."""
+        ids = self.card_ids()
+        if not ids:
+            return
+        if traded:
+            posts_collection.update_many({"_id": {"$in": ids}}, {"$set": {"traded": True}})
+        else:
+            posts_collection.update_many({"_id": {"$in": ids}}, {"$unset": {"traded": ""}})
 
     def card_ids(self) -> list:
         """The posts actually on the table (both sides' cards). Unlike

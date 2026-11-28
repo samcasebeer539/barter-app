@@ -20,6 +20,7 @@ becomes a screen in expo-router.
 | `postService.test.ts` | Photos upload before a post is created, unique photo names, failed uploads create nothing |
 | `settings.test.ts` | Reading the server's settings response |
 | `errors.test.ts` | What people see when something fails: server messages as is, offline / crash / internal messages reworded |
+| `feedPaging.test.tsx` | Feed pages: first page, the next one near the bottom (once, until there are no more, no repeats), sort and search starting over |
 | `QueryAnswer.test.tsx` | Answering a question; a failed answer keeps your text (alert in the QUERIES drawer, the trade deck's handling in a trade) |
 | `TradeActions.test.tsx` | The action wheel: query / offer / barter / add hidden and untappable on non-post cards, barter's count, the confirm arrow (only when ready, once per tap), turn timers |
 | `CardItem.test.tsx` | Post card: report vs edit buttons, locked posts, save needs a title and photo, cancel discards a new post, the 10-photo cap, the title limit |

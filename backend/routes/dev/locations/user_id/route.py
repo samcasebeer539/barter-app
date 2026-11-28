@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection
-from helpers import get_uid_from_request, pass_through_errors
+from helpers import get_uid_from_request, pass_through_errors, blocked_ids_for, current_user
 
 locations_userid_bp = Blueprint('locations_userid', __name__)
 
@@ -19,7 +19,8 @@ def get_user_locations(user_id):
             return jsonify({"error": "Invalid user_id"}), 400
 
         user = user_data_collection.find_one({"_id": target_id})
-        if not user:
+        # Blocked either way: as if they don't exist (like their profile).
+        if not user or target_id in blocked_ids_for(current_user()):
             return jsonify({"error": "User not found"}), 404
 
         return jsonify(user.get("locations", [])), 200

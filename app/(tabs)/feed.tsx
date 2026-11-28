@@ -1,13 +1,13 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, useWindowDimensions, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import FeedDeck from '@/components/DeckFeed';
 import FeedBar from '@/components/BarFeed';
 import { globalFonts, colors } from '../../styles/globalStyles';
 import { deckStyles } from '../../styles/deckStyles';
 import { onBlockChange } from '@/lib/safety';
-import { getFeedPosts, getFeedProfile, searchFeedPosts } from '@/services/feedService';
+import { getFeedPage, getFeedProfile, FeedSort } from '@/services/feedService';
 import { FeedItem, FeedProfile } from '@/types/index';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -67,8 +67,8 @@ function formatDistance(mi: number | null): string {
 // Placeholder heights (× column width) for the loading skeleton.
 const SKELETON_HEIGHTS = [[1.3, 1.0, 1.15], [1.0, 1.4, 0.9]];
 
-// Sorting posts by filtering
-type SortOption = 'nearest' | 'farthest' | 'newest'| 'oldest';
+// The server sorts (and pages) the feed; these are its sort options.
+type SortOption = FeedSort;
 
 const SORT_OPTIONS: { key: SortOption; label: string }[] = [
     { key: 'nearest', label: 'Nearest' },
@@ -77,23 +77,8 @@ const SORT_OPTIONS: { key: SortOption; label: string }[] = [
     { key: 'oldest', label: 'Oldest' },
 ];
 
-// Posts with no known distance ("?") always sink to the bottom.
-const byDistance = (dir: 1 | -1) => (a: FeedItem, b: FeedItem) => {
-    if (a.distanceMi == null && b.distanceMi == null) return 0;
-    if (a.distanceMi == null) return 1;
-    if (b.distanceMi == null) return -1;
-    return dir * (a.distanceMi - b.distanceMi);
-};
-
-function sortItems(items: FeedItem[], sortBy: SortOption): FeedItem[] {
-    const copy = [...items];
-    switch (sortBy) {
-        case 'nearest': return copy.sort(byDistance(1));
-        case 'farthest': return copy.sort(byDistance(-1));
-        case 'newest': return copy.sort((b, a) => a.date_posted.localeCompare(b.date_posted, undefined));
-        case 'oldest': return copy.sort((a, b) => a.date_posted.localeCompare(b.date_posted, undefined));
-    }
-}
+// Start loading the next page this far (px) before the bottom.
+const LOAD_MORE_DISTANCE = 800;
 
 export default function FeedScreen() {
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -119,14 +104,30 @@ export default function FeedScreen() {
     // (refresh, search, clear), only the latest one is shown.
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const latestLoad = useRef(0);
-    const showBatch = useCallback(async (fetchPosts: () => Promise<FeedItem[]>) => {
+
+    // Sort and search. The server sorts and pages; changing either reloads
+    // from the first page.
+    const [sortBy, setSortBy] = useState<SortOption>('nearest');
+    const [showSortMenu, setShowSortMenu] = useState(false);
+
+    // Paging: where the next page starts (null: no more), and whether one is
+    // on its way. Refs, so a scroll event always sees the latest values.
+    const nextOffset = useRef<number | null>(null);
+    const loadingMore = useRef(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    /** Load the first page (replacing what's shown). */
+    const loadFirstPage = useCallback(async (query: string, sort: SortOption) => {
         const loadId = ++latestLoad.current;
+        loadingMore.current = false;
+        setIsLoadingMore(false);
         try {
-            const posts = await fetchPosts();
-            const heights = await prepareFeedBatch(posts, columnWidth);
+            const page = await getFeedPage({ sort, query });
+            const heights = await prepareFeedBatch(page.items, columnWidth);
             if (loadId !== latestLoad.current) return; // a newer load replaced this one
+            nextOffset.current = page.nextOffset;
             setImageHeights(heights);
-            setFeedItems(posts);
+            setFeedItems(page.items);
         } catch (err) {
             console.error('Feed load error:', err);
         } finally {
@@ -134,9 +135,33 @@ export default function FeedScreen() {
         }
     }, [columnWidth]);
 
-    useEffect(() => {
-        showBatch(getFeedPosts);
-    }, [showBatch]);
+    /** Add the next page under what's shown (if there is one). */
+    const loadNextPage = useCallback(async () => {
+        if (nextOffset.current === null || loadingMore.current) return;
+        const loadId = latestLoad.current;  // a first-page load cancels this one
+        loadingMore.current = true;
+        setIsLoadingMore(true);
+        try {
+            const page = await getFeedPage({ sort: sortBy, query: searchQuery, offset: nextOffset.current });
+            const heights = await prepareFeedBatch(page.items, columnWidth);
+            if (loadId !== latestLoad.current) return;
+            nextOffset.current = page.nextOffset;
+            setImageHeights(prev => ({ ...prev, ...heights }));
+            // A post can shift pages if posts were added meanwhile: skip
+            // ones already shown.
+            setFeedItems(prev => {
+                const shown = new Set(prev.map(p => p.id));
+                return [...prev, ...page.items.filter(p => !shown.has(p.id))];
+            });
+        } catch (err) {
+            console.error('Feed load error:', err);
+        } finally {
+            if (loadId === latestLoad.current) {
+                loadingMore.current = false;
+                setIsLoadingMore(false);
+            }
+        }
+    }, [columnWidth, sortBy, searchQuery]);
 
     // Skeleton pulse.
     const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
@@ -150,15 +175,17 @@ export default function FeedScreen() {
         return () => pulse.stop();
     }, [isInitialLoading, skeletonOpacity]);
 
-    const [sortBy, setSortBy] = useState<SortOption>('nearest');
-    const [showSortMenu, setShowSortMenu] = useState(false);
-
-    const sortedItems = useMemo(() => sortItems(feedItems, sortBy), [feedItems, sortBy]);
-
-    const leftColumn = sortedItems.filter((_, i) => i % 2 === 0);
-    const rightColumn = sortedItems.filter((_, i) => i % 2 === 1);
+    // In the server's order; new pages add to the bottom of both columns.
+    const leftColumn = feedItems.filter((_, i) => i % 2 === 0);
+    const rightColumn = feedItems.filter((_, i) => i % 2 === 1);
 
     const handleScroll = (event: any) => {
+        // Near the bottom: start loading the next page.
+        const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+        if (contentOffset.y + layoutMeasurement.height >= contentSize.height - LOAD_MORE_DISTANCE) {
+            loadNextPage();
+        }
+
         const currentScrollY = event.nativeEvent.contentOffset.y + HEADER_HEIGHT;
         const scrollingDown = currentScrollY > scrollY.current && currentScrollY > 50;
         const scrollingUp = currentScrollY < scrollY.current;
@@ -247,13 +274,19 @@ export default function FeedScreen() {
 
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
-        await showBatch(() => searchFeedPosts(query));
+        await loadFirstPage(query, sortBy);
     };
 
     const clearSearch = async () => {
         setSearchQuery("");
-        await showBatch(getFeedPosts);
+        await loadFirstPage("", sortBy);
     }
+
+    // First load, and again whenever the sort changes.
+    useEffect(() => {
+        loadFirstPage(searchQuery, sortBy);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sortBy, loadFirstPage]);
 
     const HEADER_HEIGHT = 52;
     const [refreshing, setRefreshing] = useState(false);
@@ -261,19 +294,19 @@ export default function FeedScreen() {
     // After blocking someone: close their deck and reload without their posts.
     useEffect(() => onBlockChange(() => {
         setShowDeck(false);
-        showBatch(searchQuery.length > 0 ? () => searchFeedPosts(searchQuery) : getFeedPosts);
-    }), [searchQuery, showBatch]);
+        loadFirstPage(searchQuery, sortBy);
+    }), [searchQuery, sortBy, loadFirstPage]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         try {
             // Re-run the active search, or reload the feed. The current posts
             // stay up until the new batch is fully ready.
-            await showBatch(searchQuery.length > 0 ? () => searchFeedPosts(searchQuery) : getFeedPosts);
+            await loadFirstPage(searchQuery, sortBy);
         } finally {
             setRefreshing(false);
         }
-    }, [searchQuery, showBatch]);
+    }, [searchQuery, sortBy, loadFirstPage]);
 
     return (
         <View style={styles.container}>
@@ -291,6 +324,7 @@ export default function FeedScreen() {
             />
 
             <ScrollView
+                testID="feed-scroll"
                 style={[styles.scrollView, { marginTop: insets.top }]}
                 contentContainerStyle={[
                     styles.scrollContent,
@@ -349,6 +383,9 @@ export default function FeedScreen() {
                     </View>
                 </View>
                 )}
+                {isLoadingMore && (
+                    <ActivityIndicator testID="feed-loading-more" style={styles.loadingMore} color={colors.ui.secondarydisabled} />
+                )}
             </ScrollView>
 
             <FeedDeck
@@ -392,6 +429,9 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
+    loadingMore: {
+        paddingVertical: 16,
+    },
     container: {
         flex: 1,
         backgroundColor: colors.ui.background,

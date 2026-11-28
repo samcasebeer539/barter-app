@@ -56,6 +56,7 @@ def accept_trade():
     # Deal is final: its posts are spoken for, so every other trade or offer
     # involving them is declined.
     if advanced and game.phase == "agreed":
+        game.set_cards_traded()
         game.decline_others_with_posts()
 
     trades_collection.insert_one({

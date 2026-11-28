@@ -41,6 +41,9 @@ python -m pytest tests -q
   load, 204 caching, answers, post deletion.
 - `test_questions.py`: questions from the feed, from a post owner to the
   person who offered, and as turns in barter / close.
+- `test_feed_paging.py`: traded posts leaving other people's lists, the
+  location block check, and the feed / search a page at a time (each sort,
+  unknown distances last, no repeats across pages, bad arguments).
 - `test_database.py`: the run is on the database it should be, the
   server's indexes exist, and the unique index keeps one account per user.
 - `test_bad_requests.py`: every route given broken requests (missing or

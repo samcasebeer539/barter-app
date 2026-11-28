@@ -199,6 +199,9 @@ def serialize_trade(trade):
 
 
 MAX_POST_PHOTOS = 10
+# Add to a posts query for lists of other people's posts (feed, search,
+# profiles): posts in an agreed or completed deal are spoken for.
+NOT_TRADED = {"traded": {"$ne": True}}
 # Posts per account (the app turns ADD POST off at the same number,
 # config/limits.ts).
 MAX_POSTS = 99

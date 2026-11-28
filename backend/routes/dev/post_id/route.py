@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import jsonify, Blueprint
 import traceback
 from backend import user_data_collection, posts_collection
-from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user, pass_through_errors
+from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user, NOT_TRADED, pass_through_errors
 
 postId_bp = Blueprint('postId', __name__)
 
@@ -17,6 +17,8 @@ def get_feed_profile(post_id):
         post = posts_collection.find_one({"_id": ObjectId(post_id)})
         if not post:
             return jsonify({"error": "Post not found"}), 404
+        if post.get("traded"):
+            return jsonify({"error": "That item has already been traded"}), 404
 
 
         # Find the owner
@@ -25,7 +27,7 @@ def get_feed_profile(post_id):
             return jsonify({"error": "User not found"}), 404
 
         # Get all of the owner's posts
-        owner_posts = list(posts_collection.find({"user_id": post["user_id"]}))
+        owner_posts = list(posts_collection.find({"user_id": post["user_id"], **NOT_TRADED}))
         owner_posts = [serialize_post(p) for p in owner_posts]
 
         return jsonify({

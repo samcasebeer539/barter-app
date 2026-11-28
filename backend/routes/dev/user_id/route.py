@@ -2,7 +2,7 @@ from flask import jsonify, Blueprint, request
 import traceback
 from bson.objectid import ObjectId
 from backend import user_data_collection, posts_collection, trades_collection
-from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user, pass_through_errors
+from helpers import get_uid_from_request, serialize_post, public_user, blocked_ids_for, current_user, NOT_TRADED, pass_through_errors
 from models.game import iso_utc
 
 userId_bp = Blueprint('userId', __name__)
@@ -32,7 +32,7 @@ def get_user_profile(user_id):
             return jsonify({"error": "User not found"}), 404
 
         # Get all of their posts
-        owner_posts = list(posts_collection.find({"user_id": ObjectId(user_id)}))
+        owner_posts = list(posts_collection.find({"user_id": owner["_id"], **NOT_TRADED}))
         owner_posts = [serialize_post(p) for p in owner_posts]
 
         return jsonify({
@@ -91,7 +91,7 @@ def profiles_for(ids):
         return {}
     users = list(user_data_collection.find({"_id": {"$in": ids}}))
     posts_by_owner = {}
-    for post in posts_collection.find({"user_id": {"$in": ids}}):
+    for post in posts_collection.find({"user_id": {"$in": ids}, **NOT_TRADED}):
         posts_by_owner.setdefault(post["user_id"], []).append(serialize_post(post))
     return {
         str(u["_id"]): {

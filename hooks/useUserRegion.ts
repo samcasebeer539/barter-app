@@ -61,7 +61,9 @@ export function useUserRegion(enabled = true): Region | null {
         console.error('Failed to get device location:', err);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [enabled]);
 
   return region;

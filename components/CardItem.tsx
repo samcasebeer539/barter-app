@@ -36,25 +36,25 @@ interface PostCardProps {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const HEADER_HEIGHT    = 48;
+const HEADER_HEIGHT = 48;
 const DESC_LINE_HEIGHT = 20;
-const DESC_PAD_TOP     = 0;
-const DESC_PAD_BOTTOM  = 8;
-const DOTS_HEIGHT      = 24;
-const GAP              = 8;
-const BOTTOM_PADDING   = 16;
-const DATE_HEIGHT      = 20;
+const DESC_PAD_TOP = 0;
+const DESC_PAD_BOTTOM = 8;
+const DOTS_HEIGHT = 24;
+const GAP = 8;
+const BOTTOM_PADDING = 16;
+const DATE_HEIGHT = 20;
 
 const DESC_COLLAPSED_HEIGHT = DESC_PAD_TOP + DESC_LINE_HEIGHT * 2 + DESC_PAD_BOTTOM;
-const DESC_EXPANDED_HEIGHT  = DESC_PAD_TOP + DESC_LINE_HEIGHT * 10 + DESC_PAD_BOTTOM;
+const DESC_EXPANDED_HEIGHT = DESC_PAD_TOP + DESC_LINE_HEIGHT * 10 + DESC_PAD_BOTTOM;
 
 const DATE_BOTTOM = BOTTOM_PADDING;
 
 const ANIMATED_ZONE_COLLAPSED = GAP + DOTS_HEIGHT + GAP + DESC_COLLAPSED_HEIGHT;
-const ANIMATED_ZONE_EXPANDED  = GAP + DOTS_HEIGHT + GAP + DESC_EXPANDED_HEIGHT;
+const ANIMATED_ZONE_EXPANDED = GAP + DOTS_HEIGHT + GAP + DESC_EXPANDED_HEIGHT;
 
 const BOTTOM_ZONE_COLLAPSED = ANIMATED_ZONE_COLLAPSED + GAP + DATE_HEIGHT + BOTTOM_PADDING;
-const BOTTOM_ZONE_EXPANDED  = ANIMATED_ZONE_EXPANDED  + GAP + DATE_HEIGHT + BOTTOM_PADDING;
+const BOTTOM_ZONE_EXPANDED = ANIMATED_ZONE_EXPANDED + GAP + DATE_HEIGHT + BOTTOM_PADDING;
 // ─────────────────────────────────────────────────────────────────────────────
 
 function formatDate(dateStr?: string): string {
@@ -151,26 +151,34 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const descriptionHeight  = useRef(new Animated.Value(DESC_COLLAPSED_HEIGHT)).current;
+  const descriptionHeight = useRef(new Animated.Value(DESC_COLLAPSED_HEIGHT)).current;
   const animatedZoneHeight = useRef(new Animated.Value(ANIMATED_ZONE_COLLAPSED)).current;
-  const bottomZoneHeight   = useRef(new Animated.Value(BOTTOM_ZONE_COLLAPSED)).current;
+  const bottomZoneHeight = useRef(new Animated.Value(BOTTOM_ZONE_COLLAPSED)).current;
 
   useEffect(() => {
     Animated.spring(descriptionHeight, {
       toValue: isDescriptionMode ? DESC_EXPANDED_HEIGHT : DESC_COLLAPSED_HEIGHT,
-      useNativeDriver: false, damping: 40, stiffness: 270,
+      useNativeDriver: false,
+      damping: 40,
+      stiffness: 270,
     }).start();
     Animated.spring(animatedZoneHeight, {
       toValue: isDescriptionMode ? ANIMATED_ZONE_EXPANDED : ANIMATED_ZONE_COLLAPSED,
-      useNativeDriver: false, damping: 40, stiffness: 270,
+      useNativeDriver: false,
+      damping: 40,
+      stiffness: 270,
     }).start();
     Animated.spring(bottomZoneHeight, {
       toValue: isDescriptionMode ? BOTTOM_ZONE_EXPANDED : BOTTOM_ZONE_COLLAPSED,
-      useNativeDriver: false, damping: 40, stiffness: 270,
+      useNativeDriver: false,
+      damping: 40,
+      stiffness: 270,
     }).start();
   }, [isDescriptionMode, descriptionHeight, animatedZoneHeight, bottomZoneHeight]);
 
-  const toggleMode = () => { if (!isEditable) setIsDescriptionMode(v => !v); };
+  const toggleMode = () => {
+    if (!isEditable) setIsDescriptionMode(v => !v);
+  };
 
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
@@ -184,9 +192,19 @@ const PostCard: React.FC<PostCardProps> = ({
     let idx = currentPhotoIndex;
     let dir = direction;
     if (dir === 'forward') {
-      if (idx < displayPhotos.length - 1) { idx++; } else { dir = 'backward'; idx--; }
+      if (idx < displayPhotos.length - 1) {
+        idx++;
+      } else {
+        dir = 'backward';
+        idx--;
+      }
     } else {
-      if (idx > 0) { idx--; } else { dir = 'forward'; idx++; }
+      if (idx > 0) {
+        idx--;
+      } else {
+        dir = 'forward';
+        idx++;
+      }
     }
     setCurrentPhotoIndex(idx);
     setDirection(dir);
@@ -195,16 +213,19 @@ const PostCard: React.FC<PostCardProps> = ({
   // Resolve which select icon/state to show
   const showSelectIcon = isSelectMode || isQueryMode || (!isUser && !!onSelect);
   const activeSelectColor = isQueryMode ? colors.actions.query : selectColor;
-  const isActiveSelected  = isQueryMode ? isQuerySelected : isSelected;
-  const selectIconName    = isQueryMode
-    ? (isQuerySelected ? 'circle-question' : 'circle')
-    : (isSelected ? 'circle-check' : 'circle');
+  const isActiveSelected = isQueryMode ? isQuerySelected : isSelected;
+  const selectIconName = isQueryMode
+    ? isQuerySelected
+      ? 'circle-question'
+      : 'circle'
+    : isSelected
+      ? 'circle-check'
+      : 'circle';
 
   return (
     <View style={[styles.container, { transform: [{ scale }] }]} onStartShouldSetResponder={() => true}>
       <Animated.View style={[styles.container, { transform: [{ scale }] }]}>
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-
           {/* ── HEADER ─────────────────────────────────────────────────────── */}
           <View style={styles.header}>
             <View style={styles.titleContainer}>
@@ -215,7 +236,10 @@ const PostCard: React.FC<PostCardProps> = ({
                     style={[styles.title, styles.titleInput]}
                     value={draft.name}
                     onFocus={kbField.onFocus}
-                    onChangeText={v => { updateDraft('name', v); kbField.requestLift(); }}
+                    onChangeText={v => {
+                      updateDraft('name', v);
+                      kbField.requestLift();
+                    }}
                     placeholder="Item title"
                     maxLength={TEXT_LIMITS.postTitle}
                     returnKeyType="done"
@@ -246,16 +270,13 @@ const PostCard: React.FC<PostCardProps> = ({
                   accessibilityRole="button"
                   accessibilityLabel={isQueryMode ? 'Ask about this post' : 'Select this post'}
                   accessibilityState={{ selected: isQueryMode ? isQuerySelected : isSelected }}
-                  style={[
-                    styles.selectIconContainer,
-                    { backgroundColor: isActiveSelected ? '#fff' : 'transparent' },
-                  ]}
+                  style={[styles.selectIconContainer, { backgroundColor: isActiveSelected ? '#fff' : 'transparent' }]}
                 >
                   {showSelectIcon && (
                     <FontAwesome6
                       name={selectIconName}
                       size={24}
-                      color={isActiveSelected ? activeSelectColor : '#fff' }
+                      color={isActiveSelected ? activeSelectColor : '#fff'}
                     />
                   )}
                 </TouchableOpacity>
@@ -263,17 +284,41 @@ const PostCard: React.FC<PostCardProps> = ({
 
               {isEditable ? (
                 <>
-                  <TouchableOpacity testID="post-save" style={styles.iconContainer} onPress={handleSave} disabled={!canSave} accessibilityRole="button" accessibilityLabel="Save post">
-                    <FontAwesome6 name="circle-check" size={24} color={canSave ? colors.actions.trade : colors.ui.carddisabled} />
+                  <TouchableOpacity
+                    testID="post-save"
+                    style={styles.iconContainer}
+                    onPress={handleSave}
+                    disabled={!canSave}
+                    accessibilityRole="button"
+                    accessibilityLabel="Save post"
+                  >
+                    <FontAwesome6
+                      name="circle-check"
+                      size={24}
+                      color={canSave ? colors.actions.trade : colors.ui.carddisabled}
+                    />
                   </TouchableOpacity>
-                  <TouchableOpacity testID="post-cancel" style={styles.iconContainer} onPress={handleCancel} accessibilityRole="button" accessibilityLabel="Cancel editing">
+                  <TouchableOpacity
+                    testID="post-cancel"
+                    style={styles.iconContainer}
+                    onPress={handleCancel}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel editing"
+                  >
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                 </>
               ) : isUser && onEnterEdit ? (
                 // No edit button in decks that can't edit (e.g. the trade
                 // deck). Posts in an active trade show it disabled.
-                <TouchableOpacity testID="post-edit" style={styles.iconContainer} onPress={onEnterEdit} disabled={!!post.inTrade} accessibilityRole="button" accessibilityLabel="Edit post">
+                <TouchableOpacity
+                  testID="post-edit"
+                  style={styles.iconContainer}
+                  onPress={onEnterEdit}
+                  disabled={!!post.inTrade}
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit post"
+                >
                   <FontAwesome6
                     name="square-pen"
                     size={24}
@@ -282,7 +327,13 @@ const PostCard: React.FC<PostCardProps> = ({
                 </TouchableOpacity>
               ) : !isUser && post._id ? (
                 // Someone else's post: report it.
-                <TouchableOpacity testID="post-report" style={styles.iconContainer} onPress={() => startReport({ postId: post._id, name: ownerName })} accessibilityRole="button" accessibilityLabel="Report post">
+                <TouchableOpacity
+                  testID="post-report"
+                  style={styles.iconContainer}
+                  onPress={() => startReport({ postId: post._id, name: ownerName })}
+                  accessibilityRole="button"
+                  accessibilityLabel="Report post"
+                >
                   <FontAwesome6 name="circle-exclamation" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               ) : null}
@@ -323,23 +374,24 @@ const PostCard: React.FC<PostCardProps> = ({
               <Animated.View style={[styles.bottomZone, { height: bottomZoneHeight }]}>
                 <Animated.View style={{ height: animatedZoneHeight, overflow: 'hidden' }}>
                   <View style={styles.dotsRow}>
-                    {displayPhotos.length > 1 && displayPhotos.map((_, index) => (
-                      <View
-                        key={index}
-                        style={[styles.dot, {
-                          transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
-                          opacity: index === currentPhotoIndex ? 1 : 0.4,
-                        }]}
-                      />
-                    ))}
+                    {displayPhotos.length > 1 &&
+                      displayPhotos.map((_, index) => (
+                        <View
+                          key={index}
+                          style={[
+                            styles.dot,
+                            {
+                              transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
+                              opacity: index === currentPhotoIndex ? 1 : 0.4,
+                            },
+                          ]}
+                        />
+                      ))}
                   </View>
 
                   <TouchableOpacity activeOpacity={0.9} onPress={toggleMode}>
                     <Animated.View style={[styles.descriptionSection, { height: descriptionHeight }]}>
-                      <Text
-                        style={styles.descriptionText}
-                        numberOfLines={isDescriptionMode ? undefined : 2}
-                      >
+                      <Text style={styles.descriptionText} numberOfLines={isDescriptionMode ? undefined : 2}>
                         {post.description}
                       </Text>
                     </Animated.View>
@@ -356,8 +408,19 @@ const PostCard: React.FC<PostCardProps> = ({
             <View style={styles.editBody}>
               <View style={styles.editPhotoArea}>
                 {displayPhotos.length > 0 ? (
-                  <TouchableOpacity activeOpacity={0.9} onPress={handlePhotoTap} style={styles.editPhotoFrame} accessibilityRole="button" accessibilityLabel="Next photo">
-                    <Image source={{ uri: displayPhotos[currentPhotoIndex] }} style={styles.photo} contentFit="cover" cachePolicy="memory-disk" />
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={handlePhotoTap}
+                    style={styles.editPhotoFrame}
+                    accessibilityRole="button"
+                    accessibilityLabel="Next photo"
+                  >
+                    <Image
+                      source={{ uri: displayPhotos[currentPhotoIndex] }}
+                      style={styles.photo}
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                    />
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.emptyPhotoPlaceholder}>
@@ -385,10 +448,13 @@ const PostCard: React.FC<PostCardProps> = ({
                     {displayPhotos.map((_, index) => (
                       <View
                         key={index}
-                        style={[styles.dot, {
-                          transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
-                          opacity: index === currentPhotoIndex ? 1 : 0.4,
-                        }]}
+                        style={[
+                          styles.dot,
+                          {
+                            transform: [{ scale: index === currentPhotoIndex ? 1.4 : 1 }],
+                            opacity: index === currentPhotoIndex ? 1 : 0.4,
+                          },
+                        ]}
                       />
                     ))}
                   </View>
@@ -416,7 +482,10 @@ const PostCard: React.FC<PostCardProps> = ({
                   style={[styles.descriptionText, styles.descriptionInput]}
                   value={draft.description}
                   onFocus={kbField.onFocus}
-                  onChangeText={v => { updateDraft('description', v); kbField.requestLift(); }}
+                  onChangeText={v => {
+                    updateDraft('description', v);
+                    kbField.requestLift();
+                  }}
                   placeholder="Describe this item (optional)"
                   maxLength={TEXT_LIMITS.postDescription}
                   returnKeyType="done"
@@ -429,7 +498,6 @@ const PostCard: React.FC<PostCardProps> = ({
               </View>
             </View>
           )}
-
         </View>
       </Animated.View>
     </View>

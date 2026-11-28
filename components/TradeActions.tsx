@@ -1,625 +1,744 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity, Animated } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
 import { globalFonts } from '../styles/globalStyles';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { TRADE_ACTIONS, TradeActionType, TradeActionConfig } from '../config/tradeConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export interface TradeAction {
-    actionType: TradeActionType;
-    subAction?: 'add' | 'remove' | 'write' | 'select';
-    data?: unknown;
+  actionType: TradeActionType;
+  subAction?: 'add' | 'remove' | 'write' | 'select';
+  data?: unknown;
 }
 
 interface TradeUIProps {
-    onActionSelected: (action: TradeAction) => void;
-    actions?: TradeActionConfig[];
-    /** The action currently armed in the trade state machine (null if nothing armed yet) */
-    activeActionType: TradeActionType | null;
-    /** Whether the armed action has everything it needs to confirm (drives the arrow) */
-    isReady: boolean;
-    selectedCount: number;
-    /** Whether the post currently on top of the player's deck is among the selected posts */
-    topCardIsSelected: boolean;
-    isQueryMode: boolean;
-    queryPostSelected: boolean;
-    onQueryPostSelect: () => void;
-    onQueryPostDeselect: () => void;
-    onActionChange?: (actionType: TradeActionType) => void;
-    /** ISO timestamp the active player's turn runs out; drives the DECLINE and WAIT timers. */
-    turnDeadline?: string | null;
-    /** An action to show filled regardless of selection, e.g. ADD while its feed deck is open. */
-    filledActionType?: TradeActionType | null;
-    /** No turn clock applies (e.g. an agreed deal): WAIT shows its icon without a countdown. */
-    noTurnClock?: boolean;
-    /** QUERY can't be started right now (a question must be about a post and
-     *  none is on top). The button shows no icon and can't be tapped; an open
-     *  box can still be closed. */
-    queryBlocked?: boolean;
-    /** Select actions (offer, barter, add, subtract) whose card to pick isn't
-     *  a post right now (a user or location card is on top). Like a blocked
-     *  QUERY: no circle (or count), can't be tapped. */
-    blockedActionTypes?: TradeActionType[];
+  onActionSelected: (action: TradeAction) => void;
+  actions?: TradeActionConfig[];
+  /** The action currently armed in the trade state machine (null if nothing armed yet) */
+  activeActionType: TradeActionType | null;
+  /** Whether the armed action has everything it needs to confirm (drives the arrow) */
+  isReady: boolean;
+  selectedCount: number;
+  /** Whether the post currently on top of the player's deck is among the selected posts */
+  topCardIsSelected: boolean;
+  isQueryMode: boolean;
+  queryPostSelected: boolean;
+  onQueryPostSelect: () => void;
+  onQueryPostDeselect: () => void;
+  onActionChange?: (actionType: TradeActionType) => void;
+  /** ISO timestamp the active player's turn runs out; drives the DECLINE and WAIT timers. */
+  turnDeadline?: string | null;
+  /** An action to show filled regardless of selection, e.g. ADD while its feed deck is open. */
+  filledActionType?: TradeActionType | null;
+  /** No turn clock applies (e.g. an agreed deal): WAIT shows its icon without a countdown. */
+  noTurnClock?: boolean;
+  /** QUERY can't be started right now (a question must be about a post and
+   *  none is on top). The button shows no icon and can't be tapped; an open
+   *  box can still be closed. */
+  queryBlocked?: boolean;
+  /** Select actions (offer, barter, add, subtract) whose card to pick isn't
+   *  a post right now (a user or location card is on top). Like a blocked
+   *  QUERY: no circle (or count), can't be tapped. */
+  blockedActionTypes?: TradeActionType[];
 }
 
 // ─── Button pattern helpers ───────────────────────────────────────────────────
 
 interface SelectButtonProps {
-    /** For tests. */
-    testID?: string;
-    color: string;
-    isActive: boolean;
-    selectedCount: number;
-    onPress: () => void;
-    disabled: boolean;
-    /** No circle or count (nothing on top to select). */
-    hideIcon?: boolean;
-    /** What a screen reader says, e.g. "Barter". */
-    label?: string;
+  /** For tests. */
+  testID?: string;
+  color: string;
+  isActive: boolean;
+  selectedCount: number;
+  onPress: () => void;
+  disabled: boolean;
+  /** No circle or count (nothing on top to select). */
+  hideIcon?: boolean;
+  /** What a screen reader says, e.g. "Barter". */
+  label?: string;
 }
 
-const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled, hideIcon = false, testID, label }) => (
-    <TouchableOpacity
-        testID={testID}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityState={{ disabled, selected: isActive }}
-        activeOpacity={1}
-        style={[styles.actionButton, styles.selectButton, {
-            borderColor: color,
-            backgroundColor: isActive ? color : 'transparent',
-        }]}
-        onPress={onPress}
-        disabled={disabled}
-    >
-        {!hideIcon && (
-            <>
-                <Text style={[styles.timerText, { color: isActive ? '#000' : color }]}>
-                    {String(selectedCount).padStart(2, '0')}
-                </Text>
-                <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
-            </>
-        )}
-    </TouchableOpacity>
+const SelectButton: React.FC<SelectButtonProps> = ({
+  color,
+  isActive,
+  selectedCount,
+  onPress,
+  disabled,
+  hideIcon = false,
+  testID,
+  label,
+}) => (
+  <TouchableOpacity
+    testID={testID}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+    accessibilityState={{ disabled, selected: isActive }}
+    activeOpacity={1}
+    style={[
+      styles.actionButton,
+      styles.selectButton,
+      {
+        borderColor: color,
+        backgroundColor: isActive ? color : 'transparent',
+      },
+    ]}
+    onPress={onPress}
+    disabled={disabled}
+  >
+    {!hideIcon && (
+      <>
+        <Text style={[styles.timerText, { color: isActive ? '#000' : color }]}>
+          {String(selectedCount).padStart(2, '0')}
+        </Text>
+        <FontAwesome6 name={isActive ? 'circle-check' : 'circle'} size={26} color={isActive ? '#000' : color} />
+      </>
+    )}
+  </TouchableOpacity>
 );
 
 interface IconButtonProps {
-    /** For tests. */
-    testID?: string;
-    color: string;
-    isActive: boolean;
-    icon: string;
-    iconSize?: number;
-    onPress: () => void;
-    disabled: boolean;
-    fillOnActive?: boolean;
-    /** No icon (nothing on top to select). */
-    hideIcon?: boolean;
-    label?: string;
+  /** For tests. */
+  testID?: string;
+  color: string;
+  isActive: boolean;
+  icon: string;
+  iconSize?: number;
+  onPress: () => void;
+  disabled: boolean;
+  fillOnActive?: boolean;
+  /** No icon (nothing on top to select). */
+  hideIcon?: boolean;
+  label?: string;
 }
 
-const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false, hideIcon = false, testID, label }) => (
-    <TouchableOpacity
-        testID={testID}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityState={{ disabled, selected: isActive }}
-        activeOpacity={1}
-        style={[styles.actionButton, {
-            borderColor: color,
-            backgroundColor: fillOnActive && isActive ? color : 'transparent',
-        }]}
-        onPress={onPress}
-        disabled={disabled}
-    >
-        {!hideIcon && <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />}
-    </TouchableOpacity>
+const IconButton: React.FC<IconButtonProps> = ({
+  color,
+  isActive,
+  icon,
+  iconSize = 26,
+  onPress,
+  disabled,
+  fillOnActive = false,
+  hideIcon = false,
+  testID,
+  label,
+}) => (
+  <TouchableOpacity
+    testID={testID}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+    accessibilityState={{ disabled, selected: isActive }}
+    activeOpacity={1}
+    style={[
+      styles.actionButton,
+      {
+        borderColor: color,
+        backgroundColor: fillOnActive && isActive ? color : 'transparent',
+      },
+    ]}
+    onPress={onPress}
+    disabled={disabled}
+  >
+    {!hideIcon && <FontAwesome6 name={icon} size={iconSize} color={fillOnActive && isActive ? '#000' : color} />}
+  </TouchableOpacity>
 );
 
 interface TimerButtonProps {
-    /** For tests. */
-    testID?: string;
-    color: string;
-    isActive: boolean;
-    onPress?: () => void;
-    disabled: boolean;
-    /** ISO timestamp the active player's turn runs out (from the server). */
-    deadline?: string | null;
-    /** Flip the button's shape top-to-bottom (used by WAIT). */
-    flipped?: boolean;
-    /** Show just the clock icon, no countdown. */
-    hideLabel?: boolean;
-    label?: string;
+  /** For tests. */
+  testID?: string;
+  color: string;
+  isActive: boolean;
+  onPress?: () => void;
+  disabled: boolean;
+  /** ISO timestamp the active player's turn runs out (from the server). */
+  deadline?: string | null;
+  /** Flip the button's shape top-to-bottom (used by WAIT). */
+  flipped?: boolean;
+  /** Show just the clock icon, no countdown. */
+  hideLabel?: boolean;
+  label?: string;
 }
 
 const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches Game.TURN_TIME_LIMIT
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline, flipped = false, hideLabel = false, testID, label: a11yLabel }) => {
-    // With a deadline, count down to it. Without one (decks with no live
-    // game behind them), fall back to a 2-day countdown from mount.
-    const [endsAt] = useState(() => Date.now() + TIMER_DURATION_MS);
-    const target = deadline ? Date.parse(deadline) : endsAt;
-    const [now, setNow] = useState(Date.now());
+const TimerButton: React.FC<TimerButtonProps> = ({
+  color,
+  isActive,
+  onPress,
+  disabled,
+  deadline,
+  flipped = false,
+  hideLabel = false,
+  testID,
+  label: a11yLabel,
+}) => {
+  // With a deadline, count down to it. Without one (decks with no live
+  // game behind them), fall back to a 2-day countdown from mount.
+  const [endsAt] = useState(() => Date.now() + TIMER_DURATION_MS);
+  const target = deadline ? Date.parse(deadline) : endsAt;
+  const [now, setNow] = useState(Date.now());
 
-    useEffect(() => {
-        const tick = setInterval(() => setNow(Date.now()), 1000);
-        return () => clearInterval(tick);
-    }, []);
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, []);
 
-    const remaining = Math.max(0, target - now);
-    const totalSecs = Math.floor(remaining / 1000);
-    const hours = Math.floor(totalSecs / 3600);
-    const mins = Math.floor((totalSecs % 3600) / 60);
-    const secs = totalSecs % 60;
-    const label = `${pad2(hours)}:${pad2(mins)}:${pad2(secs)}`;
+  const remaining = Math.max(0, target - now);
+  const totalSecs = Math.floor(remaining / 1000);
+  const hours = Math.floor(totalSecs / 3600);
+  const mins = Math.floor((totalSecs % 3600) / 60);
+  const secs = totalSecs % 60;
+  const label = `${pad2(hours)}:${pad2(mins)}:${pad2(secs)}`;
 
-    const filled = isActive && !!onPress;
+  const filled = isActive && !!onPress;
 
-    const btnStyle = [styles.actionButton, flipped && styles.actionButtonFlipped, { borderColor: color, backgroundColor: filled ? color : 'transparent', gap: 6 }];
-    const iconColor = filled ? '#000' : color;
-    const content = (
-        <>
-            {!hideLabel && <Text style={[styles.timerText, { color: iconColor }]}>{label}</Text>}
-            <FontAwesome6 name="clock" size={26} color={iconColor} />
-        </>
+  const btnStyle = [
+    styles.actionButton,
+    flipped && styles.actionButtonFlipped,
+    { borderColor: color, backgroundColor: filled ? color : 'transparent', gap: 6 },
+  ];
+  const iconColor = filled ? '#000' : color;
+  const content = (
+    <>
+      {!hideLabel && <Text style={[styles.timerText, { color: iconColor }]}>{label}</Text>}
+      <FontAwesome6 name="clock" size={26} color={iconColor} />
+    </>
+  );
+
+  if (!onPress)
+    return (
+      <View testID={testID} style={btnStyle} accessible accessibilityLabel={a11yLabel}>
+        {content}
+      </View>
     );
-
-    if (!onPress) return <View testID={testID} style={btnStyle} accessible accessibilityLabel={a11yLabel}>{content}</View>;
-    return <TouchableOpacity testID={testID} accessibilityRole="button" accessibilityLabel={a11yLabel} accessibilityState={{ disabled, selected: isActive }} activeOpacity={1} style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
+  return (
+    <TouchableOpacity
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={a11yLabel}
+      accessibilityState={{ disabled, selected: isActive }}
+      activeOpacity={1}
+      style={btnStyle}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      {content}
+    </TouchableOpacity>
+  );
 };
 
 // Icons for the simple "arm on tap" actions. Once armed (activeActionType
 // matches), the icon swaps to a check regardless of what's listed here.
 const SIMPLE_ICONS: Partial<Record<TradeActionType, { icon: string; size?: number }>> = {
-    where:  { icon: 'circle-dot' },
-    when:   { icon: 'clock' },
-    answer: { icon: 'circle' },
-    review: { icon: 'star' },
-    stall:  { icon: 'circle' },
-    accept: { icon: 'circle' },
-    acceptFinal: { icon: 'circle' },
-    decline: { icon: 'circle' },
+  where: { icon: 'circle-dot' },
+  when: { icon: 'clock' },
+  answer: { icon: 'circle' },
+  review: { icon: 'star' },
+  stall: { icon: 'circle' },
+  accept: { icon: 'circle' },
+  acceptFinal: { icon: 'circle' },
+  decline: { icon: 'circle' },
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const TradeUI: React.FC<TradeUIProps> = ({
-    onActionSelected,
-    actions = TRADE_ACTIONS,
-    activeActionType,
-    isReady,
-    selectedCount = 0,
-    topCardIsSelected = false,
-    isQueryMode = false,
-    queryPostSelected = false,
-    onQueryPostSelect,
-    onQueryPostDeselect,
-    onActionChange,
-    turnDeadline = null,
-    filledActionType = null,
-    noTurnClock = false,
-    queryBlocked = false,
-    blockedActionTypes = [],
+  onActionSelected,
+  actions = TRADE_ACTIONS,
+  activeActionType,
+  isReady,
+  selectedCount = 0,
+  topCardIsSelected = false,
+  isQueryMode = false,
+  queryPostSelected = false,
+  onQueryPostSelect,
+  onQueryPostDeselect,
+  onActionChange,
+  turnDeadline = null,
+  filledActionType = null,
+  noTurnClock = false,
+  queryBlocked = false,
+  blockedActionTypes = [],
 }) => {
-    const ITEM_HEIGHT = 54;
-    const INITIAL_SCROLL_DELAY = 100;
-    const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
-    const PLAY_FILL_HOLD_MS = 400;
+  const ITEM_HEIGHT = 54;
+  const INITIAL_SCROLL_DELAY = 100;
+  const ITEM_VISIBLE_HEIGHT = ITEM_HEIGHT - 8;
+  const PLAY_FILL_HOLD_MS = 400;
 
-    const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
-    const isScrollingRef = useRef(false);
-    const [currentActionIndex, setCurrentActionIndex] = useState(0);
-    const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
+  const scrollViewRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const isScrollingRef = useRef(false);
+  const [currentActionIndex, setCurrentActionIndex] = useState(0);
+  const currentOffsetRef = useRef(ITEM_HEIGHT * actions.length);
 
-    // Brief tactile fill on tap (held for PLAY_FILL_HOLD_MS) — purely a
-    // press-feedback flourish for fast devices/fast network conditions.
-    const [isPlayPressed, setIsPlayPressed] = useState(false);
-    const playPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Brief tactile fill on tap (held for PLAY_FILL_HOLD_MS) — purely a
+  // press-feedback flourish for fast devices/fast network conditions.
+  const [isPlayPressed, setIsPlayPressed] = useState(false);
+  const playPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // True for the entire duration of an in-flight confirm — from the
-    // moment the arrow is tapped until the parent's handleConfirm actually
-    // resolves and resets the trade state. Unlike isPlayPressed, this has
-    // no fixed timer; it's cleared only by the activeActionType/isReady
-    // reset effect below, so the fill can never "time out" before the real
-    // network call finishes — which was the root cause of the colored
-    // (unfilled) arrow flashing during slow requests.
-    const [isPlaySubmitting, setIsPlaySubmitting] = useState(false);
+  // True for the entire duration of an in-flight confirm — from the
+  // moment the arrow is tapped until the parent's handleConfirm actually
+  // resolves and resets the trade state. Unlike isPlayPressed, this has
+  // no fixed timer; it's cleared only by the activeActionType/isReady
+  // reset effect below, so the fill can never "time out" before the real
+  // network call finishes — which was the root cause of the colored
+  // (unfilled) arrow flashing during slow requests.
+  const [isPlaySubmitting, setIsPlaySubmitting] = useState(false);
 
-    const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        // Loops until the wheel unmounts (then stops, instead of running on
-        // in the background).
-        let stopped = false;
-        let current: Animated.CompositeAnimation | null = null;
-        const runShimmer = (anim: Animated.Value, delay: number) => {
-            if (stopped) return;
-            anim.setValue(0);
-            current = Animated.sequence([
-                Animated.delay(delay),
-                Animated.timing(anim, { toValue: 1, duration: 4000, useNativeDriver: true }),
-            ]);
-            current.start(() => { anim.setValue(0); runShimmer(anim, 1000); });
-        };
-        runShimmer(shimmerAnim, 0);
-        return () => { stopped = true; current?.stop(); };
-    }, [shimmerAnim]);
-
-    const shimmerTranslate = shimmerAnim.interpolate({ inputRange: [0, 1], outputRange: [400, -400] });
-
-    const infiniteActions = Array(10).fill(actions).flat();
-    const currentAction = actions[currentActionIndex];
-
-    const isInTopSpot = (index: number) => index % actions.length === currentActionIndex;
-
-    const calculateItemIndex = (offsetY: number): number => {
-        const i = Math.round(offsetY / ITEM_HEIGHT) % actions.length;
-        return i < 0 ? (i + actions.length) % actions.length : i;
+  useEffect(() => {
+    // Loops until the wheel unmounts (then stops, instead of running on
+    // in the background).
+    let stopped = false;
+    let current: Animated.CompositeAnimation | null = null;
+    const runShimmer = (anim: Animated.Value, delay: number) => {
+      if (stopped) return;
+      anim.setValue(0);
+      current = Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(anim, { toValue: 1, duration: 4000, useNativeDriver: true }),
+      ]);
+      current.start(() => {
+        anim.setValue(0);
+        runShimmer(anim, 1000);
+      });
     };
-
-    // QUERY toggles like the other actions: the first tap fills the button and
-    // opens the question box (tagging the partner post on top, if any); the
-    // next tap empties it and closes the box.
-    const handleQueryPress = (active: boolean) => {
-        if (!active) return;
-
-        if (activeActionType === 'query') {
-            onQueryPostDeselect();
-            onActionSelected({ actionType: 'query', subAction: 'write' }); // disarms
-            return;
-        }
-
-        // Arm 'query' first — setSubflowData is a no-op until activeAction
-        // is already 'query', so this must come before tagging the post.
-        onActionSelected({ actionType: 'query', subAction: 'write' });
-        onQueryPostSelect();
+    runShimmer(shimmerAnim, 0);
+    return () => {
+      stopped = true;
+      current?.stop();
     };
+  }, [shimmerAnim]);
 
-    const handleActionTextPress = () => {
-        const snapped = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
-        scrollViewRef.current?.scrollTo({ y: snapped + ITEM_HEIGHT, animated: true });
-    };
+  const shimmerTranslate = shimmerAnim.interpolate({ inputRange: [0, 1], outputRange: [400, -400] });
 
-    useEffect(() => {
-        setCurrentActionIndex(0);
-        const t = setTimeout(() => scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * actions.length, animated: false }), INITIAL_SCROLL_DELAY);
-        return () => clearTimeout(t);
-    }, [actions]);
+  const infiniteActions = Array(10).fill(actions).flat();
+  const currentAction = actions[currentActionIndex];
 
-    const handleScrollBeginDrag = () => {
-        isScrollingRef.current = true;
-        // Leaving the wheel away from an in-progress query clears the
-        // selected partner post, so a stale pick doesn't carry over.
-        if (queryPostSelected) onQueryPostDeselect?.();
-    };
+  const isInTopSpot = (index: number) => index % actions.length === currentActionIndex;
 
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offsetY = event.nativeEvent.contentOffset.y;
-        currentOffsetRef.current = offsetY;
-        const itemIndex = calculateItemIndex(offsetY);
-        if (itemIndex !== currentActionIndex) {
-            setCurrentActionIndex(itemIndex);
-            onActionChange?.(actions[itemIndex].actionType);
-        }
-    };
+  const calculateItemIndex = (offsetY: number): number => {
+    const i = Math.round(offsetY / ITEM_HEIGHT) % actions.length;
+    return i < 0 ? (i + actions.length) % actions.length : i;
+  };
 
-    const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (!isScrollingRef.current) return;
-        const offsetY = event.nativeEvent.contentOffset.y;
-        const contentHeight = ITEM_HEIGHT * actions.length;
-        if (offsetY < contentHeight * 2) {
-            const newOffset = offsetY + contentHeight * 5;
-            scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
-            setCurrentActionIndex(calculateItemIndex(newOffset));
-        } else if (offsetY >= contentHeight * 8) {
-            const newOffset = offsetY - contentHeight * 5;
-            scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
-            setCurrentActionIndex(calculateItemIndex(newOffset));
-        }
-        isScrollingRef.current = false;
-    };
+  // QUERY toggles like the other actions: the first tap fills the button and
+  // opens the question box (tagging the partner post on top, if any); the
+  // next tap empties it and closes the box.
+  const handleQueryPress = (active: boolean) => {
+    if (!active) return;
 
-    const renderActionButton = (action: TradeActionConfig, active: boolean) => {
-        if (!action.hasButtons) return null;
-        const color = currentAction?.color;
-        const disabled = !active;
-        const isArmed = action.actionType === activeActionType;
-        const testID = `action-${action.actionType}`;
-        // Screen-reader name: the action's own word, e.g. "Barter".
-        const label = action.text.charAt(0) + action.text.slice(1).toLowerCase();
+    if (activeActionType === 'query') {
+      onQueryPostDeselect();
+      onActionSelected({ actionType: 'query', subAction: 'write' }); // disarms
+      return;
+    }
 
-        // Multi-select: offer / barter / rescind — icon tap toggles the
-        // current top card; fills once that specific card is selected.
-        // Add / subtract pick exactly one post, so no count — just a plus or
-        // minus that turns into a check once the top card is selected.
-        // Nothing to select on top (a user or location card): no icon, no tap.
-        const selectBlocked = blockedActionTypes.includes(action.actionType);
+    // Arm 'query' first — setSubflowData is a no-op until activeAction
+    // is already 'query', so this must come before tagging the post.
+    onActionSelected({ actionType: 'query', subAction: 'write' });
+    onQueryPostSelect();
+  };
 
-        if (action.actionType === 'add' || action.actionType === 'subtract') {
-            const selected =
-                (active && isArmed && topCardIsSelected) ||
-                (active && filledActionType === action.actionType);
-            const blocked = selectBlocked && !selected;
-            const idleIcon = action.actionType === 'add' ? 'circle-plus' : 'circle-minus';
-            return (
-                <IconButton
-                    testID={testID}
-                    label={label}
-                    color={color}
-                    isActive={selected}
-                    icon={selected && filledActionType !== action.actionType ? 'circle-check' : idleIcon}
-                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled || blocked}
-                    hideIcon={blocked}
-                    fillOnActive
-                />
-            );
-        }
+  const handleActionTextPress = () => {
+    const snapped = Math.round(currentOffsetRef.current / ITEM_HEIGHT) * ITEM_HEIGHT;
+    scrollViewRef.current?.scrollTo({ y: snapped + ITEM_HEIGHT, animated: true });
+  };
 
-        // Offer picks exactly one post: no count, just a check once the top
-        // card is selected.
-        if (action.actionType === 'offer') {
-            const selected = active && isArmed && topCardIsSelected;
-            return (
-                <IconButton
-                    testID={testID}
-                    label={label}
-                    color={color}
-                    isActive={selected}
-                    icon={selected ? 'circle-check' : 'circle'}
-                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled || selectBlocked}
-                    hideIcon={selectBlocked}
-                    fillOnActive
-                />
-            );
-        }
-
-        if (['barter', 'rescind'].includes(action.actionType)) {
-            return (
-                <SelectButton
-                    testID={testID}
-                    label={label}
-                    color={color}
-                    isActive={active && isArmed && topCardIsSelected}
-                    selectedCount={selectedCount}
-                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled || selectBlocked}
-                    hideIcon={selectBlocked}
-                />
-            );
-        }
-
-        // Query: select a partner post, then type a question (TradeTurns)
-        if (action.actionType === 'query') {
-            const armed = active && isArmed;
-            const blocked = queryBlocked && !armed;
-            return (
-                <TouchableOpacity
-                    testID={testID}
-                    accessibilityRole="button"
-                    accessibilityLabel={label}
-                    accessibilityState={{ disabled: disabled || blocked, selected: armed }}
-                    activeOpacity={1}
-                    style={[
-                        styles.actionButton,
-                        {
-                            borderColor: color,
-                            backgroundColor: armed ? color : 'transparent',
-                        },
-                    ]}
-                    onPress={() => handleQueryPress(active)}
-                    disabled={disabled || blocked}
-                >
-                    {/* No circle while there's no post to ask about. */}
-                    {!blocked && (
-                        <FontAwesome6
-                            name={armed ? 'circle-question' : 'circle'}
-                            size={26}
-                            color={armed ? '#000' : color}
-                        />
-                    )}
-                </TouchableOpacity>
-            );
-        }
-
-        // Wait: display-only countdown of the other player's remaining time.
-        if (action.actionType === 'wait') {
-            return <TimerButton testID={testID} label={label} color={color} isActive={false} disabled={true} deadline={turnDeadline} flipped hideLabel={noTurnClock} />;
-        }
-
-        // Decline: shows your own remaining time (when it runs out the game
-        // auto-declines); tap to arm, fills once armed.
-        if (action.actionType === 'decline') {
-            return (
-                <TimerButton
-                    testID={testID}
-                    label={label}
-                    color={color}
-                    isActive={active && isArmed}
-                    onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                    disabled={disabled}
-                    deadline={turnDeadline}
-                />
-            );
-        }
-
-        // Everything else: answer, where, when, stall, accept, acceptFinal —
-        // a single icon that fills and swaps to a check once armed.
-        const mapped = SIMPLE_ICONS[action.actionType];
-        return (
-            <IconButton
-                testID={testID}
-                label={label}
-                color={color}
-                isActive={active && isArmed}
-                icon={(active && isArmed) ? 'circle-check' : (mapped?.icon ?? 'circle')}
-                iconSize={mapped?.size}
-                onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
-                disabled={disabled}
-                fillOnActive
-            />
-        );
-    };
-
-    // Arrow only shows once the wheel is scrolled to the action that's
-    // actually armed, and that action has everything it needs to confirm.
-    const isOnArmedAction = activeActionType !== null && activeActionType === currentAction?.actionType;
-    const showArrow = isOnArmedAction && isReady;
-
-    // Keep showing a filled arrow through the entire press-hold AND
-    // in-flight-submit window, even if showArrow flips false underneath
-    // mid-fill — otherwise there's a flash of unfilled colored arrow
-    // between the fill ending and the arrow actually disappearing.
-    const arrowVisible = showArrow || isPlayPressed || isPlaySubmitting;
-    // WAIT's buttons are the other buttons' shapes flipped top-to-bottom.
-    const isWaitShape = currentAction?.actionType === 'wait';
-    const isFilled = isPlayPressed || isPlaySubmitting;
-
-    useEffect(() => {
-        setIsPlayPressed(false);
-        setIsPlaySubmitting(false);
-        if (playPressTimeoutRef.current) {
-            clearTimeout(playPressTimeoutRef.current);
-            playPressTimeoutRef.current = null;
-        }
-    }, [activeActionType, isReady]);
-
-    useEffect(() => {
-        return () => {
-            if (playPressTimeoutRef.current) clearTimeout(playPressTimeoutRef.current);
-        };
-    }, []);
-
-    const handlePlayPressIn = () => {
-        if (!showArrow) return;
-        if (playPressTimeoutRef.current) {
-            clearTimeout(playPressTimeoutRef.current);
-            playPressTimeoutRef.current = null;
-        }
-        setIsPlayPressed(true);
-    };
-
-    const handlePlayPressOut = () => {
-        // Hold the brief tactile fill for a beat after release — onPressOut
-        // alone is too short to register visually. This is independent of
-        // isPlaySubmitting, which takes over for the actual network wait.
-        playPressTimeoutRef.current = setTimeout(() => setIsPlayPressed(false), PLAY_FILL_HOLD_MS);
-    };
-
-    const handlePlayPress = () => {
-        if (!showArrow || !currentAction || isPlaySubmitting) return;
-        setIsPlaySubmitting(true);
-        onActionSelected({ actionType: currentAction.actionType, subAction: 'select' });
-    };
-
-    return (
-        <View style={styles.container}>
-            <View style={styles.row}>
-                <View style={[styles.scrollViewContainer, { height: ITEM_VISIBLE_HEIGHT }]}>
-                    <ScrollView
-                        ref={scrollViewRef}
-                        style={styles.scrollView}
-                        snapToInterval={ITEM_HEIGHT}
-                        snapToAlignment="start"
-                        decelerationRate="fast"
-                        showsVerticalScrollIndicator={false}
-                        onScrollBeginDrag={handleScrollBeginDrag}
-                        onScroll={handleScroll}
-                        onMomentumScrollEnd={handleMomentumScrollEnd}
-                        scrollEventThrottle={16}
-                    >
-                        {infiniteActions.map((action, index) => {
-                            const active = isInTopSpot(index);
-                            return (
-                                <View key={index} style={styles.tradeLine}>
-                                    {renderActionButton(action, active)}
-                                    <TouchableOpacity onPress={handleActionTextPress}>
-                                        <Text style={[styles.tradeLineText, { color: action.color }]}>
-                                            {action.text}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                            );
-                        })}
-                    </ScrollView>
-                </View>
-
-                <TouchableOpacity
-                    testID="confirm-arrow"
-                    accessibilityRole="button"
-                    accessibilityLabel={currentAction ? `Send ${currentAction.text.toLowerCase()}` : 'Send'}
-                    activeOpacity={1}
-                    style={[styles.playButton, isWaitShape && styles.playButtonFlipped, {
-                        backgroundColor: arrowVisible && isFilled ? currentAction?.color : 'transparent',
-                        borderColor: currentAction?.color,
-                        shadowColor: currentAction?.color,
-                    }]}
-                    onPress={handlePlayPress}
-                    onPressIn={handlePlayPressIn}
-                    onPressOut={handlePlayPressOut}
-                    disabled={!showArrow || isPlaySubmitting}
-                >
-                    {arrowVisible && (
-                        <FontAwesome6
-                            name="arrow-left-long"
-                            size={22}
-                            color={isFilled ? '#000' : currentAction?.color}
-                        />
-                    )}
-                </TouchableOpacity>
-            </View>
-
-            <View pointerEvents="none" style={[styles.shimmerOverlay, isWaitShape && styles.playButtonFlipped]}>
-                <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: shimmerTranslate }, { skewX: '315deg' }] }]}>
-                    <LinearGradient
-                        colors={[currentAction?.color + '00', currentAction?.color + '50', currentAction?.color + '00']}
-                        locations={[0, 0.1, 1]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={StyleSheet.absoluteFill}
-                    />
-                </Animated.View>
-            </View>
-        </View>
+  useEffect(() => {
+    setCurrentActionIndex(0);
+    const t = setTimeout(
+      () => scrollViewRef.current?.scrollTo({ y: ITEM_HEIGHT * actions.length, animated: false }),
+      INITIAL_SCROLL_DELAY,
     );
+    return () => clearTimeout(t);
+  }, [actions]);
+
+  const handleScrollBeginDrag = () => {
+    isScrollingRef.current = true;
+    // Leaving the wheel away from an in-progress query clears the
+    // selected partner post, so a stale pick doesn't carry over.
+    if (queryPostSelected) onQueryPostDeselect?.();
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    currentOffsetRef.current = offsetY;
+    const itemIndex = calculateItemIndex(offsetY);
+    if (itemIndex !== currentActionIndex) {
+      setCurrentActionIndex(itemIndex);
+      onActionChange?.(actions[itemIndex].actionType);
+    }
+  };
+
+  const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!isScrollingRef.current) return;
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const contentHeight = ITEM_HEIGHT * actions.length;
+    if (offsetY < contentHeight * 2) {
+      const newOffset = offsetY + contentHeight * 5;
+      scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
+      setCurrentActionIndex(calculateItemIndex(newOffset));
+    } else if (offsetY >= contentHeight * 8) {
+      const newOffset = offsetY - contentHeight * 5;
+      scrollViewRef.current?.scrollTo({ y: newOffset, animated: false });
+      setCurrentActionIndex(calculateItemIndex(newOffset));
+    }
+    isScrollingRef.current = false;
+  };
+
+  const renderActionButton = (action: TradeActionConfig, active: boolean) => {
+    if (!action.hasButtons) return null;
+    const color = currentAction?.color;
+    const disabled = !active;
+    const isArmed = action.actionType === activeActionType;
+    const testID = `action-${action.actionType}`;
+    // Screen-reader name: the action's own word, e.g. "Barter".
+    const label = action.text.charAt(0) + action.text.slice(1).toLowerCase();
+
+    // Multi-select: offer / barter / rescind — icon tap toggles the
+    // current top card; fills once that specific card is selected.
+    // Add / subtract pick exactly one post, so no count — just a plus or
+    // minus that turns into a check once the top card is selected.
+    // Nothing to select on top (a user or location card): no icon, no tap.
+    const selectBlocked = blockedActionTypes.includes(action.actionType);
+
+    if (action.actionType === 'add' || action.actionType === 'subtract') {
+      const selected = (active && isArmed && topCardIsSelected) || (active && filledActionType === action.actionType);
+      const blocked = selectBlocked && !selected;
+      const idleIcon = action.actionType === 'add' ? 'circle-plus' : 'circle-minus';
+      return (
+        <IconButton
+          testID={testID}
+          label={label}
+          color={color}
+          isActive={selected}
+          icon={selected && filledActionType !== action.actionType ? 'circle-check' : idleIcon}
+          onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+          disabled={disabled || blocked}
+          hideIcon={blocked}
+          fillOnActive
+        />
+      );
+    }
+
+    // Offer picks exactly one post: no count, just a check once the top
+    // card is selected.
+    if (action.actionType === 'offer') {
+      const selected = active && isArmed && topCardIsSelected;
+      return (
+        <IconButton
+          testID={testID}
+          label={label}
+          color={color}
+          isActive={selected}
+          icon={selected ? 'circle-check' : 'circle'}
+          onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+          disabled={disabled || selectBlocked}
+          hideIcon={selectBlocked}
+          fillOnActive
+        />
+      );
+    }
+
+    if (['barter', 'rescind'].includes(action.actionType)) {
+      return (
+        <SelectButton
+          testID={testID}
+          label={label}
+          color={color}
+          isActive={active && isArmed && topCardIsSelected}
+          selectedCount={selectedCount}
+          onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+          disabled={disabled || selectBlocked}
+          hideIcon={selectBlocked}
+        />
+      );
+    }
+
+    // Query: select a partner post, then type a question (TradeTurns)
+    if (action.actionType === 'query') {
+      const armed = active && isArmed;
+      const blocked = queryBlocked && !armed;
+      return (
+        <TouchableOpacity
+          testID={testID}
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          accessibilityState={{ disabled: disabled || blocked, selected: armed }}
+          activeOpacity={1}
+          style={[
+            styles.actionButton,
+            {
+              borderColor: color,
+              backgroundColor: armed ? color : 'transparent',
+            },
+          ]}
+          onPress={() => handleQueryPress(active)}
+          disabled={disabled || blocked}
+        >
+          {/* No circle while there's no post to ask about. */}
+          {!blocked && (
+            <FontAwesome6 name={armed ? 'circle-question' : 'circle'} size={26} color={armed ? '#000' : color} />
+          )}
+        </TouchableOpacity>
+      );
+    }
+
+    // Wait: display-only countdown of the other player's remaining time.
+    if (action.actionType === 'wait') {
+      return (
+        <TimerButton
+          testID={testID}
+          label={label}
+          color={color}
+          isActive={false}
+          disabled={true}
+          deadline={turnDeadline}
+          flipped
+          hideLabel={noTurnClock}
+        />
+      );
+    }
+
+    // Decline: shows your own remaining time (when it runs out the game
+    // auto-declines); tap to arm, fills once armed.
+    if (action.actionType === 'decline') {
+      return (
+        <TimerButton
+          testID={testID}
+          label={label}
+          color={color}
+          isActive={active && isArmed}
+          onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+          disabled={disabled}
+          deadline={turnDeadline}
+        />
+      );
+    }
+
+    // Everything else: answer, where, when, stall, accept, acceptFinal —
+    // a single icon that fills and swaps to a check once armed.
+    const mapped = SIMPLE_ICONS[action.actionType];
+    return (
+      <IconButton
+        testID={testID}
+        label={label}
+        color={color}
+        isActive={active && isArmed}
+        icon={active && isArmed ? 'circle-check' : (mapped?.icon ?? 'circle')}
+        iconSize={mapped?.size}
+        onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
+        disabled={disabled}
+        fillOnActive
+      />
+    );
+  };
+
+  // Arrow only shows once the wheel is scrolled to the action that's
+  // actually armed, and that action has everything it needs to confirm.
+  const isOnArmedAction = activeActionType !== null && activeActionType === currentAction?.actionType;
+  const showArrow = isOnArmedAction && isReady;
+
+  // Keep showing a filled arrow through the entire press-hold AND
+  // in-flight-submit window, even if showArrow flips false underneath
+  // mid-fill — otherwise there's a flash of unfilled colored arrow
+  // between the fill ending and the arrow actually disappearing.
+  const arrowVisible = showArrow || isPlayPressed || isPlaySubmitting;
+  // WAIT's buttons are the other buttons' shapes flipped top-to-bottom.
+  const isWaitShape = currentAction?.actionType === 'wait';
+  const isFilled = isPlayPressed || isPlaySubmitting;
+
+  useEffect(() => {
+    setIsPlayPressed(false);
+    setIsPlaySubmitting(false);
+    if (playPressTimeoutRef.current) {
+      clearTimeout(playPressTimeoutRef.current);
+      playPressTimeoutRef.current = null;
+    }
+  }, [activeActionType, isReady]);
+
+  useEffect(() => {
+    return () => {
+      if (playPressTimeoutRef.current) clearTimeout(playPressTimeoutRef.current);
+    };
+  }, []);
+
+  const handlePlayPressIn = () => {
+    if (!showArrow) return;
+    if (playPressTimeoutRef.current) {
+      clearTimeout(playPressTimeoutRef.current);
+      playPressTimeoutRef.current = null;
+    }
+    setIsPlayPressed(true);
+  };
+
+  const handlePlayPressOut = () => {
+    // Hold the brief tactile fill for a beat after release — onPressOut
+    // alone is too short to register visually. This is independent of
+    // isPlaySubmitting, which takes over for the actual network wait.
+    playPressTimeoutRef.current = setTimeout(() => setIsPlayPressed(false), PLAY_FILL_HOLD_MS);
+  };
+
+  const handlePlayPress = () => {
+    if (!showArrow || !currentAction || isPlaySubmitting) return;
+    setIsPlaySubmitting(true);
+    onActionSelected({ actionType: currentAction.actionType, subAction: 'select' });
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.row}>
+        <View style={[styles.scrollViewContainer, { height: ITEM_VISIBLE_HEIGHT }]}>
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.scrollView}
+            snapToInterval={ITEM_HEIGHT}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onScroll={handleScroll}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
+            scrollEventThrottle={16}
+          >
+            {infiniteActions.map((action, index) => {
+              const active = isInTopSpot(index);
+              return (
+                <View key={index} style={styles.tradeLine}>
+                  {renderActionButton(action, active)}
+                  <TouchableOpacity onPress={handleActionTextPress}>
+                    <Text style={[styles.tradeLineText, { color: action.color }]}>{action.text}</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        <TouchableOpacity
+          testID="confirm-arrow"
+          accessibilityRole="button"
+          accessibilityLabel={currentAction ? `Send ${currentAction.text.toLowerCase()}` : 'Send'}
+          activeOpacity={1}
+          style={[
+            styles.playButton,
+            isWaitShape && styles.playButtonFlipped,
+            {
+              backgroundColor: arrowVisible && isFilled ? currentAction?.color : 'transparent',
+              borderColor: currentAction?.color,
+              shadowColor: currentAction?.color,
+            },
+          ]}
+          onPress={handlePlayPress}
+          onPressIn={handlePlayPressIn}
+          onPressOut={handlePlayPressOut}
+          disabled={!showArrow || isPlaySubmitting}
+        >
+          {arrowVisible && (
+            <FontAwesome6 name="arrow-left-long" size={22} color={isFilled ? '#000' : currentAction?.color} />
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <View pointerEvents="none" style={[styles.shimmerOverlay, isWaitShape && styles.playButtonFlipped]}>
+        <Animated.View
+          style={[StyleSheet.absoluteFill, { transform: [{ translateX: shimmerTranslate }, { skewX: '315deg' }] }]}
+        >
+          <LinearGradient
+            colors={[currentAction?.color + '00', currentAction?.color + '50', currentAction?.color + '00']}
+            locations={[0, 0.1, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
+      </View>
+    </View>
+  );
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-
 const styles = StyleSheet.create({
-    container: { flex: 1, alignItems: 'flex-start', width: '100%', overflow: 'hidden' },
-    row: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 4 },
-    scrollViewContainer: { overflow: 'hidden', flex: 1 },
-    scrollView: { flex: 1 },
-    tradeLine: { flexDirection: 'row', gap: 2, height: 64, alignItems: 'center', marginBottom: -10, justifyContent: 'flex-end' },
-    tradeLineText: { fontSize: 56, fontFamily: globalFonts.extrabold, bottom: 13, letterSpacing: -3 },
-    playButton: {
-        justifyContent: 'center', alignItems: 'center', height: 40, width: 50,
-        borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2, borderWidth: 3,
-    },
-    // Up-down flip of playButton: top and bottom corners swap.
-    playButtonFlipped: {
-        borderTopLeftRadius: 25, borderBottomLeftRadius: 2, borderTopRightRadius: 2, borderBottomRightRadius: 25,
-    },
-    shimmerOverlay: {
-        position: 'absolute', top: 0, right: 0, width: 50, height: 40, overflow: 'hidden', zIndex: 10,
-        borderTopLeftRadius: 2, borderBottomLeftRadius: 25, borderTopRightRadius: 25, borderBottomRightRadius: 2,
-    },
-    actionButton: {
-        justifyContent: 'flex-end', alignItems: 'center', flexDirection: 'row', paddingHorizontal: 4,
-        height: 40, flex: 1, bottom: 12, borderWidth: 3,
-        borderTopRightRadius: 25, borderBottomRightRadius: 25, borderTopLeftRadius: 2, borderBottomLeftRadius: 25,
-    },
-    // Up-down flip of actionButton: top and bottom corners swap.
-    actionButtonFlipped: {
-        borderTopLeftRadius: 25, borderBottomLeftRadius: 2, borderTopRightRadius: 25, borderBottomRightRadius: 25,
-    },
-    selectButton: { gap: 4 },
-    timerText: { fontSize: 20, fontFamily: globalFonts.bold },
+  container: { flex: 1, alignItems: 'flex-start', width: '100%', overflow: 'hidden' },
+  row: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 4 },
+  scrollViewContainer: { overflow: 'hidden', flex: 1 },
+  scrollView: { flex: 1 },
+  tradeLine: {
+    flexDirection: 'row',
+    gap: 2,
+    height: 64,
+    alignItems: 'center',
+    marginBottom: -10,
+    justifyContent: 'flex-end',
+  },
+  tradeLineText: { fontSize: 56, fontFamily: globalFonts.extrabold, bottom: 13, letterSpacing: -3 },
+  playButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
+    width: 50,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+    borderWidth: 3,
+  },
+  // Up-down flip of playButton: top and bottom corners swap.
+  playButtonFlipped: {
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 25,
+  },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 50,
+    height: 40,
+    overflow: 'hidden',
+    zIndex: 10,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 2,
+  },
+  actionButton: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 4,
+    height: 40,
+    flex: 1,
+    bottom: 12,
+    borderWidth: 3,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 25,
+    borderTopLeftRadius: 2,
+    borderBottomLeftRadius: 25,
+  },
+  // Up-down flip of actionButton: top and bottom corners swap.
+  actionButtonFlipped: {
+    borderTopLeftRadius: 25,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 25,
+    borderBottomRightRadius: 25,
+  },
+  selectButton: { gap: 4 },
+  timerText: { fontSize: 20, fontFamily: globalFonts.bold },
 });
 
 export default TradeUI;

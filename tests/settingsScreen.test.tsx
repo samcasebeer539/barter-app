@@ -6,7 +6,13 @@ import { Alert, Linking } from 'react-native';
 import { render, screen, fireEvent, act } from '@testing-library/react-native';
 
 const mockSeen: { deck?: any; onBlock?: (id: string, blocked: boolean) => void } = {};
-jest.mock('@/components/Deck', () => ({ __esModule: true, default: (p: any) => { mockSeen.deck = p; return null; } }));
+jest.mock('@/components/Deck', () => ({
+  __esModule: true,
+  default: (p: any) => {
+    mockSeen.deck = p;
+    return null;
+  },
+}));
 jest.mock('@expo/vector-icons/FontAwesome6', () => () => null);
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn() }) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -15,12 +21,18 @@ jest.mock('firebase/auth', () => ({ signOut: jest.fn(async () => {}), getAuth: (
 jest.mock('@/lib/api', () => ({ apiJson: jest.fn() }));
 jest.mock('@/lib/safety', () => ({
   getBlockedUsers: jest.fn(async () => []),
-  onBlockChange: (fn: any) => { mockSeen.onBlock = fn; return () => {}; },
+  onBlockChange: (fn: any) => {
+    mockSeen.onBlock = fn;
+    return () => {};
+  },
 }));
 const mockPhone = { status: 'granted', canAskAgain: true };
 jest.mock('expo-location', () => ({
   getForegroundPermissionsAsync: jest.fn(async () => ({ status: mockPhone.status })),
-  requestForegroundPermissionsAsync: jest.fn(async () => ({ status: mockPhone.status, canAskAgain: mockPhone.canAskAgain })),
+  requestForegroundPermissionsAsync: jest.fn(async () => ({
+    status: mockPhone.status,
+    canAskAgain: mockPhone.canAskAgain,
+  })),
 }));
 
 import Settings from '@/app/settings';
@@ -31,7 +43,10 @@ import { signOut } from 'firebase/auth';
 import { ApiError } from '@/lib/apiError';
 
 const api = apiJson as jest.Mock;
-const flush = () => act(async () => { for (let i = 0; i < 6; i++) await new Promise(r => setTimeout(r, 0)); });
+const flush = () =>
+  act(async () => {
+    for (let i = 0; i < 6; i++) await new Promise(r => setTimeout(r, 0));
+  });
 let alert: jest.SpyInstance;
 beforeEach(() => {
   api.mockReset().mockResolvedValue({});
@@ -49,7 +64,10 @@ async function open() {
 // [notifications, location services]
 const switches = () => screen.getAllByRole('switch');
 const values = () => switches().map(s => s.props.value);
-const flip = async (i: 0 | 1, value: boolean) => { await fireEvent(switches()[i], 'valueChange', value); await flush(); };
+const flip = async (i: 0 | 1, value: boolean) => {
+  await fireEvent(switches()[i], 'valueChange', value);
+  await flush();
+};
 
 // ── toggles ──────────────────────────────────────────────────────────────────
 
@@ -97,7 +115,7 @@ test.each([0, 1] as const)('a failed save says so and flips the toggle back (%s)
   expect(values()[i]).toBe(true);
   await screen.unmount();
   await open();
-  expect(values()[i]).toBe(true);    // and not remembered as off either
+  expect(values()[i]).toBe(true); // and not remembered as off either
 });
 
 test('turning Location Services on asks the phone first', async () => {
@@ -126,27 +144,35 @@ test("if the phone says no, it stays off and says why (with a way to the phone's
 // ── blocked users ────────────────────────────────────────────────────────────
 
 test('blocked users: loaded fresh each time it opens, shown as a deck of their cards', async () => {
-  (getBlockedUsers as jest.Mock).mockResolvedValue([{ _id: 'bob', first_name: 'Bob' }, { _id: 'eve', first_name: 'Eve' }]);
+  (getBlockedUsers as jest.Mock).mockResolvedValue([
+    { _id: 'bob', first_name: 'Bob' },
+    { _id: 'eve', first_name: 'Eve' },
+  ]);
   await open();
   await fireEvent.press(screen.getByText('Blocked Users'));
   await flush();
   expect(mockSeen.deck.groups.map((g: any) => g.user.first_name)).toEqual(['Bob', 'Eve']);
-  await fireEvent.press(screen.getByText('Blocked Users'));   // close
-  await fireEvent.press(screen.getByText('Blocked Users'));   // reopen
+  await fireEvent.press(screen.getByText('Blocked Users')); // close
+  await fireEvent.press(screen.getByText('Blocked Users')); // reopen
   await flush();
   expect(getBlockedUsers).toHaveBeenCalledTimes(2);
 });
 
 test('unblocking someone takes their card out', async () => {
-  (getBlockedUsers as jest.Mock).mockResolvedValue([{ _id: 'bob', first_name: 'Bob' }, { _id: 'eve', first_name: 'Eve' }]);
+  (getBlockedUsers as jest.Mock).mockResolvedValue([
+    { _id: 'bob', first_name: 'Bob' },
+    { _id: 'eve', first_name: 'Eve' },
+  ]);
   await open();
   await fireEvent.press(screen.getByText('Blocked Users'));
   await flush();
-  await act(async () => { mockSeen.onBlock?.('bob', false); });
+  await act(async () => {
+    mockSeen.onBlock?.('bob', false);
+  });
   expect(mockSeen.deck.groups.map((g: any) => g.user.first_name)).toEqual(['Eve']);
 });
 
-test("with nobody blocked, says so", async () => {
+test('with nobody blocked, says so', async () => {
   (getBlockedUsers as jest.Mock).mockResolvedValue([]);
   await open();
   await fireEvent.press(screen.getByText('Blocked Users'));
@@ -175,7 +201,10 @@ test('delete account: asks first; Cancel does nothing', async () => {
   const [title, message, buttons] = alert.mock.calls[0];
   expect(title).toBe('Delete your account?');
   expect(message).toMatch(/permanently deletes your profile, posts and photos/);
-  expect(buttons.map((b: any) => [b.text, b.style])).toEqual([['Cancel', 'cancel'], ['Delete Account', 'destructive']]);
+  expect(buttons.map((b: any) => [b.text, b.style])).toEqual([
+    ['Cancel', 'cancel'],
+    ['Delete Account', 'destructive'],
+  ]);
   expect(api).not.toHaveBeenCalledWith('/dev/account', expect.anything());
 });
 
@@ -183,7 +212,9 @@ test('confirming deletes it on the server, then signs out', async () => {
   await open();
   await openDelete();
   const confirm = alert.mock.calls[0][2].find((b: any) => b.text === 'Delete Account');
-  await act(async () => { await confirm.onPress(); });
+  await act(async () => {
+    await confirm.onPress();
+  });
   expect(api).toHaveBeenCalledWith('/dev/account', { method: 'DELETE' });
   expect(signOut).toHaveBeenCalled();
 });
@@ -192,15 +223,21 @@ test("if it can't be deleted, says why and stays signed in", async () => {
   await open();
   (signOut as jest.Mock).mockClear();
   api.mockImplementation(async (path: string) => {
-    if (path === '/dev/account') throw new ApiError("Couldn't delete your sign-in. Nothing was deleted; try again.", 502);
+    if (path === '/dev/account')
+      throw new ApiError("Couldn't delete your sign-in. Nothing was deleted; try again.", 502);
     return {};
   });
   await openDelete();
   const confirm = alert.mock.calls[0][2].find((b: any) => b.text === 'Delete Account');
-  await act(async () => { await confirm.onPress(); });
-  expect(alert).toHaveBeenLastCalledWith("Couldn't delete your account", 'Something went wrong on our end. Try again in a moment.');
+  await act(async () => {
+    await confirm.onPress();
+  });
+  expect(alert).toHaveBeenLastCalledWith(
+    "Couldn't delete your account",
+    'Something went wrong on our end. Try again in a moment.',
+  );
   expect(signOut).not.toHaveBeenCalled();
-  expect(screen.getByText('Delete My Account')).toBeTruthy();   // usable again
+  expect(screen.getByText('Delete My Account')).toBeTruthy(); // usable again
 });
 
 // ── help, terms and privacy ──────────────────────────────────────────────────

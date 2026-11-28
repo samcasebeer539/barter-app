@@ -27,13 +27,17 @@ export interface FeedPage {
 }
 
 /** A page of the feed (or of a search, with `query`), sorted on the server. */
-export async function getFeedPage(
-  { sort, offset = 0, query = '' }: { sort: FeedSort; offset?: number; query?: string },
-): Promise<FeedPage> {
+export async function getFeedPage({
+  sort,
+  offset = 0,
+  query = '',
+}: {
+  sort: FeedSort;
+  offset?: number;
+  query?: string;
+}): Promise<FeedPage> {
   const params = `sort=${sort}&limit=${FEED_PAGE_SIZE}&offset=${offset}`;
-  const path = query
-    ? `/dev/feed/search?q=${encodeURIComponent(query)}&${params}`
-    : `/dev/feed?${params}`;
+  const path = query ? `/dev/feed/search?q=${encodeURIComponent(query)}&${params}` : `/dev/feed?${params}`;
   const data = await apiJson<{ posts: any[]; nextOffset: number | null }>(path);
   return { items: (data.posts ?? []).map(toFeedItem), nextOffset: data.nextOffset ?? null };
 }

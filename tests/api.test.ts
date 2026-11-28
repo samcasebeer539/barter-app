@@ -72,9 +72,12 @@ test('offline: ApiError with status 0', async () => {
 
 test('a request that takes too long is cut off', async () => {
   jest.useFakeTimers();
-  fetchMock.mockImplementation((_url: string, init: any) => new Promise((_res, rej) => {
-    init.signal.addEventListener('abort', () => rej(Object.assign(new Error('aborted'), { name: 'AbortError' })));
-  }));
+  fetchMock.mockImplementation(
+    (_url: string, init: any) =>
+      new Promise((_res, rej) => {
+        init.signal.addEventListener('abort', () => rej(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+      }),
+  );
   const pending = apiRequest('/dev/feed', { timeoutMs: 50 }).catch(e => e);
   await jest.advanceTimersByTimeAsync(60);
   const err = await pending;
@@ -92,7 +95,9 @@ describe('apiJsonIfChanged', () => {
   test('new data comes back with its new version', async () => {
     fetchMock.mockResolvedValue(respond({ status: 200, body: [{ gameId: 'g' }], headers: { 'X-Version': 'v2' } }));
     await expect(apiJsonIfChanged('/dev/trades/close', 'v1')).resolves.toEqual({
-      changed: true, data: [{ gameId: 'g' }], version: 'v2',
+      changed: true,
+      data: [{ gameId: 'g' }],
+      version: 'v2',
     });
   });
 

@@ -40,7 +40,9 @@ async function setup(props: Partial<React.ComponentProps<typeof TradeActions>> =
 // the live one.
 const button = (type: string) => screen.getAllByTestId(`action-${type}`)[0];
 const icons = (type: string) =>
-  within(button(type)).queryAllByText(/^icon:/).map(n => (n.props.children as string).slice(5));
+  within(button(type))
+    .queryAllByText(/^icon:/)
+    .map(n => (n.props.children as string).slice(5));
 
 afterEach(() => jest.useRealTimers());
 
@@ -114,7 +116,7 @@ test('add / subtract: plus / minus icons, blocked when the top card is not a pos
 
 test('only the action on top of the wheel can be tapped', async () => {
   const h = await setup({ actions: config('query', 'stall') });
-  await fireEvent.press(button('stall'));  // stall is second: not on top
+  await fireEvent.press(button('stall')); // stall is second: not on top
   expect(h.onActionSelected).not.toHaveBeenCalled();
 });
 
@@ -140,7 +142,9 @@ test("decline counts down to the server's turn deadline", async () => {
   jest.useFakeTimers({ now: new Date('2026-11-27T12:00:00Z') });
   await setup({ actions: config('decline'), turnDeadline: '2026-11-27T13:30:05Z' });
   expect(within(button('decline')).getByText('01:30:05')).toBeTruthy();
-  await act(async () => { jest.advanceTimersByTime(5000); });
+  await act(async () => {
+    jest.advanceTimersByTime(5000);
+  });
   expect(within(button('decline')).getByText('01:30:00')).toBeTruthy();
 });
 

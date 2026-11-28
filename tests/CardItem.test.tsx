@@ -63,23 +63,32 @@ test("a post in an active trade can't be edited", async () => {
 // ── edit mode ────────────────────────────────────────────────────────────────
 
 const edit = (post: any, extra: Partial<Props> = {}) =>
-  show({ isUser: true, isEditable: true, post, onSave: jest.fn(), onExitEdit: jest.fn(), onDiscard: jest.fn(), ...extra });
+  show({
+    isUser: true,
+    isEditable: true,
+    post,
+    onSave: jest.fn(),
+    onExitEdit: jest.fn(),
+    onDiscard: jest.fn(),
+    ...extra,
+  });
 
 test('save needs a title and a photo', async () => {
   await edit({ ...newPost, photos: photos(1) });
-  expect(screen.getByTestId('post-save')).toBeDisabled();      // no title
+  expect(screen.getByTestId('post-save')).toBeDisabled(); // no title
   await fireEvent.changeText(screen.getByPlaceholderText('Item title'), '   ');
-  expect(screen.getByTestId('post-save')).toBeDisabled();      // spaces don't count
+  expect(screen.getByTestId('post-save')).toBeDisabled(); // spaces don't count
   await fireEvent.changeText(screen.getByPlaceholderText('Item title'), 'Desk');
   expect(screen.getByTestId('post-save')).toBeEnabled();
 
   await screen.unmount();
   await edit({ ...newPost, name: 'Desk' });
-  expect(screen.getByTestId('post-save')).toBeDisabled();      // no photo
+  expect(screen.getByTestId('post-save')).toBeDisabled(); // no photo
 });
 
 test('saving sends the edited post and leaves edit mode', async () => {
-  const onSave = jest.fn(), onExitEdit = jest.fn();
+  const onSave = jest.fn(),
+    onExitEdit = jest.fn();
   await edit(lamp, { onSave, onExitEdit });
   await fireEvent.changeText(screen.getByPlaceholderText('Item title'), 'Desk lamp');
   await fireEvent.press(screen.getByTestId('post-save'));
@@ -88,7 +97,8 @@ test('saving sends the edited post and leaves edit mode', async () => {
 });
 
 test('cancelling a brand-new post throws it away', async () => {
-  const onDiscard = jest.fn(), onSave = jest.fn();
+  const onDiscard = jest.fn(),
+    onSave = jest.fn();
   await edit(newPost, { onDiscard, onSave });
   await fireEvent.press(screen.getByTestId('post-cancel'));
   expect(onDiscard).toHaveBeenCalled();
@@ -96,7 +106,9 @@ test('cancelling a brand-new post throws it away', async () => {
 });
 
 test('cancelling an edit keeps the post and saves nothing', async () => {
-  const onDiscard = jest.fn(), onSave = jest.fn(), onExitEdit = jest.fn();
+  const onDiscard = jest.fn(),
+    onSave = jest.fn(),
+    onExitEdit = jest.fn();
   await edit(lamp, { onDiscard, onSave, onExitEdit });
   await fireEvent.changeText(screen.getByPlaceholderText('Item title'), 'Changed my mind');
   await fireEvent.press(screen.getByTestId('post-cancel'));

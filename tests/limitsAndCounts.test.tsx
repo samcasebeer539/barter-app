@@ -25,9 +25,19 @@ test('counts are two digits: 09, 10, 99 (not 010)', () => {
 
 // ── your posts ───────────────────────────────────────────────────────────────
 
-const me = { _id: 'me', first_name: 'Alice', locations: [{ id: 'l', name: 'Library', latitude: 1, longitude: 2 }] } as any;
+const me = {
+  _id: 'me',
+  first_name: 'Alice',
+  locations: [{ id: 'l', name: 'Library', latitude: 1, longitude: 2 }],
+} as any;
 const posts = (n: number) =>
-  Array.from({ length: n }, (_, i) => ({ _id: `p${i}`, name: `Item ${i}`, description: '', photos: [], date_posted: '' }));
+  Array.from({ length: n }, (_, i) => ({
+    _id: `p${i}`,
+    name: `Item ${i}`,
+    description: '',
+    photos: [],
+    date_posted: '',
+  }));
 const showProfile = (n: number) => render(<DeckProfile posts={posts(n)} primaryUser={me} />);
 
 test('your post count reads 10 with ten posts', async () => {
@@ -47,16 +57,16 @@ test(`ADD POST works below ${MAX_POSTS} posts and turns off at ${MAX_POSTS}`, as
 // ── meetup time card ─────────────────────────────────────────────────────────
 
 test("the next two days can't be picked: the first date is three days out", () => {
-  const dates = getUpcomingDates(20, new Date(2026, 10, 27, 17, 0));  // Fri Nov 27, 5 PM
+  const dates = getUpcomingDates(20, new Date(2026, 10, 27, 17, 0)); // Fri Nov 27, 5 PM
   expect(dates).toHaveLength(20);
-  expect(dates[0]).toMatchObject({ year: 2026, month: 10, day: 30 });   // Mon Nov 30
+  expect(dates[0]).toMatchObject({ year: 2026, month: 10, day: 30 }); // Mon Nov 30
   expect(dates[0].label).toBe('Mon, Nov 30');
-  expect(dates[1]).toMatchObject({ month: 11, day: 1 });               // then every day after
+  expect(dates[1]).toMatchObject({ month: 11, day: 1 }); // then every day after
 });
 
 test('every time offered is at least two days away (the server requires it)', () => {
-  const now = new Date(2026, 10, 27, 23, 59);  // the latest moment of a day
+  const now = new Date(2026, 10, 27, 23, 59); // the latest moment of a day
   const first = getUpcomingDates(1, now)[0];
-  const earliest = new Date(first.year, first.month, first.day, 7, 0);  // 7:00 AM, the first time slot
+  const earliest = new Date(first.year, first.month, first.day, 7, 0); // 7:00 AM, the first time slot
   expect(earliest.getTime() - now.getTime()).toBeGreaterThanOrEqual(48 * 3600 * 1000);
 });

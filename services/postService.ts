@@ -44,7 +44,11 @@ function isLocalUri(uri: string): boolean {
 // new post's photos can be uploaded under its id before the post exists.
 function newObjectId(): string {
   const hex = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-  return Math.floor(Date.now() / 1000).toString(16).padStart(8, '0') + hex(16);
+  return (
+    Math.floor(Date.now() / 1000)
+      .toString(16)
+      .padStart(8, '0') + hex(16)
+  );
 }
 
 // Uploads any local photos and returns a new array of all remote URLs.
@@ -62,7 +66,7 @@ async function resolvePhotos(photos: string[], postId: string): Promise<string[]
       const storageRef = ref(storage, `post_photos/${uid}/${postId}/${batch}_${index}`);
       await uploadBytes(storageRef, blob);
       return await getDownloadURL(storageRef);
-    })
+    }),
   );
 }
 

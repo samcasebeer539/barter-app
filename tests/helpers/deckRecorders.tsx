@@ -16,7 +16,9 @@ type Props = Record<string, any>;
 // The latest props each piece was rendered with. With several decks on
 // screen (the barter page), the last one rendered wins.
 export const latest: {
-  deck?: Props; wheel?: Props; turns?: Props[];
+  deck?: Props;
+  wheel?: Props;
+  turns?: Props[];
   /** Decks with isUser (your own) vs not (the other player's / offerers'). */
   decks: { mine?: Props; theirs?: Props };
 } = { decks: {} };
@@ -33,8 +35,14 @@ const Deck = (props: Props) => {
   latest.decks[props.isUser ? 'mine' : 'theirs'] = props;
   return null;
 };
-const TradeActions = (props: Props) => { latest.wheel = props; return null; };
-const TradeTurns = (props: Props) => { (latest.turns ??= []).push(props); return null; };
+const TradeActions = (props: Props) => {
+  latest.wheel = props;
+  return null;
+};
+const TradeTurns = (props: Props) => {
+  (latest.turns ??= []).push(props);
+  return null;
+};
 
 export const MockDeck = { __esModule: true, default: Deck };
 export const MockTradeActions = { __esModule: true, default: TradeActions };
@@ -51,7 +59,10 @@ export const wheel = () => need(latest.wheel, 'The action wheel');
 export const deck = (which?: 'mine' | 'theirs') =>
   need(which ? latest.decks[which] : latest.deck, `The card stack${which ? ` (${which})` : ''}`);
 
-const flush = () => act(async () => { await new Promise(r => setTimeout(r, 0)); });
+const flush = () =>
+  act(async () => {
+    await new Promise(r => setTimeout(r, 0));
+  });
 
 /** The card on top becomes post #index (null: a user or location card).
  *  `group`: whose cards they are, for stacks holding several players. */
@@ -65,17 +76,23 @@ export async function swipeTo(index: number | null, opts: { deck?: 'mine' | 'the
 
 /** Scroll the wheel so this action is on top. */
 export async function scrollWheelTo(actionType: string) {
-  await act(async () => { wheel().onActionChange?.(actionType); });
+  await act(async () => {
+    wheel().onActionChange?.(actionType);
+  });
 }
 
 /** Tap the action's button on the wheel. */
 export async function press(actionType: string) {
-  await act(async () => { wheel().onActionSelected({ actionType, subAction: 'write' }); });
+  await act(async () => {
+    wheel().onActionSelected({ actionType, subAction: 'write' });
+  });
 }
 
 /** Tap the confirm arrow for this action, and let the request finish. */
 export async function confirm(actionType: string) {
-  await act(async () => { wheel().onActionSelected({ actionType, subAction: 'select' }); });
+  await act(async () => {
+    wheel().onActionSelected({ actionType, subAction: 'select' });
+  });
   await flush();
   await flush();
 }
@@ -85,8 +102,13 @@ export const turnLogs = () => [...(latest.turns ?? [])].reverse();
 
 /** Type into the open question box. */
 export async function typeQuestion(text: string) {
-  const box = need([...(latest.turns ?? [])].reverse().find(t => t.onQueryTextChange), 'The question box');
-  await act(async () => { box.onQueryTextChange(text); });
+  const box = need(
+    [...(latest.turns ?? [])].reverse().find(t => t.onQueryTextChange),
+    'The question box',
+  );
+  await act(async () => {
+    box.onQueryTextChange(text);
+  });
 }
 
 /** The turns shown in the most recent turn log that has any. */

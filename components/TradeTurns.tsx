@@ -82,8 +82,12 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
         <View
           style={[
             isAnswer
-              ? (turn.isUser ? styles.answerBoxUser : styles.answerBoxPartner)
-              : turn.isUser ? styles.rowUser : styles.rowPartner,
+              ? turn.isUser
+                ? styles.answerBoxUser
+                : styles.answerBoxPartner
+              : turn.isUser
+                ? styles.rowUser
+                : styles.rowPartner,
             isAnswer
               ? { borderColor: config.colorStyle.color }
               : {
@@ -100,13 +104,17 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
                 <Text style={config.colorStyle}>{config.actionText}</Text>
                 {parts[1]}
               </>
-            ) : line}
+            ) : (
+              line
+            )}
             {isQuery && turn.question && (
-              <>{'\n'}<Text style={styles.questionText}>       {turn.question}</Text></>
+              <>
+                {'\n'}
+                <Text style={styles.questionText}> {turn.question}</Text>
+              </>
             )}
           </Text>
         </View>
-
       </View>
     );
   };
@@ -122,14 +130,17 @@ const TradeTurns: React.FC<TradeTurnsProps> = ({
             maxLength={TEXT_LIMITS.message}
             placeholderTextColor={queryColor}
             value={activeQueryText}
-            onFocus={() => { kbField.onFocus(); setDoneKey(true); }}
+            onFocus={() => {
+              kbField.onFocus();
+              setDoneKey(true);
+            }}
             onChangeText={handleActiveQueryChange}
             onContentSizeChange={kbField.requestLift}
             multiline
             returnKeyType={doneKey ? 'done' : 'default'}
             onSubmitEditing={() => Keyboard.dismiss()}
             submitBehavior="blurAndSubmit"
-            keyboardAppearance="dark" 
+            keyboardAppearance="dark"
           />
         </View>
       )}

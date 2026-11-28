@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated, TextInput, ActivityIndicator, ScrollView, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Animated,
+  TextInput,
+  ActivityIndicator,
+  ScrollView,
+  Alert,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { TEXT_LIMITS } from '@/config/textLimits';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -21,7 +32,8 @@ const StarRating = ({ rating = 0, size = 20 }: { rating?: number; size?: number 
     <View style={[styles.starRow, { gap: Math.round(size / 8) }]}>
       {[0, 1, 2, 3, 4].map(i => {
         if (i < fullStars) return <FontAwesome6 key={i} name="star" size={size} color={colors.actions.review} solid />;
-        if (i === fullStars && hasHalf) return <FontAwesome6 key={i} name="star-half-stroke" size={size} color={colors.actions.review} solid />;
+        if (i === fullStars && hasHalf)
+          return <FontAwesome6 key={i} name="star-half-stroke" size={size} color={colors.actions.review} solid />;
         return <FontAwesome6 key={i} name="star" size={size} color={colors.ui.cardsecondary} />;
       })}
     </View>
@@ -42,10 +54,11 @@ function formatReviewDate(iso: string | null): string {
   if (days < 7) return `${days} days ago`;
   const sameYear = date.getFullYear() === new Date().getFullYear();
   return date.toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', ...(sameYear ? {} : { year: 'numeric' }),
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
   });
 }
-
 
 interface UserCardProps {
   user: User;
@@ -109,7 +122,7 @@ const UserCard: React.FC<UserCardProps> = ({
         setReviewsError(true);
         reviewsLoadedFor.current = null; // retry on next open
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- reviewsKey is user._id + reviewCount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reviewsKey is user._id + reviewCount.
   }, [isReviewsOpen, reviewsKey]);
 
   useEffect(() => {
@@ -229,19 +242,14 @@ const UserCard: React.FC<UserCardProps> = ({
   );
 
   // Only show contacts that are marked visible
-  const visibleContacts = [
-    user.email_visible ? user.email : null,
-    user.phone_visible && user.phone ? user.phone : null,
-  ].filter(Boolean).join(' · ');
+  const visibleContacts = [user.email_visible ? user.email : null, user.phone_visible && user.phone ? user.phone : null]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <View
-      style={[styles.container, { transform: [{ scale }] }]}
-      onStartShouldSetResponder={() => true}
-    >
+    <View style={[styles.container, { transform: [{ scale }] }]} onStartShouldSetResponder={() => true}>
       <View style={[styles.container, { transform: [{ scale }] }]} pointerEvents="box-none">
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-
           <View
             style={[StyleSheet.absoluteFill, styles.gestureOverlay]}
             onStartShouldSetResponder={() => false}
@@ -277,10 +285,11 @@ const UserCard: React.FC<UserCardProps> = ({
               />
               {isEditable && (
                 <View style={styles.photoEditOverlay} pointerEvents="none">
-                  {isUploadingPhoto
-                    ? <ActivityIndicator color="#fff" size="small" />
-                    : <FontAwesome6 name="camera" size={24} color="#fff" />
-                  }
+                  {isUploadingPhoto ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <FontAwesome6 name="camera" size={24} color="#fff" />
+                  )}
                 </View>
               )}
             </Animated.View>
@@ -296,17 +305,30 @@ const UserCard: React.FC<UserCardProps> = ({
             <View style={[styles.headerRow, { marginBottom: 8 }]}>
               <Text style={styles.name} numberOfLines={1}>
                 {user.first_name} {user.last_name}
-                {!isEditable && user.pronouns
-                  ? <Text style={styles.pronouns}> {user.pronouns}</Text>
-                  : null}
+                {!isEditable && user.pronouns ? <Text style={styles.pronouns}> {user.pronouns}</Text> : null}
               </Text>
 
               {isEditable ? (
                 <>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleSave} disabled={isUploadingPhoto} accessibilityRole="button" accessibilityLabel="Save profile">
-                    <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.carddisabled : colors.actions.review} />
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={handleSave}
+                    disabled={isUploadingPhoto}
+                    accessibilityRole="button"
+                    accessibilityLabel="Save profile"
+                  >
+                    <FontAwesome6
+                      name="circle-check"
+                      size={24}
+                      color={isUploadingPhoto ? colors.ui.carddisabled : colors.actions.review}
+                    />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleCancel} accessibilityRole="button" accessibilityLabel="Cancel editing">
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={handleCancel}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel editing"
+                  >
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                   <View style={styles.actionButton}>
@@ -322,7 +344,10 @@ const UserCard: React.FC<UserCardProps> = ({
                       accessibilityRole="button"
                       accessibilityLabel="Edit profile"
                       style={styles.actionButton}
-                      onPress={e => { e.stopPropagation(); onEnterEdit(); }}
+                      onPress={e => {
+                        e.stopPropagation();
+                        onEnterEdit();
+                      }}
                     >
                       <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
                     </TouchableOpacity>
@@ -350,7 +375,13 @@ const UserCard: React.FC<UserCardProps> = ({
                     <FontAwesome6
                       name="ban"
                       size={24}
-                      color={!user._id ? colors.ui.carddisabled : isBlocked ? colors.actions.decline : colors.ui.cardsecondary}
+                      color={
+                        !user._id
+                          ? colors.ui.carddisabled
+                          : isBlocked
+                            ? colors.actions.decline
+                            : colors.ui.cardsecondary
+                      }
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -361,7 +392,11 @@ const UserCard: React.FC<UserCardProps> = ({
                     disabled={!user._id}
                     onPress={() => startReport({ userId: user._id, name: user.first_name })}
                   >
-                    <FontAwesome6 name="circle-exclamation" size={24} color={user._id ? colors.ui.cardsecondary : colors.ui.carddisabled} />
+                    <FontAwesome6
+                      name="circle-exclamation"
+                      size={24}
+                      color={user._id ? colors.ui.cardsecondary : colors.ui.carddisabled}
+                    />
                   </TouchableOpacity>
                   <View style={styles.actionButton}>
                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
@@ -378,7 +413,10 @@ const UserCard: React.FC<UserCardProps> = ({
                   style={styles.fieldInput}
                   value={draft.pronouns}
                   onFocus={kbField.onFocus}
-                  onChangeText={v => { updateDraft('pronouns', v); kbField.requestLift(); }}
+                  onChangeText={v => {
+                    updateDraft('pronouns', v);
+                    kbField.requestLift();
+                  }}
                   placeholder="Pronouns (optional)"
                   maxLength={TEXT_LIMITS.pronouns}
                   returnKeyType="done"
@@ -405,11 +443,7 @@ const UserCard: React.FC<UserCardProps> = ({
                     accessibilityRole="button"
                     accessibilityLabel={emailVisible ? 'Hide email' : 'Show email'}
                   >
-                    <FontAwesome6
-                      name={emailVisible ? 'eye' : 'eye-slash'}
-                      size={24}
-                      color={colors.ui.cardsecondary}
-                    />
+                    <FontAwesome6 name={emailVisible ? 'eye' : 'eye-slash'} size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                 </View>
 
@@ -425,9 +459,18 @@ const UserCard: React.FC<UserCardProps> = ({
                       style={styles.fieldInput}
                       value={draft.phone}
                       autoFocus={isEditingPhone}
-                      onFocus={() => { kbField.onFocus(); setPhoneDoneKey(true); }}
-                      onBlur={() => { setIsEditingPhone(false); setPhoneDoneKey(false); }}
-                      onChangeText={v => { updateDraft('phone', v); kbField.requestLift(); }}
+                      onFocus={() => {
+                        kbField.onFocus();
+                        setPhoneDoneKey(true);
+                      }}
+                      onBlur={() => {
+                        setIsEditingPhone(false);
+                        setPhoneDoneKey(false);
+                      }}
+                      onChangeText={v => {
+                        updateDraft('phone', v);
+                        kbField.requestLift();
+                      }}
                       placeholder="Phone (optional)"
                       maxLength={TEXT_LIMITS.phone}
                       placeholderTextColor={colors.ui.cardsecondary}
@@ -441,11 +484,7 @@ const UserCard: React.FC<UserCardProps> = ({
                     accessibilityRole="button"
                     accessibilityLabel={phoneVisible ? 'Hide phone number' : 'Show phone number'}
                   >
-                    <FontAwesome6
-                      name={phoneVisible ? 'eye' : 'eye-slash'}
-                      size={24}
-                      color={colors.ui.cardsecondary}
-                    />
+                    <FontAwesome6 name={phoneVisible ? 'eye' : 'eye-slash'} size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
                 </View>
               </>
@@ -467,7 +506,10 @@ const UserCard: React.FC<UserCardProps> = ({
                   style={[styles.bio, styles.editableText, styles.bioInput, styles.bioInputSpaced]}
                   value={draft.bio}
                   onFocus={kbField.onFocus}
-                  onChangeText={v => { updateDraft('bio', v); kbField.requestLift(); }}
+                  onChangeText={v => {
+                    updateDraft('bio', v);
+                    kbField.requestLift();
+                  }}
                   placeholder="Tell others about yourself (optional)"
                   maxLength={TEXT_LIMITS.bio}
                   returnKeyType="done"
@@ -480,7 +522,10 @@ const UserCard: React.FC<UserCardProps> = ({
                 />
               </View>
             ) : (
-              <Text style={[styles.bio, !visibleContacts && { marginTop: 0 }]} numberOfLines={isInfoExpanded ? undefined : 2}>
+              <Text
+                style={[styles.bio, !visibleContacts && { marginTop: 0 }]}
+                numberOfLines={isInfoExpanded ? undefined : 2}
+              >
                 {user.bio}
               </Text>
             )}
@@ -503,7 +548,9 @@ const UserCard: React.FC<UserCardProps> = ({
                 reviews!.map(review => (
                   <View key={review._id} style={styles.reviewItem}>
                     <View style={styles.reviewHeader}>
-                      <Text style={styles.reviewerName} numberOfLines={1}>{review.reviewerName}</Text>
+                      <Text style={styles.reviewerName} numberOfLines={1}>
+                        {review.reviewerName}
+                      </Text>
                       <Text style={styles.reviewDate}>{formatReviewDate(review.createdAt)}</Text>
                     </View>
                     <StarRating rating={review.rating} size={14} />
@@ -515,7 +562,6 @@ const UserCard: React.FC<UserCardProps> = ({
           ) : !isEditable ? (
             <View style={styles.ratingsRow}>{reviewSummary}</View>
           ) : null}
-
         </View>
       </View>
     </View>

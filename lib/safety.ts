@@ -37,12 +37,15 @@ export function clearBlockedCache() {
 /** Called after any block or unblock (screens reload their lists). */
 export function onBlockChange(listener: BlockListener): () => void {
   blockListeners.add(listener);
-  return () => { blockListeners.delete(listener); };
+  return () => {
+    blockListeners.delete(listener);
+  };
 }
 
 function setBlocked(userId: string, blocked: boolean) {
   if (blockedIds) {
-    if (blocked) blockedIds.add(userId); else blockedIds.delete(userId);
+    if (blocked) blockedIds.add(userId);
+    else blockedIds.delete(userId);
   }
   blockListeners.forEach(listener => listener(userId, blocked));
 }
@@ -60,8 +63,12 @@ function ensureBlockedLoaded(): Promise<void> {
   if (!loading) {
     loading = getBlockedUsers()
       .then(() => undefined)
-      .catch(err => { console.warn('Failed to load blocked users:', err); })
-      .finally(() => { loading = null; });
+      .catch(err => {
+        console.warn('Failed to load blocked users:', err);
+      })
+      .finally(() => {
+        loading = null;
+      });
   }
   return loading;
 }
@@ -72,9 +79,16 @@ export function useIsBlocked(userId?: string): boolean {
   useEffect(() => {
     if (!userId) return;
     let alive = true;
-    ensureBlockedLoaded().then(() => { if (alive) setBlockedState(!!blockedIds?.has(userId)); });
-    const off = onBlockChange((id, isBlocked) => { if (id === userId) setBlockedState(isBlocked); });
-    return () => { alive = false; off(); };
+    ensureBlockedLoaded().then(() => {
+      if (alive) setBlockedState(!!blockedIds?.has(userId));
+    });
+    const off = onBlockChange((id, isBlocked) => {
+      if (id === userId) setBlockedState(isBlocked);
+    });
+    return () => {
+      alive = false;
+      off();
+    };
   }, [userId]);
   return blocked;
 }
@@ -175,12 +189,8 @@ export function startReport(target: { userId?: string; postId?: string; name?: s
     );
   };
 
-  Alert.alert(
-    target.postId ? 'Report this post' : `Report ${who}`,
-    'Why are you reporting this?',
-    [
-      ...REPORT_REASONS.map(r => ({ text: r.label, onPress: () => askForDetails(r.key) })),
-      { text: 'Cancel', style: 'cancel' as const },
-    ],
-  );
+  Alert.alert(target.postId ? 'Report this post' : `Report ${who}`, 'Why are you reporting this?', [
+    ...REPORT_REASONS.map(r => ({ text: r.label, onPress: () => askForDetails(r.key) })),
+    { text: 'Cancel', style: 'cancel' as const },
+  ]);
 }

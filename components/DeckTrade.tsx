@@ -13,7 +13,17 @@ import { getFeedProfile } from '@/services/feedService';
 import { FeedProfile, Post, Locations, User } from '@/types/index';
 import { TradeActionConfig, TradeActionType, getActionConfig } from '../config/tradeConfig';
 import { deckStyles, makeCountBar, barRadius, DECK_BAR_WIDTH } from '../styles/deckStyles';
-import { acceptTrade, declineTrade, stallTrade, sendGameQuery, proposeLocation, proposeTime, subtractPost, getLatestProposals, submitReview } from '@/services/tradeService';
+import {
+  acceptTrade,
+  declineTrade,
+  stallTrade,
+  sendGameQuery,
+  proposeLocation,
+  proposeTime,
+  subtractPost,
+  getLatestProposals,
+  submitReview,
+} from '@/services/tradeService';
 import { ProposedTime } from './CardDateTime';
 import { useTradeAction } from '../hooks/useTradeAction';
 import { useStableCallback } from '../hooks/useStableCallback';
@@ -122,16 +132,13 @@ export default function TradeDeck({
 
   // Standing proposals: the latest WHERE and the latest WHEN, whoever made
   // them. Each shows only on its maker's card.
-  const proposals = useMemo(
-    () => getLatestProposals(rawTurns ?? [], playerUser._id ?? ''),
-    [rawTurns, playerUser._id]
-  );
+  const proposals = useMemo(() => getLatestProposals(rawTurns ?? [], playerUser._id ?? ''), [rawTurns, playerUser._id]);
   const hasPlaceAndTime = !!proposals.where && !!proposals.when;
 
   // Each player reviews once; after that it's WAIT until the other does.
   const hasReviewed = useMemo(
     () => (rawTurns ?? []).some(t => t.type === 'review' && t.actor_id === playerUser._id),
-    [rawTurns, playerUser._id]
+    [rawTurns, playerUser._id],
   );
 
   const visibleActions = useMemo(() => {
@@ -140,14 +147,15 @@ export default function TradeDeck({
       return action ? [action] : [];
     }
     if (canPlay) {
-      return actions.filter(a =>
-        a.actionType !== 'wait' &&
-        a.actionType !== 'answer' &&
-        a.actionType !== 'review' &&
-        // SUBTRACT only when you'd still have an item left in the trade.
-        (a.actionType !== 'subtract' || playerPosts.length > 1) &&
-        // ACCEPT (the meetup) only once there's a place and a time.
-        (a.actionType !== 'acceptFinal' || hasPlaceAndTime)
+      return actions.filter(
+        a =>
+          a.actionType !== 'wait' &&
+          a.actionType !== 'answer' &&
+          a.actionType !== 'review' &&
+          // SUBTRACT only when you'd still have an item left in the trade.
+          (a.actionType !== 'subtract' || playerPosts.length > 1) &&
+          // ACCEPT (the meetup) only once there's a place and a time.
+          (a.actionType !== 'acceptFinal' || hasPlaceAndTime),
       );
     }
     return WAIT_ACTION ? [WAIT_ACTION] : [];
@@ -157,7 +165,7 @@ export default function TradeDeck({
   // player who has to answer gets the ANSWER wheel under it.
   const pendingTurnIndex = useMemo(
     () => (mustAnswer ? turns.findIndex(t => t.type === 'turnQuery' && !t.isUser) : -1),
-    [mustAnswer, turns]
+    [mustAnswer, turns],
   );
 
   // ADD opens the partner's feed deck, where you pick one of their posts.
@@ -168,10 +176,7 @@ export default function TradeDeck({
   const isLoadingAddProfile = useRef(false);
   // ADD's wheel button stays filled from the tap until the feed deck closes.
   const [isAddPressed, setIsAddPressed] = useState(false);
-  const partnerPostIds = useMemo(
-    () => partnerPosts.map(p => p._id).filter((id): id is string => !!id),
-    [partnerPosts]
-  );
+  const partnerPostIds = useMemo(() => partnerPosts.map(p => p._id).filter((id): id is string => !!id), [partnerPosts]);
 
   const [internalExpanded, setInternalExpanded] = useState(false);
   const isExpanded = expanded ?? internalExpanded;
@@ -196,7 +201,7 @@ export default function TradeDeck({
   // mode) should disappear as soon as the wheel scrolls away, not linger
   // until the next tap.
   const [scrolledActionType, setScrolledActionType] = useState<TradeActionType | null>(
-    visibleActions[0]?.actionType ?? null
+    visibleActions[0]?.actionType ?? null,
   );
 
   // Refetch once the turn deadline passes (checked each second rather than
@@ -223,7 +228,7 @@ export default function TradeDeck({
   useEffect(() => {
     trade.reset();
     setScrolledActionType(visibleActions[0]?.actionType ?? null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- `trade` is a new object each render; trade.reset is the stable part.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `trade` is a new object each render; trade.reset is the stable part.
   }, [visibleActions, trade.reset]);
 
   const slideAnim = useRef(new Animated.Value(-12)).current;
@@ -236,18 +241,23 @@ export default function TradeDeck({
   // Your saved locations are what WHERE picks from.
   const partnerGroups: DeckGroup[] = useMemo(
     () => [{ user: partnerUser, posts: partnerPosts, proposedLocation: theirLocation, proposedTime: theirTime }],
-    [partnerUser, partnerPosts, theirLocation, theirTime]
+    [partnerUser, partnerPosts, theirLocation, theirTime],
   );
   const playerGroups: DeckGroup[] = useMemo(
-    () => [{
-      user: playerUser, posts: playerPosts, locations: playerUser.locations ?? [],
-      proposedLocation: myLocation, proposedTime: myTime,
-    }],
-    [playerUser, playerPosts, myLocation, myTime]
+    () => [
+      {
+        user: playerUser,
+        posts: playerPosts,
+        locations: playerUser.locations ?? [],
+        proposedLocation: myLocation,
+        proposedTime: myTime,
+      },
+    ],
+    [playerUser, playerPosts, myLocation, myTime],
   );
 
   const slideToDeck = (toPlayer: boolean) => {
-    const toValue = toPlayer ? -(DECK_WIDTH) - 38 : -12;
+    const toValue = toPlayer ? -DECK_WIDTH - 38 : -12;
     Animated.spring(slideAnim, { toValue, useNativeDriver: true, tension: 60, friction: 10 }).start();
     setShowingPlayer(toPlayer);
   };
@@ -302,10 +312,7 @@ export default function TradeDeck({
   // A query needs a typed question (queryText, kept local — see note above).
   // Selecting a partner post is optional: it just tags what the question is
   // about. The hook only knows about the post selection, so this overrides it.
-  const effectiveIsReady =
-    trade.activeAction === 'query'
-      ? queryText.trim().length > 0
-      : trade.isReady;
+  const effectiveIsReady = trade.activeAction === 'query' ? queryText.trim().length > 0 : trade.isReady;
 
   // While QUERY is open the question is about the other player's post on
   // top, following their deck as you swipe. With their user or location card
@@ -435,7 +442,7 @@ export default function TradeDeck({
             onActionComplete?.('query');
           } catch (err) {
             console.error('Query failed:', err);
-          onActionFailed?.('query', err);
+            onActionFailed?.('query', err);
             break;
           }
         }
@@ -528,7 +535,6 @@ export default function TradeDeck({
     enabled: true,
     onHorizontalGestureStart,
     onGestureEnd,
-
   };
 
   return (
@@ -543,8 +549,14 @@ export default function TradeDeck({
               <FontAwesome6 name="circle-user" size={24} color={colors.ui.secondarydisabled} />
               {partnerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {partnerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
-              <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>{pad2(partnerPosts.length)}</Text>
-              <FontAwesome6 name="arrows-rotate" size={24} color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
+              <Text style={[deckStyles.countText, !showingPlayer && styles.activeText]}>
+                {pad2(partnerPosts.length)}
+              </Text>
+              <FontAwesome6
+                name="arrows-rotate"
+                size={24}
+                color={!showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled}
+              />
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.playerBar} onPress={handleSwitchDecks}>
@@ -553,7 +565,11 @@ export default function TradeDeck({
               {playerShowsDateTime && <FontAwesome6 name="clock" size={24} color={colors.ui.secondarydisabled} />}
               {playerShowsLocation && <FontAwesome6 name="circle-dot" size={24} color={colors.ui.secondarydisabled} />}
               <Text style={[deckStyles.countText, showingPlayer && styles.activeText]}>{pad2(playerPosts.length)}</Text>
-              <FontAwesome6 name="arrows-rotate" size={24} color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled} />
+              <FontAwesome6
+                name="arrows-rotate"
+                size={24}
+                color={showingPlayer ? colors.actions.trade : colors.ui.secondarydisabled}
+              />
             </View>
           </TouchableOpacity>
         </View>
@@ -602,60 +618,56 @@ export default function TradeDeck({
         {/* Actions + turns */}
         {isExpanded && (
           <View style={styles.turnsAndButtonColumn}>
-            {!isHistory && (<>
-            <View style={[styles.queryRow, { marginBottom: isQueryActive || isReviewActive ? 4 : 0 }]}>
-              {isReviewActive && (
-                <View style={styles.starGap}>
-                  <StarPicker rating={reviewRating} onChange={n => trade.setSubflowData(n)} />
+            {!isHistory && (
+              <>
+                <View style={[styles.queryRow, { marginBottom: isQueryActive || isReviewActive ? 4 : 0 }]}>
+                  {isReviewActive && (
+                    <View style={styles.starGap}>
+                      <StarPicker rating={reviewRating} onChange={n => trade.setSubflowData(n)} />
+                    </View>
+                  )}
+                  <TradeTurns
+                    turns={[]}
+                    isQueryOpen={isQueryActive || isReviewActive}
+                    onQueryTextChange={setQueryText}
+                    queryPlaceholder={isReviewActive ? 'Write a review (optional)' : undefined}
+                    queryColor={isReviewActive ? colors.actions.review : undefined}
+                  />
                 </View>
-              )}
-              <TradeTurns
-                turns={[]}
-                isQueryOpen={isQueryActive || isReviewActive}
-                onQueryTextChange={setQueryText}
-                queryPlaceholder={isReviewActive ? 'Write a review (optional)' : undefined}
-                queryColor={isReviewActive ? colors.actions.review : undefined}
-              />
-            </View>
-            <View style={styles.actionRow}>
-              <TradeUI
-                actions={visibleActions}
-                onActionSelected={handleActionSelected}
-                activeActionType={trade.activeAction}
-                isReady={effectiveIsReady}
-                selectedCount={trade.selectedPosts.length}
-                topCardIsSelected={topCardIsSelected}
-                isQueryMode={isQueryActive}
-                queryPostSelected={queryPostIndex !== null}
-                onQueryPostSelect={() => {}}
-                onQueryPostDeselect={() => {}}
-                // SUBTRACT picks your top card (ADD opens their feed deck instead).
-                blockedActionTypes={playerTopPostIndex === null ? ['subtract'] : []}
-                onActionChange={setScrolledActionType}
-                turnDeadline={turnDeadline}
-                filledActionType={isAddPressed ? 'add' : null}
-                noTurnClock={isAgreed}
-              />
-            </View>
-            </>)}
+                <View style={styles.actionRow}>
+                  <TradeUI
+                    actions={visibleActions}
+                    onActionSelected={handleActionSelected}
+                    activeActionType={trade.activeAction}
+                    isReady={effectiveIsReady}
+                    selectedCount={trade.selectedPosts.length}
+                    topCardIsSelected={topCardIsSelected}
+                    isQueryMode={isQueryActive}
+                    queryPostSelected={queryPostIndex !== null}
+                    onQueryPostSelect={() => {}}
+                    onQueryPostDeselect={() => {}}
+                    // SUBTRACT picks your top card (ADD opens their feed deck instead).
+                    blockedActionTypes={playerTopPostIndex === null ? ['subtract'] : []}
+                    onActionChange={setScrolledActionType}
+                    turnDeadline={turnDeadline}
+                    filledActionType={isAddPressed ? 'add' : null}
+                    noTurnClock={isAgreed}
+                  />
+                </View>
+              </>
+            )}
             <View style={styles.turnsRow}>
               {(isAgreed || phase === 'completed') && (
                 <View style={styles.dealBox}>
-                  
+                  <Text style={styles.dealLine}>You give: {playerPosts.map(p => p.name).join(', ') || '—'}</Text>
+                  <Text style={styles.dealLine}>You get: {partnerPosts.map(p => p.name).join(', ') || '—'}</Text>
                   <Text style={styles.dealLine}>
-                    You give: {playerPosts.map(p => p.name).join(', ') || '—'}
-                  </Text>
-                  <Text style={styles.dealLine}>
-                    You get: {partnerPosts.map(p => p.name).join(', ') || '—'}
-                  </Text>
-                  <Text style={styles.dealLine}>
-                    Where: {proposals.where
+                    Where:{' '}
+                    {proposals.where
                       ? `${proposals.where.location.name}${proposals.where.location.description ? ` (${proposals.where.location.description})` : ''}`
                       : '—'}
                   </Text>
-                  <Text style={styles.dealLine}>
-                    When: {proposals.when?.label ?? '—'}
-                  </Text>
+                  <Text style={styles.dealLine}>When: {proposals.when?.label ?? '—'}</Text>
                   <Text style={styles.dealLine}>
                     With: {[partnerUser.first_name, partnerUser.last_name].filter(Boolean).join(' ')}
                   </Text>
@@ -692,10 +704,13 @@ export default function TradeDeck({
 
         {gameId && (
           <FeedDeck
-            postId={addProfile ? partnerPostIds[0] ?? null : null}
+            postId={addProfile ? (partnerPostIds[0] ?? null) : null}
             prefetchedProfile={addProfile}
             visible={isAddDeckOpen}
-            onClose={() => { setIsAddDeckOpen(false); setIsAddPressed(false); }}
+            onClose={() => {
+              setIsAddDeckOpen(false);
+              setIsAddPressed(false);
+            }}
             addGameId={gameId}
             excludePostIds={partnerPostIds}
             onAdded={() => onActionComplete?.('add')}
@@ -724,7 +739,7 @@ const styles = StyleSheet.create({
   },
   turnsAndButtonColumn: { flexDirection: 'column', width: DECK_BAR_WIDTH },
   queryRow: {},
-  actionRow: {marginBottom: -2},
+  actionRow: { marginBottom: -2 },
   turnsRow: {},
   // Deal summary atop the log once both players accept the meetup:
   // rectangular, in the app's main color, white text.

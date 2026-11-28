@@ -8,7 +8,13 @@ jest.mock('@/lib/api', () => ({ apiJson: jest.fn() }));
 jest.mock('@/lib/safety', () => ({ onBlockChange: () => () => {} }));
 jest.mock('@/components/DeckFeed', () => ({ __esModule: true, default: () => null }));
 const mockBar: Record<string, any> = {};
-jest.mock('@/components/BarFeed', () => ({ __esModule: true, default: (p: any) => { Object.assign(mockBar, p); return null; } }));
+jest.mock('@/components/BarFeed', () => ({
+  __esModule: true,
+  default: (p: any) => {
+    Object.assign(mockBar, p);
+    return null;
+  },
+}));
 jest.mock('expo-image', () => {
   const { View } = require('react-native');
   const Image = (props: any) => <View {...props} />;
@@ -25,9 +31,17 @@ import { getFeedPage, FEED_PAGE_SIZE } from '@/services/feedService';
 import FeedScreen from '@/app/(tabs)/feed';
 
 const api = apiJson as jest.Mock;
-const serverPost = (n: number) => ({ _id: `p${n}`, post_title: `Post ${n}`, photos: [], date_posted: '', distance_mi: n });
-const serverPage = (from: number, count: number, nextOffset: number | null) =>
-  ({ posts: Array.from({ length: count }, (_, i) => serverPost(from + i)), nextOffset });
+const serverPost = (n: number) => ({
+  _id: `p${n}`,
+  post_title: `Post ${n}`,
+  photos: [],
+  date_posted: '',
+  distance_mi: n,
+});
+const serverPage = (from: number, count: number, nextOffset: number | null) => ({
+  posts: Array.from({ length: count }, (_, i) => serverPost(from + i)),
+  nextOffset,
+});
 
 beforeEach(() => api.mockReset());
 
@@ -49,7 +63,10 @@ test('a search is paged the same way', async () => {
 
 // ── the screen ───────────────────────────────────────────────────────────────
 
-const flush = () => act(async () => { for (let i = 0; i < 5; i++) await new Promise(r => setTimeout(r, 0)); });
+const flush = () =>
+  act(async () => {
+    for (let i = 0; i < 5; i++) await new Promise(r => setTimeout(r, 0));
+  });
 const scrollToBottom = async () => {
   await fireEvent.scroll(screen.getByTestId('feed-scroll'), {
     nativeEvent: { contentOffset: { y: 2000 }, layoutMeasurement: { height: 800 }, contentSize: { height: 2400 } },
@@ -73,28 +90,34 @@ test('near the bottom it adds the next page, once, until there are no more', asy
   await scrollToBottom();
   expect(api).toHaveBeenLastCalledWith(expect.stringContaining('offset=24'));
   expect(shown()).toHaveLength(34);
-  await scrollToBottom();           // that was the last page: nothing more to ask for
+  await scrollToBottom(); // that was the last page: nothing more to ask for
   expect(api).toHaveBeenCalledTimes(2);
 });
 
 test('scrolling while a page is loading asks for it only once', async () => {
   let release!: (v: unknown) => void;
-  api.mockResolvedValueOnce(serverPage(0, 24, 24))
-     .mockImplementationOnce(() => new Promise(r => { release = r; }));
+  api.mockResolvedValueOnce(serverPage(0, 24, 24)).mockImplementationOnce(
+    () =>
+      new Promise(r => {
+        release = r;
+      }),
+  );
   await render(<FeedScreen />);
   await flush();
   await scrollToBottom();
   await scrollToBottom();
   expect(api).toHaveBeenCalledTimes(2);
   expect(screen.getByTestId('feed-loading-more')).toBeTruthy();
-  await act(async () => { release(serverPage(24, 3, null)); });
+  await act(async () => {
+    release(serverPage(24, 3, null));
+  });
   await flush();
   expect(screen.queryByTestId('feed-loading-more')).toBeNull();
   expect(shown()).toHaveLength(27);
 });
 
 test("a post that shifted onto the next page isn't shown twice", async () => {
-  api.mockResolvedValueOnce(serverPage(0, 24, 24)).mockResolvedValueOnce(serverPage(23, 3, null));  // p23 again
+  api.mockResolvedValueOnce(serverPage(0, 24, 24)).mockResolvedValueOnce(serverPage(23, 3, null)); // p23 again
   await render(<FeedScreen />);
   await flush();
   await scrollToBottom();
@@ -103,12 +126,16 @@ test("a post that shifted onto the next page isn't shown twice", async () => {
 });
 
 test('changing the sort starts over from the first page', async () => {
-  api.mockResolvedValueOnce(serverPage(0, 24, 24)).mockResolvedValueOnce(serverPage(24, 24, 48))
-     .mockResolvedValueOnce(serverPage(100, 24, 24));
+  api
+    .mockResolvedValueOnce(serverPage(0, 24, 24))
+    .mockResolvedValueOnce(serverPage(24, 24, 48))
+    .mockResolvedValueOnce(serverPage(100, 24, 24));
   await render(<FeedScreen />);
   await flush();
   await scrollToBottom();
-  await act(async () => { mockBar.onSortPress(); });
+  await act(async () => {
+    mockBar.onSortPress();
+  });
   await fireEvent.press(screen.getByText('Newest'));
   await flush();
   expect(api).toHaveBeenLastCalledWith(expect.stringContaining('sort=newest&limit=24&offset=0'));
@@ -117,13 +144,19 @@ test('changing the sort starts over from the first page', async () => {
 });
 
 test('a search starts over too, and its next page stays in the search', async () => {
-  api.mockResolvedValueOnce(serverPage(0, 24, 24)).mockResolvedValueOnce(serverPage(50, 24, 24))
-     .mockResolvedValueOnce(serverPage(74, 2, null));
+  api
+    .mockResolvedValueOnce(serverPage(0, 24, 24))
+    .mockResolvedValueOnce(serverPage(50, 24, 24))
+    .mockResolvedValueOnce(serverPage(74, 2, null));
   await render(<FeedScreen />);
   await flush();
-  await act(async () => { await mockBar.onSearchSubmit('lamp'); });
+  await act(async () => {
+    await mockBar.onSearchSubmit('lamp');
+  });
   await flush();
-  expect(api).toHaveBeenLastCalledWith(expect.stringMatching(/^\/dev\/feed\/search\?q=lamp&sort=nearest&limit=24&offset=0$/));
+  expect(api).toHaveBeenLastCalledWith(
+    expect.stringMatching(/^\/dev\/feed\/search\?q=lamp&sort=nearest&limit=24&offset=0$/),
+  );
   await scrollToBottom();
   expect(api).toHaveBeenLastCalledWith(expect.stringMatching(/^\/dev\/feed\/search\?q=lamp&.*offset=24$/));
   expect(shown()).toHaveLength(26);

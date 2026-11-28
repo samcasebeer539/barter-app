@@ -49,7 +49,11 @@ export async function uploadProfilePhoto(pickedUri: string): Promise<string> {
   const uid = getAuth().currentUser?.uid;
   // Storage rules only allow profile_photos/<uid>.<extension>, so keep the
   // picked file's extension (jpg if it has none).
-  const ext = localUri.split('?')[0].match(/\.([a-zA-Z0-9]+)$/)?.[1]?.toLowerCase() ?? 'jpg';
+  const ext =
+    localUri
+      .split('?')[0]
+      .match(/\.([a-zA-Z0-9]+)$/)?.[1]
+      ?.toLowerCase() ?? 'jpg';
   const storageRef = ref(storage, `profile_photos/${uid}.${ext}`);
 
   await uploadBytes(storageRef, blob);

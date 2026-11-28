@@ -6,12 +6,12 @@ name: App tests
 on:
   push:
     paths-ignore:
-      - "backend/**"
-      - "**.md"
+      - 'backend/**'
+      - '**.md'
   pull_request:
     paths-ignore:
-      - "backend/**"
-      - "**.md"
+      - 'backend/**'
+      - '**.md'
   workflow_dispatch:
 
 jobs:

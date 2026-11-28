@@ -11,13 +11,19 @@ const legal = JSON.parse(readFileSync(new URL('config/legal.json', root), 'utf8'
 
 export function toMarkdown(title, sections) {
   const contact = legal.supportEmail ? `\n\nContact: ${legal.supportEmail}` : '';
-  return [
-    `# Win-Win ${title}`,
-    '',
-    `Effective ${legal.effectiveDate}`,
-    '',
-    ...sections.flatMap(s => [`## ${s.heading}`, '', s.body, '']),
-  ].join('\n').trimEnd() + contact + '\n';
+  return (
+    [
+      `# Win-Win ${title}`,
+      '',
+      `Effective ${legal.effectiveDate}`,
+      '',
+      ...sections.flatMap(s => [`## ${s.heading}`, '', s.body, '']),
+    ]
+      .join('\n')
+      .trimEnd() +
+    contact +
+    '\n'
+  );
 }
 
 export const outputs = {
@@ -31,8 +37,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (const [path, text] of Object.entries(outputs)) {
     if (check) {
       let current = '';
-      try { current = readFileSync(new URL(path, root), 'utf8'); } catch {}
-      if (current !== text) { stale = true; console.error(`${path} is out of date: run npm run legal:export`); }
+      try {
+        current = readFileSync(new URL(path, root), 'utf8');
+      } catch {}
+      if (current !== text) {
+        stale = true;
+        console.error(`${path} is out of date: run npm run legal:export`);
+      }
     } else {
       writeFileSync(new URL(path, root), text);
       console.log(`wrote ${path}`);

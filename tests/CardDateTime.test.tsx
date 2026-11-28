@@ -11,7 +11,9 @@ jest.mock('@expo/vector-icons', () => {
 
 import CardDateTime from '@/components/CardDateTime';
 
-beforeEach(() => { jest.useFakeTimers({ now: new Date(2026, 10, 27, 17, 0) }); });  // Fri Nov 27, 5 PM local
+beforeEach(() => {
+  jest.useFakeTimers({ now: new Date(2026, 10, 27, 17, 0) });
+}); // Fri Nov 27, 5 PM local
 afterEach(() => jest.useRealTimers());
 
 async function pickMondayAt(time: string) {
@@ -22,7 +24,7 @@ async function pickMondayAt(time: string) {
   await fireEvent.press(screen.getByText(time));
 }
 
-test("pick a date (three days out at the earliest), then a time", async () => {
+test('pick a date (three days out at the earliest), then a time', async () => {
   await render(<CardDateTime />);
   expect(screen.getByText('Propose a Meetup Time')).toBeTruthy();
   await fireEvent.press(screen.getByText('Date'));
@@ -34,8 +36,12 @@ test("pick a date (three days out at the earliest), then a time", async () => {
 });
 
 test.each([
-  ['7:00 AM', 7], ['11:00 AM', 11], ['12:00 PM', 12], ['3:00 PM', 15], ['8:00 PM', 20],
-])('WHEN sends %s as that moment on that day, in the phone\'s time zone', async (time, hour) => {
+  ['7:00 AM', 7],
+  ['11:00 AM', 11],
+  ['12:00 PM', 12],
+  ['3:00 PM', 15],
+  ['8:00 PM', 20],
+])("WHEN sends %s as that moment on that day, in the phone's time zone", async (time, hour) => {
   const onProposeTime = jest.fn();
   await render(<CardDateTime isSelectMode onProposeTime={onProposeTime} />);
   await pickMondayAt(time);

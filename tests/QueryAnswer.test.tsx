@@ -37,7 +37,7 @@ test('sends the answer, then clears the box', async () => {
   expect(wheel().activeActionType).toBeNull();
 });
 
-test("in the QUERIES drawer, a failed answer says why and keeps your answer", async () => {
+test('in the QUERIES drawer, a failed answer says why and keeps your answer', async () => {
   (answerQuery as jest.Mock).mockRejectedValueOnce(new ApiError('This trade has ended', 409));
   await render(<QueryAnswer queryId="q1" questionTurn={question} />);
   await answer('Large');

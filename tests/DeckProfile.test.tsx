@@ -24,7 +24,15 @@ jest.mock('@/lib/api', () => ({ apiJson: jest.fn(), apiJsonIfChanged: jest.fn() 
 import DeckProfile from '@/components/DeckProfile';
 import { sendGameQuery } from '@/services/tradeService';
 import {
-  resetRecorders, wheel, deck, swipeTo, scrollWheelTo, press, confirm, typeQuestion, turnLogs,
+  resetRecorders,
+  wheel,
+  deck,
+  swipeTo,
+  scrollWheelTo,
+  press,
+  confirm,
+  typeQuestion,
+  turnLogs,
 } from './helpers/deckRecorders';
 
 const post = (id: string, name: string) => ({ _id: id, name, description: '', photos: [], date_posted: '' });
@@ -32,12 +40,20 @@ const me = { _id: 'me', first_name: 'Alice', last_name: 'T', locations: [] } as 
 const myPosts = [post('lamp', 'Lamp'), post('vase', 'Vase')];
 // Two people offered on my lamp: Bob (posts 0-1) and Cara (post 2).
 const offerers = [
-  { gameId: 'gBob', profile: { user: { _id: 'bob', first_name: 'Bob' }, posts: [post('chair', 'Chair'), post('desk', 'Desk')] } },
+  {
+    gameId: 'gBob',
+    profile: { user: { _id: 'bob', first_name: 'Bob' }, posts: [post('chair', 'Chair'), post('desk', 'Desk')] },
+  },
   { gameId: 'gCara', profile: { user: { _id: 'cara', first_name: 'Cara' }, posts: [post('rug', 'Rug')] } },
 ] as any;
 const incomingOffers = [
-  { gameId: 'gBob', targetPostId: 'lamp', fromUserId: 'bob', fromUserName: 'Bob',
-    myQueries: [{ tradeId: 'q1', question: 'Any scratches?', answer: 'None' }] },
+  {
+    gameId: 'gBob',
+    targetPostId: 'lamp',
+    fromUserId: 'bob',
+    fromUserName: 'Bob',
+    myQueries: [{ tradeId: 'q1', question: 'Any scratches?', answer: 'None' }],
+  },
   { gameId: 'gCara', targetPostId: 'lamp', fromUserId: 'cara', fromUserName: 'Cara', myQueries: [] },
 ] as any;
 
@@ -45,8 +61,16 @@ beforeEach(() => resetRecorders());
 
 async function open(props: Partial<React.ComponentProps<typeof DeckProfile>> = {}) {
   await render(
-    <DeckProfile posts={myPosts} primaryUser={me} secondaryOfferers={offerers} incomingOffers={incomingOffers}
-      isDeckRevealed hasIncomingOffers toggleEnabled {...props} />,
+    <DeckProfile
+      posts={myPosts}
+      primaryUser={me}
+      secondaryOfferers={offerers}
+      incomingOffers={incomingOffers}
+      isDeckRevealed
+      hasIncomingOffers
+      toggleEnabled
+      {...props}
+    />,
   );
 }
 
@@ -69,7 +93,9 @@ test("the offer's history shows under the wheel: your question, their answer, th
   await swipeTo(0, { deck: 'theirs', group: 0 });
   const log = turnLogs().find(t => t.turns?.length)!.turns;
   expect(log.map((t: any) => [t.type, t.item])).toEqual([
-    ['turnQuery', 'Any scratches?'], ['turnAnswer', 'None'], ['turnOffer', 'Lamp'],
+    ['turnQuery', 'Any scratches?'],
+    ['turnAnswer', 'None'],
+    ['turnOffer', 'Lamp'],
   ]);
 });
 
@@ -103,12 +129,20 @@ test("tapping cards directly works the same: one offerer's posts per barter", as
   const { act } = require('@testing-library/react-native');
   const onBarterSubmit = jest.fn();
   await open({ onBarterSubmit });
-  await act(async () => { deck('theirs').onSelectPost(0); });   // Bob's chair
-  await act(async () => { deck('theirs').onSelectPost(1); });   // Bob's desk
+  await act(async () => {
+    deck('theirs').onSelectPost(0);
+  }); // Bob's chair
+  await act(async () => {
+    deck('theirs').onSelectPost(1);
+  }); // Bob's desk
   expect(wheel()).toMatchObject({ activeActionType: 'barter', selectedCount: 2 });
-  await act(async () => { deck('theirs').onSelectPost(2); });   // Cara's rug: starts over
+  await act(async () => {
+    deck('theirs').onSelectPost(2);
+  }); // Cara's rug: starts over
   expect(wheel().selectedCount).toBe(1);
-  await act(async () => { deck('theirs').onSelectPost(2); });   // tap again: unpicked
+  await act(async () => {
+    deck('theirs').onSelectPost(2);
+  }); // tap again: unpicked
   expect(wheel().selectedCount).toBe(0);
 });
 
@@ -127,7 +161,7 @@ test("query: asks the offerer about their post on top, in that offer's game", as
   expect(onQueryAsked).toHaveBeenCalled();
 });
 
-test("a failed question says so and keeps the box open with what you typed", async () => {
+test('a failed question says so and keeps the box open with what you typed', async () => {
   const { ApiError } = jest.requireActual('@/lib/apiError');
   (sendGameQuery as jest.Mock).mockRejectedValueOnce(new ApiError('That item has already been traded', 409));
   jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -156,7 +190,7 @@ test("swiping to an offerer's user card closes an open question", async () => {
 test('decline: turns down the offer of whoever is on top', async () => {
   const onDeclineSubmit = jest.fn();
   await open({ onDeclineSubmit });
-  await swipeTo(null, { deck: 'theirs', group: 1 });  // Cara's user card: decline still works
+  await swipeTo(null, { deck: 'theirs', group: 1 }); // Cara's user card: decline still works
   await scrollWheelTo('decline');
   await press('decline');
   await confirm('decline');
@@ -166,8 +200,15 @@ test('decline: turns down the offer of whoever is on top', async () => {
 // ── the QUERIES / OFFERS buttons ─────────────────────────────────────────────
 
 test('QUERIES opens the questions people asked you, and closes again', async () => {
-  const q = { tradeId: 't1', gameId: 'g9', targetPostId: 'lamp', fromUserId: 'dan', fromUserName: 'Dan',
-              itemName: 'Lamp', question: 'Is it dimmable?' };
+  const q = {
+    tradeId: 't1',
+    gameId: 'g9',
+    targetPostId: 'lamp',
+    fromUserId: 'dan',
+    fromUserName: 'Dan',
+    itemName: 'Lamp',
+    question: 'Is it dimmable?',
+  };
   await open({ incomingQueries: [q] });
   expect(screen.queryByText('asked: Is it dimmable?')).toBeNull();
   await fireEvent.press(screen.getByText('QUERIES'));
@@ -184,7 +225,7 @@ test('with no questions, QUERIES does nothing', async () => {
 
 test('OFFERS shows counts as on-this-post / total', async () => {
   await open({ totalOfferCount: 5, totalQueryCount: 0, incomingQueries: [] });
-  expect(screen.getByText(/^02\//)).toBeTruthy();  // 2 offerers on this post
+  expect(screen.getByText(/^02\//)).toBeTruthy(); // 2 offerers on this post
   expect(screen.getByText('05')).toBeTruthy();
 });
 
@@ -193,10 +234,9 @@ test("with no offers, the offerers' deck isn't shown", async () => {
   expect(() => deck('theirs')).toThrow();
 });
 
-
 // ── your own posts ───────────────────────────────────────────────────────────
 
-test("a post that fails to save says why", async () => {
+test('a post that fails to save says why', async () => {
   const { act } = require('@testing-library/react-native');
   const { ApiError } = jest.requireActual('@/lib/apiError');
   const { updatePost } = require('@/services/postService');
@@ -204,6 +244,8 @@ test("a post that fails to save says why", async () => {
   jest.spyOn(console, 'warn').mockImplementation(() => {});
   const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   await open();
-  await act(async () => { await deck('mine').onSavePost({ ...myPosts[0], name: 'Desk lamp' }); });
+  await act(async () => {
+    await deck('mine').onSavePost({ ...myPosts[0], name: 'Desk lamp' });
+  });
   expect(alert).toHaveBeenCalledWith("Couldn't save your post", "This item is in an active trade and can't be edited");
 });

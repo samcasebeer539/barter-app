@@ -20,7 +20,11 @@ jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   return { FontAwesome6: ({ name }: { name: string }) => <Text>{`icon:${name}`}</Text> };
 });
-const mockDevice = { allowed: true, permission: 'granted', position: { coords: { latitude: 40.7, longitude: -74 } } as any };
+const mockDevice = {
+  allowed: true,
+  permission: 'granted',
+  position: { coords: { latitude: 40.7, longitude: -74 } } as any,
+};
 jest.mock('@/lib/settingsCache', () => ({
   getSettings: async () => ({ locationAllowed: mockDevice.allowed, notificationsEnabled: true }),
   updateSettingsCache: jest.fn(),
@@ -35,15 +39,30 @@ jest.mock('expo-location', () => ({
 import CardMeetingLocation from '@/components/CardMeetingLocation';
 import { TEXT_LIMITS } from '@/config/textLimits';
 
-const spot = (id: string, name: string, lat = 37, lon = -122) => ({ id, name, description: '', latitude: lat, longitude: lon });
-const flush = () => act(async () => { for (let i = 0; i < 6; i++) await new Promise(r => setTimeout(r, 0)); });
+const spot = (id: string, name: string, lat = 37, lon = -122) => ({
+  id,
+  name,
+  description: '',
+  latitude: lat,
+  longitude: lon,
+});
+const flush = () =>
+  act(async () => {
+    for (let i = 0; i < 6; i++) await new Promise(r => setTimeout(r, 0));
+  });
 const tapMap = (latitude = 37.5, longitude = -122.5) =>
-  act(async () => { mockMap.props.onPress({ nativeEvent: { coordinate: { latitude, longitude } } }); });
+  act(async () => {
+    mockMap.props.onPress({ nativeEvent: { coordinate: { latitude, longitude } } });
+  });
 const icons = (name: string) => screen.queryAllByText(`icon:${name}`);
 
 beforeEach(() => {
   mockMap.animateToRegion.mockClear();
-  Object.assign(mockDevice, { allowed: true, permission: 'granted', position: { coords: { latitude: 40.7, longitude: -74 } } });
+  Object.assign(mockDevice, {
+    allowed: true,
+    permission: 'granted',
+    position: { coords: { latitude: 40.7, longitude: -74 } },
+  });
 });
 
 // ── your saved locations ─────────────────────────────────────────────────────
@@ -68,7 +87,7 @@ test('adding one: drop a pin, name it (description optional), save the whole lis
 
   await fireEvent.changeText(name, '   ');
   await fireEvent.press(icons('circle-check')[0]);
-  expect(onConfirm).not.toHaveBeenCalled();                       // needs a name
+  expect(onConfirm).not.toHaveBeenCalled(); // needs a name
 
   await fireEvent.changeText(name, '  Park  ');
   await fireEvent.changeText(screen.getByPlaceholderText('Description (optional)'), ' by the fountain ');
@@ -94,7 +113,9 @@ test('cancelling the name saves nothing', async () => {
 
 test('removing one saves the list without it', async () => {
   const onConfirm = jest.fn();
-  await render(<CardMeetingLocation initialLocations={[spot('a', 'Library'), spot('b', 'Park')]} onConfirm={onConfirm} />);
+  await render(
+    <CardMeetingLocation initialLocations={[spot('a', 'Library'), spot('b', 'Park')]} onConfirm={onConfirm} />,
+  );
   await fireEvent.press(icons('circle-xmark')[0]);
   expect(onConfirm).toHaveBeenCalledWith([spot('b', 'Park')]);
   expect(screen.queryByText('Library')).toBeNull();
@@ -123,9 +144,16 @@ test('if saving fails and the screen puts the old list back, the card shows it t
 // ── WHERE in a trade ─────────────────────────────────────────────────────────
 
 test('picking a spot for WHERE: tap to pick, tap again to unpick; the map and editing are off', async () => {
-  const onProposeLocation = jest.fn(), onConfirm = jest.fn();
-  await render(<CardMeetingLocation initialLocations={[spot('a', 'Library')]} isSelectMode
-    onProposeLocation={onProposeLocation} onConfirm={onConfirm} />);
+  const onProposeLocation = jest.fn(),
+    onConfirm = jest.fn();
+  await render(
+    <CardMeetingLocation
+      initialLocations={[spot('a', 'Library')]}
+      isSelectMode
+      onProposeLocation={onProposeLocation}
+      onConfirm={onConfirm}
+    />,
+  );
   expect(screen.queryByText('Location')).toBeNull();
   expect(icons('circle-xmark')).toHaveLength(0);
   await tapMap();
@@ -157,26 +185,32 @@ test("someone else's spots: choose one (at most three are shown)", async () => {
 
 // ── where the map starts ─────────────────────────────────────────────────────
 
-test("starts around your saved locations (without asking the phone where it is)", async () => {
+test('starts around your saved locations (without asking the phone where it is)', async () => {
   const Location = require('expo-location');
   Location.getForegroundPermissionsAsync.mockClear();
   await render(<CardMeetingLocation initialLocations={[spot('a', 'A', 37, -122), spot('b', 'B', 38, -121)]} />);
   await flush();
   expect(mockMap.props.initialRegion).toMatchObject({ latitude: 37.5, longitude: -121.5 });
   expect(Location.getForegroundPermissionsAsync).not.toHaveBeenCalled();
-  expect(mockMap.animateToRegion).not.toHaveBeenCalledWith(expect.objectContaining({ latitude: 40.7 }), expect.anything());
+  expect(mockMap.animateToRegion).not.toHaveBeenCalledWith(
+    expect.objectContaining({ latitude: 40.7 }),
+    expect.anything(),
+  );
 });
 
 test('with none saved: your area, if Location Services is on and allowed', async () => {
   await render(<CardMeetingLocation initialLocations={[]} />);
   await flush();
-  expect(mockMap.animateToRegion).toHaveBeenCalledWith(expect.objectContaining({ latitude: 40.7, longitude: -74 }), 300);
+  expect(mockMap.animateToRegion).toHaveBeenCalledWith(
+    expect.objectContaining({ latitude: 40.7, longitude: -74 }),
+    300,
+  );
 });
 
 test.each([
   ['Location Services off in settings', { allowed: false }],
   ['no permission on the phone', { permission: 'denied' }],
-])("with none saved and %s: stays on the default (Santa Cruz)", async (_label, device) => {
+])('with none saved and %s: stays on the default (Santa Cruz)', async (_label, device) => {
   Object.assign(mockDevice, device);
   await render(<CardMeetingLocation initialLocations={[]} />);
   await flush();

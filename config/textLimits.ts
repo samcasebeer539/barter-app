@@ -12,6 +12,6 @@ export const TEXT_LIMITS = {
   phone: 20,
   locationName: 40,
   locationDescription: 200,
-  message: 500,      // questions, answers and reviews
+  message: 500, // questions, answers and reviews
   search: 100,
 } as const;

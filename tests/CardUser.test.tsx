@@ -14,7 +14,10 @@ jest.mock('expo-image', () => {
 });
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
 jest.mock('@/lib/safety', () => ({
-  useIsBlocked: () => false, confirmBlock: jest.fn(), confirmUnblock: jest.fn(), startReport: jest.fn(),
+  useIsBlocked: () => false,
+  confirmBlock: jest.fn(),
+  confirmUnblock: jest.fn(),
+  startReport: jest.fn(),
 }));
 jest.mock('@/services/userService', () => ({
   uploadProfilePhoto: jest.fn(),
@@ -27,10 +30,22 @@ import { getUserReviews, getCachedReviews } from '@/services/userService';
 import { TEXT_LIMITS } from '@/config/textLimits';
 
 const ana = {
-  _id: 'ana', first_name: 'Ana', last_name: 'Ruiz', email: 'ana@example.com', phone: '555-0100', pronouns: 'she/her', bio: 'Hi',
-  email_visible: false, phone_visible: false, rating: 4, reviewCount: 2,
+  _id: 'ana',
+  first_name: 'Ana',
+  last_name: 'Ruiz',
+  email: 'ana@example.com',
+  phone: '555-0100',
+  pronouns: 'she/her',
+  bio: 'Hi',
+  email_visible: false,
+  phone_visible: false,
+  rating: 4,
+  reviewCount: 2,
 } as any;
-const flush = () => act(async () => { for (let i = 0; i < 4; i++) await new Promise(r => setTimeout(r, 0)); });
+const flush = () =>
+  act(async () => {
+    for (let i = 0; i < 4; i++) await new Promise(r => setTimeout(r, 0));
+  });
 
 // ── viewing ──────────────────────────────────────────────────────────────────
 
@@ -59,7 +74,7 @@ test('hidden contacts show as dots, one per character', async () => {
 test('the eyes show / hide each contact; saved with the check mark', async () => {
   const { cb, el } = editing();
   await render(el);
-  await fireEvent.press(screen.getAllByText('icon:eye-slash')[0]);   // email
+  await fireEvent.press(screen.getAllByText('icon:eye-slash')[0]); // email
   expect(screen.getByText('ana@example.com')).toBeTruthy();
   await fireEvent.press(screen.getByText('icon:circle-check'));
   expect(cb.onSave).toHaveBeenCalledWith(expect.objectContaining({ email_visible: true, phone_visible: false }));
@@ -74,8 +89,8 @@ test('tapping the dots opens the hidden number to edit; what you type is kept', 
   expect(phone.props.maxLength).toBe(TEXT_LIMITS.phone);
   await fireEvent.changeText(phone, '555-0199');
   await fireEvent(phone, 'blur');
-  expect(screen.getByText('•'.repeat(8))).toBeTruthy();             // hidden again, new number
-  await fireEvent.press(screen.getAllByText('icon:eye-slash')[1]);  // show the phone: still what you typed
+  expect(screen.getByText('•'.repeat(8))).toBeTruthy(); // hidden again, new number
+  await fireEvent.press(screen.getAllByText('icon:eye-slash')[1]); // show the phone: still what you typed
   expect(screen.getByPlaceholderText('Phone (optional)').props.value).toBe('555-0199');
   await fireEvent.press(screen.getByText('icon:circle-check'));
   expect(cb.onSave.mock.calls[0][0]).toMatchObject({ phone: '555-0199', phone_visible: true });
@@ -101,9 +116,9 @@ test('X throws away every change, the eyes included', async () => {
   await fireEvent.press(screen.getByText('icon:circle-xmark'));
   expect(cb.onSave).not.toHaveBeenCalled();
   expect(cb.onExitEdit).toHaveBeenCalled();
-  await rerender(editing().el);   // back into edit: the original values
+  await rerender(editing().el); // back into edit: the original values
   expect(screen.getByPlaceholderText('Tell others about yourself (optional)').props.value).toBe('Hi');
-  expect(screen.getByText('•'.repeat('ana@example.com'.length))).toBeTruthy();   // email hidden again
+  expect(screen.getByText('•'.repeat('ana@example.com'.length))).toBeTruthy(); // email hidden again
 });
 
 // ── reviews ──────────────────────────────────────────────────────────────────
@@ -130,7 +145,9 @@ test('one review reads "(1 review)"; none says so', async () => {
 
 test('reviews already loaded this session show at once, without asking again', async () => {
   (getUserReviews as jest.Mock).mockClear();
-  (getCachedReviews as jest.Mock).mockReturnValueOnce([{ _id: 'r1', rating: 4, text: '', reviewerName: 'Cara', createdAt: null }]);
+  (getCachedReviews as jest.Mock).mockReturnValueOnce([
+    { _id: 'r1', rating: 4, text: '', reviewerName: 'Cara', createdAt: null },
+  ]);
   await render(<CardUser user={ana} />);
   await fireEvent.press(screen.getByText('(2 reviews)'));
   expect(screen.getByText('Cara')).toBeTruthy();
@@ -144,8 +161,8 @@ test('if reviews fail to load, says so and tries again next time', async () => {
   await fireEvent.press(screen.getByText('(2 reviews)'));
   await flush();
   expect(screen.getByText("Couldn't load reviews")).toBeTruthy();
-  await fireEvent.press(screen.getAllByText('(2 reviews)')[0]);   // close
-  await fireEvent.press(screen.getAllByText('(2 reviews)')[0]);   // open again
+  await fireEvent.press(screen.getAllByText('(2 reviews)')[0]); // close
+  await fireEvent.press(screen.getAllByText('(2 reviews)')[0]); // open again
   await flush();
   expect(getUserReviews).toHaveBeenCalledTimes(2);
   expect(screen.getByText('No reviews yet')).toBeTruthy();

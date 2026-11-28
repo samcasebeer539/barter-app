@@ -1,106 +1,106 @@
 export interface Post {
-    _id?: string;
-    name: string;
-    description: string;
-    photos: string[];
-    date_posted: string;
-    /** Your post is in an active trade, so it can't be edited. */
-    inTrade?: boolean;
+  _id?: string;
+  name: string;
+  description: string;
+  photos: string[];
+  date_posted: string;
+  /** Your post is in an active trade, so it can't be edited. */
+  inTrade?: boolean;
 }
 export interface LocationEntry {
-    id: string;
-    latitude: number;
-    longitude: number;
-    name: string;
-    description: string;
+  id: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  description: string;
 }
 
 export interface User {
-    _id?: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone?: string;
-    pronouns?: string;
-    bio: string;
-    profileImageUrl: string;
-    rating?: number;
-    reviewCount?: number;
-    email_visible: boolean;
-    phone_visible: boolean;
-    locations: LocationEntry[];
+  _id?: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  pronouns?: string;
+  bio: string;
+  profileImageUrl: string;
+  rating?: number;
+  reviewCount?: number;
+  email_visible: boolean;
+  phone_visible: boolean;
+  locations: LocationEntry[];
 }
 
 export interface Locations {
-    id: string;
-    latitude: number;
-    longitude: number;
-    name: string;
-    description: string;
+  id: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  description: string;
 }
 
 export interface FeedItem {
-    id: string;
-    title: string;
-    image: string;
-    date_posted: string;
-    /** Miles between your nearest saved location and the poster's nearest;
-     *  null if either of you has none saved. */
-    distanceMi: number | null;
+  id: string;
+  title: string;
+  image: string;
+  date_posted: string;
+  /** Miles between your nearest saved location and the poster's nearest;
+   *  null if either of you has none saved. */
+  distanceMi: number | null;
 }
 
 export interface FeedProfile {
-    user: {
-        _id?: string;
-        first_name: string;
-        last_name: string;
-        pronouns?: string;
-        email: string;
-        phone?: string;
-        bio: string;
-        profileImageUrl: string;
-        email_visible: boolean;
-        phone_visible: boolean;
-        locations: Locations[];
-        rating?: number;
-        reviewCount?: number;
-    };
-    posts: {
-        _id: string;
-        name: string;
-        description: string;
-        photos: string[];
-        date_posted: string;
-    }[];
-    tappedPostId: string;
+  user: {
+    _id?: string;
+    first_name: string;
+    last_name: string;
+    pronouns?: string;
+    email: string;
+    phone?: string;
+    bio: string;
+    profileImageUrl: string;
+    email_visible: boolean;
+    phone_visible: boolean;
+    locations: Locations[];
+    rating?: number;
+    reviewCount?: number;
+  };
+  posts: {
+    _id: string;
+    name: string;
+    description: string;
+    photos: string[];
+    date_posted: string;
+  }[];
+  tappedPostId: string;
 }
 
 export interface PostRecord {
-    _id: string;
-    post_title: string;
-    user_id: string;
-    photos: string[];
-    description: string;
-    date_posted: string;
-    trade_history: object;
-    incoming_offers: any[];
-    in_trade?: boolean;
+  _id: string;
+  post_title: string;
+  user_id: string;
+  photos: string[];
+  description: string;
+  date_posted: string;
+  trade_history: object;
+  incoming_offers: any[];
+  in_trade?: boolean;
 }
 
 export interface OpenTradeItem {
-    tradeId: string;
-    gameId: string;
-    type: string;
-    post: Post | null;
-    actorId?: string;
-    messages?: QueryMessage[];
-    /** The game's whole history for the card's turn log: its raw turns
-     *  (oldest first), your id, the other player's first name, and the posts
-     *  the turns mention (for their names). */
-    rawTurns?: any[];
-    myId?: string;
-    partnerName?: string;
-    turnPosts?: Post[];
+  tradeId: string;
+  gameId: string;
+  type: string;
+  post: Post | null;
+  actorId?: string;
+  messages?: QueryMessage[];
+  /** The game's whole history for the card's turn log: its raw turns
+   *  (oldest first), your id, the other player's first name, and the posts
+   *  the turns mention (for their names). */
+  rawTurns?: any[];
+  myId?: string;
+  partnerName?: string;
+  turnPosts?: Post[];
 }
 
 // Pairs an offerer's profile with the gameId of their pending offer, so

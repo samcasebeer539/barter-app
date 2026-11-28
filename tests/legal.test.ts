@@ -8,8 +8,9 @@ const { join } = require('path');
 import legal from '@/config/legal.json';
 
 test('docs/terms.md and docs/privacy.md match config/legal.json (run npm run legal:export)', () => {
-  expect(() => execFileSync('node', [join(__dirname, '..', 'scripts', 'export-legal.mjs'), '--check'], { stdio: 'pipe' }))
-    .not.toThrow();
+  expect(() =>
+    execFileSync('node', [join(__dirname, '..', 'scripts', 'export-legal.mjs'), '--check'], { stdio: 'pipe' }),
+  ).not.toThrow();
 });
 
 test('the privacy policy says how to delete your account', () => {

@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 
@@ -8,7 +6,7 @@ interface UserCardProps {
   cardWidth?: number;
 }
 
-const UserCard: React.FC<UserCardProps> = ({  scale = 1, cardWidth,  }) => {
+const UserCard: React.FC<UserCardProps> = ({ scale = 1, cardWidth }) => {
   const screenWidth = Dimensions.get('window').width;
   const defaultCardWidth = Math.min(screenWidth - 64, 400);
   const finalCardWidth = cardWidth ?? defaultCardWidth;
@@ -16,8 +14,7 @@ const UserCard: React.FC<UserCardProps> = ({  scale = 1, cardWidth,  }) => {
 
   return (
     <View style={[styles.container, { transform: [{ scale }] }]}>
-      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-      </View>
+      <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}></View>
     </View>
   );
 };
@@ -28,11 +25,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     backgroundColor: 'transparent',
   },
-    card: {
+  card: {
     backgroundColor: '#ffffff',
     borderRadius: 2,
     position: 'relative',
-  },  
+  },
 });
 
 export default UserCard;

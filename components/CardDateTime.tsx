@@ -1,12 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { globalFonts, colors } from '../styles/globalStyles';
 
@@ -19,15 +12,15 @@ export interface ProposedTime {
 }
 
 interface UpcomingDate {
-  label: string;      // "Mon, Nov 24"
+  label: string; // "Mon, Nov 24"
   year: number;
-  month: number;      // 0-11
+  month: number; // 0-11
   day: number;
 }
 
 interface PickedTime {
   date: UpcomingDate;
-  time: string;       // "3:00 PM"
+  time: string; // "3:00 PM"
 }
 
 interface MeetupCardProps {
@@ -44,9 +37,20 @@ interface MeetupCardProps {
 }
 
 const TIME_OPTIONS = [
-  '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-  '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM',
-  '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
+  '7:00 AM',
+  '8:00 AM',
+  '9:00 AM',
+  '10:00 AM',
+  '11:00 AM',
+  '12:00 PM',
+  '1:00 PM',
+  '2:00 PM',
+  '3:00 PM',
+  '4:00 PM',
+  '5:00 PM',
+  '6:00 PM',
+  '7:00 PM',
+  '8:00 PM',
 ];
 
 // The next two days can't be picked (a meetup needs some notice), so the
@@ -101,7 +105,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
   useEffect(() => {
     if (!isSelectMode) return;
     onProposeTime?.(picked ? toProposedTime(picked) : null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- the parent's callback is new each render; reporting on every render would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the parent's callback is new each render; reporting on every render would loop.
   }, [isSelectMode, picked]);
 
   const chooseDate = (date: UpcomingDate) => {
@@ -131,7 +135,11 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
               <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.pickerScroll} contentContainerStyle={styles.pickerList} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.pickerScroll}
+            contentContainerStyle={styles.pickerList}
+            showsVerticalScrollIndicator={false}
+          >
             {availableDates.map(d => (
               <TouchableOpacity key={d.label} style={styles.pickerRow} onPress={() => chooseDate(d)}>
                 <Text style={styles.pickerRowText}>{d.label}</Text>
@@ -154,7 +162,11 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
               <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.pickerScroll} contentContainerStyle={styles.pickerList} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.pickerScroll}
+            contentContainerStyle={styles.pickerList}
+            showsVerticalScrollIndicator={false}
+          >
             {TIME_OPTIONS.map(t => (
               <TouchableOpacity key={t} style={styles.pickerRow} onPress={() => chooseTime(t)}>
                 <Text style={styles.pickerRowText}>{t}</Text>
@@ -186,10 +198,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
 
   // ---- Main card ----
   return (
-    <View
-      style={[styles.container, { transform: [{ scale }] }]}
-      onStartShouldSetResponder={() => true}
-    >
+    <View style={[styles.container, { transform: [{ scale }] }]} onStartShouldSetResponder={() => true}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
         <View style={styles.header}>
           <Text style={styles.headerText}>{isUser ? 'Propose a Meetup Time' : 'Meetup Time'}</Text>
@@ -198,13 +207,18 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
 
         {picked ? (
           <View style={styles.timeRow}>
-            <Text style={styles.timeText}>{picked.date.label} at {picked.time}</Text>
+            <Text style={styles.timeText}>
+              {picked.date.label} at {picked.time}
+            </Text>
             <View style={styles.rowIcons}>
-              {isSelectMode && (
-                <FontAwesome6 name="circle-check" size={24} color={colors.actions.time} />
-              )}
+              {isSelectMode && <FontAwesome6 name="circle-check" size={24} color={colors.actions.time} />}
               {isUser && (
-                <TouchableOpacity onPress={() => setPicked(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear time">
+                <TouchableOpacity
+                  onPress={() => setPicked(null)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear time"
+                >
                   <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               )}

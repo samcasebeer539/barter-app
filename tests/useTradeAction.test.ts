@@ -40,7 +40,7 @@ test('barter can pick several posts, and tapping again unpicks the top one', asy
   await act(() => r.current.selectAction('barter', 0));
   await act(() => r.current.togglePost(3));
   expect(r.current.selectedPosts).toEqual([0, 3]);
-  await act(() => r.current.selectAction('barter', 3));  // the button toggles the top card
+  await act(() => r.current.selectAction('barter', 3)); // the button toggles the top card
   expect([r.current.activeAction, r.current.selectedPosts]).toEqual(['barter', [0]]);
   await act(() => r.current.togglePost(0));
   expect([r.current.selectedPosts, r.current.phase]).toEqual([[], 'idle']);
@@ -69,7 +69,7 @@ test('typed text only counts for text actions', async () => {
   await act(() => r.current.selectAction('stall'));
   await act(() => r.current.setSubflowData('ignored'));
   expect(r.current.subflowData).toBeNull();
-  await act(() => r.current.togglePost(1));  // and posts only for select actions
+  await act(() => r.current.togglePost(1)); // and posts only for select actions
   expect(r.current.selectedPosts).toEqual([]);
 });
 

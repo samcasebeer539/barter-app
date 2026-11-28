@@ -5,8 +5,10 @@ import { render, screen, act } from '@testing-library/react-native';
 
 // ── sign-in routing ──────────────────────────────────────────────────────────
 
-const mockNav: { segments: string[]; replace: jest.Mock; authListener?: (u: any) => void } =
-  { segments: [], replace: jest.fn() };
+const mockNav: { segments: string[]; replace: jest.Mock; authListener?: (u: any) => void } = {
+  segments: [],
+  replace: jest.fn(),
+};
 jest.mock('expo-router', () => {
   const { Text } = require('react-native');
   return {
@@ -18,7 +20,10 @@ jest.mock('expo-router', () => {
 jest.mock('@/lib/firebase', () => ({ auth: {}, storage: {} }));
 jest.mock('@/lib/session', () => ({ clearSessionCaches: jest.fn() }));
 jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: (_auth: unknown, cb: (u: any) => void) => { mockNav.authListener = cb; return () => {}; },
+  onAuthStateChanged: (_auth: unknown, cb: (u: any) => void) => {
+    mockNav.authListener = cb;
+    return () => {};
+  },
   getAuth: () => ({ currentUser: { uid: 'alice' } }),
 }));
 
@@ -29,7 +34,9 @@ async function signedIn(user: object | null, segments: string[]) {
   mockNav.segments = segments;
   mockNav.replace.mockClear();
   await render(<RootLayout />);
-  await act(async () => { mockNav.authListener?.(user); });
+  await act(async () => {
+    mockNav.authListener?.(user);
+  });
 }
 
 test('a spinner until Firebase says whether you are signed in', async () => {
@@ -62,13 +69,21 @@ test("a different account (sign out, account deleted, someone else signs in) for
   (clearSessionCaches as jest.Mock).mockClear();
   mockNav.segments = ['(tabs)', 'feed'];
   await render(<RootLayout />);
-  await act(async () => { mockNav.authListener?.({ uid: 'alice' }); });   // app opens signed in
+  await act(async () => {
+    mockNav.authListener?.({ uid: 'alice' });
+  }); // app opens signed in
   expect(clearSessionCaches).not.toHaveBeenCalled();
-  await act(async () => { mockNav.authListener?.({ uid: 'alice' }); });   // same account (token refresh)
+  await act(async () => {
+    mockNav.authListener?.({ uid: 'alice' });
+  }); // same account (token refresh)
   expect(clearSessionCaches).not.toHaveBeenCalled();
-  await act(async () => { mockNav.authListener?.(null); });               // signed out
+  await act(async () => {
+    mockNav.authListener?.(null);
+  }); // signed out
   expect(clearSessionCaches).toHaveBeenCalledTimes(1);
-  await act(async () => { mockNav.authListener?.({ uid: 'bob' }); });     // someone else
+  await act(async () => {
+    mockNav.authListener?.({ uid: 'bob' });
+  }); // someone else
   expect(clearSessionCaches).toHaveBeenCalledTimes(2);
 });
 
@@ -76,7 +91,10 @@ test("a different account (sign out, account deleted, someone else signs in) for
 
 const mockStorage: { refs: string[] } = { refs: [] };
 jest.mock('firebase/storage', () => ({
-  ref: (_s: unknown, path: string) => { mockStorage.refs.push(path); return { path }; },
+  ref: (_s: unknown, path: string) => {
+    mockStorage.refs.push(path);
+    return { path };
+  },
   uploadBytes: jest.fn(async () => ({})),
   getDownloadURL: async (r: { path: string }) => `https://cdn.test/${r.path}`,
 }));
@@ -90,18 +108,40 @@ jest.mock('@/lib/shrinkPhoto', () => ({
 import { toUser, updateUser, uploadProfilePhoto } from '@/services/userService';
 import { apiJson } from '@/lib/api';
 
-test("server user -> app user (photo renamed, missing values defaulted)", () => {
-  expect(toUser({ _id: 'u', first_name: 'Ana', last_name: 'R', profile_photo: 'https://x/p.jpg', rating: 4.5, reviewCount: 2 }))
-    .toEqual({
-      _id: 'u', first_name: 'Ana', last_name: 'R', email: undefined, phone: undefined, pronouns: undefined, bio: undefined,
-      profileImageUrl: 'https://x/p.jpg', email_visible: false, phone_visible: false, locations: [], rating: 4.5, reviewCount: 2,
-    });
+test('server user -> app user (photo renamed, missing values defaulted)', () => {
+  expect(
+    toUser({
+      _id: 'u',
+      first_name: 'Ana',
+      last_name: 'R',
+      profile_photo: 'https://x/p.jpg',
+      rating: 4.5,
+      reviewCount: 2,
+    }),
+  ).toEqual({
+    _id: 'u',
+    first_name: 'Ana',
+    last_name: 'R',
+    email: undefined,
+    phone: undefined,
+    pronouns: undefined,
+    bio: undefined,
+    profileImageUrl: 'https://x/p.jpg',
+    email_visible: false,
+    phone_visible: false,
+    locations: [],
+    rating: 4.5,
+    reviewCount: 2,
+  });
   expect(toUser({ _id: 'u' })).toMatchObject({ rating: 0, reviewCount: 0, locations: [] });
 });
 
 test('saving your profile sends the photo under the name the server uses', async () => {
   await updateUser({ bio: 'Hi', profileImageUrl: 'https://x/p.jpg' } as any);
-  expect(apiJson).toHaveBeenCalledWith('/dev/update_user', { method: 'PATCH', body: { bio: 'Hi', profile_photo: 'https://x/p.jpg' } });
+  expect(apiJson).toHaveBeenCalledWith('/dev/update_user', {
+    method: 'PATCH',
+    body: { bio: 'Hi', profile_photo: 'https://x/p.jpg' },
+  });
   await updateUser({ bio: 'No photo change' } as any);
   expect((apiJson as jest.Mock).mock.calls.at(-1)[1].body).toEqual({ bio: 'No photo change' });
 });
@@ -131,14 +171,24 @@ jest.mock('expo-image-manipulator', () => ({
         const resized = mockManip.resized.at(-1) as any;
         const { width, height } = mockManip.size;
         const scaled = resized
-          ? (resized.width ? { width: resized.width, height: Math.round(height * resized.width / width) }
-                           : { width: Math.round(width * resized.height / height), height: resized.height })
+          ? resized.width
+            ? { width: resized.width, height: Math.round((height * resized.width) / width) }
+            : { width: Math.round((width * resized.height) / height), height: resized.height }
           : { width, height };
-        return { ...scaled, release: () => { mockManip.released++; },
-                 saveAsync: async (opts: any) => ({ uri: `file:///out-${scaled.width}x${scaled.height}.jpg`, opts }) };
+        return {
+          ...scaled,
+          release: () => {
+            mockManip.released++;
+          },
+          saveAsync: async (opts: any) => ({ uri: `file:///out-${scaled.width}x${scaled.height}.jpg`, opts }),
+        };
       },
-      resize: (s: object) => { mockManip.resized.push(s); },
-      release: () => { mockManip.released++; },
+      resize: (s: object) => {
+        mockManip.resized.push(s);
+      },
+      release: () => {
+        mockManip.released++;
+      },
     }),
   },
 }));
@@ -165,9 +215,9 @@ test('a small photo keeps its size (just recompressed as JPEG)', async () => {
   expect(mockManip.resized).toEqual([]);
 });
 
-test("if shrinking fails, the original is used (an upload never breaks because of it)", async () => {
+test('if shrinking fails, the original is used (an upload never breaks because of it)', async () => {
   jest.spyOn(console, 'warn').mockImplementation(() => {});
   mockManip.fail = true;
   await expect(realShrink('file:///in.jpg')).resolves.toBe('file:///in.jpg');
-  expect(mockManip.released).toBeGreaterThan(0);  // still cleaned up
+  expect(mockManip.released).toBeGreaterThan(0); // still cleaned up
 });

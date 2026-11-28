@@ -20,7 +20,8 @@ function unlabeledIconButtons(source: string): number[] {
   const open = '<TouchableOpacity';
   for (let i = source.indexOf(open); i !== -1; i = source.indexOf(open, i + 1)) {
     // Walk to the end of the opening tag, skipping anything inside { }.
-    let j = i + open.length, depth = 0;
+    let j = i + open.length,
+      depth = 0;
     for (; j < source.length; j++) {
       const c = source[j];
       if (c === '{') depth++;
@@ -40,15 +41,22 @@ function unlabeledIconButtons(source: string): number[] {
 }
 
 test('icon-only buttons all have an accessibilityLabel', () => {
-  const missing = [...tsxFiles(join(root, 'app')), ...tsxFiles(join(root, 'components'))]
-    .flatMap(f => unlabeledIconButtons(readFileSync(f, 'utf8')).map(l => `${relative(root, f)}:${l}`));
+  const missing = [...tsxFiles(join(root, 'app')), ...tsxFiles(join(root, 'components'))].flatMap(f =>
+    unlabeledIconButtons(readFileSync(f, 'utf8')).map(l => `${relative(root, f)}:${l}`),
+  );
   expect(missing).toEqual([]);
 });
 
 test('the check itself catches a bare icon button', () => {
   expect(unlabeledIconButtons('<TouchableOpacity onPress={go}>\n<Icon name="x" /></TouchableOpacity>')).toEqual([1]);
   expect(unlabeledIconButtons('<TouchableOpacity onPress={() => go()} />')).toEqual([1]);
-  expect(unlabeledIconButtons('<TouchableOpacity accessibilityLabel="Close" onPress={go}><Icon /></TouchableOpacity>')).toEqual([]);
+  expect(
+    unlabeledIconButtons('<TouchableOpacity accessibilityLabel="Close" onPress={go}><Icon /></TouchableOpacity>'),
+  ).toEqual([]);
   expect(unlabeledIconButtons('<TouchableOpacity onPress={go}><Text>OK</Text></TouchableOpacity>')).toEqual([]);
-  expect(unlabeledIconButtons('<TouchableOpacity activeOpacity={n > 1 ? 0.8 : 1} onPress={() => go()}><Icon /></TouchableOpacity>')).toEqual([1]);
+  expect(
+    unlabeledIconButtons(
+      '<TouchableOpacity activeOpacity={n > 1 ? 0.8 : 1} onPress={() => go()}><Icon /></TouchableOpacity>',
+    ),
+  ).toEqual([1]);
 });

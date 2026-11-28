@@ -22,8 +22,10 @@ const initialRegion = {
 function regionForLocations(locs: { latitude: number; longitude: number }[]) {
   const lats = locs.map(l => l.latitude);
   const lons = locs.map(l => l.longitude);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+  const minLat = Math.min(...lats),
+    maxLat = Math.max(...lats);
+  const minLon = Math.min(...lons),
+    maxLon = Math.max(...lons);
   return {
     latitude: (minLat + maxLat) / 2,
     longitude: (minLon + maxLon) / 2,
@@ -140,7 +142,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
     };
     const updated = [...locations, newEntry];
     setLocations(updated);
-    onConfirm?.(updated);  // ← persists full list to backend via screen
+    onConfirm?.(updated); // ← persists full list to backend via screen
     setPendingPin(null);
     setNameInput('');
     setDescInput('');
@@ -158,7 +160,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
   const removeLocation = (id: string) => {
     const updated = locations.filter(l => l.id !== id);
     setLocations(updated);
-    onConfirm?.(updated);  // ← persists full list to backend via screen
+    onConfirm?.(updated); // ← persists full list to backend via screen
   };
 
   // ── Handlers: read-only mode ──────────────────────────────────────────────
@@ -183,7 +185,9 @@ const CardLocation: React.FC<CardLocationProps> = ({
 
   const displayLocations = showProposal
     ? [proposedLocation!]
-    : isUser ? locations : externalLocations.slice(0, MAX_LOCATIONS);
+    : isUser
+      ? locations
+      : externalLocations.slice(0, MAX_LOCATIONS);
 
   // Where the map starts: the saved locations shown on it (or the proposed
   // spot) if there are any; otherwise your area if Location Services is on
@@ -211,21 +215,25 @@ const CardLocation: React.FC<CardLocationProps> = ({
   }, [userRegion]);
 
   return (
-    <View
-      style={[styles.container, { transform: [{ scale }] }]}
-      onStartShouldSetResponder={() => true}
-    >
+    <View style={[styles.container, { transform: [{ scale }] }]} onStartShouldSetResponder={() => true}>
       <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
-
         <View
           style={[styles.mapWrapper, { marginBottom: footerHeight }]}
-          onTouchStart={() => { if (mapActiveRef) mapActiveRef.current = true; }}
-          onTouchEnd={() => { if (mapActiveRef) mapActiveRef.current = false; }}
-          onTouchCancel={() => { if (mapActiveRef) mapActiveRef.current = false; }}
+          onTouchStart={() => {
+            if (mapActiveRef) mapActiveRef.current = true;
+          }}
+          onTouchEnd={() => {
+            if (mapActiveRef) mapActiveRef.current = false;
+          }}
+          onTouchCancel={() => {
+            if (mapActiveRef) mapActiveRef.current = false;
+          }}
         >
           <MapView
             ref={mapRef}
-            onPanDrag={() => { userMovedMap.current = true; }}
+            onPanDrag={() => {
+              userMovedMap.current = true;
+            }}
             style={StyleSheet.absoluteFill}
             initialRegion={startRegion}
             onPress={handleMapPress}
@@ -240,28 +248,18 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 key={loc.id}
                 coordinate={{ latitude: loc.latitude, longitude: loc.longitude }}
                 pinColor={
-                  showProposal ||
-                  (isSelectMode && loc.id === selectedLocationId) ||
-                  (!isUser && loc.id === selectedId)
+                  showProposal || (isSelectMode && loc.id === selectedLocationId) || (!isUser && loc.id === selectedId)
                     ? colors.actions.location
                     : colors.ui.cardsecondary
                 }
                 title={loc.name}
               />
             ))}
-            {isUser && pendingPin && (
-              <Marker
-                coordinate={pendingPin}
-                pinColor={colors.actions.location}
-              />
-            )}
+            {isUser && pendingPin && <Marker coordinate={pendingPin} pinColor={colors.actions.location} />}
           </MapView>
         </View>
 
-        <View
-          style={styles.footer}
-          onLayout={e => setFooterHeight(e.nativeEvent.layout.height)}
-        >
+        <View style={styles.footer} onLayout={e => setFooterHeight(e.nativeEvent.layout.height)}>
           <View style={styles.titleRow}>
             <Text style={styles.footerTitle}>
               {showProposal ? 'Meetup Location' : isUser ? 'Your Safe Exchange Locations' : 'Safe Exchange Locations'}
@@ -286,37 +284,44 @@ const CardLocation: React.FC<CardLocationProps> = ({
           )}
 
           {/* ── User mode: editable / selectable list ── */}
-          {!showProposal && isUser && locations.map(loc => (
-            <View key={loc.id} style={styles.locationRow}>
-              <View style={styles.locationInfo}>
-                <Text style={styles.locationName}>{loc.name}</Text>
-                {loc.description ? (
-                  <Text style={styles.locationDesc}>{loc.description}</Text>
-                ) : null}
-                <Text style={styles.coordText}>
-                  {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
-                </Text>
-              </View>
+          {!showProposal &&
+            isUser &&
+            locations.map(loc => (
+              <View key={loc.id} style={styles.locationRow}>
+                <View style={styles.locationInfo}>
+                  <Text style={styles.locationName}>{loc.name}</Text>
+                  {loc.description ? <Text style={styles.locationDesc}>{loc.description}</Text> : null}
+                  <Text style={styles.coordText}>
+                    {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
+                  </Text>
+                </View>
 
-              {isSelectMode ? (
-                <TouchableOpacity onPress={() => handleProposeLocation(loc)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Propose ${loc.name}`} accessibilityState={{ selected: selectedLocationId === loc.id }}>
-                  <FontAwesome6
-                    name={selectedLocationId === loc.id ? 'circle-check' : 'circle'}
-                    size={24}
-                    color={
-                      selectedLocationId === loc.id
-                        ? colors.actions.location
-                        : colors.ui.cardsecondary
-                    }
-                  />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Remove ${loc.name}`}>
-                  <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+                {isSelectMode ? (
+                  <TouchableOpacity
+                    onPress={() => handleProposeLocation(loc)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Propose ${loc.name}`}
+                    accessibilityState={{ selected: selectedLocationId === loc.id }}
+                  >
+                    <FontAwesome6
+                      name={selectedLocationId === loc.id ? 'circle-check' : 'circle'}
+                      size={24}
+                      color={selectedLocationId === loc.id ? colors.actions.location : colors.ui.cardsecondary}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => removeLocation(loc.id)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${loc.name}`}
+                  >
+                    <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
 
           {/* Posting needs at least one saved location (see DeckProfile). */}
           {!showProposal && isUser && !isSelectMode && locations.length === 0 && (
@@ -336,10 +341,9 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 size={24}
                 color={pinReady ? colors.actions.location : colors.ui.carddisabled}
               />
-              <Text style={[
-                styles.addLocationText,
-                { color: pinReady ? colors.actions.location : colors.ui.carddisabled }
-              ]}>
+              <Text
+                style={[styles.addLocationText, { color: pinReady ? colors.actions.location : colors.ui.carddisabled }]}
+              >
                 Location
               </Text>
             </TouchableOpacity>
@@ -352,22 +356,39 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   keyboardAppearance="dark"
                   style={styles.nameInput}
                   value={nameInput}
-                  onFocus={() => { kbField.onFocus(); setDoneKey(true); }}
-                  onChangeText={v => { setNameInput(v); kbField.requestLift(); }}
+                  onFocus={() => {
+                    kbField.onFocus();
+                    setDoneKey(true);
+                  }}
+                  onChangeText={v => {
+                    setNameInput(v);
+                    kbField.requestLift();
+                  }}
                   placeholder="Name"
                   maxLength={TEXT_LIMITS.locationName}
                   placeholderTextColor={colors.ui.cardsecondary}
                   autoFocus
                   returnKeyType={doneKey ? 'done' : 'default'}
                 />
-                <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()} accessibilityRole="button" accessibilityLabel="Save location">
+                <TouchableOpacity
+                  onPress={handleSave}
+                  hitSlop={8}
+                  disabled={!nameInput.trim()}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save location"
+                >
                   <FontAwesome6
                     name="circle-check"
                     size={24}
                     color={!nameInput.trim() ? colors.ui.carddisabled : colors.actions.location}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleCancelNaming} hitSlop={8} accessibilityRole="button" accessibilityLabel="Cancel">
+                <TouchableOpacity
+                  onPress={handleCancelNaming}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel"
+                >
                   <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               </View>
@@ -376,7 +397,10 @@ const CardLocation: React.FC<CardLocationProps> = ({
                 style={styles.descInput}
                 value={descInput}
                 onFocus={kbField.onFocus}
-                onChangeText={v => { setDescInput(v); kbField.requestLift(); }}
+                onChangeText={v => {
+                  setDescInput(v);
+                  kbField.requestLift();
+                }}
                 placeholder="Description (optional)"
                 maxLength={TEXT_LIMITS.locationDescription}
                 placeholderTextColor={colors.ui.cardsecondary}
@@ -387,31 +411,36 @@ const CardLocation: React.FC<CardLocationProps> = ({
           )}
 
           {/* ── Read-only mode: selectable list (other user's locations) ── */}
-          {!showProposal && !isUser && externalLocations.slice(0, MAX_LOCATIONS).map(loc => {
-            const isSelected = loc.id === selectedId;
-            return (
-              <View key={loc.id} style={styles.locationRow}>
-                <View style={styles.locationInfo}>
-                  <Text style={styles.locationName}>{loc.name}</Text>
-                  {loc.description ? (
-                    <Text style={styles.locationDesc}>{loc.description}</Text>
-                  ) : null}
-                  <Text style={styles.coordText}>
-                    {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
-                  </Text>
+          {!showProposal &&
+            !isUser &&
+            externalLocations.slice(0, MAX_LOCATIONS).map(loc => {
+              const isSelected = loc.id === selectedId;
+              return (
+                <View key={loc.id} style={styles.locationRow}>
+                  <View style={styles.locationInfo}>
+                    <Text style={styles.locationName}>{loc.name}</Text>
+                    {loc.description ? <Text style={styles.locationDesc}>{loc.description}</Text> : null}
+                    <Text style={styles.coordText}>
+                      {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleSelectLocation(loc)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Choose ${loc.name}`}
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <FontAwesome6
+                      name={isSelected ? 'circle-check' : 'circle'}
+                      size={24}
+                      color={isSelected ? colors.actions.location : colors.ui.cardsecondary}
+                    />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => handleSelectLocation(loc)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Choose ${loc.name}`} accessibilityState={{ selected: isSelected }}>
-                  <FontAwesome6
-                    name={isSelected ? 'circle-check' : 'circle'}
-                    size={24}
-                    color={isSelected ? colors.actions.location : colors.ui.cardsecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-            );
-          })}
+              );
+            })}
         </View>
-
       </View>
     </View>
   );

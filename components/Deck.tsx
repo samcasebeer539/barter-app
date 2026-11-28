@@ -1,10 +1,5 @@
-import React, {
-  useRef, useState, useEffect, useMemo, useCallback,
-  useImperativeHandle, forwardRef,
-} from 'react';
-import {
-  View, StyleSheet, Dimensions, Animated, PanResponder,
-} from 'react-native';
+import React, { useRef, useState, useEffect, useMemo, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { View, StyleSheet, Dimensions, Animated, PanResponder } from 'react-native';
 import PostCard from './CardItem';
 import UserCard from './CardUser';
 import BlankCard from './CardBlank';
@@ -14,59 +9,59 @@ import { Post, User, Locations } from '@/types/index';
 import { colors } from '@/styles/globalStyles';
 
 export interface DeckGroup {
-    user?: User;
-    posts: Post[];
-    locations?: Locations[];
-    /** This player's standing WHERE proposal; their location card shows it. */
-    proposedLocation?: Locations | null;
-    /** This player's standing WHEN proposal (its label); their date card shows it. */
-    proposedTime?: string | null;
+  user?: User;
+  posts: Post[];
+  locations?: Locations[];
+  /** This player's standing WHERE proposal; their location card shows it. */
+  proposedLocation?: Locations | null;
+  /** This player's standing WHEN proposal (its label); their date card shows it. */
+  proposedTime?: string | null;
 }
 
 interface DeckProps {
-    groups: DeckGroup[];
-    cardWidth?: number;
-    enabled?: boolean;
-    onHorizontalGestureStart?: () => void;
-    onGestureEnd?: () => void;
-    isSelectMode?: boolean;
-    selectedPosts?: number[];
-    onTopCardChange?: (postIndex: number | null) => void;
-    onTopCardTypeChange?: (type: 'user' | 'post' | 'datetime' | 'location') => void;
-    onTopCardGroupChange?: (groupIndex: number) => void;
-    selectColor?: string;
-    showDateTime?: boolean;
-    showLocation?: boolean;
-    showUser?: boolean;
-    isEditMode?: boolean;
-    onExitEdit?: () => void;
-    onEnterEdit?: () => void;
-    isUser?: boolean;
-    isPostEditMode?: boolean;
-    onExitPostEdit?: () => void;
-    onEnterPostEdit?: () => void;
-    onSaveUser?: (updated: User) => void;
-    onSavePost?: (updated: Post) => void;
-    /** Remove a post entirely (cancelling a new, incomplete post). */
-    onDiscardPost?: (postIndex: number) => void;
-    jumpToken?: number;
-    jumpToCardIndex?: number;
-    onConfirmLocations?: (locations: Locations[]) => void;
-    onSelectLocation?: (location: Locations | null) => void;
-    isQueryMode?: boolean;
-    querySelectedPostIndex?: number | null;
-    onSelectPost?: (postIndex: number) => void;
-    onQueryPostTap?: (postIndex: number) => void;
-    // ── Trade "where" subflow ───────────────────────────────────────────────
-    /** When true (and isUser), the player's own location card renders in select mode */
-    isLocationSelectMode?: boolean;
-    /** Fires with the chosen location (or null on deselect) while isLocationSelectMode is true */
-    onProposeLocation?: (location: Locations | null) => void;
-    // ── Trade "when" subflow ────────────────────────────────────────────────
-    /** When true (and isUser), the player's own date/time card proposes its time */
-    isTimeSelectMode?: boolean;
-    /** Fires with the set date + time (or null) while isTimeSelectMode is true */
-    onProposeTime?: (time: ProposedTime | null) => void;
+  groups: DeckGroup[];
+  cardWidth?: number;
+  enabled?: boolean;
+  onHorizontalGestureStart?: () => void;
+  onGestureEnd?: () => void;
+  isSelectMode?: boolean;
+  selectedPosts?: number[];
+  onTopCardChange?: (postIndex: number | null) => void;
+  onTopCardTypeChange?: (type: 'user' | 'post' | 'datetime' | 'location') => void;
+  onTopCardGroupChange?: (groupIndex: number) => void;
+  selectColor?: string;
+  showDateTime?: boolean;
+  showLocation?: boolean;
+  showUser?: boolean;
+  isEditMode?: boolean;
+  onExitEdit?: () => void;
+  onEnterEdit?: () => void;
+  isUser?: boolean;
+  isPostEditMode?: boolean;
+  onExitPostEdit?: () => void;
+  onEnterPostEdit?: () => void;
+  onSaveUser?: (updated: User) => void;
+  onSavePost?: (updated: Post) => void;
+  /** Remove a post entirely (cancelling a new, incomplete post). */
+  onDiscardPost?: (postIndex: number) => void;
+  jumpToken?: number;
+  jumpToCardIndex?: number;
+  onConfirmLocations?: (locations: Locations[]) => void;
+  onSelectLocation?: (location: Locations | null) => void;
+  isQueryMode?: boolean;
+  querySelectedPostIndex?: number | null;
+  onSelectPost?: (postIndex: number) => void;
+  onQueryPostTap?: (postIndex: number) => void;
+  // ── Trade "where" subflow ───────────────────────────────────────────────
+  /** When true (and isUser), the player's own location card renders in select mode */
+  isLocationSelectMode?: boolean;
+  /** Fires with the chosen location (or null on deselect) while isLocationSelectMode is true */
+  onProposeLocation?: (location: Locations | null) => void;
+  // ── Trade "when" subflow ────────────────────────────────────────────────
+  /** When true (and isUser), the player's own date/time card proposes its time */
+  isTimeSelectMode?: boolean;
+  /** Fires with the set date + time (or null) while isTimeSelectMode is true */
+  onProposeTime?: (time: ProposedTime | null) => void;
 }
 
 type DeckItem =
@@ -76,8 +71,8 @@ type DeckItem =
   | { type: 'location'; groupIndex: number; locations: Locations[]; proposedLocation: Locations | null };
 
 const SLOT_POSITIONS = [
-  { x: 0,  y: 0  },
-  { x: 6,  y: 6  },
+  { x: 0, y: 0 },
+  { x: 6, y: 6 },
   { x: 12, y: 12 },
 ];
 
@@ -120,110 +115,152 @@ interface CardSlotProps {
   onProposeTime?: (time: ProposedTime | null) => void;
 }
 
-const CardSlot = forwardRef<SlotHandle, CardSlotProps>(({
-  slotAnim, initialCard, initialIsFront, initialZIndex,
-  screenWidth, finalCardWidth, isUser, isSelectMode, selectedPosts,
-  selectColor, mapActiveRef, isEditMode, isPostEditMode,
-  onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit,
-  onSaveUser, onSavePost, onDiscardPost, onConfirmLocations,
-  onSelectLocation,
-  isQueryMode, querySelectedPostIndex, onQueryPostTap,
-  onSelectPost,
-  isLocationSelectMode, onProposeLocation,
-  isTimeSelectMode, onProposeTime,
-}, ref) => {
-  const [card, setCardState] = useState<DeckItem | null>(initialCard);
-  const [isFront, setIsFront] = useState(initialIsFront);
-  // Kept in state (not setNativeProps): under the new architecture a native
-  // prop set directly is overwritten on the slot's next render, which made
-  // the shadow vanish as soon as a swipe finished and setCard re-rendered.
-  const [hasShadow, setHasShadow] = useState(false);
-  const wrapperRef = useRef<React.ComponentRef<typeof View>>(null);
-  const cardRef = useRef<React.ComponentRef<typeof View>>(null);
+const CardSlot = forwardRef<SlotHandle, CardSlotProps>(
+  (
+    {
+      slotAnim,
+      initialCard,
+      initialIsFront,
+      initialZIndex,
+      screenWidth,
+      finalCardWidth,
+      isUser,
+      isSelectMode,
+      selectedPosts,
+      selectColor,
+      mapActiveRef,
+      isEditMode,
+      isPostEditMode,
+      onExitEdit,
+      onEnterEdit,
+      onExitPostEdit,
+      onEnterPostEdit,
+      onSaveUser,
+      onSavePost,
+      onDiscardPost,
+      onConfirmLocations,
+      onSelectLocation,
+      isQueryMode,
+      querySelectedPostIndex,
+      onQueryPostTap,
+      onSelectPost,
+      isLocationSelectMode,
+      onProposeLocation,
+      isTimeSelectMode,
+      onProposeTime,
+    },
+    ref,
+  ) => {
+    const [card, setCardState] = useState<DeckItem | null>(initialCard);
+    const [isFront, setIsFront] = useState(initialIsFront);
+    // Kept in state (not setNativeProps): under the new architecture a native
+    // prop set directly is overwritten on the slot's next render, which made
+    // the shadow vanish as soon as a swipe finished and setCard re-rendered.
+    const [hasShadow, setHasShadow] = useState(false);
+    const wrapperRef = useRef<React.ComponentRef<typeof View>>(null);
+    const cardRef = useRef<React.ComponentRef<typeof View>>(null);
 
-  useImperativeHandle(ref, () => ({
-    setCard(item, front) { setCardState(item); setIsFront(front); },
-    setZIndex(z) { wrapperRef.current?.setNativeProps({ style: { zIndex: z } }); },
-    setShadow(enabled) { setHasShadow(enabled); },
-  }));
+    useImperativeHandle(ref, () => ({
+      setCard(item, front) {
+        setCardState(item);
+        setIsFront(front);
+      },
+      setZIndex(z) {
+        wrapperRef.current?.setNativeProps({ style: { zIndex: z } });
+      },
+      setShadow(enabled) {
+        setHasShadow(enabled);
+      },
+    }));
 
-  const rotate = slotAnim.swipeX.interpolate({
-    inputRange: [-screenWidth, 0, screenWidth],
-    outputRange: ['-10deg', '0deg', '10deg'],
-  });
-  const translateX = isFront
-    ? Animated.add(slotAnim.position.x, slotAnim.swipeX)
-    : slotAnim.position.x;
+    const rotate = slotAnim.swipeX.interpolate({
+      inputRange: [-screenWidth, 0, screenWidth],
+      outputRange: ['-10deg', '0deg', '10deg'],
+    });
+    const translateX = isFront ? Animated.add(slotAnim.position.x, slotAnim.swipeX) : slotAnim.position.x;
 
-  const isQuerySelected = card?.type === 'post' && querySelectedPostIndex === card.postIndex;
+    const isQuerySelected = card?.type === 'post' && querySelectedPostIndex === card.postIndex;
 
-  return (
-    <View ref={wrapperRef} style={[slotStyles.wrapper, { zIndex: initialZIndex }]}>
-      <Animated.View
-        ref={cardRef}
-        style={[slotStyles.card, slotStyles.shadowBase, {
-          shadowOpacity: hasShadow ? 0.5 : 0,
-          elevation: hasShadow ? 8 : 0,
-          transform: [
-            { translateX },
-            { translateY: slotAnim.position.y },
-            ...(isFront ? [{ rotate }] : []),
-          ],
-        }]}
-      >
-        {card?.type === 'user' && (
-          <UserCard user={card.user} scale={1} cardWidth={finalCardWidth} isUser={isUser}
-            isEditable={isFront && isEditMode} onExitEdit={onExitEdit}
-            onEnterEdit={onEnterEdit} onSave={onSaveUser} />
-        )}
-        {card?.type === 'datetime' && (
-          <CardDateTime
-            cardWidth={finalCardWidth}
-            isUser={isUser}
-            isSelectMode={isUser ? isTimeSelectMode : false}
-            onProposeTime={isUser ? onProposeTime : undefined}
-            proposedTime={card.proposedTime}
-          />
-        )}
-        {card?.type === 'location' && (
-          <CardLocation
-            cardWidth={finalCardWidth}
-            mapActiveRef={mapActiveRef}
-            isUser={isUser}
-            initialLocations={isUser ? card.locations : undefined}
-            onConfirm={isUser ? onConfirmLocations : undefined}
-            externalLocations={!isUser ? card.locations : undefined}
-            onSelectLocation={!isUser ? onSelectLocation : undefined}
-            isSelectMode={isUser ? isLocationSelectMode : false}
-            onProposeLocation={isUser ? onProposeLocation : undefined}
-            proposedLocation={card.proposedLocation}
-          />
-        )}
-        {card?.type === 'post' && (
-          <PostCard
-            post={card.post} scale={1} cardWidth={finalCardWidth}
-            isSelectMode={isFront && isSelectMode}
-            isSelected={selectedPosts.includes(card.postIndex)}
-            selectColor={selectColor} isUser={isUser}
-            isEditable={isFront && isPostEditMode && !card.post.inTrade}
-            onEnterEdit={onEnterPostEdit} onExitEdit={onExitPostEdit} onSave={onSavePost}
-            onDiscard={onDiscardPost ? () => onDiscardPost(card.postIndex) : undefined}
-            ownerName={card.owner?.first_name}
-            isQueryMode={isFront && isQueryMode}
-            isQuerySelected={isQuerySelected}
-            onSelect={
-              isFront && isQueryMode
-                ? () => onQueryPostTap?.(card.postIndex)
-                : isFront && !isQueryMode
-                ? () => onSelectPost?.(card.postIndex)
-                : undefined
-            }
-          />
-        )}
-      </Animated.View>
-    </View>
-  );
-});
+    return (
+      <View ref={wrapperRef} style={[slotStyles.wrapper, { zIndex: initialZIndex }]}>
+        <Animated.View
+          ref={cardRef}
+          style={[
+            slotStyles.card,
+            slotStyles.shadowBase,
+            {
+              shadowOpacity: hasShadow ? 0.5 : 0,
+              elevation: hasShadow ? 8 : 0,
+              transform: [{ translateX }, { translateY: slotAnim.position.y }, ...(isFront ? [{ rotate }] : [])],
+            },
+          ]}
+        >
+          {card?.type === 'user' && (
+            <UserCard
+              user={card.user}
+              scale={1}
+              cardWidth={finalCardWidth}
+              isUser={isUser}
+              isEditable={isFront && isEditMode}
+              onExitEdit={onExitEdit}
+              onEnterEdit={onEnterEdit}
+              onSave={onSaveUser}
+            />
+          )}
+          {card?.type === 'datetime' && (
+            <CardDateTime
+              cardWidth={finalCardWidth}
+              isUser={isUser}
+              isSelectMode={isUser ? isTimeSelectMode : false}
+              onProposeTime={isUser ? onProposeTime : undefined}
+              proposedTime={card.proposedTime}
+            />
+          )}
+          {card?.type === 'location' && (
+            <CardLocation
+              cardWidth={finalCardWidth}
+              mapActiveRef={mapActiveRef}
+              isUser={isUser}
+              initialLocations={isUser ? card.locations : undefined}
+              onConfirm={isUser ? onConfirmLocations : undefined}
+              externalLocations={!isUser ? card.locations : undefined}
+              onSelectLocation={!isUser ? onSelectLocation : undefined}
+              isSelectMode={isUser ? isLocationSelectMode : false}
+              onProposeLocation={isUser ? onProposeLocation : undefined}
+              proposedLocation={card.proposedLocation}
+            />
+          )}
+          {card?.type === 'post' && (
+            <PostCard
+              post={card.post}
+              scale={1}
+              cardWidth={finalCardWidth}
+              isSelectMode={isFront && isSelectMode}
+              isSelected={selectedPosts.includes(card.postIndex)}
+              selectColor={selectColor}
+              isUser={isUser}
+              isEditable={isFront && isPostEditMode && !card.post.inTrade}
+              onEnterEdit={onEnterPostEdit}
+              onExitEdit={onExitPostEdit}
+              onSave={onSavePost}
+              onDiscard={onDiscardPost ? () => onDiscardPost(card.postIndex) : undefined}
+              ownerName={card.owner?.first_name}
+              isQueryMode={isFront && isQueryMode}
+              isQuerySelected={isQuerySelected}
+              onSelect={
+                isFront && isQueryMode
+                  ? () => onQueryPostTap?.(card.postIndex)
+                  : isFront && !isQueryMode
+                    ? () => onSelectPost?.(card.postIndex)
+                    : undefined
+              }
+            />
+          )}
+        </Animated.View>
+      </View>
+    );
+  },
+);
 CardSlot.displayName = 'CardSlot';
 
 const slotStyles = StyleSheet.create({
@@ -232,246 +269,321 @@ const slotStyles = StyleSheet.create({
   shadowBase: {
     shadowColor: colors.ui.secondary,
     shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0, shadowRadius: 2, elevation: 0,
+    shadowOpacity: 0,
+    shadowRadius: 2,
+    elevation: 0,
   },
 });
 
 // ─── Deck ─────────────────────────────────────────────────────────────────────
 
 const Deck: React.FC<DeckProps> = ({
-    groups, cardWidth, enabled = true,
-    onHorizontalGestureStart, onGestureEnd,
-    isSelectMode = false, selectedPosts = [],
-    onTopCardChange, onTopCardTypeChange, onTopCardGroupChange,
-    selectColor = colors.actions.offer,
-    showDateTime = false, showLocation = true, showUser = true,
-    isEditMode = false, onExitEdit, onEnterEdit,
-    isUser = false, isPostEditMode = false,
-    onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost, onDiscardPost,
-    jumpToken, jumpToCardIndex,
-    onConfirmLocations, onSelectLocation,
-    isQueryMode = false, querySelectedPostIndex = null, onSelectPost, onQueryPostTap,
-    isLocationSelectMode = false, onProposeLocation,
-    isTimeSelectMode = false, onProposeTime,
+  groups,
+  cardWidth,
+  enabled = true,
+  onHorizontalGestureStart,
+  onGestureEnd,
+  isSelectMode = false,
+  selectedPosts = [],
+  onTopCardChange,
+  onTopCardTypeChange,
+  onTopCardGroupChange,
+  selectColor = colors.actions.offer,
+  showDateTime = false,
+  showLocation = true,
+  showUser = true,
+  isEditMode = false,
+  onExitEdit,
+  onEnterEdit,
+  isUser = false,
+  isPostEditMode = false,
+  onExitPostEdit,
+  onEnterPostEdit,
+  onSaveUser,
+  onSavePost,
+  onDiscardPost,
+  jumpToken,
+  jumpToCardIndex,
+  onConfirmLocations,
+  onSelectLocation,
+  isQueryMode = false,
+  querySelectedPostIndex = null,
+  onSelectPost,
+  onQueryPostTap,
+  isLocationSelectMode = false,
+  onProposeLocation,
+  isTimeSelectMode = false,
+  onProposeTime,
 }) => {
-    const screenWidth = Dimensions.get('window').width;
-    const defaultCardWidth = Math.min(screenWidth - 38, 290);
-    const finalCardWidth = cardWidth ?? defaultCardWidth;
-    const cardHeight = finalCardWidth * (3.5 / 2.5);
-    const deckContainerWidth  = finalCardWidth + SLOT_POSITIONS[2].x;
-    const deckContainerHeight = cardHeight    + SLOT_POSITIONS[2].y;
+  const screenWidth = Dimensions.get('window').width;
+  const defaultCardWidth = Math.min(screenWidth - 38, 290);
+  const finalCardWidth = cardWidth ?? defaultCardWidth;
+  const cardHeight = finalCardWidth * (3.5 / 2.5);
+  const deckContainerWidth = finalCardWidth + SLOT_POSITIONS[2].x;
+  const deckContainerHeight = cardHeight + SLOT_POSITIONS[2].y;
 
-    const SWIPE_THRESHOLD   = 10;
-    const GESTURE_THRESHOLD = 3;
-    const mapActiveRef = useRef(false);
+  const SWIPE_THRESHOLD = 10;
+  const GESTURE_THRESHOLD = 3;
+  const mapActiveRef = useRef(false);
 
-    const cards = useMemo<DeckItem[]>(() => {
-        let globalPostIndex = 0;
-        return groups.flatMap((group, groupIndex) => {
-            const groupCards: DeckItem[] = [];
-            if (showUser && group.user) groupCards.push({ type: 'user', groupIndex, user: group.user });
-            if (showDateTime) groupCards.push({ type: 'datetime', groupIndex, proposedTime: group.proposedTime ?? null });
-            if (showLocation) groupCards.push({
-                type: 'location', groupIndex,
-                locations: group.locations ?? [],
-                proposedLocation: group.proposedLocation ?? null,
-            });
-            group.posts.forEach(post => {
-                groupCards.push({ type: 'post', groupIndex, post, postIndex: globalPostIndex, owner: group.user });
-                globalPostIndex++;
-            });
-            return groupCards;
+  const cards = useMemo<DeckItem[]>(() => {
+    let globalPostIndex = 0;
+    return groups.flatMap((group, groupIndex) => {
+      const groupCards: DeckItem[] = [];
+      if (showUser && group.user) groupCards.push({ type: 'user', groupIndex, user: group.user });
+      if (showDateTime) groupCards.push({ type: 'datetime', groupIndex, proposedTime: group.proposedTime ?? null });
+      if (showLocation)
+        groupCards.push({
+          type: 'location',
+          groupIndex,
+          locations: group.locations ?? [],
+          proposedLocation: group.proposedLocation ?? null,
         });
-    }, [groups, showDateTime, showLocation, showUser]);
+      group.posts.forEach(post => {
+        groupCards.push({ type: 'post', groupIndex, post, postIndex: globalPostIndex, owner: group.user });
+        globalPostIndex++;
+      });
+      return groupCards;
+    });
+  }, [groups, showDateTime, showLocation, showUser]);
 
-    const cardsRef = useRef(cards);
-    cardsRef.current = cards;
+  const cardsRef = useRef(cards);
+  cardsRef.current = cards;
 
-    const ci = useCallback((n: number) => {
-        const len = cardsRef.current.length;
-        return ((n % len) + len) % len;
-    }, []);
+  const ci = useCallback((n: number) => {
+    const len = cardsRef.current.length;
+    return ((n % len) + len) % len;
+  }, []);
 
-    const slotAnims = useRef([
-        { position: new Animated.ValueXY(SLOT_POSITIONS[0]), swipeX: new Animated.Value(0) },
-        { position: new Animated.ValueXY(SLOT_POSITIONS[1]), swipeX: new Animated.Value(0) },
-        { position: new Animated.ValueXY(SLOT_POSITIONS[2]), swipeX: new Animated.Value(0) },
-    ]).current;
+  const slotAnims = useRef([
+    { position: new Animated.ValueXY(SLOT_POSITIONS[0]), swipeX: new Animated.Value(0) },
+    { position: new Animated.ValueXY(SLOT_POSITIONS[1]), swipeX: new Animated.Value(0) },
+    { position: new Animated.ValueXY(SLOT_POSITIONS[2]), swipeX: new Animated.Value(0) },
+  ]).current;
 
-    const slotRefs = useRef<React.RefObject<SlotHandle | null>[]>([
-        React.createRef<SlotHandle>(),
-        React.createRef<SlotHandle>(),
-        React.createRef<SlotHandle>(),
-    ]).current;
+  const slotRefs = useRef<React.RefObject<SlotHandle | null>[]>([
+    React.createRef<SlotHandle>(),
+    React.createRef<SlotHandle>(),
+    React.createRef<SlotHandle>(),
+  ]).current;
 
-    const rotatingFrontRef = useRef(0);
-    const roleToSlot = (role: number) => (rotatingFrontRef.current + role) % 3;
-    const slotZIndex = useRef([12, 11, 10]);
-    const frontCardIndexRef = useRef(0);
-    const [frontCardIndex, setFrontCardIndex] = useState(0);
-    const isAnimatingRef = useRef(false);
-    const enabledRef = useRef(enabled);
-    enabledRef.current = enabled;
+  const rotatingFrontRef = useRef(0);
+  const roleToSlot = (role: number) => (rotatingFrontRef.current + role) % 3;
+  const slotZIndex = useRef([12, 11, 10]);
+  const frontCardIndexRef = useRef(0);
+  const [frontCardIndex, setFrontCardIndex] = useState(0);
+  const isAnimatingRef = useRef(false);
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
 
-    useEffect(() => {
-        slotRefs[0].current?.setShadow(true);
-        slotRefs[1].current?.setShadow(true);
-        slotRefs[2].current?.setShadow(false);
-    }, [slotRefs]);
+  useEffect(() => {
+    slotRefs[0].current?.setShadow(true);
+    slotRefs[1].current?.setShadow(true);
+    slotRefs[2].current?.setShadow(false);
+  }, [slotRefs]);
 
-    useEffect(() => {
-        const front = rotatingFrontRef.current;
-        const second = (front + 1) % 3;
-        const third  = (front + 2) % 3;
-        slotRefs[front].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current)], true);
-        slotRefs[second].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 1)], false);
-        slotRefs[third].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 2)], false);
-    }, [cards, ci, slotRefs]);
+  useEffect(() => {
+    const front = rotatingFrontRef.current;
+    const second = (front + 1) % 3;
+    const third = (front + 2) % 3;
+    slotRefs[front].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current)], true);
+    slotRefs[second].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 1)], false);
+    slotRefs[third].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 2)], false);
+  }, [cards, ci, slotRefs]);
 
-    useEffect(() => {
-        // Wrapped like the slots' cards: when the deck loses cards (e.g. an
-        // offerer leaves after a barter), the index can be past the new end,
-        // and reading it raw reported no top card, so the screen kept the
-        // old group (and showed an empty turn log) until the next swipe.
-        const topCard = cardsRef.current.length > 0 ? cardsRef.current[ci(frontCardIndex)] : undefined;
-        if (topCard?.type === 'post') onTopCardChange?.(topCard.postIndex);
-        else onTopCardChange?.(null);
-        if (topCard) {
-            onTopCardTypeChange?.(topCard.type);
-            onTopCardGroupChange?.(topCard.groupIndex);
-        }
+  useEffect(() => {
+    // Wrapped like the slots' cards: when the deck loses cards (e.g. an
+    // offerer leaves after a barter), the index can be past the new end,
+    // and reading it raw reported no top card, so the screen kept the
+    // old group (and showed an empty turn log) until the next swipe.
+    const topCard = cardsRef.current.length > 0 ? cardsRef.current[ci(frontCardIndex)] : undefined;
+    if (topCard?.type === 'post') onTopCardChange?.(topCard.postIndex);
+    else onTopCardChange?.(null);
+    if (topCard) {
+      onTopCardTypeChange?.(topCard.type);
+      onTopCardGroupChange?.(topCard.groupIndex);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- report when the top card changes; the parent's callbacks are new each render.
-    }, [frontCardIndex, cards]);
+  }, [frontCardIndex, cards]);
 
-    const prevJumpToken = useRef<number | undefined>(undefined);
-    useEffect(() => {
-        if (jumpToken === undefined || jumpToken === prevJumpToken.current) return;
-        prevJumpToken.current = jumpToken;
-        if (jumpToCardIndex === undefined) return;
-        const f = ci(jumpToCardIndex);
-        const s = ci(jumpToCardIndex + 1);
-        const t = ci(jumpToCardIndex + 2);
-        const front  = rotatingFrontRef.current;
-        const second = (front + 1) % 3;
-        const third  = (front + 2) % 3;
-        slotRefs[front].current?.setCard(cardsRef.current[f], true);
-        slotRefs[second].current?.setCard(cardsRef.current[s], false);
-        slotRefs[third].current?.setCard(cardsRef.current[t], false);
-        slotRefs[front].current?.setShadow(true);
-        slotRefs[second].current?.setShadow(true);
-        slotRefs[third].current?.setShadow(false);
-        frontCardIndexRef.current = f;
-        setFrontCardIndex(f);
+  const prevJumpToken = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (jumpToken === undefined || jumpToken === prevJumpToken.current) return;
+    prevJumpToken.current = jumpToken;
+    if (jumpToCardIndex === undefined) return;
+    const f = ci(jumpToCardIndex);
+    const s = ci(jumpToCardIndex + 1);
+    const t = ci(jumpToCardIndex + 2);
+    const front = rotatingFrontRef.current;
+    const second = (front + 1) % 3;
+    const third = (front + 2) % 3;
+    slotRefs[front].current?.setCard(cardsRef.current[f], true);
+    slotRefs[second].current?.setCard(cardsRef.current[s], false);
+    slotRefs[third].current?.setCard(cardsRef.current[t], false);
+    slotRefs[front].current?.setShadow(true);
+    slotRefs[second].current?.setShadow(true);
+    slotRefs[third].current?.setShadow(false);
+    frontCardIndexRef.current = f;
+    setFrontCardIndex(f);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a jump happens when the token changes; jumpToCardIndex is read with it.
-    }, [jumpToken]);
+  }, [jumpToken]);
 
-    const swipeOut = (direction: number) => {
-        isAnimatingRef.current = true;
-        const frontSlot  = roleToSlot(0);
-        const secondSlot = roleToSlot(1);
-        const thirdSlot  = roleToSlot(2);
-        // The card coming up to second place gains its shadow now; the one
-        // flying off keeps its shadow until it has moved to the back.
-        slotRefs[thirdSlot].current?.setShadow(true);
-        Animated.parallel([
-        Animated.timing(slotAnims[frontSlot].swipeX, { toValue: direction * screenWidth * 1.1, duration: 250, useNativeDriver: true }),
-        Animated.timing(slotAnims[secondSlot].position, { toValue: SLOT_POSITIONS[0], duration: 250, useNativeDriver: true }),
-        Animated.timing(slotAnims[thirdSlot].position, { toValue: SLOT_POSITIONS[1], duration: 250, useNativeDriver: true }),
-        ]).start(() => {
-        slotAnims[frontSlot].swipeX.setValue(0);
-        slotAnims[frontSlot].position.setValue(SLOT_POSITIONS[2]);
-        slotRefs[frontSlot].current?.setShadow(false);
-        rotatingFrontRef.current = secondSlot;
-        const newFrontCardIndex = ci(frontCardIndexRef.current + 1);
-        slotRefs[frontSlot].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 3)], false);
-        slotRefs[secondSlot].current?.setCard(cardsRef.current[newFrontCardIndex], true);
-        slotRefs[thirdSlot].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 2)], false);
-        slotZIndex.current[secondSlot] = 12;
-        slotZIndex.current[thirdSlot]  = 11;
-        slotZIndex.current[frontSlot]  = 10;
-        slotRefs[secondSlot].current?.setZIndex(12);
-        slotRefs[thirdSlot].current?.setZIndex(11);
-        slotRefs[frontSlot].current?.setZIndex(10);
-        frontCardIndexRef.current = newFrontCardIndex;
-        setFrontCardIndex(newFrontCardIndex);
-        isAnimatingRef.current = false;
-        onExitEdit?.();
-        onExitPostEdit?.();
-        });
-    };
+  const swipeOut = (direction: number) => {
+    isAnimatingRef.current = true;
+    const frontSlot = roleToSlot(0);
+    const secondSlot = roleToSlot(1);
+    const thirdSlot = roleToSlot(2);
+    // The card coming up to second place gains its shadow now; the one
+    // flying off keeps its shadow until it has moved to the back.
+    slotRefs[thirdSlot].current?.setShadow(true);
+    Animated.parallel([
+      Animated.timing(slotAnims[frontSlot].swipeX, {
+        toValue: direction * screenWidth * 1.1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slotAnims[secondSlot].position, {
+        toValue: SLOT_POSITIONS[0],
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slotAnims[thirdSlot].position, {
+        toValue: SLOT_POSITIONS[1],
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      slotAnims[frontSlot].swipeX.setValue(0);
+      slotAnims[frontSlot].position.setValue(SLOT_POSITIONS[2]);
+      slotRefs[frontSlot].current?.setShadow(false);
+      rotatingFrontRef.current = secondSlot;
+      const newFrontCardIndex = ci(frontCardIndexRef.current + 1);
+      slotRefs[frontSlot].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 3)], false);
+      slotRefs[secondSlot].current?.setCard(cardsRef.current[newFrontCardIndex], true);
+      slotRefs[thirdSlot].current?.setCard(cardsRef.current[ci(frontCardIndexRef.current + 2)], false);
+      slotZIndex.current[secondSlot] = 12;
+      slotZIndex.current[thirdSlot] = 11;
+      slotZIndex.current[frontSlot] = 10;
+      slotRefs[secondSlot].current?.setZIndex(12);
+      slotRefs[thirdSlot].current?.setZIndex(11);
+      slotRefs[frontSlot].current?.setZIndex(10);
+      frontCardIndexRef.current = newFrontCardIndex;
+      setFrontCardIndex(newFrontCardIndex);
+      isAnimatingRef.current = false;
+      onExitEdit?.();
+      onExitPostEdit?.();
+    });
+  };
 
-    const resetPosition = () => {
-        Animated.spring(slotAnims[roleToSlot(0)].swipeX, { toValue: 0, useNativeDriver: true, friction: 5 }).start();
-    };
+  const resetPosition = () => {
+    Animated.spring(slotAnims[roleToSlot(0)].swipeX, { toValue: 0, useNativeDriver: true, friction: 5 }).start();
+  };
 
-    const panResponder = useRef(
-        PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        onStartShouldSetPanResponderCapture: () => false,
-        onMoveShouldSetPanResponder: (_, g) => {
-            if (mapActiveRef.current) return false;
-            return enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > GESTURE_THRESHOLD && Math.abs(g.dx) > Math.abs(g.dy) * 2;
-        },
-        onMoveShouldSetPanResponderCapture: (_, g) => {
-            if (mapActiveRef.current) return false;
-            return enabledRef.current && !isAnimatingRef.current && Math.abs(g.dx) > GESTURE_THRESHOLD && Math.abs(g.dx) > Math.abs(g.dy) * 2;
-        },
-        onPanResponderGrant: () => {
-            if (!enabledRef.current) return;
-            onHorizontalGestureStart?.();
-            slotAnims[roleToSlot(0)].swipeX.setOffset(0);
-            slotAnims[roleToSlot(0)].swipeX.setValue(0);
-        },
-        onPanResponderMove: (_, gesture) => { if (!enabledRef.current) return; slotAnims[roleToSlot(0)].swipeX.setValue(gesture.dx); },
-        onPanResponderRelease: (_, gesture) => {
-            if (!enabledRef.current) return;
-            onGestureEnd?.();
-            if (gesture.dx > SWIPE_THRESHOLD) swipeOut(1);
-            else if (gesture.dx < -SWIPE_THRESHOLD) swipeOut(-1);
-            else resetPosition();
-        },
-        onPanResponderTerminate: () => { onGestureEnd?.(); resetPosition(); },
-        })
-    ).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, g) => {
+        if (mapActiveRef.current) return false;
+        return (
+          enabledRef.current &&
+          !isAnimatingRef.current &&
+          Math.abs(g.dx) > GESTURE_THRESHOLD &&
+          Math.abs(g.dx) > Math.abs(g.dy) * 2
+        );
+      },
+      onMoveShouldSetPanResponderCapture: (_, g) => {
+        if (mapActiveRef.current) return false;
+        return (
+          enabledRef.current &&
+          !isAnimatingRef.current &&
+          Math.abs(g.dx) > GESTURE_THRESHOLD &&
+          Math.abs(g.dx) > Math.abs(g.dy) * 2
+        );
+      },
+      onPanResponderGrant: () => {
+        if (!enabledRef.current) return;
+        onHorizontalGestureStart?.();
+        slotAnims[roleToSlot(0)].swipeX.setOffset(0);
+        slotAnims[roleToSlot(0)].swipeX.setValue(0);
+      },
+      onPanResponderMove: (_, gesture) => {
+        if (!enabledRef.current) return;
+        slotAnims[roleToSlot(0)].swipeX.setValue(gesture.dx);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (!enabledRef.current) return;
+        onGestureEnd?.();
+        if (gesture.dx > SWIPE_THRESHOLD) swipeOut(1);
+        else if (gesture.dx < -SWIPE_THRESHOLD) swipeOut(-1);
+        else resetPosition();
+      },
+      onPanResponderTerminate: () => {
+        onGestureEnd?.();
+        resetPosition();
+      },
+    }),
+  ).current;
 
-    const sharedProps = {
-        screenWidth, finalCardWidth, isUser, isEditMode, isPostEditMode,
-        isSelectMode, selectedPosts, selectColor,
-        onExitEdit, onEnterEdit, onExitPostEdit, onEnterPostEdit, onSaveUser, onSavePost, onDiscardPost,
-        mapActiveRef, onConfirmLocations, onSelectLocation,
-        isQueryMode, querySelectedPostIndex, onSelectPost, onQueryPostTap,
-        isLocationSelectMode, onProposeLocation,
-        isTimeSelectMode, onProposeTime,
-    };
+  const sharedProps = {
+    screenWidth,
+    finalCardWidth,
+    isUser,
+    isEditMode,
+    isPostEditMode,
+    isSelectMode,
+    selectedPosts,
+    selectColor,
+    onExitEdit,
+    onEnterEdit,
+    onExitPostEdit,
+    onEnterPostEdit,
+    onSaveUser,
+    onSavePost,
+    onDiscardPost,
+    mapActiveRef,
+    onConfirmLocations,
+    onSelectLocation,
+    isQueryMode,
+    querySelectedPostIndex,
+    onSelectPost,
+    onQueryPostTap,
+    isLocationSelectMode,
+    onProposeLocation,
+    isTimeSelectMode,
+    onProposeTime,
+  };
 
-    return (
-        <View
-        testID="deck"
-        style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
-        {...(enabled ? panResponder.panHandlers : {})}
-        >
-        <View style={styles.blankCard}>
-            <BlankCard cardWidth={finalCardWidth} />
-        </View>
-        {[0, 1, 2].map(slot => (
-            <CardSlot
-            key={slot}
-            ref={slotRefs[slot]}
-            slotAnim={slotAnims[slot]}
-            initialCard={cards[slot] ?? null}
-            initialIsFront={slot === 0}
-            initialZIndex={slotZIndex.current[slot]}
-            {...sharedProps}
-            />
-        ))}
-        </View>
-    );
+  return (
+    <View
+      testID="deck"
+      style={[styles.deckContainer, { width: deckContainerWidth, height: deckContainerHeight }]}
+      {...(enabled ? panResponder.panHandlers : {})}
+    >
+      <View style={styles.blankCard}>
+        <BlankCard cardWidth={finalCardWidth} />
+      </View>
+      {[0, 1, 2].map(slot => (
+        <CardSlot
+          key={slot}
+          ref={slotRefs[slot]}
+          slotAnim={slotAnims[slot]}
+          initialCard={cards[slot] ?? null}
+          initialIsFront={slot === 0}
+          initialZIndex={slotZIndex.current[slot]}
+          {...sharedProps}
+        />
+      ))}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
   deckContainer: { position: 'relative', alignItems: 'flex-start', justifyContent: 'flex-start', marginLeft: 24 },
   blankCard: {
-    position: 'absolute', top: 0, left: 0,
+    position: 'absolute',
+    top: 0,
+    left: 0,
     transform: [{ translateX: SLOT_POSITIONS[2].x }, { translateY: SLOT_POSITIONS[2].y }],
   },
 });

@@ -8,8 +8,13 @@ import { render, screen, fireEvent, act } from '@testing-library/react-native';
 jest.mock('@/lib/api', () => ({ apiJson: jest.fn() }));
 jest.mock('@expo/vector-icons', () => {
   const { Text: MockText } = require('react-native');
-  return { FontAwesome6: ({ name, color }: { name: string; color: string }) =>
-    <MockText testID={`icon-${name}`} style={{ color }}>{name}</MockText> };
+  return {
+    FontAwesome6: ({ name, color }: { name: string; color: string }) => (
+      <MockText testID={`icon-${name}`} style={{ color }}>
+        {name}
+      </MockText>
+    ),
+  };
 });
 jest.mock('expo-image', () => {
   const { View: MockView } = require('react-native');
@@ -32,10 +37,14 @@ const bob = { _id: 'bob1', first_name: 'Bob', last_name: 'Test', rating: 0, revi
 
 // The buttons of the last Alert.alert / Alert.prompt, by label.
 let alertSpy: jest.SpyInstance, promptSpy: jest.SpyInstance;
-const lastButtons = (spy: jest.SpyInstance) => spy.mock.calls.at(-1)[2] as { text: string; onPress?: (v?: string) => void }[];
+const lastButtons = (spy: jest.SpyInstance) =>
+  spy.mock.calls.at(-1)[2] as { text: string; onPress?: (v?: string) => void }[];
 const tap = (spy: jest.SpyInstance, label: string, value?: string) =>
   lastButtons(spy).find(b => b.text === label)!.onPress!(value);
-const flush = () => act(async () => { await new Promise(r => setTimeout(r, 0)); });
+const flush = () =>
+  act(async () => {
+    await new Promise(r => setTimeout(r, 0));
+  });
 
 beforeEach(async () => {
   alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
@@ -55,9 +64,11 @@ test('block: asks first, then blocks and the button turns red', async () => {
 
   await fireEvent.press(screen.getByTestId('user-block'));
   expect(alertSpy.mock.calls[0][0]).toBe('Block Bob?');
-  expect(api).not.toHaveBeenCalled();            // nothing until confirmed
+  expect(api).not.toHaveBeenCalled(); // nothing until confirmed
 
-  await act(async () => { tap(alertSpy, 'Block'); });
+  await act(async () => {
+    tap(alertSpy, 'Block');
+  });
   await flush();
   expect(api).toHaveBeenCalledWith('/dev/block', { method: 'POST', body: { userId: 'bob1' } });
   expect(banColor()).toBe(colors.actions.decline);
@@ -79,7 +90,9 @@ test('tapping a blocked user offers to unblock', async () => {
 
   await fireEvent.press(screen.getByTestId('user-block'));
   expect(alertSpy.mock.calls.at(-1)[0]).toBe('Unblock Bob?');
-  await act(async () => { tap(alertSpy, 'Unblock'); });
+  await act(async () => {
+    tap(alertSpy, 'Unblock');
+  });
   await flush();
   expect(api).toHaveBeenCalledWith('/dev/block/bob1', { method: 'DELETE' });
   expect(banColor()).toBe(colors.ui.cardsecondary);
@@ -90,7 +103,9 @@ test("a failed block says so and the button doesn't turn red", async () => {
   await flush();
   api.mockRejectedValueOnce(new Error('User not found'));
   await fireEvent.press(screen.getByTestId('user-block'));
-  await act(async () => { tap(alertSpy, 'Block'); });
+  await act(async () => {
+    tap(alertSpy, 'Block');
+  });
   await flush();
   expect(alertSpy.mock.calls.at(-1).slice(0, 2)).toEqual(["Couldn't block", 'User not found']);
   expect(banColor()).toBe(colors.ui.cardsecondary);
@@ -107,7 +122,9 @@ test('your own card has no block or report button', async () => {
 
 describe('report', () => {
   const realOS = Platform.OS;
-  afterEach(() => { (Platform as any).OS = realOS; });
+  afterEach(() => {
+    (Platform as any).OS = realOS;
+  });
 
   test('from the card: pick a reason, add details, send, then offered a block', async () => {
     (Platform as any).OS = 'ios';
@@ -116,10 +133,13 @@ describe('report', () => {
     expect(alertSpy.mock.calls[0][0]).toBe('Report Bob');
     tap(alertSpy, 'Spam');
     expect(lastButtons(promptSpy).map(b => b.text)).toEqual(['Cancel', 'Skip', 'Send']);
-    await act(async () => { tap(promptSpy, 'Send', '  keeps messaging  '); });
+    await act(async () => {
+      tap(promptSpy, 'Send', '  keeps messaging  ');
+    });
     await flush();
     expect(api).toHaveBeenCalledWith('/dev/report', {
-      method: 'POST', body: { userId: 'bob1', postId: undefined, reason: 'spam', note: 'keeps messaging' },
+      method: 'POST',
+      body: { userId: 'bob1', postId: undefined, reason: 'spam', note: 'keeps messaging' },
     });
     expect(alertSpy.mock.calls.at(-1)[0]).toBe('Thanks for reporting');
     expect(lastButtons(alertSpy).map(b => b.text)).toEqual(['Not now', 'Block Bob']);
@@ -136,23 +156,36 @@ describe('report', () => {
   test('every reason, plus a way out', () => {
     startReport({ postId: 'p1', name: 'Bob' });
     expect(alertSpy.mock.calls[0][0]).toBe('Report this post');
-    expect(lastButtons(alertSpy).map(b => b.text)).toEqual(
-      ['Spam', 'Scam or fraud', 'Inappropriate content', 'Harassment', 'Other', 'Cancel']);
+    expect(lastButtons(alertSpy).map(b => b.text)).toEqual([
+      'Spam',
+      'Scam or fraud',
+      'Inappropriate content',
+      'Harassment',
+      'Other',
+      'Cancel',
+    ]);
   });
 
   test('Android has no text prompt: the report goes straight away', async () => {
     (Platform as any).OS = 'android';
     startReport({ postId: 'p1', name: 'Bob' });
-    await act(async () => { tap(alertSpy, 'Scam or fraud'); });
+    await act(async () => {
+      tap(alertSpy, 'Scam or fraud');
+    });
     expect(promptSpy).not.toHaveBeenCalled();
-    expect(api).toHaveBeenCalledWith('/dev/report', expect.objectContaining({ body: expect.objectContaining({ reason: 'scam', postId: 'p1' }) }));
+    expect(api).toHaveBeenCalledWith(
+      '/dev/report',
+      expect.objectContaining({ body: expect.objectContaining({ reason: 'scam', postId: 'p1' }) }),
+    );
   });
 
   test('a failed report says so', async () => {
     (Platform as any).OS = 'android';
     api.mockRejectedValueOnce(new Error('offline'));
     startReport({ userId: 'bob1', name: 'Bob' });
-    await act(async () => { tap(alertSpy, 'Spam'); });
+    await act(async () => {
+      tap(alertSpy, 'Spam');
+    });
     await flush();
     expect(alertSpy.mock.calls.at(-1).slice(0, 2)).toEqual(["Couldn't send the report", 'offline']);
   });

@@ -6,10 +6,19 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 import TradeTurns, { TradeTurn } from '@/components/TradeTurns';
 import { TEXT_LIMITS } from '@/config/textLimits';
 
-const lines = () => screen.queryAllByText(/./).map(n => {
-  const kids = n.props.children;
-  return Array.isArray(kids) ? kids.flat(3).map((k: any) => (typeof k === 'string' ? k : '')).join('') : kids;
-}).filter(t => typeof t === 'string' && t.length > 0);
+const lines = () =>
+  screen
+    .queryAllByText(/./)
+    .map(n => {
+      const kids = n.props.children;
+      return Array.isArray(kids)
+        ? kids
+            .flat(3)
+            .map((k: any) => (typeof k === 'string' ? k : ''))
+            .join('')
+        : kids;
+    })
+    .filter(t => typeof t === 'string' && t.length > 0);
 
 // ── the log ──────────────────────────────────────────────────────────────────
 
@@ -26,16 +35,27 @@ test("each move reads as a sentence: yours as 'You', theirs with their name", as
 });
 
 test('a question and its answer', async () => {
-  await render(<TradeTurns turns={[
-    { type: 'turnQuery', item: 'Dimmable? (Lamp)', isUser: true },
-    { type: 'turnAnswer', user: 'Bob', item: 'Yes', isUser: false },
-  ]} />);
+  await render(
+    <TradeTurns
+      turns={[
+        { type: 'turnQuery', item: 'Dimmable? (Lamp)', isUser: true },
+        { type: 'turnAnswer', user: 'Bob', item: 'Yes', isUser: false },
+      ]}
+    />,
+  );
   expect(screen.getByText('You asked: Dimmable? (Lamp)')).toBeTruthy();
   expect(screen.getByText('Bob answered: Yes')).toBeTruthy();
 });
 
 test('a move type the app does not know shows nothing (instead of a broken line)', async () => {
-  await render(<TradeTurns turns={[{ type: 'turnSomethingNew' as any, isUser: true }, { type: 'turnStall', isUser: true }]} />);
+  await render(
+    <TradeTurns
+      turns={[
+        { type: 'turnSomethingNew' as any, isUser: true },
+        { type: 'turnStall', isUser: true },
+      ]}
+    />,
+  );
   expect(screen.getByText('You stalled')).toBeTruthy();
   expect(lines()).toEqual(['You stalled']);
 });

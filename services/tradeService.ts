@@ -5,92 +5,92 @@ import { TradeTurn } from '@/components/TradeTurns';
 import { apiJson, apiJsonIfChanged, IfChanged } from '@/lib/api';
 
 export interface TradeWriteResult {
-    success: boolean;
-    gameId: string;
-    tradeId?: string;
+  success: boolean;
+  gameId: string;
+  tradeId?: string;
 }
 
 // Every trade write: a JSON POST that throws on a non-2xx answer (with the
 // server's message, e.g. "It's not your turn") so callers' catch blocks see
 // refused moves.
 function postTrade(path: string, body: unknown): Promise<TradeWriteResult> {
-    return apiJson<TradeWriteResult>(path, { method: 'POST', body });
+  return apiJson<TradeWriteResult>(path, { method: 'POST', body });
 }
 
 export function sendOffer(targetPostId: string) {
-    return postTrade('/dev/trades/offer', { targetPostId });
+  return postTrade('/dev/trades/offer', { targetPostId });
 }
 
 export function rescindOffer(targetPostId: string) {
-    return postTrade('/dev/trades/rescind', { targetPostId });
+  return postTrade('/dev/trades/rescind', { targetPostId });
 }
 
 export function sendBarter(gameId: string, selectedPostIds: string[]) {
-    return postTrade('/dev/trades/barter', { gameId, selectedPostIds });
+  return postTrade('/dev/trades/barter', { gameId, selectedPostIds });
 }
 
 function normalizePost(raw: any): Post {
-    return {
-        _id: raw._id,
-        name: raw.post_title ?? raw.name,
-        description: raw.description,
-        photos: raw.photos ?? [],
-        date_posted: raw.date_posted,
-    };
+  return {
+    _id: raw._id,
+    name: raw.post_title ?? raw.name,
+    description: raw.description,
+    photos: raw.photos ?? [],
+    date_posted: raw.date_posted,
+  };
 }
 
 function normalizeMessage(raw: any): QueryMessage {
-    return {
-        message: raw.message,
-        senderId: raw.sender_id,
-        createdAt: raw.created_at,
-    };
+  return {
+    message: raw.message,
+    senderId: raw.sender_id,
+    createdAt: raw.created_at,
+  };
 }
 
 function normalizeTradeItem(raw: any): OpenTradeItem {
-    return {
-        tradeId: raw._id,
-        gameId: raw.game_id,
-        type: raw.type,
-        post: raw.post ? normalizePost(raw.post) : null,
-        actorId: raw.actor_id,
-        messages: (raw.messages ?? []).map(normalizeMessage),
-        rawTurns: raw.turns,
-        myId: raw.my_id,
-        partnerName: raw.partner_name,
-        turnPosts: (raw.turn_posts ?? []).map(normalizePost),
-    };
+  return {
+    tradeId: raw._id,
+    gameId: raw.game_id,
+    type: raw.type,
+    post: raw.post ? normalizePost(raw.post) : null,
+    actorId: raw.actor_id,
+    messages: (raw.messages ?? []).map(normalizeMessage),
+    rawTurns: raw.turns,
+    myId: raw.my_id,
+    partnerName: raw.partner_name,
+    turnPosts: (raw.turn_posts ?? []).map(normalizePost),
+  };
 }
 export function getCurrentUserId(): string | undefined {
   return getAuth().currentUser?.uid;
 }
 
 export function acceptTrade(gameId: string) {
-    return postTrade('/dev/trades/trade_details/accept', { gameId });
+  return postTrade('/dev/trades/trade_details/accept', { gameId });
 }
 
 export function declineTrade(gameId: string) {
-    return postTrade('/dev/trades/trade_details/decline', { gameId });
+  return postTrade('/dev/trades/trade_details/decline', { gameId });
 }
 
 // Skip your turn: the game stays in its phase and the turn passes to the partner.
 export function stallTrade(gameId: string) {
-    return postTrade('/dev/trades/stall', { gameId });
+  return postTrade('/dev/trades/stall', { gameId });
 }
 
 // Everything the barter page's OPEN tab shows, in one request.
 export interface OpenTabData {
-    queries: OpenTradeItem[];
-    offers: OpenTradeItem[];
-    declined: OpenTradeItem[];
+  queries: OpenTradeItem[];
+  offers: OpenTradeItem[];
+  declined: OpenTradeItem[];
 }
 export async function getOpenTab(): Promise<OpenTabData> {
-    const data = await apiJson('/dev/trades/open_tab');
-    return {
-        queries: groupQueryItems((data.queries ?? []).map(normalizeTradeItem)),
-        offers: (data.offers ?? []).map(normalizeTradeItem),
-        declined: (data.declined ?? []).map(normalizeTradeItem),
-    };
+  const data = await apiJson('/dev/trades/open_tab');
+  return {
+    queries: groupQueryItems((data.queries ?? []).map(normalizeTradeItem)),
+    offers: (data.offers ?? []).map(normalizeTradeItem),
+    declined: (data.declined ?? []).map(normalizeTradeItem),
+  };
 }
 
 // Everything the CLOSE tab shows, in one request: games settling where/when
@@ -98,22 +98,22 @@ export async function getOpenTab(): Promise<OpenTabData> {
 // With withHistory (once a history dropdown has been opened), also those
 // two lists in full.
 export interface CloseTabData {
-    close: BarterGame[];
-    /** The close list's version, for getCloseGamesIfChanged. */
-    closeVersion: string;
-    counts: { completed: number; declined: number };
-    completed?: BarterGame[];
-    declined?: BarterGame[];
+  close: BarterGame[];
+  /** The close list's version, for getCloseGamesIfChanged. */
+  closeVersion: string;
+  counts: { completed: number; declined: number };
+  completed?: BarterGame[];
+  declined?: BarterGame[];
 }
 export async function getCloseTab(withHistory: boolean): Promise<CloseTabData> {
-    const data = await apiJson(`/dev/trades/close_tab${withHistory ? '?history=1' : ''}`);
-    return {
-        close: data.close ?? [],
-        closeVersion: data.closeVersion ?? '',
-        counts: data.counts ?? { completed: 0, declined: 0 },
-        completed: data.completed,
-        declined: data.declined,
-    };
+  const data = await apiJson(`/dev/trades/close_tab${withHistory ? '?history=1' : ''}`);
+  return {
+    close: data.close ?? [],
+    closeVersion: data.closeVersion ?? '',
+    counts: data.counts ?? { completed: 0, declined: 0 },
+    completed: data.completed,
+    declined: data.declined,
+  };
 }
 
 // Background checks: send the version of the list you already have. If it
@@ -121,17 +121,17 @@ export async function getCloseTab(withHistory: boolean): Promise<CloseTabData> {
 export type { IfChanged };
 
 function getGamesIfChanged(path: string, knownVersion: string): Promise<IfChanged<BarterGame[]>> {
-    return apiJsonIfChanged<BarterGame[]>(path, knownVersion);
+  return apiJsonIfChanged<BarterGame[]>(path, knownVersion);
 }
 
 /** BARTER tab games, or { changed: false } if you already have this version. */
 export function getBarterGamesIfChanged(knownVersion: string) {
-    return getGamesIfChanged('/dev/trades/barter', knownVersion);
+  return getGamesIfChanged('/dev/trades/barter', knownVersion);
 }
 
 /** CLOSE tab games (no history), or { changed: false } if unchanged. */
 export function getCloseGamesIfChanged(knownVersion: string) {
-    return getGamesIfChanged('/dev/trades/close', knownVersion);
+  return getGamesIfChanged('/dev/trades/close', knownVersion);
 }
 
 export function sendQuery(targetPostId: string, message: string) {
@@ -227,7 +227,8 @@ export interface LatestProposals {
 
 export function getLatestProposals(rawTurns: any[], currentUserId: string): LatestProposals {
   const latest: LatestProposals = { where: null, when: null };
-  for (const t of rawTurns) {   // oldest first, so later ones overwrite
+  for (const t of rawTurns) {
+    // oldest first, so later ones overwrite
     const isUser = t.actor_id === currentUserId;
     if (t.type === 'where' && t.location) latest.where = { isUser, location: t.location };
     if (t.type === 'when' && t.proposed_time) latest.when = { isUser, label: t.proposed_time };
@@ -244,7 +245,7 @@ export function buildTradeTurns(
   rawTurns: any[],
   currentUserId: string,
   partnerFirstName: string,
-  allPosts: Post[]
+  allPosts: Post[],
 ): TradeTurn[] {
   return rawTurns
     .map((t): TradeTurn | TradeTurn[] | null => {
@@ -253,27 +254,30 @@ export function buildTradeTurns(
 
       switch (t.type) {
         case 'query': {
-            const question = t.messages?.[0]?.message ?? '';
-            const about = resolvePostName(t.target_post_id, allPosts);
-            const asked: TradeTurn = {
-                type: 'turnQuery',
-                user,
-                item: about ? `${question} (${about})` : question,
-                isUser,
-            };
-            // The answer, if any, is the next message in the thread, from
-            // the other player.
-            const answer = (t.messages ?? []).slice(1).find((m: any) => m.sender_id !== t.actor_id);
-            if (!answer) return asked;
-            const answeredByUser = answer.sender_id === currentUserId;
-            // Listed answer-first because the log is reversed to newest-first
-            // below; this keeps the answer directly under its question.
-            return [{
-                type: 'turnAnswer',
-                user: answeredByUser ? undefined : partnerFirstName,
-                item: answer.message,
-                isUser: answeredByUser,
-            }, asked];
+          const question = t.messages?.[0]?.message ?? '';
+          const about = resolvePostName(t.target_post_id, allPosts);
+          const asked: TradeTurn = {
+            type: 'turnQuery',
+            user,
+            item: about ? `${question} (${about})` : question,
+            isUser,
+          };
+          // The answer, if any, is the next message in the thread, from
+          // the other player.
+          const answer = (t.messages ?? []).slice(1).find((m: any) => m.sender_id !== t.actor_id);
+          if (!answer) return asked;
+          const answeredByUser = answer.sender_id === currentUserId;
+          // Listed answer-first because the log is reversed to newest-first
+          // below; this keeps the answer directly under its question.
+          return [
+            {
+              type: 'turnAnswer',
+              user: answeredByUser ? undefined : partnerFirstName,
+              item: answer.message,
+              isUser: answeredByUser,
+            },
+            asked,
+          ];
         }
         case 'offer':
           return {
@@ -284,15 +288,15 @@ export function buildTradeTurns(
           };
 
         case 'barter':
-            return {
-                type: 'turnBarter',
-                user,
-                item: (t.selected_post_ids ?? [])
-                .map((id: string) => resolvePostName(id, allPosts))
-                .filter(Boolean)
-                .join(', '),
-                isUser,
-            };
+          return {
+            type: 'turnBarter',
+            user,
+            item: (t.selected_post_ids ?? [])
+              .map((id: string) => resolvePostName(id, allPosts))
+              .filter(Boolean)
+              .join(', '),
+            isUser,
+          };
 
         case 'stall':
           return { type: 'turnStall', user, isUser };
@@ -332,7 +336,6 @@ export function buildTradeTurns(
     .filter((t): t is TradeTurn => t !== null)
     .reverse();
 }
-
 
 export interface IncomingQuery {
   /** The query's id; pass to answerQuery. */
@@ -380,16 +383,18 @@ function groupQueryItems(items: OpenTradeItem[]): OpenTradeItem[] {
   return Array.from(byGameId.values()).map(item => ({
     ...item,
     messages: [...(item.messages ?? [])].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     ),
   }));
 }
 
 export function buildOfferTurns(item: OpenTradeItem): TradeTurn[] {
   const postName = item.post?.name ?? '';
-  return [{
-    type: 'turnOffer',
-    item: postName,
-    isUser: true,
-  }];
+  return [
+    {
+      type: 'turnOffer',
+      item: postName,
+      isUser: true,
+    },
+  ];
 }

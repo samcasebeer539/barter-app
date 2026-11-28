@@ -10,6 +10,7 @@ import { clearReviewsCache } from '@/services/userService';
 
 test('clears settings, the block list and cached reviews', () => {
   clearSessionCaches();
-  expect([clearSettingsCache, clearBlockedCache, clearReviewsCache].map(f => (f as jest.Mock).mock.calls.length))
-    .toEqual([1, 1, 1]);
+  expect(
+    [clearSettingsCache, clearBlockedCache, clearReviewsCache].map(f => (f as jest.Mock).mock.calls.length),
+  ).toEqual([1, 1, 1]);
 });

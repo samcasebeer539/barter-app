@@ -66,9 +66,7 @@ function reducer(state: TradeActionState, event: Event): TradeActionState {
       ) {
         return initialState;
       }
-      const base: TradeActionState = isNewAction
-        ? { ...initialState, activeAction: event.actionType }
-        : state;
+      const base: TradeActionState = isNewAction ? { ...initialState, activeAction: event.actionType } : state;
 
       if (MULTI_SELECT_ACTIONS.includes(event.actionType)) {
         // Tapping the action button toggles whatever post is currently on top
@@ -133,18 +131,12 @@ export function useTradeAction() {
   const selectAction = useCallback(
     (actionType: TradeActionType, topPostIndex: number | null = null) =>
       dispatch({ type: 'SELECT_ACTION', actionType, topPostIndex }),
-    []
+    [],
   );
 
-  const togglePost = useCallback(
-    (postIndex: number) => dispatch({ type: 'TOGGLE_POST', postIndex }),
-    []
-  );
+  const togglePost = useCallback((postIndex: number) => dispatch({ type: 'TOGGLE_POST', postIndex }), []);
 
-  const setSubflowData = useCallback(
-    (data: unknown) => dispatch({ type: 'SET_SUBFLOW_DATA', data }),
-    []
-  );
+  const setSubflowData = useCallback((data: unknown) => dispatch({ type: 'SET_SUBFLOW_DATA', data }), []);
 
   const confirm = useCallback(() => dispatch({ type: 'CONFIRM' }), []);
   const reset = useCallback(() => dispatch({ type: 'RESET' }), []);

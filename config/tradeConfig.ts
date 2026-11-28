@@ -150,7 +150,7 @@ export const TRADE_ACTIONS: TradeActionConfig[] = [
     hasButtons: true,
     actionType: 'wait',
   },
- 
+
   {
     text: 'RESCIND',
     color: colors.actions.rescind,
@@ -257,8 +257,7 @@ export const TURN_DISPLAY: Record<TradeTurnType, TurnDisplayConfig> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const getTurnConfig = (turnType: TradeTurnType): TurnDisplayConfig | null =>
-  TURN_DISPLAY[turnType] ?? null;
+export const getTurnConfig = (turnType: TradeTurnType): TurnDisplayConfig | null => TURN_DISPLAY[turnType] ?? null;
 
 export const getActionConfig = (actionType: TradeActionType): TradeActionConfig | null =>
   TRADE_ACTIONS.find(a => a.actionType === actionType) ?? null;

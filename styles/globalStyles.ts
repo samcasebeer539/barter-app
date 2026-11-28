@@ -1,11 +1,10 @@
 // Global Fonts
 export const globalFonts = {
-  regular:'YourFontName-Regular',
+  regular: 'YourFontName-Regular',
 
   bold: 'YourFontName-Bold',
-  extrabold: 'YourFontName-ExtraBold'
+  extrabold: 'YourFontName-ExtraBold',
 };
-
 
 export const defaultTextStyle = {
   fontFamily: globalFonts.regular,
@@ -15,15 +14,15 @@ export const defaultTextStyle = {
 export const colors = {
   // Trade Action Colors
   actions: {
-    offer: '#FFA600',  
-    trade: '#ff3a86',  
-    query: '#1f8bff',     //ab57ff  ff3a86 ff31dd
-    counter: '#ff7513',  
-    
-    decline: '#ff3232',    
-    accept: '#00e582',     
+    offer: '#FFA600',
+    trade: '#ff3a86',
+    query: '#1f8bff', //ab57ff  ff3a86 ff31dd
+    counter: '#ff7513',
+
+    decline: '#ff3232',
+    accept: '#00e582',
     location: '#ff31dd',
-    time: '#00e4e8', 
+    time: '#00e4e8',
     verify: '#a662ff',
     wait: '#372788',
     stall: '#fb4921',
@@ -31,32 +30,30 @@ export const colors = {
     review: '#FFA600',
   },
 
-
   // Post Type Colors
   cardTypes: {
-    service: '#ff3a86',    // location now
-    good: '#FFA600',       // this is now trade color
-    user: '#1686ff', 
-    times: '#2fff00', 
-    locations:'#FFA600', 
+    service: '#ff3a86', // location now
+    good: '#FFA600', // this is now trade color
+    user: '#1686ff',
+    times: '#2fff00',
+    locations: '#FFA600',
   },
-
 
   // UI Element Colors
   ui: {
-    secondary: '#372788',     // 270e96 Secondary button color (purple-grey) 5c5579  4a4468 372788
+    secondary: '#372788', // 270e96 Secondary button color (purple-grey) 5c5579  4a4468 372788
     secondarydisabled: '#8779ee',
     cardsecondary: '#8779ee',
-    carddisabled: '#d2cdf9',  // Disabled controls on cards (lighter cardsecondary), mainly edit mode
+    carddisabled: '#d2cdf9', // Disabled controls on cards (lighter cardsecondary), mainly edit mode
     buttonPrimary: '#e99700', // Primary action button (used for YOUR TURN)
-    background: '#000000',    // Main app background
+    background: '#000000', // Main app background
   },
 
   // Text Colors
   text: {
-    primary: '#FFFFFF',    // Primary text
-    secondary: '#E0E0E0',  // Secondary text
-    white: '#fff',         // Pure white
+    primary: '#FFFFFF', // Primary text
+    secondary: '#E0E0E0', // Secondary text
+    white: '#fff', // Pure white
   },
 };
 
@@ -70,7 +67,7 @@ export const uiColors = colors.ui;
 // Default export for easy importing
 export default {
   colors,
-  
+
   fonts: globalFonts,
   defaultTextStyle,
 };

@@ -22,7 +22,15 @@ jest.mock('@/services/tradeService', () => ({
 import DeckFeed from '@/components/DeckFeed';
 import { sendOffer, sendQuery, addPost } from '@/services/tradeService';
 import {
-  resetRecorders, wheel, deck, swipeTo, scrollWheelTo, press, confirm, typeQuestion, shownTurns,
+  resetRecorders,
+  wheel,
+  deck,
+  swipeTo,
+  scrollWheelTo,
+  press,
+  confirm,
+  typeQuestion,
+  shownTurns,
 } from './helpers/deckRecorders';
 
 const bob = { _id: 'bob1', first_name: 'Bob', last_name: 'T', locations: [] } as any;
@@ -49,7 +57,7 @@ test('the wheel has OFFER and QUERY', async () => {
 
 test('opens on the post that was tapped', async () => {
   await open();
-  expect(deck().jumpToCardIndex).toBe(3);  // user card, location card, then posts: Chair is the 2nd post
+  expect(deck().jumpToCardIndex).toBe(3); // user card, location card, then posts: Chair is the 2nd post
   expect(deck().groups[0].posts.map((p: any) => p.name)).toEqual(['Lamp', 'Chair']);
 });
 
@@ -79,7 +87,7 @@ test('offer: pick the post on top, confirm, and it is sent and shown', async () 
   await confirm('offer');
   expect(sendOffer).toHaveBeenCalledWith('chair');
   expect(shownTurns()).toEqual([{ type: 'turnOffer', item: 'Chair', isUser: true }]);
-  expect(wheel().activeActionType).toBeNull();  // ready for the next move
+  expect(wheel().activeActionType).toBeNull(); // ready for the next move
 });
 
 test('offer is one post at a time: picking another replaces it', async () => {
@@ -187,7 +195,8 @@ test('a failed add is reported back to the trade deck', async () => {
   const err = new Error('That item has already been traded');
   (addPost as jest.Mock).mockRejectedValueOnce(err);
   jest.spyOn(console, 'error').mockImplementation(() => {});
-  const onAdded = jest.fn(), onAddFailed = jest.fn();
+  const onAdded = jest.fn(),
+    onAddFailed = jest.fn();
   await open({ addGameId: 'g1', onAdded, onAddFailed });
   await swipeTo(0);
   await press('add');

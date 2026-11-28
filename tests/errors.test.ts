@@ -6,9 +6,13 @@ import { errorMessage, showError, OFFLINE_MESSAGE, SERVER_DOWN_MESSAGE, GENERIC_
 const api = (message: string, status = 400) => new ApiError(message, status);
 
 test("the server's own (readable) messages are shown as they are", () => {
-  for (const m of ['That item has already been traded', 'Bio is too long (max 300 characters)',
-                   'Maximum 3 locations allowed', 'Turn time ran out; the trade was declined',
-                   'This trade just changed. Refresh and try again.']) {
+  for (const m of [
+    'That item has already been traded',
+    'Bio is too long (max 300 characters)',
+    'Maximum 3 locations allowed',
+    'Turn time ran out; the trade was declined',
+    'This trade just changed. Refresh and try again.',
+  ]) {
     expect(errorMessage(api(m, 409))).toBe(m);
   }
 });
@@ -25,28 +29,40 @@ test('server crashes get a generic message, not the crash text', () => {
 });
 
 test('messages that name internals are reworded', () => {
-  expect(errorMessage(api("It's not your turn (action 'stall' in phase 'barter')", 403)))
-    .toBe("It's not your turn anymore. Refresh to see the latest.");
-  expect(errorMessage(api("Action 'barter' is not valid in phase 'open'")))
-    .toBe('This trade has moved on. Refresh to see the latest.');
+  expect(errorMessage(api("It's not your turn (action 'stall' in phase 'barter')", 403))).toBe(
+    "It's not your turn anymore. Refresh to see the latest.",
+  );
+  expect(errorMessage(api("Action 'barter' is not valid in phase 'open'"))).toBe(
+    'This trade has moved on. Refresh to see the latest.',
+  );
   expect(errorMessage(api('Game not found', 404))).toBe('This trade no longer exists. Refresh to see the latest.');
   expect(errorMessage(api('Unauthorized', 403))).toBe("You're not part of this trade.");
   expect(errorMessage(api('Invalid or expired token', 401))).toBe('Please sign in again.');
 });
 
 test("bad requests the person can't fix get the generic message", () => {
-  for (const m of ['Missing gameId', 'Invalid id', 'Invalid gameId or postId', 'No valid fields to update',
-                   "reason must be one of ['other', 'spam']", 'proposedAt needs a time zone']) {
+  for (const m of [
+    'Missing gameId',
+    'Invalid id',
+    'Invalid gameId or postId',
+    'No valid fields to update',
+    "reason must be one of ['other', 'spam']",
+    'proposedAt needs a time zone',
+  ]) {
     expect(errorMessage(api(m))).toBe(GENERIC_MESSAGE);
   }
 });
 
 test('but readable "must" messages stay', () => {
-  expect(errorMessage(api('Rating must be a whole number from 1 to 5'))).toBe('Rating must be a whole number from 1 to 5');
+  expect(errorMessage(api('Rating must be a whole number from 1 to 5'))).toBe(
+    'Rating must be a whole number from 1 to 5',
+  );
 });
 
 test('photo upload (Firebase Storage) errors', () => {
-  expect(errorMessage({ code: 'storage/unauthorized', message: 'Firebase Storage: ...' })).toBe("The photo couldn't be uploaded. Try again.");
+  expect(errorMessage({ code: 'storage/unauthorized', message: 'Firebase Storage: ...' })).toBe(
+    "The photo couldn't be uploaded. Try again.",
+  );
   expect(errorMessage({ code: 'storage/retry-limit-exceeded' })).toBe(OFFLINE_MESSAGE);
 });
 

@@ -6,8 +6,11 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
-  return { FontAwesome6: ({ name, solid }: { name: string; solid?: boolean }) =>
-    <Text>{`icon:${name}${solid ? ':solid' : ''}`}</Text> };
+  return {
+    FontAwesome6: ({ name, solid }: { name: string; solid?: boolean }) => (
+      <Text>{`icon:${name}${solid ? ':solid' : ''}`}</Text>
+    ),
+  };
 });
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
@@ -33,7 +36,12 @@ test('stars: none filled until picked; tapping the 4th rates 4 and fills four', 
 // ── feed bar ─────────────────────────────────────────────────────────────────
 
 function feedBar() {
-  const cb = { onSearchSubmit: jest.fn(), onSearchClear: jest.fn(), onSortPress: jest.fn(), onLocationPress: jest.fn() };
+  const cb = {
+    onSearchSubmit: jest.fn(),
+    onSearchClear: jest.fn(),
+    onSortPress: jest.fn(),
+    onLocationPress: jest.fn(),
+  };
   return { cb, el: <BarFeed showLocation headerTranslateY={new Animated.Value(0)} {...cb} /> };
 }
 const box = () => screen.getByPlaceholderText('Search');
@@ -74,7 +82,8 @@ test('the sort button opens the sort menu', async () => {
 test('OPEN / BARTER / CLOSE: each switches the tab and lights up', async () => {
   const cb = { onOffersPress: jest.fn(), onTradesPress: jest.fn(), onDealsPress: jest.fn() };
   await render(<BarBarter {...cb} />);
-  const lit = () => ['OPEN', 'BARTER', 'CLOSE'].filter(t => StyleSheet.flatten(screen.getByText(t).props.style).color === '#fff');
+  const lit = () =>
+    ['OPEN', 'BARTER', 'CLOSE'].filter(t => StyleSheet.flatten(screen.getByText(t).props.style).color === '#fff');
   expect(lit()).toEqual(['OPEN']);
   await fireEvent.press(screen.getByText('BARTER'));
   expect(cb.onTradesPress).toHaveBeenCalled();

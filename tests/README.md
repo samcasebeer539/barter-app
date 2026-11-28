@@ -15,7 +15,7 @@ becomes a screen in expo-router.
 | File | Covers |
 |---|---|
 | `api.test.ts` | `lib/api`: token on every request, server error messages, offline / timeout, the 204 "nothing changed" check |
-| `tradeTurns.test.ts` | Building the trade history from the server's turn log; parsing the open / close tab responses |
+| `tradeHistory.test.ts` | Building the trade history from the server's turn log; parsing the open / close tab responses |
 | `useTradeAction.test.ts` | The action buttons' state: arming, picking posts, typed text, confirm |
 | `postService.test.ts` | Photos upload before a post is created, unique photo names, failed uploads create nothing |
 | `settings.test.ts` | Reading the server's settings response |
@@ -24,6 +24,8 @@ becomes a screen in expo-router.
 | `barterScreen.test.tsx` | Barter page: each tab's loads, the background check while waiting (every 5s backing off to a minute, only while waiting, stops when you leave), history dropdowns, reloads after a refused move or a block |
 | `profileScreen.test.tsx` | Profile screen: one-request load, the quiet refresh on return (locks, rating, offers; keeps an unsaved post), barter / decline removing the offerer, saves and their failures |
 | `CardMeetingLocation.test.tsx` | Location card: adding / removing (3 max, name required), WHERE picking, proposed spot, someone else's spots, where the map starts |
+| `settingsScreen.test.tsx` | Settings: the toggles (saved on the server, remembered in the app, flipped back with a message on failure), Location Services asking the phone, blocked users, log out |
+| `TradeTurns.test.tsx` | The turn log's sentences, and the question box (limit, cleared on close, Done key, focuses itself) |
 | `login.test.tsx` | Sign in / sign up, name check, failures, field limits |
 | `feedPaging.test.tsx` | Feed pages: first page, the next one near the bottom (once, until there are no more, no repeats), sort and search starting over |
 | `QueryAnswer.test.tsx` | Answering a question; a failed answer keeps your text (alert in the QUERIES drawer, the trade deck's handling in a trade) |

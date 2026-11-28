@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { setLocationAllowedCache } from '@/hooks/useUserRegion';
-import { getSettings } from '@/lib/settingsCache';
+import { getSettings, updateSettingsCache } from '@/lib/settingsCache';
+import { showError } from '@/lib/errors';
 import { apiJson } from '@/lib/api';
 import { getBlockedUsers, onBlockChange } from '@/lib/safety';
 import Deck, { DeckGroup } from '@/components/Deck';
@@ -96,7 +97,7 @@ export default function SettingsScreen() {
         try {
             await signOut(auth);
         } catch (error) {
-            console.warn("Sign out error: ", error);
+            showError("Couldn't log out", error);
         }
     };
 
@@ -127,7 +128,7 @@ export default function SettingsScreen() {
             if (!auth.currentUser) return;
             await apiJson('/dev/update_user', { method: 'PATCH', body: { is_location_allowed: value } });
         } catch (err) {
-            console.warn('Failed to save setting:', err);
+            showError("Couldn't save the setting", err);
             setLocationEnabled(!value);
             setLocationAllowedCache(!value);
         }
@@ -135,13 +136,17 @@ export default function SettingsScreen() {
 
     const updateNotificationsSetting = async (value: boolean) => {
         setNotificationsEnabled(value);
-    
+        // Remembered in the app too (like Location Services), so it's still
+        // what you set when you come back to this screen.
+        updateSettingsCache({ notificationsEnabled: value });
+
         try {
             if (!auth.currentUser) return;
             await apiJson('/dev/update_user', { method: 'PATCH', body: { is_notifications_allowed: value } });
         } catch (err) {
-            console.warn('Failed to save setting:', err);
-            setNotificationsEnabled(!value); // optionally revert on failure
+            showError("Couldn't save the setting", err);
+            setNotificationsEnabled(!value);
+            updateSettingsCache({ notificationsEnabled: !value });
         }
     };
 

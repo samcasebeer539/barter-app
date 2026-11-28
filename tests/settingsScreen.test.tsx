@@ -53,6 +53,12 @@ const flip = async (i: 0 | 1, value: boolean) => { await fireEvent(switches()[i]
 
 // ── toggles ──────────────────────────────────────────────────────────────────
 
+// Delete Account is a dropdown in the Account section; its button is inside.
+async function openDelete() {
+  if (!screen.queryByText('Delete My Account')) await fireEvent.press(screen.getByText('Delete Account'));
+  await fireEvent.press(screen.getByText('Delete My Account'));
+}
+
 test('shows your saved settings', async () => {
   setSettingsCache({ locationAllowed: false, notificationsEnabled: false });
   await open();
@@ -165,7 +171,7 @@ test('log out signs you out; a failure says so', async () => {
 
 test('delete account: asks first; Cancel does nothing', async () => {
   await open();
-  await fireEvent.press(screen.getByText('Delete Account'));
+  await openDelete();
   const [title, message, buttons] = alert.mock.calls[0];
   expect(title).toBe('Delete your account?');
   expect(message).toMatch(/permanently deletes your profile, posts and photos/);
@@ -175,7 +181,7 @@ test('delete account: asks first; Cancel does nothing', async () => {
 
 test('confirming deletes it on the server, then signs out', async () => {
   await open();
-  await fireEvent.press(screen.getByText('Delete Account'));
+  await openDelete();
   const confirm = alert.mock.calls[0][2].find((b: any) => b.text === 'Delete Account');
   await act(async () => { await confirm.onPress(); });
   expect(api).toHaveBeenCalledWith('/dev/account', { method: 'DELETE' });
@@ -189,12 +195,12 @@ test("if it can't be deleted, says why and stays signed in", async () => {
     if (path === '/dev/account') throw new ApiError("Couldn't delete your sign-in. Nothing was deleted; try again.", 502);
     return {};
   });
-  await fireEvent.press(screen.getByText('Delete Account'));
+  await openDelete();
   const confirm = alert.mock.calls[0][2].find((b: any) => b.text === 'Delete Account');
   await act(async () => { await confirm.onPress(); });
   expect(alert).toHaveBeenLastCalledWith("Couldn't delete your account", 'Something went wrong on our end. Try again in a moment.');
   expect(signOut).not.toHaveBeenCalled();
-  expect(screen.getByText('Delete Account')).toBeTruthy();   // usable again
+  expect(screen.getByText('Delete My Account')).toBeTruthy();   // usable again
 });
 
 // ── help, terms and privacy ──────────────────────────────────────────────────
@@ -214,4 +220,15 @@ test('Terms and Privacy Policy open to their full text', async () => {
   await fireEvent.press(screen.getByText('Privacy Policy'));
   for (const s of legal.privacy) expect(screen.getByText(s.heading)).toBeTruthy();
   expect(screen.getAllByText(`Effective ${legal.effectiveDate}`)).toHaveLength(2);
+});
+
+test('Delete Account sits in the Account section and explains itself before anything happens', async () => {
+  const alert = jest.spyOn(require('react-native').Alert, 'alert').mockImplementation(() => {});
+  await open();
+  expect(screen.getByText('Account')).toBeTruthy();
+  expect(screen.queryByText('Delete My Account')).toBeNull();
+  await fireEvent.press(screen.getByText('Delete Account'));
+  expect(screen.getByText(/permanently deletes your account/)).toBeTruthy();
+  expect(alert).not.toHaveBeenCalled();
+  alert.mockRestore();
 });

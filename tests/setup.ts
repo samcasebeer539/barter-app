@@ -22,3 +22,19 @@ jest.mock('react-native-reanimated', () => {
     Easing: { ease, linear: ease, inOut: () => ease, in: () => ease, out: () => ease },
   };
 });
+
+// React Native's Animated.spring steps on timers, so its frames land after a
+// test's act() has finished ("An update to Animated(View) ... not wrapped in
+// act"). In tests a spring jumps straight to where it's going. (Loops use
+// timing, not spring, so nothing here can repeat forever.)
+{
+  const { Animated } = require('react-native');
+  Animated.spring = (value: any, config: { toValue: any }) => ({
+    start: (done?: (r: { finished: boolean }) => void) => {
+      value.setValue(config.toValue);
+      done?.({ finished: true });
+    },
+    stop: () => {},
+    reset: () => {},
+  });
+}

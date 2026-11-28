@@ -66,6 +66,7 @@ export default function SettingsScreen() {
     const [aboutExpanded, setAboutExpanded] = React.useState(false);
     const [termsExpanded, setTermsExpanded] = React.useState(false);
     const [privacyExpanded, setPrivacyExpanded] = React.useState(false);
+    const [deleteExpanded, setDeleteExpanded] = React.useState(false);
     
     React.useEffect(() => {
         loadSettings();
@@ -204,30 +205,6 @@ export default function SettingsScreen() {
                 style={[styles.scrollView, { marginTop: insets.top + HEADER_HEIGHT }]}
                 scrollEnabled={scrollEnabled}
             >
-                {/* Account Section */}
-                {/* <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Account</Text>
-
-                    <TouchableOpacity style={styles.settingItem}>
-                        <View style={styles.settingLeft}>
-                            <Text style={styles.settingText}>Edit Profile</Text>
-                        </View>
-                        <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.settingItem}>
-                        <View style={styles.settingLeft}>
-                            <Text style={styles.settingText}>Privacy</Text>
-                        </View>
-                        <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity style={styles.settingItem}>
-                        <View style={styles.settingLeft}>
-                            <Text style={styles.settingText}>Security</Text>
-                        </View>
-                        <FontAwesome6 name="circle-chevron-right" size={22} color={colors.ui.secondarydisabled} />
-                    </TouchableOpacity>
-                </View> */}
 
                 {/* Preferences Section */}
                 <View style={styles.section}>
@@ -429,19 +406,45 @@ export default function SettingsScreen() {
                     )}
                 </View>
 
+                {/* Account: deleting it (Apple requires this in the app). */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Account</Text>
+                    <TouchableOpacity
+                        style={styles.settingItem}
+                        onPress={() => setDeleteExpanded(!deleteExpanded)}
+                    >
+                        <View style={styles.settingLeft}>
+                            <Text style={styles.settingText}>Delete Account</Text>
+                        </View>
+                        <FontAwesome6
+                            name={deleteExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={deleteExpanded ? colors.text.primary : colors.ui.secondarydisabled}
+                        />
+                    </TouchableOpacity>
+                    {deleteExpanded && (
+                        <View style={styles.dropdownContainer}>
+                            <Text style={styles.dropdownText}>
+                                This permanently deletes your account, your posts and their
+                                photos. Any trades in progress are declined. It can't be undone.
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.deleteAccountButton}
+                                onPress={handleDeleteAccount}
+                                disabled={deleting}
+                                accessibilityRole="button"
+                            >
+                                <Text style={[styles.deleteAccountText, deleting && styles.deleteAccountTextBusy]}>
+                                    {deleting ? 'Deleting…' : 'Delete My Account'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+
                 {/* Logout Button */}
                 <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
                     <Text style={styles.logoutText}>Log Out</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.deleteAccountButton}
-                    onPress={handleDeleteAccount}
-                    disabled={deleting}
-                    accessibilityRole="button"
-                >
-                    <Text style={[styles.deleteAccountText, deleting && styles.deleteAccountTextBusy]}>
-                        {deleting ? 'Deleting…' : 'Delete Account'}
-                    </Text>
                 </TouchableOpacity>
 
                 <View style={styles.bottomSpacer} />
@@ -560,17 +563,21 @@ const styles = StyleSheet.create({
         fontFamily: globalFonts.bold,
         color: colors.actions.decline,
     },
-    // Quieter than Log Out (it's rarely wanted), under it.
+    // Inside the Account dropdown: outlined in red like Log Out, but smaller.
     deleteAccountButton: {
-        height: 44,
-        marginHorizontal: 12,
+        alignSelf: 'flex-start',
+        marginTop: 12,
         paddingHorizontal: 16,
+        height: 40,
         justifyContent: 'center',
+        borderRadius: 2,
+        borderWidth: 3,
+        borderColor: colors.actions.decline,
     },
     deleteAccountText: {
         fontSize: 16,
-        fontFamily: globalFonts.regular,
-        color: colors.ui.secondarydisabled,
+        fontFamily: globalFonts.bold,
+        color: colors.actions.decline,
     },
     deleteAccountTextBusy: {
         opacity: 0.5,

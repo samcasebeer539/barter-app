@@ -1,9 +1,15 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { globalFonts, colors } from './globalStyles';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-export const DECK_BAR_WIDTH = 342;
+// The bars above and below every deck (counts, action wheel, trade
+// history): the screen width less 24 on each side. (The app is portrait
+// only, so the width is fixed while it runs.) Capped at the widest a deck
+// gets (a 400 card plus its 12 of stacked cards behind), which only matters
+// on tablets.
+export const DECK_BAR_MARGIN = 24;
+export const DECK_BAR_WIDTH = Math.min(Dimensions.get('window').width - DECK_BAR_MARGIN * 2, 412);
 export const DECK_LEFT_OFFSET = -12;
 
 // ─── Border radius presets ───────────────────────────────────────────────────

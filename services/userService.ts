@@ -72,6 +72,11 @@ export interface UserReview {
 // review changes the count, so it's fetched fresh; otherwise reopening a
 // user's reviews (on any card, anywhere in the app) is instant.
 const reviewsCache = new Map<string, UserReview[]>();
+
+/** Forget cached reviews (signing out). */
+export function clearReviewsCache() {
+  reviewsCache.clear();
+}
 const reviewsKey = (userId: string, reviewCount: number) => `${userId}:${reviewCount}`;
 
 /** This user's reviews if already fetched at this review count. */

@@ -160,3 +160,58 @@ test('log out signs you out; a failure says so', async () => {
   await flush();
   expect(alert).toHaveBeenCalledWith("Couldn't log out", 'Check your connection and try again.');
 });
+
+// ── deleting your account ────────────────────────────────────────────────────
+
+test('delete account: asks first; Cancel does nothing', async () => {
+  await open();
+  await fireEvent.press(screen.getByText('Delete Account'));
+  const [title, message, buttons] = alert.mock.calls[0];
+  expect(title).toBe('Delete your account?');
+  expect(message).toMatch(/permanently deletes your profile, posts and photos/);
+  expect(buttons.map((b: any) => [b.text, b.style])).toEqual([['Cancel', 'cancel'], ['Delete Account', 'destructive']]);
+  expect(api).not.toHaveBeenCalledWith('/dev/account', expect.anything());
+});
+
+test('confirming deletes it on the server, then signs out', async () => {
+  await open();
+  await fireEvent.press(screen.getByText('Delete Account'));
+  const confirm = alert.mock.calls[0][2].find((b: any) => b.text === 'Delete Account');
+  await act(async () => { await confirm.onPress(); });
+  expect(api).toHaveBeenCalledWith('/dev/account', { method: 'DELETE' });
+  expect(signOut).toHaveBeenCalled();
+});
+
+test("if it can't be deleted, says why and stays signed in", async () => {
+  await open();
+  (signOut as jest.Mock).mockClear();
+  api.mockImplementation(async (path: string) => {
+    if (path === '/dev/account') throw new ApiError("Couldn't delete your sign-in. Nothing was deleted; try again.", 502);
+    return {};
+  });
+  await fireEvent.press(screen.getByText('Delete Account'));
+  const confirm = alert.mock.calls[0][2].find((b: any) => b.text === 'Delete Account');
+  await act(async () => { await confirm.onPress(); });
+  expect(alert).toHaveBeenLastCalledWith("Couldn't delete your account", 'Something went wrong on our end. Try again in a moment.');
+  expect(signOut).not.toHaveBeenCalled();
+  expect(screen.getByText('Delete Account')).toBeTruthy();   // usable again
+});
+
+// ── help, terms and privacy ──────────────────────────────────────────────────
+
+test('Help Center: no fake address while the support email is unset', async () => {
+  await open();
+  await fireEvent.press(screen.getByText('Help Center'));
+  expect(screen.getByText('Support email coming soon.')).toBeTruthy();
+  expect(screen.queryByText(/example@gmail\.com/)).toBeNull();
+});
+
+test('Terms and Privacy Policy open to their full text', async () => {
+  const legal = require('@/config/legal.json');
+  await open();
+  await fireEvent.press(screen.getByText('Terms and Conditions'));
+  for (const s of legal.terms) expect(screen.getByText(s.heading)).toBeTruthy();
+  await fireEvent.press(screen.getByText('Privacy Policy'));
+  for (const s of legal.privacy) expect(screen.getByText(s.heading)).toBeTruthy();
+  expect(screen.getAllByText(`Effective ${legal.effectiveDate}`)).toHaveLength(2);
+});

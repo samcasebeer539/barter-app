@@ -28,6 +28,7 @@ from routes.dev.trades.history.route import trades_history_bp
 from routes.dev.trades.tabs.route import trades_tabs_bp
 from routes.dev.profile_page.route import profile_page_bp
 from routes.dev.safety.route import safety_bp
+from routes.dev.account.route import account_bp
 from routes.dev.trades.trade_details.accept.route import trades_detail_accept_bp
 from routes.dev.trades.trade_details.decline.route import trades_detail_decline_bp
 from routes.dev.trades.trade_details.get_trade.route import trades_detail_get_trade_bp
@@ -109,6 +110,7 @@ app.register_blueprint(trades_history_bp)
 app.register_blueprint(trades_tabs_bp)
 app.register_blueprint(profile_page_bp)
 app.register_blueprint(safety_bp)
+app.register_blueprint(account_bp)
 
 
 

@@ -27,6 +27,10 @@ sys.path.insert(0, BACKEND_DIR)
 # ── fake Firebase ────────────────────────────────────────────────────────────
 
 storage_calls = []
+# Files in the fake storage bucket (paths), and sign-ins deleted.
+storage_files = set()
+deleted_sign_ins = []
+fail_sign_in_delete = []   # put True in it to make delete_user fail
 
 
 def _install_fake_firebase():
@@ -40,12 +44,26 @@ def _install_fake_firebase():
             raise ValueError("invalid token")
         return {"uid": token, "email": f"{token}@example.com"}
 
+    class _Blob:
+        def __init__(self, name):
+            self.name = name
+
+        def delete(self):
+            storage_calls.append(("delete", self.name))
+            storage_files.discard(self.name)
+
     class _Bucket:
         def list_blobs(self, prefix=""):
             storage_calls.append(("list_blobs", prefix))
-            return []
+            return [_Blob(n) for n in sorted(storage_files) if n.startswith(prefix)]
+
+    def delete_user(uid):
+        if fail_sign_in_delete:
+            raise RuntimeError("firebase unavailable")
+        deleted_sign_ins.append(uid)
 
     auth.verify_id_token = verify_id_token
+    auth.delete_user = delete_user
     storage.bucket = lambda *a, **k: _Bucket()
     credentials.Certificate = lambda *a, **k: None
     fa.auth, fa.storage, fa.credentials = auth, storage, credentials
@@ -108,6 +126,9 @@ def _clean_db():
     for name in B.db.list_collection_names():
         B.db[name].delete_many({})
     storage_calls.clear()
+    storage_files.clear()
+    deleted_sign_ins.clear()
+    fail_sign_in_delete.clear()
     yield
 
 

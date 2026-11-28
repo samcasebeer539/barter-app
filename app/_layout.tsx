@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { View, ActivityIndicator } from 'react-native';
+import { clearSessionCaches } from '@/lib/session';
 
 export default function RootLayout() {
     const [initializing, setInitializing] = useState(true);
@@ -12,7 +13,12 @@ export default function RootLayout() {
     const segments = useSegments();
 
     useEffect(() => {
+        let currentUid: string | null | undefined;
         const unsubscribe = onAuthStateChanged(auth, (user) => {
+            // A different account (or none): drop the last one's cached data.
+            const uid = user?.uid ?? null;
+            if (currentUid !== undefined && uid !== currentUid) clearSessionCaches();
+            currentUid = uid;
             setUser(user);
             if (initializing) setInitializing(false);
         });

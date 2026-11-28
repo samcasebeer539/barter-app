@@ -126,7 +126,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
           <View style={styles.header}>
             <Text style={styles.headerText}>Pick a Date</Text>
-            <TouchableOpacity onPress={cancelPicker}>
+            <TouchableOpacity onPress={cancelPicker} accessibilityRole="button" accessibilityLabel="Cancel">
               <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
@@ -149,7 +149,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
         <View style={[styles.card, { width: finalCardWidth, height: cardHeight }]}>
           <View style={styles.header}>
             <Text style={styles.headerText}>Time on {pendingDate.label}</Text>
-            <TouchableOpacity onPress={cancelPicker}>
+            <TouchableOpacity onPress={cancelPicker} accessibilityRole="button" accessibilityLabel="Cancel">
               <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
             </TouchableOpacity>
           </View>
@@ -203,7 +203,7 @@ const MeetupCard: React.FC<MeetupCardProps> = ({
                 <FontAwesome6 name="circle-check" size={24} color={colors.actions.time} />
               )}
               {isUser && (
-                <TouchableOpacity onPress={() => setPicked(null)} hitSlop={8}>
+                <TouchableOpacity onPress={() => setPicked(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear time">
                   <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               )}

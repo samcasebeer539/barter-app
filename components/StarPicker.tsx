@@ -18,7 +18,7 @@ export default function StarPicker({ rating, onChange, color = colors.actions.re
             {[1, 2, 3, 4, 5].map(n => {
                 const filled = rating !== null && n <= rating;
                 return (
-                    <TouchableOpacity key={n} onPress={() => onChange(n)} hitSlop={6}>
+                    <TouchableOpacity key={n} onPress={() => onChange(n)} hitSlop={6} accessibilityRole="button" accessibilityLabel={`${n} star${n === 1 ? '' : 's'}`} accessibilityState={{ selected: rating === n }}>
                         <FontAwesome6 name="star" size={24} color={color} solid={filled} />
                     </TouchableOpacity>
                 );

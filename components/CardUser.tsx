@@ -250,6 +250,8 @@ const UserCard: React.FC<UserCardProps> = ({
           {/* Photo */}
           <TouchableOpacity
             activeOpacity={isEditable || isInfoExpanded || isReviewsOpen ? 0.8 : 1}
+            accessibilityRole="button"
+            accessibilityLabel={isEditable ? 'Change profile photo' : 'Profile photo'}
             onPress={() => {
               if (isEditable) {
                 handlePickPhoto();
@@ -300,15 +302,15 @@ const UserCard: React.FC<UserCardProps> = ({
 
               {isEditable ? (
                 <>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleSave} disabled={isUploadingPhoto}>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleSave} disabled={isUploadingPhoto} accessibilityRole="button" accessibilityLabel="Save profile">
                     <FontAwesome6 name="circle-check" size={24} color={isUploadingPhoto ? colors.ui.carddisabled : colors.actions.review} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton} onPress={handleCancel}>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleCancel} accessibilityRole="button" accessibilityLabel="Cancel editing">
                     <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton}>
+                  <View style={styles.actionButton}>
                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
-                  </TouchableOpacity>
+                  </View>
                 </>
               ) : isUser ? (
                 <>
@@ -316,21 +318,25 @@ const UserCard: React.FC<UserCardProps> = ({
                   {onEnterEdit && (
                     <TouchableOpacity
                       testID="user-edit"
+                      accessibilityRole="button"
+                      accessibilityLabel="Edit profile"
                       style={styles.actionButton}
                       onPress={e => { e.stopPropagation(); onEnterEdit(); }}
                     >
                       <FontAwesome6 name="square-pen" size={24} color={colors.ui.cardsecondary} />
                     </TouchableOpacity>
                   )}
-                  <TouchableOpacity style={styles.actionButton}>
+                  <View style={styles.actionButton}>
                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
-                  </TouchableOpacity>
+                  </View>
                 </>
               ) : (
                 <>
                   {/* Block toggle: red while blocked; tapping again offers to unblock. */}
                   <TouchableOpacity
                     testID="user-block"
+                    accessibilityRole="button"
+                    accessibilityLabel={isBlocked ? 'Unblock user' : 'Block user'}
                     style={styles.actionButton}
                     disabled={!user._id}
                     onPress={() => {
@@ -348,15 +354,17 @@ const UserCard: React.FC<UserCardProps> = ({
                   </TouchableOpacity>
                   <TouchableOpacity
                     testID="user-report"
+                    accessibilityRole="button"
+                    accessibilityLabel="Report user"
                     style={styles.actionButton}
                     disabled={!user._id}
                     onPress={() => startReport({ userId: user._id, name: user.first_name })}
                   >
                     <FontAwesome6 name="circle-exclamation" size={24} color={user._id ? colors.ui.cardsecondary : colors.ui.carddisabled} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton}>
+                  <View style={styles.actionButton}>
                     <FontAwesome6 name="circle-user" size={24} color={colors.ui.cardsecondary} />
-                  </TouchableOpacity>
+                  </View>
                 </>
               )}
             </View>
@@ -393,6 +401,8 @@ const UserCard: React.FC<UserCardProps> = ({
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={handleEmailVisibleToggle}
+                    accessibilityRole="button"
+                    accessibilityLabel={emailVisible ? 'Hide email' : 'Show email'}
                   >
                     <FontAwesome6
                       name={emailVisible ? 'eye' : 'eye-slash'}
@@ -427,6 +437,8 @@ const UserCard: React.FC<UserCardProps> = ({
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={handlePhoneVisibleToggle}
+                    accessibilityRole="button"
+                    accessibilityLabel={phoneVisible ? 'Hide phone number' : 'Show phone number'}
                   >
                     <FontAwesome6
                       name={phoneVisible ? 'eye' : 'eye-slash'}

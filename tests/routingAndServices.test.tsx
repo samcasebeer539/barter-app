@@ -16,12 +16,14 @@ jest.mock('expo-router', () => {
   };
 });
 jest.mock('@/lib/firebase', () => ({ auth: {}, storage: {} }));
+jest.mock('@/lib/session', () => ({ clearSessionCaches: jest.fn() }));
 jest.mock('firebase/auth', () => ({
   onAuthStateChanged: (_auth: unknown, cb: (u: any) => void) => { mockNav.authListener = cb; return () => {}; },
   getAuth: () => ({ currentUser: { uid: 'alice' } }),
 }));
 
 import RootLayout from '@/app/_layout';
+import { clearSessionCaches } from '@/lib/session';
 
 async function signedIn(user: object | null, segments: string[]) {
   mockNav.segments = segments;
@@ -54,6 +56,20 @@ test.each([
   await signedIn(user, segments);
   expect(mockNav.replace).not.toHaveBeenCalled();
   expect(screen.getByText('app')).toBeTruthy();
+});
+
+test("a different account (sign out, account deleted, someone else signs in) forgets the last one's cached data", async () => {
+  (clearSessionCaches as jest.Mock).mockClear();
+  mockNav.segments = ['(tabs)', 'feed'];
+  await render(<RootLayout />);
+  await act(async () => { mockNav.authListener?.({ uid: 'alice' }); });   // app opens signed in
+  expect(clearSessionCaches).not.toHaveBeenCalled();
+  await act(async () => { mockNav.authListener?.({ uid: 'alice' }); });   // same account (token refresh)
+  expect(clearSessionCaches).not.toHaveBeenCalled();
+  await act(async () => { mockNav.authListener?.(null); });               // signed out
+  expect(clearSessionCaches).toHaveBeenCalledTimes(1);
+  await act(async () => { mockNav.authListener?.({ uid: 'bob' }); });     // someone else
+  expect(clearSessionCaches).toHaveBeenCalledTimes(2);
 });
 
 // ── user service ─────────────────────────────────────────────────────────────

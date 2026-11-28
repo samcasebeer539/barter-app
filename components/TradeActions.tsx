@@ -54,11 +54,16 @@ interface SelectButtonProps {
     disabled: boolean;
     /** No circle or count (nothing on top to select). */
     hideIcon?: boolean;
+    /** What a screen reader says, e.g. "Barter". */
+    label?: string;
 }
 
-const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled, hideIcon = false, testID }) => (
+const SelectButton: React.FC<SelectButtonProps> = ({ color, isActive, selectedCount, onPress, disabled, hideIcon = false, testID, label }) => (
     <TouchableOpacity
         testID={testID}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled, selected: isActive }}
         activeOpacity={1}
         style={[styles.actionButton, styles.selectButton, {
             borderColor: color,
@@ -90,11 +95,15 @@ interface IconButtonProps {
     fillOnActive?: boolean;
     /** No icon (nothing on top to select). */
     hideIcon?: boolean;
+    label?: string;
 }
 
-const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false, hideIcon = false, testID }) => (
+const IconButton: React.FC<IconButtonProps> = ({ color, isActive, icon, iconSize = 26, onPress, disabled, fillOnActive = false, hideIcon = false, testID, label }) => (
     <TouchableOpacity
         testID={testID}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled, selected: isActive }}
         activeOpacity={1}
         style={[styles.actionButton, {
             borderColor: color,
@@ -120,13 +129,14 @@ interface TimerButtonProps {
     flipped?: boolean;
     /** Show just the clock icon, no countdown. */
     hideLabel?: boolean;
+    label?: string;
 }
 
 const TIMER_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days — matches Game.TURN_TIME_LIMIT
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
-const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline, flipped = false, hideLabel = false, testID }) => {
+const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, disabled, deadline, flipped = false, hideLabel = false, testID, label: a11yLabel }) => {
     // With a deadline, count down to it. Without one (decks with no live
     // game behind them), fall back to a 2-day countdown from mount.
     const [endsAt] = useState(() => Date.now() + TIMER_DURATION_MS);
@@ -156,8 +166,8 @@ const TimerButton: React.FC<TimerButtonProps> = ({ color, isActive, onPress, dis
         </>
     );
 
-    if (!onPress) return <View testID={testID} style={btnStyle}>{content}</View>;
-    return <TouchableOpacity testID={testID} activeOpacity={1} style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
+    if (!onPress) return <View testID={testID} style={btnStyle} accessible accessibilityLabel={a11yLabel}>{content}</View>;
+    return <TouchableOpacity testID={testID} accessibilityRole="button" accessibilityLabel={a11yLabel} accessibilityState={{ disabled, selected: isActive }} activeOpacity={1} style={btnStyle} onPress={onPress} disabled={disabled}>{content}</TouchableOpacity>;
 };
 
 // Icons for the simple "arm on tap" actions. Once armed (activeActionType
@@ -318,6 +328,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
         const opacity = active ? 1 : 0.3;
         const isArmed = action.actionType === activeActionType;
         const testID = `action-${action.actionType}`;
+        // Screen-reader name: the action's own word, e.g. "Barter".
+        const label = action.text.charAt(0) + action.text.slice(1).toLowerCase();
 
         // Multi-select: offer / barter / rescind — icon tap toggles the
         // current top card; fills once that specific card is selected.
@@ -335,6 +347,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             return (
                 <IconButton
                     testID={testID}
+                    label={label}
                     color={color}
                     isActive={selected}
                     icon={selected && filledActionType !== action.actionType ? 'circle-check' : idleIcon}
@@ -353,6 +366,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             return (
                 <IconButton
                     testID={testID}
+                    label={label}
                     color={color}
                     isActive={selected}
                     icon={selected ? 'circle-check' : 'circle'}
@@ -368,6 +382,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             return (
                 <SelectButton
                     testID={testID}
+                    label={label}
                     color={color}
                     isActive={active && isArmed && topCardIsSelected}
                     selectedCount={selectedCount}
@@ -385,6 +400,9 @@ const TradeUI: React.FC<TradeUIProps> = ({
             return (
                 <TouchableOpacity
                     testID={testID}
+                    accessibilityRole="button"
+                    accessibilityLabel={label}
+                    accessibilityState={{ disabled: disabled || blocked, selected: armed }}
                     activeOpacity={1}
                     style={[
                         styles.actionButton,
@@ -410,7 +428,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
         // Wait: display-only countdown of the other player's remaining time.
         if (action.actionType === 'wait') {
-            return <TimerButton testID={testID} color={color} isActive={false} disabled={true} deadline={turnDeadline} flipped hideLabel={noTurnClock} />;
+            return <TimerButton testID={testID} label={label} color={color} isActive={false} disabled={true} deadline={turnDeadline} flipped hideLabel={noTurnClock} />;
         }
 
         // Decline: shows your own remaining time (when it runs out the game
@@ -419,6 +437,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
             return (
                 <TimerButton
                     testID={testID}
+                    label={label}
                     color={color}
                     isActive={active && isArmed}
                     onPress={() => onActionSelected({ actionType: action.actionType, subAction: 'write' })}
@@ -434,6 +453,7 @@ const TradeUI: React.FC<TradeUIProps> = ({
         return (
             <IconButton
                 testID={testID}
+                label={label}
                 color={color}
                 isActive={active && isArmed}
                 icon={(active && isArmed) ? 'circle-check' : (mapped?.icon ?? 'circle')}
@@ -530,6 +550,8 @@ const TradeUI: React.FC<TradeUIProps> = ({
 
                 <TouchableOpacity
                     testID="confirm-arrow"
+                    accessibilityRole="button"
+                    accessibilityLabel={currentAction ? `Send ${currentAction.text.toLowerCase()}` : 'Send'}
                     activeOpacity={1}
                     style={[styles.playButton, isWaitShape && styles.playButtonFlipped, {
                         backgroundColor: arrowVisible && isFilled ? currentAction?.color : 'transparent',

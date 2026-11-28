@@ -326,6 +326,8 @@ export default function OfferDeck({
                 <TouchableOpacity
                     testID="deck-toggle"
                     style={styles.collapseBar}
+                    accessibilityRole="button"
+                    accessibilityLabel={isExpanded ? 'Collapse deck' : 'Expand deck'}
                     onPress={toggleExpanded}
                     disabled={itemCount === 0}
                 >

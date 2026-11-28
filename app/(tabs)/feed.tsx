@@ -215,6 +215,8 @@ export default function FeedScreen() {
             <View key={item.id} style={styles.cardWrapper}>
                 <TouchableOpacity
                     style={styles.card}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.title ? `Open ${item.title}` : 'Open post'}
                     onPress={() => {
                         setLoadingPostId(item.id);
                         getFeedProfile(item.id)

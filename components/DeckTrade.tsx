@@ -706,6 +706,8 @@ export default function TradeDeck({
         <TouchableOpacity
           style={styles.collapseBar}
           onPress={toggleExpanded}
+          accessibilityRole="button"
+          accessibilityLabel={isExpanded ? 'Collapse deck' : 'Expand deck'}
         >
           <FontAwesome6 name={isExpanded ? 'angle-up' : 'angle-down'} size={26} color="#fff" />
         </TouchableOpacity>

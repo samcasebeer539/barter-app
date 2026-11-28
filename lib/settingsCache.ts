@@ -22,6 +22,12 @@ export function toAppSettings(data: any): AppSettings {
   };
 }
 
+/** Forget the cached settings (signing out: they were someone else's). */
+export function clearSettingsCache() {
+  cached = null;
+  pending = null;
+}
+
 export function setSettingsCache(settings: AppSettings) {
   cached = settings;
 }

@@ -69,7 +69,7 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                     {/* Magnifying glass on the right; while a search is
                         showing, an X there clears it instead. */}
                     {searchActive ? (
-                        <TouchableOpacity onPress={clearSearch} hitSlop={8}>
+                        <TouchableOpacity onPress={clearSearch} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear search">
                             <FontAwesome6
                                 name="circle-xmark"
                                 size={22}
@@ -81,7 +81,7 @@ export default function FeedBar({ headerTranslateY, onSearchSubmit, onSearchClea
                     )}
                 </TouchableOpacity>
                 {/* Sort: its own button on the right, like the other icon buttons. */}
-                <TouchableOpacity style={styles.sortButton} onPress={onSortPress}>
+                <TouchableOpacity style={styles.sortButton} onPress={onSortPress} accessibilityRole="button" accessibilityLabel="Sort">
                     <FontAwesome6 name="sliders" size={22} color="#FFFFFF" />
                 </TouchableOpacity>
                 

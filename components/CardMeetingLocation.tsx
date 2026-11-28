@@ -299,7 +299,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
               </View>
 
               {isSelectMode ? (
-                <TouchableOpacity onPress={() => handleProposeLocation(loc)} hitSlop={8}>
+                <TouchableOpacity onPress={() => handleProposeLocation(loc)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Propose ${loc.name}`} accessibilityState={{ selected: selectedLocationId === loc.id }}>
                   <FontAwesome6
                     name={selectedLocationId === loc.id ? 'circle-check' : 'circle'}
                     size={24}
@@ -311,7 +311,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   />
                 </TouchableOpacity>
               ) : (
-                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8}>
+                <TouchableOpacity onPress={() => removeLocation(loc.id)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Remove ${loc.name}`}>
                   <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               )}
@@ -360,14 +360,14 @@ const CardLocation: React.FC<CardLocationProps> = ({
                   autoFocus
                   returnKeyType={doneKey ? 'done' : 'default'}
                 />
-                <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()}>
+                <TouchableOpacity onPress={handleSave} hitSlop={8} disabled={!nameInput.trim()} accessibilityRole="button" accessibilityLabel="Save location">
                   <FontAwesome6
                     name="circle-check"
                     size={24}
                     color={!nameInput.trim() ? colors.ui.carddisabled : colors.actions.location}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleCancelNaming} hitSlop={8}>
+                <TouchableOpacity onPress={handleCancelNaming} hitSlop={8} accessibilityRole="button" accessibilityLabel="Cancel">
                   <FontAwesome6 name="circle-xmark" size={24} color={colors.ui.cardsecondary} />
                 </TouchableOpacity>
               </View>
@@ -400,7 +400,7 @@ const CardLocation: React.FC<CardLocationProps> = ({
                     {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
                   </Text>
                 </View>
-                <TouchableOpacity onPress={() => handleSelectLocation(loc)} hitSlop={8}>
+                <TouchableOpacity onPress={() => handleSelectLocation(loc)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Choose ${loc.name}`} accessibilityState={{ selected: isSelected }}>
                   <FontAwesome6
                     name={isSelected ? 'circle-check' : 'circle'}
                     size={24}

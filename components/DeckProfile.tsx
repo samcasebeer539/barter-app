@@ -644,10 +644,10 @@ export default function ProfileDeck({
                         )}
                         <View style={styles.buttonRow}>
                             {/* Disabled while a post is being edited. */}
-                            <TouchableOpacity testID="add-post" style={styles.addButton} onPress={handleAddPost} disabled={addPostDisabled}>
+                            <TouchableOpacity testID="add-post" style={styles.addButton} onPress={handleAddPost} disabled={addPostDisabled} accessibilityRole="button" accessibilityLabel="Add post">
                                 <FontAwesome6 name="circle-plus" size={24} color={addPostDisabled ? colors.ui.secondarydisabled : '#fff'} />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTopPost} disabled={deleteDisabled}>
+                            <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteTopPost} disabled={deleteDisabled} accessibilityRole="button" accessibilityLabel="Delete post">
                                 <FontAwesome6 name="circle-xmark" size={24} color={deleteDisabled ? colors.ui.secondarydisabled : '#fff'} />
                             </TouchableOpacity>
                             <View style={styles.myItemCountBar}>

@@ -1,0 +1,85 @@
+{
+  "_comment": "The app's Terms and Privacy Policy, shown in Settings. Also exported to docs/ for hosting (npm run legal:export). DRAFT: review before release, ideally with a lawyer. Set supportEmail before release (see docs/RELEASE_CHECKLIST.md).",
+  "supportEmail": null,
+  "effectiveDate": "November 27, 2026",
+  "terms": [
+    {
+      "heading": "1. Agreeing to these terms",
+      "body": "By creating an account or using Win-Win, you agree to these Terms. If you don't agree, please don't use the app. You must be at least 18 years old to use Win-Win, because trades involve meeting other people in person."
+    },
+    {
+      "heading": "2. What Win-Win is",
+      "body": "Win-Win helps people trade items with each other instead of buying and selling. We provide the app that lets you post items, make offers, agree on a trade, and pick a time and place to meet. We are not a party to any trade, we don't hold or ship items, and no money changes hands through the app."
+    },
+    {
+      "heading": "3. Your account",
+      "body": "Keep your sign-in details private and tell us if you think someone else is using your account. You're responsible for what happens under your account. You can delete your account at any time in Settings."
+    },
+    {
+      "heading": "4. Your posts and messages",
+      "body": "You're responsible for what you post: item titles, descriptions, photos, questions, answers and reviews. Describe items honestly, and only post items you own and are allowed to trade. By posting, you let us show that content to other people using Win-Win so the app can work. You keep ownership of it."
+    },
+    {
+      "heading": "5. What's not allowed",
+      "body": "Don't post or trade anything illegal, stolen, dangerous, counterfeit, or that you don't have the right to trade, including weapons, drugs, alcohol, tobacco, prescription medicine, animals, or recalled products. Don't harass, threaten, scam, or impersonate anyone, don't post sexual or hateful content, and don't use Win-Win to spam or advertise. We may remove content or close accounts that break these rules."
+    },
+    {
+      "heading": "6. Meeting to trade",
+      "body": "Trades happen in person, at your own risk. Meet in a public place (the app's \"safe exchange locations\" are meant for this), consider bringing a friend, check items before you trade, and leave if anything feels wrong. If someone makes you feel unsafe, block and report them in the app, and contact local authorities if you're in danger."
+    },
+    {
+      "heading": "7. Reports and blocking",
+      "body": "You can block anyone, which hides you from each other and ends your trades with them, and report users or posts. Reports are reviewed by a person. We may act on a report, for example by removing content or closing an account, but we can't promise a particular outcome."
+    },
+    {
+      "heading": "8. No guarantees",
+      "body": "Win-Win is provided as is. We don't check items or people, and we aren't responsible for the condition, quality, safety, legality or outcome of any trade, or for anything that happens when you meet someone. To the extent the law allows, we aren't liable for losses arising from trades or from using the app."
+    },
+    {
+      "heading": "9. Changes",
+      "body": "We may update these Terms. If the changes are significant, we'll let you know in the app. Continuing to use Win-Win after an update means you accept the new Terms."
+    },
+    {
+      "heading": "10. Contact",
+      "body": "Questions about these Terms? Email us at the address in Settings > Help Center."
+    }
+  ],
+  "privacy": [
+    {
+      "heading": "What we collect",
+      "body": "Account details: your first and last name, email address and password (your password is handled by our sign-in provider; we never see it). Profile details you choose to add: phone number, pronouns, bio and profile photo. What you post: item titles, descriptions and photos. Your saved safe exchange locations (a name, optional description, and map coordinates). Activity in the app: offers, questions and answers, trade moves, proposed meeting times and places, reviews and ratings, people you've blocked, and reports you make."
+    },
+    {
+      "heading": "Your device's location",
+      "body": "Only if you turn on Location Services in Settings and allow it on your phone. It's used on your phone to center maps near you. It isn't sent to us or stored. Distances shown in the feed are worked out from saved exchange locations, not your live location."
+    },
+    {
+      "heading": "What other people can see",
+      "body": "Other people using Win-Win can see your name, pronouns, bio, profile photo, rating and reviews, your posts, and your saved exchange locations (so you can agree where to meet). Your email and phone number are hidden unless you choose to show them on your profile. People you trade with see the questions, answers and moves in that trade. People you've blocked, and who've blocked you, can't see each other."
+    },
+    {
+      "heading": "How we use it",
+      "body": "To run the app: show your posts and profile, carry out trades, work out distances, keep you signed in, prevent abuse, and review reports. We don't sell your information, and we don't use it for advertising."
+    },
+    {
+      "heading": "Who we share it with",
+      "body": "Only the services that run the app for us: Google Firebase (sign-in and photo storage) and MongoDB Atlas (our database). They store it on our behalf. We may also share information if the law requires it, or to protect someone's safety."
+    },
+    {
+      "heading": "How long we keep it",
+      "body": "For as long as you have an account. When you delete your account (Settings > Delete Account), we delete your sign-in, profile, posts and photos, and end your ongoing trades. Finished trades stay in the other person's trade history, and reviews you left stay, shown as from a \"Former member\". Reports may be kept to keep the community safe."
+    },
+    {
+      "heading": "Your choices",
+      "body": "You can edit your profile and posts, hide your email and phone, turn Location Services off, block people, and delete your account at any time. To ask about or get a copy of your information, email us at the address in Settings > Help Center."
+    },
+    {
+      "heading": "Children",
+      "body": "Win-Win is for people 18 and over. We don't knowingly collect information from anyone under 18; if you believe a child has an account, tell us and we'll delete it."
+    },
+    {
+      "heading": "Changes",
+      "body": "If we change this policy in a significant way, we'll let you know in the app."
+    }
+  ]
+}

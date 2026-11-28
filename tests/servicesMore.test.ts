@@ -78,3 +78,12 @@ test("offerers' profiles: one request for all of them; none needed for no one", 
   expect(found.bob.user).toMatchObject({ _id: 'bob', first_name: 'Bob', rating: 4, reviewCount: 0, locations: [] });
   expect(found.cara).toBeUndefined();
 });
+
+test('signing out forgets the settings: the next account fetches its own', async () => {
+  const cache = fresh<typeof import('@/lib/settingsCache')>('@/lib/settingsCache');
+  cache.setSettingsCache({ locationAllowed: false, notificationsEnabled: false });
+  cache.clearSettingsCache();
+  cache.api.mockResolvedValueOnce({});
+  await expect(cache.getSettings()).resolves.toEqual({ locationAllowed: true, notificationsEnabled: true });
+  expect(cache.api).toHaveBeenCalledWith('/settings');
+});

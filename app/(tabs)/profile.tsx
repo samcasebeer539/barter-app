@@ -459,6 +459,8 @@ export default function ProfileScreen() {
       <View style={styles.settingsButtonRow}>
         <TouchableOpacity
           style={styles.settingsButton}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
           onPress={() => {
             router.push('/settings');
         }}

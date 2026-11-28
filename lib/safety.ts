@@ -28,6 +28,12 @@ let loading: Promise<void> | null = null;
 type BlockListener = (userId: string, blocked: boolean) => void;
 const blockListeners = new Set<BlockListener>();
 
+/** Forget who's blocked (signing out: that was someone else's list). */
+export function clearBlockedCache() {
+  blockedIds = null;
+  loading = null;
+}
+
 /** Called after any block or unblock (screens reload their lists). */
 export function onBlockChange(listener: BlockListener): () => void {
   blockListeners.add(listener);

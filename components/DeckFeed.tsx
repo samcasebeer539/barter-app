@@ -344,7 +344,7 @@ export default function FeedDeck({
             style={StyleSheet.absoluteFill}
           />
         </Animated.View>
-        <TouchableOpacity style={styles.closeStrip} activeOpacity={1} onPress={handleCloseModal} />
+        <TouchableOpacity style={styles.closeStrip} activeOpacity={1} onPress={handleCloseModal} accessibilityRole="button" accessibilityLabel="Close" />
         <Animated.View
           style={[styles.animatedContainer, { transform: [{ translateY: deckTranslateY }] }]}
           onLayout={startOpenAnimation}

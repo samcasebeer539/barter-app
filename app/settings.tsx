@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import { setLocationAllowedCache } from '@/hooks/useUserRegion';
 import { getSettings, updateSettingsCache } from '@/lib/settingsCache';
 import { showError } from '@/lib/errors';
+import legal from '@/config/legal.json';
 import { apiJson } from '@/lib/api';
 import { getBlockedUsers, onBlockChange } from '@/lib/safety';
 import Deck, { DeckGroup } from '@/components/Deck';
@@ -64,6 +65,7 @@ export default function SettingsScreen() {
     const enableScroll = React.useCallback(() => setScrollEnabled(true), []);
     const [aboutExpanded, setAboutExpanded] = React.useState(false);
     const [termsExpanded, setTermsExpanded] = React.useState(false);
+    const [privacyExpanded, setPrivacyExpanded] = React.useState(false);
     
     React.useEffect(() => {
         loadSettings();
@@ -99,6 +101,38 @@ export default function SettingsScreen() {
         } catch (error) {
             showError("Couldn't log out", error);
         }
+    };
+
+    // Apple requires a way to delete your account from inside the app. Asks
+    // first; the server removes everything (see backend routes/dev/account),
+    // then signing out returns you to the login screen.
+    const [deleting, setDeleting] = React.useState(false);
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            'Delete your account?',
+            'This permanently deletes your profile, posts and photos, and ends any trades you have going. ' +
+                'Finished trades stay in the other person\'s history. This can\'t be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete Account',
+                    style: 'destructive',
+                    onPress: async () => {
+                        setDeleting(true);
+                        try {
+                            await apiJson('/dev/account', { method: 'DELETE' });
+                        } catch (err) {
+                            setDeleting(false);
+                            showError("Couldn't delete your account", err);
+                            return;
+                        }
+                        // The sign-in is already gone on the server; this
+                        // clears it on the phone too.
+                        await signOut(auth).catch(() => {});
+                    },
+                },
+            ],
+        );
     };
 
     const updateLocationSetting = async (value: boolean) => {
@@ -300,14 +334,23 @@ export default function SettingsScreen() {
                     </TouchableOpacity>
                     {helpExpanded && (
                         <View style={styles.dropdownContainer}>
-                            <Text style={styles.dropdownText}>
-                                Need help? Email us anytime at{" "}
-                                <Text style={styles.linkText}>
-                                    example@gmail.com
+                            {/* The address comes from config/legal.json (supportEmail). */}
+                            {legal.supportEmail ? (
+                                <Text style={styles.dropdownText}>
+                                    Need help? Email us anytime at{" "}
+                                    <Text
+                                        style={styles.linkText}
+                                        accessibilityRole="link"
+                                        onPress={() => Linking.openURL(`mailto:${legal.supportEmail}`)}
+                                    >
+                                        {legal.supportEmail}
+                                    </Text>
+                                    {"\n\n"}
+                                    We'd be happy to answer any questions or help resolve issues.
                                 </Text>
-                                {"\n\n"}
-                                We'd be happy to answer any questions or help resolve issues.
-                            </Text>
+                            ) : (
+                                <Text style={styles.dropdownText}>Support email coming soon.</Text>
+                            )}
                         </View>
                     )}
                     <TouchableOpacity
@@ -351,22 +394,37 @@ export default function SettingsScreen() {
 
                     {termsExpanded && (
                         <View style={styles.dropdownContainer}>
-                            <Text style={styles.Termsheading}>1. Acceptance</Text>
-                            <Text style={styles.Termsbody}>
-                                By using Win-Win, you agree to these Terms & Conditions.
-                            </Text>
-
-                            <Text style={styles.Termsheading}>2. User Responsibilities</Text>
-                            <Text style={styles.Termsbody}>
-                                Users are responsible for the accuracy of their listings and for
-                                communicating honestly with other users.
-                            </Text>
-
-                            <Text style={styles.Termsheading}>3. Trades</Text>
-                            <Text style={styles.Termsbody}>
-                                Win-Win facilitates trades between users but is not responsible
-                                for the condition, quality, legality, or outcome of any trade.
-                            </Text>
+                            <Text style={styles.dropdownText}>Effective {legal.effectiveDate}</Text>
+                            {legal.terms.map(section => (
+                                <React.Fragment key={section.heading}>
+                                    <Text style={styles.Termsheading}>{section.heading}</Text>
+                                    <Text style={styles.Termsbody}>{section.body}</Text>
+                                </React.Fragment>
+                            ))}
+                        </View>
+                    )}
+                    <TouchableOpacity
+                        style={styles.settingItem}
+                        onPress={() => setPrivacyExpanded(!privacyExpanded)}
+                    >
+                        <View style={styles.settingLeft}>
+                            <Text style={styles.settingText}>Privacy Policy</Text>
+                        </View>
+                        <FontAwesome6
+                            name={privacyExpanded ? "circle-chevron-up" : "circle-chevron-right"}
+                            size={22}
+                            color={privacyExpanded ? colors.text.primary : colors.ui.secondarydisabled}
+                        />
+                    </TouchableOpacity>
+                    {privacyExpanded && (
+                        <View style={styles.dropdownContainer}>
+                            <Text style={styles.dropdownText}>Effective {legal.effectiveDate}</Text>
+                            {legal.privacy.map(section => (
+                                <React.Fragment key={section.heading}>
+                                    <Text style={styles.Termsheading}>{section.heading}</Text>
+                                    <Text style={styles.Termsbody}>{section.body}</Text>
+                                </React.Fragment>
+                            ))}
                         </View>
                     )}
                 </View>
@@ -374,6 +432,16 @@ export default function SettingsScreen() {
                 {/* Logout Button */}
                 <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
                     <Text style={styles.logoutText}>Log Out</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.deleteAccountButton}
+                    onPress={handleDeleteAccount}
+                    disabled={deleting}
+                    accessibilityRole="button"
+                >
+                    <Text style={[styles.deleteAccountText, deleting && styles.deleteAccountTextBusy]}>
+                        {deleting ? 'Deleting…' : 'Delete Account'}
+                    </Text>
                 </TouchableOpacity>
 
                 <View style={styles.bottomSpacer} />
@@ -491,6 +559,21 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: globalFonts.bold,
         color: colors.actions.decline,
+    },
+    // Quieter than Log Out (it's rarely wanted), under it.
+    deleteAccountButton: {
+        height: 44,
+        marginHorizontal: 12,
+        paddingHorizontal: 16,
+        justifyContent: 'center',
+    },
+    deleteAccountText: {
+        fontSize: 16,
+        fontFamily: globalFonts.regular,
+        color: colors.ui.secondarydisabled,
+    },
+    deleteAccountTextBusy: {
+        opacity: 0.5,
     },
     bottomSpacer: {
         height: 80,
